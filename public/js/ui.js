@@ -16,10 +16,6 @@ function FileProgress(file, targetID) {
         this.fileProgressWrapper.className = "progressContainer";
 
         this.fileProgressElement = document.createElement('td');
-        // this.fileProgressElement = document.createElement("div");
-        // this.fileProgressElement.className = "progressContainer";
-
-
 
         var progressText = document.createElement("td");
         progressText.className = "progressName";
@@ -30,7 +26,7 @@ function FileProgress(file, targetID) {
         if (file.size === undefined || file.size > _100MB) {
             fileSize = ">100 MB";
         } else {
-            var size = Local.format(file.size, Local.storageHex, Local.storageUnits, 2);
+            var size = format(file.size, storageHex, storageUnits, 2);
             fileSize = size.base + " " + size.unit;
         }
         var progressSize = document.createElement("td");
@@ -66,11 +62,6 @@ function FileProgress(file, targetID) {
         progressBarStatus.className = "status text-center";
         progressBarBox.appendChild(progressBarStatus);
         progressBarTd.appendChild(progressBarBox);
-        // var progressUpSize = document.createElement("div");
-        // progressUpSize.className = "progressUpSize";
-        // progressUpSize.innerHTML = "&nbsp;";
-
-        //this.fileProgressWrapper.appendChild(progressCancel);
         this.fileProgressWrapper.appendChild(progressText);
         // this.fileProgressWrapper.appendChild(progressStatus);
         this.fileProgressWrapper.appendChild(progressSize);
@@ -78,7 +69,6 @@ function FileProgress(file, targetID) {
 
         document.getElementById(targetID).appendChild(this.fileProgressWrapper);
     } else {
-        //this.fileProgressElement = this.fileProgressWrapper.firstChild;
         this.reset();
     }
 
@@ -101,23 +91,13 @@ FileProgress.prototype.reset = function() {
     this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].className = 'progress-bar progress-bar-info';
     this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].setAttribute('aria-valuenow', 0);
     this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].style.width = '0%';
-
-    // this.fileProgressWrapper.childNodes[2]..className = "progressBarInProgress";
-    // this.fileProgressWrapper.childNodes[2]..style.width = "0%";
-
-    // this.fileProgressWrapper.childNodes[5].className = "progressUpSize";
-    // this.fileProgressWrapper.childNodes[5].innerHTML = "&nbsp;";
-
     this.appear();
 };
 
 FileProgress.prototype.setProgress = function(percentage, speed) {
     this.fileProgressWrapper.className = "progressContainer green";
-    // this.fileProgressWrapper.childNodes[3].className = "progressBarInProgress";
-    // this.fileProgressWrapper.childNodes[3].style.width = percentage;
-    var size = Local.format(this.file.loaded, Local.storageHex, Local.storageUnits, 2);
-    speed = Local.format(speed, Local.storageHex, Local.storageUnits, 2);
-    // this.fileProgressWrapper.childNodes[2].className = "progressBarStatus";
+    var size = format(this.file.loaded, storageHex, storageUnits, 2);
+    speed = format(speed, storageHex, storageUnits, 2);
     this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[2].innerHTML = "已上传: " + size.base + size.unit + " 上传速度： " + speed.base + speed.unit + "/s";
 
     this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].childNodes[0].childNodes[0].innerHTML = "&nbsp;";
@@ -129,7 +109,6 @@ FileProgress.prototype.setProgress = function(percentage, speed) {
 };
 
 FileProgress.prototype.setComplete = function(info) {
-    //console.log(info);
     this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].setAttribute('aria-valuenow', parseInt(100, 10));
     this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].style.width = "100%";
     this.fileProgressWrapper.childNodes[2].childNodes[0].style.display = 'none';
@@ -143,19 +122,18 @@ FileProgress.prototype.setComplete = function(info) {
     this.fileProgressWrapper.childNodes[2].innerHTML = str;
 };
 FileProgress.prototype.setError = function() {
-    // this.fileProgressWrapper.className = "progressContainer red";
     this.fileProgressWrapper.childNodes[2].className = 'text-warning';
     this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].style.display = 'none';
     this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].style.width = "0%";
 };
 
 FileProgress.prototype.setCancelled = function(manual) {
-    // var progressContainer = 'progressContainer';
-    // if (!manual) {
-    //     progressContainer += ' red';
-    // }
-    // this.fileProgressWrapper.className = progressContainer;
-    // this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].style.width = "0%";
+    var progressContainer = 'progressContainer';
+    if (!manual) {
+        progressContainer += ' red';
+    }
+    this.fileProgressWrapper.className = progressContainer;
+    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].style.width = "0%";
 };
 
 FileProgress.prototype.setStatus = function(status, isUploading) {
