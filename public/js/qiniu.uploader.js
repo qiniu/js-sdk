@@ -1,4 +1,6 @@
-function Qiniu({}) {
+function Qiniu(op) {
+    //var
+    //  get_token_url \
     var uploader = new plupload.Uploader({
         runtimes: 'html5,flash,silverlight,html4',
         browse_button: 'pickfiles',
@@ -24,23 +26,38 @@ function Qiniu({}) {
 
     uploader.bind('Init', function(up, params) {
         //显示当前上传方式，调试用
-        $.ajax({
-            url: '/token',
-            type: 'GET',
-            cache: false,
-            // headers: {
-            //     'Cache-Control': 'no-cache',
-            //     'Pragma': 'no-cache'
-            // },
-            success: function(data) {
-                if (data && data.uptoken) {
-                    token = data.uptoken;
-                }
-            },
-            error: function(error) {
-                console.log(error);
+        ajax = createAjax();
+        ajax.open('GET', '/token', true);
+        // ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+        // ajax.setRequestHeader('Authorization', 'UpToken ' + token);
+        ajax.send();
+        ajax.onreadystatechange = function() {
+            if (ajax.readyState == 4 && ajax.status == 200) {
+                // var progress = new FileProgress(file, 'fsUploadProgress');
+                // progress.setComplete(ajax.responseText);
+                var log = $.parseJSON(ajax.responseText);
+                // console.log(ajax.responseText);
+                // console.log(log.uptoken);
+                token = data.uptoken;
             }
-        });
+        }
+        // $.ajax({
+        //     url: '/token',
+        //     type: 'GET',
+        //     cache: false,
+        //     // headers: {
+        //     //     'Cache-Control': 'no-cache',
+        //     //     'Pragma': 'no-cache'
+        //     // },
+        //     success: function(data) {
+        //         if (data && data.uptoken) {
+        //             token = data.uptoken;
+        //         }
+        //     },
+        //     error: function(error) {
+        //         console.log(error);
+        //     }
+        // });
     });
     uploader.init();
 
@@ -48,7 +65,7 @@ function Qiniu({}) {
         $('table').show();
         $('#success').hide();
         console.log(up.runtime)
-        $.each(files, function(i, file) {
+        plupload.each(files, function(file) {
             var progress = new FileProgress(file, 'fsUploadProgress');
             progress.setStatus("等待...");
             progress.toggleCancel(true, uploader);
@@ -171,21 +188,29 @@ function Qiniu({}) {
         ctx = ctx ? ctx : res.ctx;
         if (ctx) {
             var url = 'http://up.qiniu.com/mkfile/' + file.size + '/key/' + URLSafeBase64Encode(file.name);
-            $.ajax({
-                url: url,
-                type: 'POST',
-                headers: {
-                    'Content-Type': 'text/plain;charset=UTF-8',
-                    'Authorization': 'UpToken ' + token
-                },
-                data: ctx,
-                success: function(data) {
+            var ajax = createAjax();
+            ajax.open('POST', url, true);
+            ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+            ajax.setRequestHeader('Authorization', 'UpToken ' + token);
+            ajax.send(ctx);
+            ajax.onreadystatechange = function() {
+                if (ajax.readyState == 4 && ajax.status == 200) {
                     var progress = new FileProgress(file, 'fsUploadProgress');
-                    progress.setComplete(data);
-                    // progress.setStatus("上传完成");
-                    // progress.toggleCancel(false);
+                    progress.setComplete(ajax.responseText);
                 }
-            });
+            }
+            // $.ajax({
+            //     url: url,
+            //     type: 'POST',
+            //     headers: {
+            //         'Content-Type':
+            //     },
+            //     data: ctx,
+            //     success: function(data) {
+            //         // progress.setStatus("上传完成");
+            //         // progress.toggleCancel(false);
+            //     }
+            // });
         } else {
             var progress = new FileProgress(file, 'fsUploadProgress');
             progress.setComplete($.parseJSON(info.response));
@@ -193,6 +218,9 @@ function Qiniu({}) {
     });
     uploader.bind('UploadComplete', function() {
         $('#success').show();
+    });
+    uploader.bind('UploadComplete', function() {
+        console.log('hello world');
     });
 }
 

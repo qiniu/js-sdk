@@ -163,7 +163,45 @@ format = function(num, hex, units, dec, forTable) {
     };
 };
 
-//});
+var createAjax = function(argument) {
+    if (window.XMLHttpRequest) {
+        xmlhttp = new XMLHttpRequest();
+    } else {
+        xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+    }
+    return xmlhttp;
+}
+
+var parseJSON = function(data) {
+    // Attempt to parse using the native JSON parser first
+    if (window.JSON && window.JSON.parse) {
+        return window.JSON.parse(data);
+    }
+
+    if (data === null) {
+        return data;
+    }
+    var rvalidchars = /^[\],:{}\s]*$/;
+    if (typeof data === "string") {
+
+        // Make sure leading/trailing whitespace is removed (IE can't handle it)
+        data = trim(data);
+
+        if (data) {
+            // Make sure the incoming data is actual JSON
+            // Logic borrowed from http://json.org/json2.js
+            if (rvalidchars.test(data.replace(rvalidescape, "@").replace(rvalidtokens, "]").replace(rvalidbraces, ""))) {
+
+                return (new Function("return " + data))();
+            }
+        }
+    }
+
+}
+
+var trim = function(text) {
+    return text == null ? "" : trim.call(text);
+}
 
 var cancelUpload = function() {
     uploader.destroy();
