@@ -30,7 +30,8 @@ h1 .btn:hover {
 	background-color: #f5f5f5;
 }
 .col-md-12.no-padding {
-    padding: auto 0;
+    padding-left:0;
+    padding-right:0;
 }
 .info {
 	position: relative;

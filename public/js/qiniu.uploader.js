@@ -27,12 +27,12 @@ function Qiniu(op) {
         op.chunk_size = MAX_CHUNK_SIZE;
     }
     // console.log(op.chunk_size)
-    // plupload.extend(option, op, {
-    //     url: 'http://up.qiniu.com',
-    //     multipart_params: {
-    //         token: ''
-    //     }
-    // });
+    plupload.extend(option, op, {
+        url: 'http://up.qiniu.com',
+        multipart_params: {
+            token: ''
+        }
+    });
 
     op.init.Error = function() {};
     op.init.FileUploaded = function() {};
@@ -202,7 +202,7 @@ function Qiniu(op) {
 
 
     uploader.bind('FileUploaded', function(up, file, info) {
-        console.log('status');
+        // console.log('status');
         // console.log("-----------sssssss", info);
         var res = parseJSON(info.response);
         ctx = ctx ? ctx : res.ctx;
