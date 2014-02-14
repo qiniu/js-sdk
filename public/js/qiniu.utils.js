@@ -1,7 +1,4 @@
-storageUnits = ['B', 'KB', 'MB', 'GB', 'TB'];
-storageHex = 1024;
-
-utf8_encode = function(argString) {
+var utf8_encode = function(argString) {
     // http://kevin.vanzonneveld.net
     // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
     // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
@@ -70,7 +67,7 @@ utf8_encode = function(argString) {
     return utftext;
 };
 
-base64_encode = function(data) {
+var base64_encode = function(data) {
     // http://kevin.vanzonneveld.net
     // +   original by: Tyler Akins (http://rumkin.com)
     // +   improved by: Bayron Guevara
@@ -128,39 +125,9 @@ base64_encode = function(data) {
     return enc;
 };
 
-URLSafeBase64Encode = function(v) {
+var URLSafeBase64Encode = function(v) {
     v = base64_encode(v);
     return v.replace(/\//g, '_').replace(/\+/g, '-');
-};
-
-format = function(num, hex, units, dec, forTable) {
-    num = num || 0;
-    dec = dec || 0;
-    forTable = forTable || false;
-    var level = 0;
-
-    // 详细报表中表格数据的最小单位为 KB 和 万次
-    if (forTable) {
-        num /= hex;
-        level++;
-    }
-    while (num >= hex) {
-        num /= hex;
-        level++;
-    }
-
-    if (level === 0) {
-        dec = 0;
-    }
-
-    return {
-        'base': num.toFixed(dec),
-        'unit': units[level],
-        'format': function(sep) {
-            sep = sep || '';
-            return this.base + sep + this.unit;
-        }
-    };
 };
 
 var createAjax = function(argument) {
