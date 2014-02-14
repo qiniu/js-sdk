@@ -12,7 +12,7 @@ h1 {
 h3,h4 {
 	/*font-weight: bold;*/
 	color: #d2d2d2;
-	font-family: '微软雅黑',"Helvetica Neue", Helvetica, Arial, sans-serif;	
+	font-family: '微软雅黑',"Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 h1 .btn {
 	display: block;
@@ -29,8 +29,20 @@ h1 .btn {
 h1 .btn:hover {
 	background-color: #f5f5f5;
 }
+.col-md-12.no-padding {
+    padding: auto 0;
+}
 .info {
 	position: relative;
+    height: 100%;
+}
+.info .progress-bar {
+    margin-top: 20px;
+    min-height: 20px;
+    float: none;
+}
+.info .progress-bar:first-child {
+    margin-top: 0px;
 }
 .status {
 	position: absolute;

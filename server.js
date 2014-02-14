@@ -7,7 +7,6 @@ app.configure(function() {
 });
 
 app.use(function(req, res, next) {
-    console.log("=====================>>>>----");
     req.headers['if-none-match'] = 'no-match-for-this';
     next();
 });
@@ -15,7 +14,10 @@ app.use(function(req, res, next) {
 app.get('/token', function(req, res, next) {
     console.log("=====================>>>>token");
     var token = uptoken.token();
-    res.setHeader('Pragma', 'no-cache');
+    // res.setHeader('Pragma', 'no-cache');
+    res.header("Cache-Control", "max-age=0, private, must-revalidate");
+    res.header("Pragma", "no-cache");
+    res.header("Expires", 0);
     console.log(token);
     if (token) {
         res.json({
