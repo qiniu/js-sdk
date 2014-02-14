@@ -21,14 +21,7 @@ function FileProgress(file, targetID) {
         progressText.className = "progressName";
         progressText.appendChild(document.createTextNode(file.name));
 
-        var fileSize;
-        var _100MB = 100 << 20;
-        if (file.size === undefined || file.size > _100MB) {
-            fileSize = ">100 MB";
-        } else {
-            var size = format(file.size, storageHex, storageUnits, 2);
-            fileSize = size.base + " " + size.unit;
-        }
+        var fileSize = plupload.formatSize(file.size).toUpperCase();
         var progressSize = document.createElement("td");
         progressSize.className = "progressFileSize";
         progressSize.appendChild(document.createTextNode(fileSize));
@@ -94,16 +87,54 @@ FileProgress.prototype.reset = function() {
     this.appear();
 };
 
-FileProgress.prototype.setProgress = function(percentage, speed) {
-    this.fileProgressWrapper.className = "progressContainer green";
-    var size = format(this.file.loaded, storageHex, storageUnits, 2);
-    speed = format(speed, storageHex, storageUnits, 2);
-    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[2].innerHTML = "已上传: " + size.base + size.unit + " 上传速度： " + speed.base + speed.unit + "/s";
+FileProgress.prototype.setChunkProgess = function(chunk_size) {
+    var chunk_amount = Math.ceil(this.file.size / chunk_size);
+    for (var i = 1; i <= chunk_amount; i++) {
+        var progressBar = document.createElement('div');
+        progressBar.className = 'progress-bar progress-bar-info';
+        progressBar.setAttribute('role', 'progressbar');
+        progressBar.setAttribute('aria-valuemax', 100);
+        progressBar.setAttribute('aria-valuenow', 0);
+        progressBar.setAttribute('aria-valuein', 0);
+        progressBar.setAttribute('id', this.file.id + '_' + i);
+        progressBar.innerHTML = "块" + i + "上传进度";
+        progressBar.style.width = "0%";
 
-    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].childNodes[0].childNodes[0].innerHTML = "&nbsp;";
-    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].childNodes[0].className = 'progress-bar progress-bar-info';
-    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].setAttribute('aria-valuenow', parseInt(percentage, 10));
-    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].style.width = percentage;
+        this.fileProgressWrapper.childNodes[2].childNodes[0].appendChild(progressBar);
+    }
+}
+
+FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
+    this.fileProgressWrapper.className = "progressContainer green";
+
+    var file = this.file;
+    var uploaded = file.loaded;
+    var total = file.size;
+
+    var size = plupload.formatSize(uploaded).toUpperCase();
+    var speed = plupload.formatSize(speed).toUpperCase();
+    var progressbar = this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0];
+    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[2].innerHTML = "已上传: " + size + " 上传速度： " + speed + "/s";
+
+    progressbar.childNodes[0].innerHTML = "&nbsp;";
+    progressbar.className = 'progress-bar progress-bar-info';
+    progressbar.setAttribute('aria-valuenow', parseInt(percentage, 10));
+    progressbar.style.width = percentage;
+
+    if (chunk_size) {
+        var current_uploading_chunk = Math.ceil(uploaded / chunk_size);
+
+        var currentProgessBar = document.getElementById(file.id + "_" + current_uploading_chunk);
+        var current_chunk_percent;
+        if (uploaded % chunk_size) {
+            current_chunk_percent = (uploaded % chunk_size) / chunk_size * 100;
+        } else {
+            current_chunk_percent = 100;
+        }
+
+        currentProgessBar.style.width = current_chunk_percent + '%';
+        currentProgessBar.setAttribute('aria-valuenow', current_chunk_percent);
+    }
 
     this.appear();
 };
