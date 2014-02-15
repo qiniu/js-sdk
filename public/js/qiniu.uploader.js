@@ -2,31 +2,42 @@ function Qiniu(op) {
 
     var option = {};
 
-
-    //TODO  IE8/9/10
-
-    //TODO IE 8 style
-
-    //TODO URL
-
     var Error_Handler = op.init && op.init.Error;
     var FileUploaded_Handler = op.init && op.init.FileUploaded;
+    op.init.Error = function() {};
+    op.init.FileUploaded = function() {};
+
     var uptoken_url = op.uptoken_url;
 
     if (!uptoken_url) {
         return false;
     }
+    var ie = detectIEveision();
+    if (ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
+        /*
+        link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
+        when plupload chunk_size setting is't null ,it cause bug in ie8/9 which runs  flash runtimes and doesn't support html5 .
+        */
+        op.chunk_size = 0;
+
+    } else {
+        var BLOCK_BITS = 20;
+        var MAX_CHUNK_SIZE = 4 << BLOCK_BITS; //4M
+
+        var chunk_size = plupload.parseSize(op.chunk_size);
+        if (chunk_size > MAX_CHUNK_SIZE) {
+            op.chunk_size = MAX_CHUNK_SIZE;
+        }
+        //qiniu service support max chunk_size is 4m
+        //reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
+    }
+
 
     var token = '';
-    var ctx = '';
-    var BLOCK_BITS = 20;
-    var MAX_CHUNK_SIZE = 4 << BLOCK_BITS; //4M
 
-    var chunk_size = plupload.parseSize(op.chunk_size);
-    if (chunk_size > MAX_CHUNK_SIZE) {
-        op.chunk_size = MAX_CHUNK_SIZE;
-    }
-    // console.log(op.chunk_size)
+    var ctx = '';
+
+
     plupload.extend(option, op, {
         url: 'http://up.qiniu.com',
         multipart_params: {
@@ -34,8 +45,7 @@ function Qiniu(op) {
         }
     });
 
-    op.init.Error = function() {};
-    op.init.FileUploaded = function() {};
+
 
     var uploader = new plupload.Uploader(option);
     this.uploader = uploader;
@@ -43,10 +53,7 @@ function Qiniu(op) {
     var getUpToken = function() {
         var ajax = createAjax();
         ajax.open('GET', uptoken_url, true);
-        //AJAX CACHE Problem
         ajax.setRequestHeader("If-Modified-Since", "0");
-        // ajax.setRequestHeader("Cache-Control", "no-cache");
-        // ajax.setRequestHeader('Expires', '-1');
         ajax.send();
         ajax.onreadystatechange = function() {
             if (ajax.readyState === 4 && ajax.status === 200) {
@@ -58,6 +65,13 @@ function Qiniu(op) {
 
     uploader.bind('Init', function(up, params) {
         getUpToken();
+        if (uploader.runtime === 'flash') {
+            console.log('flash runtime ,change chu')
+            up.setOption({
+                'chunk_size': 0
+            });
+        }
+
     });
     uploader.init();
 
@@ -78,7 +92,7 @@ function Qiniu(op) {
             up.setOption({
                 'url': 'http://up.qiniu.com/',
                 'multipart': true,
-                'chunk_size': 0,
+                'chunk_size': undefined,
                 'multipart_params': {
                     'token': token,
                     'key': file.name
@@ -86,15 +100,10 @@ function Qiniu(op) {
             });
         }
         var chunk_size = up.getOption('chunk_size');
+        // console.log('chunk_size', chunk_size);
 
-        // if (file.size < MAX_CHUNK_SIZE || uploader.runtime !== 'html5') {
-        //     directUpload()
-        // } else if (uploader.runtime === 'html5' && chunk_size) {
-        //     var blockSize = MAX_CHUNK_SIZE;
 
-        // }
-
-        if (uploader.runtime === 'html5') {
+        if (uploader.runtime === 'html5' && chunk_size) {
             if (file.size < chunk_size) {
                 directUpload();
             } else {
@@ -103,6 +112,7 @@ function Qiniu(op) {
                 up.setOption({
                     'url': 'http://up.qiniu.com/mkblk/' + blockSize,
                     'multipart': false,
+                    'chunk_size': chunk_size,
                     'headers': {
                         'Authorization': 'UpToken ' + token
                     },
@@ -110,11 +120,13 @@ function Qiniu(op) {
                 });
             }
         } else {
+            console.log('yes');
             directUpload();
         }
     });
 
     uploader.bind('ChunkUploaded', function(up, file, info) {
+        console.log('ChunkUploaded');
         var res = parseJSON(info.response);
 
         ctx = ctx ? ctx + ',' + res.ctx : res.ctx;
@@ -131,6 +143,7 @@ function Qiniu(op) {
     uploader.bind('Error', function(up, err) {
         var errTip = '';
         var file = err.file;
+        console.log('file', file);
         if (file) {
             switch (err.code) {
                 case plupload.FAILED:
@@ -202,7 +215,7 @@ function Qiniu(op) {
 
 
     uploader.bind('FileUploaded', function(up, file, info) {
-        // console.log('status');
+        console.log('status');
         // console.log("-----------sssssss", info);
         var res = parseJSON(info.response);
         ctx = ctx ? ctx : res.ctx;
@@ -216,10 +229,6 @@ function Qiniu(op) {
             ajax.onreadystatechange = function() {
                 if (ajax.readyState === 4 && ajax.status === 200) {
                     var info = ajax.responseText;
-                    // console.log(info);
-                    // info.download_url = up.getOption('download_domain') + encodeURI(res.key);
-                    // info.view_url = up.getOption('download_domain') + info.key;
-
                     if (FileUploaded_Handler) {
                         FileUploaded_Handler(up, file, info);
                     }

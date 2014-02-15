@@ -6,12 +6,11 @@ var Q = new Qiniu({
     max_file_size: '100mb',
     flash_swf_url: 'js/plupload/Moxie.swf',
     silverlight_xap_url: 'js/plupload/Moxie.xap',
-    // max_retries: 1,
-    // required_features: true,
+    // max_retries: 3,
     dragdrop: true,
     chunk_size: '4mb',
     uptoken_url: '/token',
-    download_domain: 'http://qiniu-plupload.qiniudn.com/',
+    domain: 'http://qiniu-plupload.qiniudn.com/',
     auto_start: true,
     init: {
         'FilesAdded': function(up, files) {
@@ -34,6 +33,7 @@ var Q = new Qiniu({
             var progress = new FileProgress(file, 'fsUploadProgress');
             var chunk_size = plupload.parseSize(this.getOption('chunk_size'));
             progress.setProgress(file.percent + "%", up.total.bytesPerSec, chunk_size);
+
         },
         'UploadComplete': function() {
             $('#success').show();
@@ -41,14 +41,14 @@ var Q = new Qiniu({
         'FileUploaded': function(up, file, info) {
             console.log(info);
             var progress = new FileProgress(file, 'fsUploadProgress');
-            progress.setComplete(parseJSON(info));
+            progress.setComplete(up, parseJSON(info));
         },
         'Error': function(up, err, errTip) {
             $('table').show();
             var progress = new FileProgress(err.file, 'fsUploadProgress');
             progress.setError();
             progress.setStatus(errTip);
-            progress.setCancelled();
+            // progress.setCancelled();
         }
     }
 });
