@@ -3,7 +3,7 @@ var express = require('express');
 var app = express();
 
 app.configure(function() {
-    app.use(express.static(__dirname + '/public'));
+    app.use(express.static(__dirname + '/example'));
 });
 
 app.use(function(req, res, next) {
@@ -14,7 +14,6 @@ app.use(function(req, res, next) {
 app.get('/token', function(req, res, next) {
     console.log("=====================>>>>token");
     var token = uptoken.token();
-    // res.setHeader('Pragma', 'no-cache');
     res.header("Cache-Control", "max-age=0, private, must-revalidate");
     res.header("Pragma", "no-cache");
     res.header("Expires", 0);
@@ -28,7 +27,7 @@ app.get('/token', function(req, res, next) {
 
 app.get('/', function(req, res) {
     res.setHeader('Pragma', 'no-cache');
-    res.sendfile(__dirname + '/public/index.html')
+    res.sendfile(__dirname + '/example/index.html')
 });
 
 qiniu.conf.ACCESS_KEY = '0MLvWPnyya1WtPnXFy9KLyGHyFPNdZceomLVk0c9';
