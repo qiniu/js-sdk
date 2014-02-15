@@ -5,7 +5,6 @@ var Q = new Qiniu({
     drop_element: 'container',
     max_file_size: '100mb',
     flash_swf_url: 'js/plupload/Moxie.swf',
-    silverlight_xap_url: 'js/plupload/Moxie.xap',
     // max_retries: 3,
     dragdrop: true,
     chunk_size: '4mb',
