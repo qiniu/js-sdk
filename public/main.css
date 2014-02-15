@@ -38,17 +38,28 @@ h1 .btn:hover {
     height: 100%;
 }
 .info .progress-bar {
-    margin-top: 20px;
+
     min-height: 20px;
     float: none;
 }
-.info .progress-bar:first-child {
+.info .progress-chunk {
+    position: relative;
+    margin-top: 20px;
+}
+.info .progress-chunk:first-child {
     margin-top: 0px;
+}
+
+.info .progress-chunk .chunk-status {
+    position: absolute;
+    left: 24px;
+    top: 0;
 }
 .status {
 	position: absolute;
 	width: 100%;
 	top:0;
+    left: 24px;
 }
 .tip {
 	padding-left: 30px;
