@@ -175,9 +175,6 @@ var parseJSON = function(data) {
             }
         }
     }
-
-    //console.log("Invalid JSON: " + data);
-
 }
 
 var trim = function(text) {

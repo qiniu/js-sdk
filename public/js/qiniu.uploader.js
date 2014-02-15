@@ -90,9 +90,6 @@ function Qiniu(op) {
             });
         }
         var chunk_size = up.getOption('chunk_size');
-        console.log(chunk_size);
-        // console.log('chunk_size', chunk_size);
-
 
         if (uploader.runtime === 'html5' && chunk_size) {
             if (file.size < chunk_size) {
@@ -111,7 +108,6 @@ function Qiniu(op) {
                 });
             }
         } else {
-            console.log('yes');
             directUpload();
         }
     });

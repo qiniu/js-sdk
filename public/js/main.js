@@ -53,10 +53,6 @@ var Q = new Qiniu({
     }
 });
 
-Q.uploader.bind('UploadComplete', function() {
-    // console.log('hello world');
-});
-
 $(function() {
     $('#container').on(
         'dragenter',
