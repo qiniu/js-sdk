@@ -1,3 +1,16 @@
+var detectIEveision = function() {
+    var v = 4,
+        div = document.createElement('div'),
+        all = div.getElementsByTagName('i');
+    while (
+        div.innerHTML = '<!--[if gt IE ' + v + ']><i></i><![endif]-->',
+        all[0]
+    ) {
+        v++;
+    }
+    return v > 4 ? v : false;
+}
+
 var utf8_encode = function(argString) {
     // http://kevin.vanzonneveld.net
     // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
