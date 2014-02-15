@@ -39,7 +39,8 @@ var Q = new Qiniu({
             $('#success').show();
         },
         'FileUploaded': function(up, file, info) {
-            console.log(info);
+            // console.log(info);
+            // console.log(up);
             var progress = new FileProgress(file, 'fsUploadProgress');
             progress.setComplete(up, parseJSON(info));
         },

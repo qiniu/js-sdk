@@ -137,7 +137,6 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
     progressbar.childNodes[0].innerHTML = "&nbsp;";
     progressbar.className = 'progress-bar progress-bar-info';
     progressbar.setAttribute('aria-valuenow', parseInt(percentage, 10));
-    console.log('aria-valuenow', percentage);
     progressbar.style.width = percentage;
 
 

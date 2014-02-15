@@ -1,4 +1,4 @@
-var detectIEveision = function() {
+var detectIEVersion = function() {
     var v = 4,
         div = document.createElement('div'),
         all = div.getElementsByTagName('i');
@@ -157,7 +157,7 @@ var parseJSON = function(data) {
     if (window.JSON && window.JSON.parse) {
         return window.JSON.parse(data);
     }
-    console.log(data);
+
     if (data === null) {
         return data;
     }
