@@ -105,24 +105,24 @@ FileProgress.prototype.setChunkProgess = function(chunk_size) {
 
         this.fileProgressWrapper.childNodes[2].childNodes[0].appendChild(progressBar);
     }
-}
+};
 
 FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
     this.fileProgressWrapper.className = "progressContainer green";
 
     var file = this.file;
     var uploaded = file.loaded;
-    var total = file.size;
 
     var size = plupload.formatSize(uploaded).toUpperCase();
-    var speed = plupload.formatSize(speed).toUpperCase();
+    var formatSpeed = plupload.formatSize(speed).toUpperCase();
     var progressbar = this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0];
-    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[2].innerHTML = "已上传: " + size + " 上传速度： " + speed + "/s";
+    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[2].innerHTML = "已上传: " + size + " 上传速度： " + formatSpeed + "/s";
 
     progressbar.childNodes[0].innerHTML = "&nbsp;";
     progressbar.className = 'progress-bar progress-bar-info';
     progressbar.setAttribute('aria-valuenow', parseInt(percentage, 10));
     progressbar.style.width = percentage;
+
 
     if (chunk_size) {
         var chunk_amount = Math.ceil(file.size / chunk_size);
@@ -134,7 +134,7 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
         var currentProgessBar = document.getElementById(file.id + "_" + current_uploading_chunk);
         var current_chunk_percent;
         if (uploaded % chunk_size) {
-            current_chunk_percent = (uploaded % chunk_size) / chunk_size * 100;
+            current_chunk_percent = ((uploaded % chunk_size) / chunk_size * 100).toFixed(2);
         } else {
             current_chunk_percent = 100;
         }
@@ -147,14 +147,15 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
     this.appear();
 };
 
-FileProgress.prototype.setComplete = function(info) {
+FileProgress.prototype.setComplete = function(up, info) {
     this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].setAttribute('aria-valuenow', parseInt(100, 10));
     this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].style.width = "100%";
     this.fileProgressWrapper.childNodes[2].childNodes[0].style.display = 'none';
     // var res = $.parseJSON(info.response);
     var res = info;
-    var url = 'http://qiniu-plupload.qiniudn.com/' + encodeURI(res.key);
-    var link = 'http://qiniu-plupload.qiniudn.com/' + res.key;
+    var domain = up.getOption('domain');
+    var url = domain + encodeURI(res.key);
+    var link = domain + res.key;
     var str = "<div><strong>Link:</strong><a href=" + url + " target='_blank' > " + link + "</a></div>" +
         "<div><strong>Hash:</strong>" + res.hash + "<div>";
 
