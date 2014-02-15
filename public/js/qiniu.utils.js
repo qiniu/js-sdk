@@ -157,11 +157,10 @@ var parseJSON = function(data) {
     if (window.JSON && window.JSON.parse) {
         return window.JSON.parse(data);
     }
-
+    console.log(data);
     if (data === null) {
         return data;
     }
-    var rvalidchars = /^[\],:{}\s]*$/;
     if (typeof data === "string") {
 
         // Make sure leading/trailing whitespace is removed (IE can't handle it)
@@ -170,12 +169,14 @@ var parseJSON = function(data) {
         if (data) {
             // Make sure the incoming data is actual JSON
             // Logic borrowed from http://json.org/json2.js
-            if (rvalidchars.test(data.replace(rvalidescape, "@").replace(rvalidtokens, "]").replace(rvalidbraces, ""))) {
+            if (/^[\],:{}\s]*$/.test(data.replace(/\\(?:["\\\/bfnrt]|u[\da-fA-F]{4})/g, "@").replace(/"[^"\\\r\n]*"|true|false|null|-?(?:\d+\.|)\d+(?:[eE][+-]?\d+|)/g, "]").replace(/(?:^|:|,)(?:\s*\[)+/g, ""))) {
 
                 return (new Function("return " + data))();
             }
         }
     }
+
+    //console.log("Invalid JSON: " + data);
 
 }
 
@@ -186,26 +187,3 @@ var trim = function(text) {
 var cancelUpload = function() {
     uploader.destroy();
 };
-
-$(function() {
-    $('#container').on(
-        'dragenter',
-        function(e) {
-            e.preventDefault();
-            $('#container').addClass('draging');
-            e.stopPropagation();
-        }
-    ).on('drop', function(e) {
-        e.preventDefault();
-        $('#container').removeClass('draging');
-        e.stopPropagation();
-    }).on('dragleave', function(e) {
-        e.preventDefault();
-        $('#container').removeClass('draging');
-        e.stopPropagation();
-    }).on('dragover', function(e) {
-        e.preventDefault();
-        $('#container').addClass('draging');
-        e.stopPropagation();
-    });
-});

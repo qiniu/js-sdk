@@ -13,11 +13,12 @@ function Qiniu(op) {
         return false;
     }
     var ie = detectIEveision();
-    if (ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
+    if (ie && ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
         /*
         link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
         when plupload chunk_size setting is't null ,it cause bug in ie8/9 which runs  flash runtimes and doesn't support html5 .
         */
+        console.log('hhhh');
         op.chunk_size = 0;
 
     } else {
@@ -28,15 +29,13 @@ function Qiniu(op) {
         if (chunk_size > MAX_CHUNK_SIZE) {
             op.chunk_size = MAX_CHUNK_SIZE;
         }
-        //qiniu service support max chunk_size is 4m
+        //qiniu service  max_chunk_size is 4m
         //reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
     }
 
 
     var token = '';
-
     var ctx = '';
-
 
     plupload.extend(option, op, {
         url: 'http://up.qiniu.com',
@@ -44,8 +43,6 @@ function Qiniu(op) {
             token: ''
         }
     });
-
-
 
     var uploader = new plupload.Uploader(option);
     this.uploader = uploader;
@@ -57,7 +54,7 @@ function Qiniu(op) {
         ajax.send();
         ajax.onreadystatechange = function() {
             if (ajax.readyState === 4 && ajax.status === 200) {
-                var res = parseJSON(ajax.responseText);
+                var res = $.parseJSON(ajax.responseText);
                 token = res.uptoken;
             }
         };
@@ -65,13 +62,6 @@ function Qiniu(op) {
 
     uploader.bind('Init', function(up, params) {
         getUpToken();
-        if (uploader.runtime === 'flash') {
-            console.log('flash runtime ,change chu')
-            up.setOption({
-                'chunk_size': 0
-            });
-        }
-
     });
     uploader.init();
 
@@ -100,6 +90,7 @@ function Qiniu(op) {
             });
         }
         var chunk_size = up.getOption('chunk_size');
+        console.log(chunk_size);
         // console.log('chunk_size', chunk_size);
 
 
@@ -215,8 +206,6 @@ function Qiniu(op) {
 
 
     uploader.bind('FileUploaded', function(up, file, info) {
-        console.log('status');
-        // console.log("-----------sssssss", info);
         var res = parseJSON(info.response);
         ctx = ctx ? ctx : res.ctx;
         if (ctx) {

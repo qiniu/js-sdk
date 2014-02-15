@@ -56,3 +56,26 @@ var Q = new Qiniu({
 Q.uploader.bind('UploadComplete', function() {
     // console.log('hello world');
 });
+
+$(function() {
+    $('#container').on(
+        'dragenter',
+        function(e) {
+            e.preventDefault();
+            $('#container').addClass('draging');
+            e.stopPropagation();
+        }
+    ).on('drop', function(e) {
+        e.preventDefault();
+        $('#container').removeClass('draging');
+        e.stopPropagation();
+    }).on('dragleave', function(e) {
+        e.preventDefault();
+        $('#container').removeClass('draging');
+        e.stopPropagation();
+    }).on('dragover', function(e) {
+        e.preventDefault();
+        $('#container').addClass('draging');
+        e.stopPropagation();
+    });
+});
