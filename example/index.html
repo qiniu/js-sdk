@@ -6,6 +6,7 @@
 	<link href="/favicon.ico" rel="shortcut icon">
 	<link rel="stylesheet" href="bootstrap/css/bootstrap.css">
 	<link rel="stylesheet" href="main.css">
+	<link rel="stylesheet" href="js/highlight/highlight.css">
 
 	<!--[if lt IE 9]>
       <script src="js/Respond-1.4.2/respond.min.js"></script>
@@ -24,7 +25,7 @@
 		<ul class="tip col-md-12 text-mute">
 			<li>
 				<small>
-					七牛云存储 JS SDK基于Plupload开发，可以通过HTML5或Flash等模式直接上传文件至七牛云存储。
+					七牛云存储 JS SDK 基于 Plupload 开发，可以通过 HTML5 或 Flash 等模式直接上传文件至七牛云存储。
 				</small>
 			</li>
 			<li><small>IE系列暂时兼容至IE8+。<!-- 后续会兼容IE7。 --></small></li>
@@ -38,6 +39,8 @@
 				<small>本示例限制最大上传文件100M。</small>
 			</li>
 		</ul>
+
+
 			<div class="text-center col-md-12  btn btn-default text-info" style="position:relative" id="container">
 				<h3 class="text-mute">将文件、文件夹拖到这里</h3>
 				<h4 class="text-mute">或</h4>
@@ -49,8 +52,54 @@
 						以及文件夹的选择 -->
 				</a></h3>
 			</div>
-			<div style="display:none" id="success" class="col-md-12 alert-success">队列全部文件上传完毕
-			</div>
+
+<div class="col-md-12 no-padding">
+<button type="button" class="btn btn-default" id="show_code">查看核心源码</button>
+</div>
+<div class="col-md-12 no-padding">
+		<pre><code>
+//引入qiniu.js后
+
+var Q = new Qiniu({
+    runtimes: 'html5,flash,html4', //上传方式,依次退化
+    browse_button: 'pickfiles', //上传选择的点选按钮，必须
+    uptoken_url: '/token', //请求uptoken的Url，必须
+    domain: 'http://qiniu-plupload.qiniudn.com/',//下载资源时用到，必须
+    container: 'container',//上传区域DOM ID，默认是browser_button的父元素，
+    drop_element: 'container', //拖曳上传区域元素的ID
+    max_file_size: '100mb', //最大文件体积限制
+    flash_swf_url: 'js/plupload/Moxie.swf',//引入flash
+    max_retries: 3,//上传失败最大重试次数
+    dragdrop: true, //开启可拖曳上传
+    chunk_size: '4mb',//分片上传时，每片的体积
+    auto_start: true, //选择文件后自动上传，若关闭需要自己绑定事件触发上传
+    init: {
+        'FilesAdded': function(up, files) {
+            plupload.each(files, function(file) {
+                //文件添加进队列后,处理相关的事情
+            });
+        },
+        'BeforeUpload': function(up, file) {
+           //每个文件上传前,处理相关的事情
+        },
+        'UploadProgress': function(up, file) {
+            //每个文件上传时,处理相关的事情
+        },
+        'FileUploaded': function(up, file, info) {
+           //每个文件上传成功后,处理相关的事情
+        },
+        'Error': function(up, err, errTip) {
+            //上传出错时,处理相关的事情
+        },
+        'UploadComplete': function() {
+            //队列文件处理完毕后,处理相关的事情
+        }
+    }
+});
+		</code></pre>
+		</div>
+		<div style="display:none" id="success" class="col-md-12 alert-success">队列全部文件处理完毕
+		</div>
 		<div class="col-md-12 no-padding">
 		<table class="table table-striped table-hover text-left"   style="margin-top:40px;display:none">
 			<thead>
@@ -87,5 +136,6 @@
 <script type="text/javascript" src="/js/qiniu.utils.js"></script>
 <script type="text/javascript" src="/js/qiniu.uploader.js"></script>
 <script type="text/javascript" src="/js/main.js"></script>
+<script type="text/javascript" src="/js/highlight/highlight.js"></script>
 </body>
 </html>
