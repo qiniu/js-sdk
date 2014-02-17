@@ -74,4 +74,14 @@ $(function() {
         $('#container').addClass('draging');
         e.stopPropagation();
     });
+    $('#show_code').on('click', function() {
+        $('pre').toggle();
+    });
+    $('pre code').each(function(i, e) {
+        hljs.highlightBlock(e);
+    });
+
+    $('body').on('click', 'table button.btn', function() {
+        $(this).next('div').toggle();
+    });
 });

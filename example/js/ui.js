@@ -41,10 +41,12 @@ function FileProgress(file, targetID) {
         progressBar.style.width = "0%";
         var progressBarPercent = document.createElement('span');
         progressBarPercent.className = "sr-only";
+
         var progressCancel = document.createElement("a");
         progressCancel.className = "progressCancel";
         progressCancel.href = "#";
         progressCancel.style.visibility = "hidden";
+
 
 
         progressCancel.appendChild(document.createTextNode(" "));
@@ -97,6 +99,12 @@ FileProgress.prototype.setChunkProgess = function(chunk_size) {
     if (chunk_amount === 1) {
         return false;
     }
+    var viewProgess = document.createElement('button');
+    viewProgess.className = "btn btn-default";
+    viewProgess.innerHTML = "查看分片上传进度";
+
+    var progressBarChunk = document.createElement('div');
+    progressBarChunk.style.display = 'none';
     for (var i = 1; i <= chunk_amount; i++) {
         var progressBarWrapper = document.createElement('div');
         progressBarWrapper.setAttribute('class', 'progress-chunk');
@@ -111,6 +119,18 @@ FileProgress.prototype.setChunkProgess = function(chunk_size) {
         progressBar.innerHTML = "&nbsp;";
         progressBar.style.width = "0%";
 
+        // var progressBarInner = document.createElement('div');
+        // progressBarInner.className = 'progress-bar progress-bar-info text-left';
+        // progressBarInner.setAttribute('role', 'progressbar');
+        // progressBarInner.setAttribute('aria-valuemax', 100);
+        // // progressBarInner.setAttribute('aria-valuenow', 0);
+        // progressBarInner.setAttribute('aria-valuein', 0);
+        // progressBarInner.innerHTML = "&nbsp;";
+        // progressBarInner.style.width = "0%";
+
+        // progressBar.appendChild(progressBarInner);
+
+
         var progressBarStatus = document.createElement('span');
         progressBarStatus.setAttribute('class', 'chunk-status');
         var text = document.createTextNode('');
@@ -119,8 +139,11 @@ FileProgress.prototype.setChunkProgess = function(chunk_size) {
         progressBarWrapper.appendChild(progressBar);
         progressBarWrapper.appendChild(progressBarStatus);
 
-        this.fileProgressWrapper.childNodes[2].childNodes[0].appendChild(progressBarWrapper);
+
+        progressBarChunk.appendChild(progressBarWrapper);
     }
+    this.fileProgressWrapper.childNodes[2].childNodes[0].appendChild(viewProgess);
+    this.fileProgressWrapper.childNodes[2].childNodes[0].appendChild(progressBarChunk);
 };
 
 FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {

@@ -1,5 +1,6 @@
 body {
 	font-family: '微软雅黑';
+    overflow: scroll;
 }
 h1 {
 	border-bottom: 1px solid #d2d2d2;
@@ -90,7 +91,7 @@ h1 .btn:hover {
 #success {
 	line-height: 30px;
 	height: 30px;
-	margin:20px 0;
+	margin:20px 0 0 0;
 	/*color: #ffffff;*/
 /*	background-color: #47a447;
 	border-color: #398439;	*/
@@ -113,7 +114,7 @@ border-color: #eea236;*/
   outline: none;
 
 }
-#container a:hover,#container a:active,#container a:focus {
+#container a:hover,#container a:active,#container a:focus ,.no-padding button:hover,.no-padding button:active,.no-padding button:focus{
   border-color: #bebebe;
   text-decoration: none;
   background-color: #fff;
@@ -121,4 +122,25 @@ border-color: #eea236;*/
   outline: none;
 	-webkit-box-shadow: 0 1px 0 rgba(230, 230, 230, 0.8);
   box-shadow: 0 1px 0 rgba(230, 230, 230, 0.8);
+}
+button {
+    border-radius: 3px;
+  -webkit-box-shadow: 0 1px 0 rgba(243, 243, 243, 0.75);
+  box-shadow: 0 1px 0 rgba(243, 243, 243, 0.75);
+  color: #646464;
+  border: 1px solid #d2d2d2;
+  /* border: 1px solid #e9e9e9; */
+  text-align: center;
+  -webkit-transition: background-color 0.218s, border-color 0.218s, box-shadow 0.218s;
+  transition: background-color 0.218s, border-color 0.218s, box-shadow 0.218s;
+  -webkit-user-select: none;
+  outline: none;
+}
+
+table button.btn {
+    margin:20px 0;
+}
+pre  {
+    margin-top: 20px;
+    display: none;
 }
