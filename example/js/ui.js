@@ -29,7 +29,7 @@ function FileProgress(file, targetID) {
         var progressBarBox = $("<div/>");
         progressBarBox.addClass('info');
         var progressBarWrapper = $("<div/>");
-        progressBarWrapper.addClass("progress");
+        progressBarWrapper.addClass("progress progress-striped");
 
 
         var progressBar = $("<div/>");
@@ -98,7 +98,8 @@ FileProgress.prototype.setChunkProgess = function(chunk_size) {
     var progressBarChunk = $('<div/>');
     // progressBarChunk.hide();
     for (var i = 1; i <= chunk_amount; i++) {
-        var progressBarWrapper = $('<div class="progress-chunk col-md-2"></div');
+        var col = $('<div class="col-md-2"/>');
+        var progressBarWrapper = $('<div class="progress progress-striped"></div');
 
         var progressBar = $("<div/>");
         progressBar.addClass("progress-bar progress-bar-info text-left")
@@ -116,11 +117,13 @@ FileProgress.prototype.setChunkProgess = function(chunk_size) {
         progressBarWrapper.append(progressBar);
         progressBarWrapper.append(progressBarStatus);
 
-
-        progressBarChunk.append(progressBarWrapper);
+        col.append(progressBarWrapper);
+        progressBarChunk.append(col);
     }
     this.fileProgressWrapper.find('td>div').append(viewProgess);
+
     progressBarChunkTr.hide().find('td').append(progressBarChunk);
+
     progressBarChunkTr.insertAfter(this.fileProgressWrapper);
 };
 
@@ -186,6 +189,32 @@ FileProgress.prototype.setComplete = function(up, info) {
         "<div><strong>Hash:</strong>" + res.hash + "<div>";
 
     td.parent().html(str);
+
+    var progressNameTd = this.fileProgressWrapper.find('.progressName');
+    var img = new Image();
+    $(img).attr('src', url);
+    timeId = setTimeout(function() {
+        //showErrTip();
+        $(img).unbind();
+    }, 3500);
+    $(img).on('load', function() {
+        var $img = $('<img/>');
+        $img.attr('src', url);
+        progressNameTd.append($img);
+    }).on('error', function() {
+        clearTimeout(timeId);
+    });
+
+    // $(image).on('load', function() {
+    //     $('#js-view-area .icon-loading').hide();
+    //     $('#js-view-image').attr('src', watermarkImageURL).show();
+    //     $('#js-watermark-image').val(encodeURI(watermarkImageURL));
+    //     $('#watermark-submit').removeAttr('disabled');
+    //     clearTimeout(timeId);
+    // }).on('error', function() {
+    //     showErrTip(2);
+    //     clearTimeout(timeId);
+    // });
 
     // var nextTr = this.fileProgressWrapper.next();
     // var isChunk = nextTr.find('td').length === 1;

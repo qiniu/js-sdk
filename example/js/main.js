@@ -11,6 +11,16 @@ var Q = new Qiniu({
     uptoken_url: '/token',
     domain: 'http://qiniu-plupload.qiniudn.com/',
     auto_start: true,
+    filters: {
+        mime_types: [{
+            title: "Image files",
+            extensions: "jpg,gif,png,jpeg"
+        }]
+        // }, {
+        //     title: "Zip files",
+        //     extensions: "zip"
+        // }]
+    },
     init: {
         'FilesAdded': function(up, files) {
             $('table').show();

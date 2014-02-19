@@ -42,11 +42,11 @@ tr .progress-bar {
     min-height: 20px;
     float: none;
 }
-tr .progress-chunk, tr .progress-chunk div {
+tr .progress, tr .progress div {
   height: 20px;
 }
 
-tr .progress-chunk .chunk-status {
+tr .progress .chunk-status {
     position: absolute;
     left: 24px;
     top: 0;
@@ -133,7 +133,7 @@ button {
 }
 
 table button.btn {
-    margin:20px 0;
+    /*margin:20px 0;*/
 }
 pre  {
     margin-top: 20px;
