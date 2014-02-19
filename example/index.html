@@ -28,7 +28,6 @@
 					七牛云存储 JS SDK 基于 Plupload 开发，可以通过 HTML5 或 Flash 等模式直接上传文件至七牛云存储。
 				</small>
 			</li>
-			<li><small>IE系列暂时兼容至IE8+。<!-- 后续会兼容IE7。 --></small></li>
 			<li>
 				<small>部分高级浏览器支持文件、文件夹拖曳上传。</small>
 			</li>
@@ -39,24 +38,47 @@
 				<small>本示例限制最大上传文件100M。</small>
 			</li>
 		</ul>
+        </div>
+        <div class="col-md-12">
+            <div id="container">
+                <a class="btn btn-default btn-lg " id="pickfiles" href="#" >
+                    <i class="glyphicon glyphicon-plus"></i>
+                    <sapn>选择文件</sapn>
+                </a>
+            </div>
+        </div>
 
-
-			<div class="text-center col-md-12  btn btn-default text-info" style="position:relative" id="container">
-				<h3 class="text-mute">将文件、文件夹拖到这里</h3>
-				<h4 class="text-mute">或</h4>
-				<h3><a class="btn btn-default btn-lg " id="pickfiles" href="#" >
-					<i class="glyphicon glyphicon-plus"></i>
-					<sapn>选择文件</sapn>
-					<!-- <strong></strong> -->
-<!-- 					根据浏览器的支持，plupload支持单个/多个文件<br>
-						以及文件夹的选择 -->
-				</a></h3>
-			</div>
-
-<div class="col-md-12 no-padding">
-<button type="button" class="btn btn-default" id="show_code">查看核心源码</button>
-</div>
-<div class="col-md-12 no-padding">
+        <div style="display:none" id="success" class="col-md-12 alert-success  ">队列全部文件处理完毕
+        </div>
+        <div class="col-md-12 ">
+            <table class="table table-striped table-hover text-left"   style="margin-top:40px;display:none">
+                <thead>
+                  <tr>
+                    <th class="col-md-4">Filename</th>
+                    <th class="col-md-2">Size</th>
+                    <th class="col-md-6">Detail</th>
+                  </tr>
+                </thead>
+                <tbody id="fsUploadProgress">
+        <!--         <tr>
+                    <td class="progressName">the Bird</td>
+                    <td class="progressFileSize">Larry</td>
+                    <td>
+                        // <div class="progress">
+                        //   <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 20%">
+                        //     <span class="sr-only">20% Complete</span>
+                        //   </div>
+                        // </div>
+                        // <div class="status"></div>
+                    </td>
+                  </tr> -->
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-12 ">
+            <button type="button" class="btn btn-default" id="show_code">查看核心源码</button>
+        </div>
+        <div class="col-md-12 no-padding">
 		<pre><code>
 //引入qiniu.js后
 
@@ -98,32 +120,7 @@ var Q = new Qiniu({
 });
 		</code></pre>
 		</div>
-		<div style="display:none" id="success" class="col-md-12 alert-success">队列全部文件处理完毕
-		</div>
-		<div class="col-md-12 no-padding">
-		<table class="table table-striped table-hover text-left"   style="margin-top:40px;display:none">
-			<thead>
-			  <tr>
-			    <th class="col-md-4">Filename</th>
-			    <th class="col-md-2">Size</th>
-			    <th class="col-md-6">Detail</th>
-			  </tr>
-			</thead>
-			<tbody  id="fsUploadProgress">
-	<!-- 		 <tr>
-			    <td class="progressName">the Bird</td>
-			    <td class="progressFileSize">Larry</td>
-			    <td>
-			        // <div class="progress">
-			        //   <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 20%">
-			        //     <span class="sr-only">20% Complete</span>
-			        //   </div>
-			        // </div>
-			        // <div class="status"></div>
-			    </td>
-			  </tr> -->
-			</tbody>
-		</table>
+
 
 		</div>
 	</div>

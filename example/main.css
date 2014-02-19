@@ -69,10 +69,10 @@ h1 .btn:hover {
 	line-height: 1;
 }
 #container {
-	padding-top: 50px ;
+/*	padding-top: 50px ;
 	padding-bottom: 60px ;
 	margin-top: 20px;
-	margin-bottom: 20px;
+	margin-bottom: 20px;*/
 	border-width: 2px;
 	border-radius: 3px;
 	border-color: #dcdcdc;
@@ -123,6 +123,8 @@ border-color: #eea236;*/
 	-webkit-box-shadow: 0 1px 0 rgba(230, 230, 230, 0.8);
   box-shadow: 0 1px 0 rgba(230, 230, 230, 0.8);
 }
+
+
 button {
     border-radius: 3px;
   -webkit-box-shadow: 0 1px 0 rgba(243, 243, 243, 0.75);
