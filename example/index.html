@@ -88,7 +88,7 @@
         var Q = new Qiniu({
             runtimes: 'html5,flash,html4', //上传方式,依次退化
             browse_button: 'pickfiles', //上传选择的点选按钮，必须
-            uptoken_url: '/token', //请求uptoken的Url，必须（第二步提供）
+            uptoken_url: '/token', //请求uptoken的Url，必须
             domain: 'http://qiniu-plupload.qiniudn.com/',//buckete 域名，下载资源时用到，必须
             container: 'container',//上传区域DOM ID，默认是browser_button的父元素，
             drop_element: 'container', //拖曳上传区域元素的ID
@@ -132,9 +132,7 @@
 <script type="text/javascript" src="js/plupload/plupload.full.min.js"></script>
 <script type="text/javascript" src="js/plupload/i18n/zh_CN.js"></script>
 <script type="text/javascript" src="/js/ui.js"></script>
-<script type="text/javascript" src="/js/qiniu.utils.js"></script>
-<script type="text/javascript" src="/js/qiniu.uploader.js"></script>
-<script type="text/javascript" src="/js/qiniu.image.js"></script>
+<script type="text/javascript" src="/js/qiniu.js"></script>
 <script type="text/javascript" src="/js/main.js"></script>
 <script type="text/javascript" src="/js/highlight/highlight.js"></script>
 </body>
