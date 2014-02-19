@@ -83,44 +83,44 @@
         </div>
         <div class="col-md-12">
 		<pre><code>
-//引入qiniu.js后
+        //引入Plupload 、qiniu.js后
 
-var Q = new Qiniu({
-    runtimes: 'html5,flash,html4', //上传方式,依次退化
-    browse_button: 'pickfiles', //上传选择的点选按钮，必须
-    uptoken_url: '/token', //请求uptoken的Url，必须
-    domain: 'http://qiniu-plupload.qiniudn.com/',//下载资源时用到，必须
-    container: 'container',//上传区域DOM ID，默认是browser_button的父元素，
-    drop_element: 'container', //拖曳上传区域元素的ID
-    max_file_size: '100mb', //最大文件体积限制
-    flash_swf_url: 'js/plupload/Moxie.swf',//引入flash
-    max_retries: 3,//上传失败最大重试次数
-    dragdrop: true, //开启可拖曳上传
-    chunk_size: '4mb',//分片上传时，每片的体积
-    auto_start: true, //选择文件后自动上传，若关闭需要自己绑定事件触发上传
-    init: {
-        'FilesAdded': function(up, files) {
-            plupload.each(files, function(file) {
-                //文件添加进队列后,处理相关的事情
-            });
-        },
-        'BeforeUpload': function(up, file) {
-           //每个文件上传前,处理相关的事情
-        },
-        'UploadProgress': function(up, file) {
-            //每个文件上传时,处理相关的事情
-        },
-        'FileUploaded': function(up, file, info) {
-           //每个文件上传成功后,处理相关的事情
-        },
-        'Error': function(up, err, errTip) {
-            //上传出错时,处理相关的事情
-        },
-        'UploadComplete': function() {
-            //队列文件处理完毕后,处理相关的事情
-        }
-    }
-});
+        var Q = new Qiniu({
+            runtimes: 'html5,flash,html4', //上传方式,依次退化
+            browse_button: 'pickfiles', //上传选择的点选按钮，必须
+            uptoken_url: '/token', //请求uptoken的Url，必须（第二步提供）
+            domain: 'http://qiniu-plupload.qiniudn.com/',//buckete 域名，下载资源时用到，必须
+            container: 'container',//上传区域DOM ID，默认是browser_button的父元素，
+            drop_element: 'container', //拖曳上传区域元素的ID
+            max_file_size: '100mb', //最大文件体积限制
+            flash_swf_url: 'js/plupload/Moxie.swf',//引入flash
+            max_retries: 3,//上传失败最大重试次数
+            dragdrop: true, //开启可拖曳上传
+            chunk_size: '4mb',//分片上传时，每片的体积
+            auto_start: true, //选择文件后自动上传，若关闭需要自己绑定事件触发上传
+            init: {
+                'FilesAdded': function(up, files) {
+                    plupload.each(files, function(file) {
+                        //文件添加进队列后,处理相关的事情
+                    });
+                },
+                'BeforeUpload': function(up, file) {
+                   //每个文件上传前,处理相关的事情
+                },
+                'UploadProgress': function(up, file) {
+                    //每个文件上传时,处理相关的事情
+                },
+                'FileUploaded': function(up, file, info) {
+                   //每个文件上传成功后,处理相关的事情
+                },
+                'Error': function(up, err, errTip) {
+                    //上传出错时,处理相关的事情
+                },
+                'UploadComplete': function() {
+                    //队列文件处理完毕后,处理相关的事情
+                }
+            }
+        });
 		</code></pre>
 		</div>
 
@@ -129,8 +129,7 @@ var Q = new Qiniu({
 	</div>
 </div>
 <script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="js/plupload/moxie.js"></script>
-<script type="text/javascript" src="js/plupload/plupload.dev.js"></script>
+<script type="text/javascript" src="js/plupload/plupload.full.min.js"></script>
 <script type="text/javascript" src="js/plupload/i18n/zh_CN.js"></script>
 <script type="text/javascript" src="/js/ui.js"></script>
 <script type="text/javascript" src="/js/qiniu.utils.js"></script>

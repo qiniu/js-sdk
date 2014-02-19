@@ -3,13 +3,7 @@ qiniu-js-sdk
 
 基于七牛API及Plupload开发的前端JavaScript SDK
 
-示例网站：[七牛JavaScript SDK 示例网站 - 配合nodejs SDK ](http://plupload.sinaapp.com/)
-
-##依赖
-
-1. Plupload 2.1.1
-2.
-3. PHP SDK v6.1.4
+示例网站：[七牛JavaScript SDK 示例网站 - 配合nodejs SDK ](http://upqiniu.duapp.com/)
 
 
 ## 安装和运行程序

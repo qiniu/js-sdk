@@ -211,17 +211,6 @@ FileProgress.prototype.setComplete = function(up, info) {
         clearTimeout(timeId);
     });
 
-    // $(image).on('load', function() {
-    //     $('#js-view-area .icon-loading').hide();
-    //     $('#js-view-image').attr('src', watermarkImageURL).show();
-    //     $('#js-watermark-image').val(encodeURI(watermarkImageURL));
-    //     $('#watermark-submit').removeAttr('disabled');
-    //     clearTimeout(timeId);
-    // }).on('error', function() {
-    //     showErrTip(2);
-    //     clearTimeout(timeId);
-    // });
-
     // var nextTr = this.fileProgressWrapper.next();
     // var isChunk = nextTr.find('td').length === 1;
     // if (isChunk) {
