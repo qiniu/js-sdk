@@ -82,7 +82,7 @@ FileProgress.prototype.getTimer = function(timer) {
 
 FileProgress.prototype.reset = function() {
     this.fileProgressWrapper.attr('class', "progressContainer");
-    this.fileProgressWrapper.find('td').find('.progress-bar-info').attr('aria-valuenow', 0).width('0%').find('span').text('');
+    this.fileProgressWrapper.find('td .progress .progress-bar-info').attr('aria-valuenow', 0).width('0%').find('span').text('');
     this.appear();
 };
 
@@ -133,8 +133,7 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
     this.fileProgressWrapper.find('.status').text("已上传: " + size + " 上传速度： " + formatSpeed + "/s");
 
     // progressbar.find('span').text("");
-    progressbar.attr('aria-valuenow', parseInt(percentage, 10));
-    progressbar.css('width', percentage);
+    progressbar.attr('aria-valuenow', parseInt(percentage, 10)).css('width', percentage);
 
 
     if (chunk_size) {
@@ -162,7 +161,7 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
 };
 
 FileProgress.prototype.setComplete = function(up, info) {
-    var td = this.fileProgressWrapper.find('td:eq(2)>.progress');
+    var td = this.fileProgressWrapper.find('td:eq(2) .progress');
     td.hide().find('.progress-bar').attr('aria-valuenow', 100).width('100%');
 
     var res = info;
@@ -172,7 +171,7 @@ FileProgress.prototype.setComplete = function(up, info) {
     var str = "<div><strong>Link:</strong><a href=" + url + " target='_blank' > " + link + "</a></div>" +
         "<div><strong>Hash:</strong>" + res.hash + "<div>";
 
-    td.html(str);
+    td.parent().html(str);
 };
 FileProgress.prototype.setError = function() {
     this.fileProgressWrapper.find('td:eq(2)').attr('class', 'text-warning');
@@ -185,7 +184,7 @@ FileProgress.prototype.setCancelled = function(manual) {
         progressContainer += ' red';
     }
     this.fileProgressWrapper.attr('class', progressContainer);
-    this.fileProgressWrapper.find('td .progress').find('.progress-bar-info').css('width', 0);
+    this.fileProgressWrapper.find('td .progress .progress-bar-info').css('width', 0);
 };
 
 FileProgress.prototype.setStatus = function(status, isUploading) {
