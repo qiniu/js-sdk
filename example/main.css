@@ -92,11 +92,9 @@ h1 .btn:hover {
 	line-height: 30px;
 	height: 30px;
 	margin:20px 0 0 0;
-	/*color: #ffffff;*/
-/*	background-color: #47a447;
-	border-color: #398439;	*/
-/*	background-color: #f0ad4e;
-border-color: #eea236;*/
+}
+#success div {
+    padding-left: 24px;
 }
 #container a {
 	width: 15%;
