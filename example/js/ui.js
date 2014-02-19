@@ -148,12 +148,20 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
 
         var currentProgessBar = $('#' + file.id + "_" + current_uploading_chunk);
         var current_chunk_percent;
-        if (uploaded % chunk_size) {
-            current_chunk_percent = ((uploaded % chunk_size) / chunk_size * 100).toFixed(2);
+        if (current_uploading_chunk < chunk_amount) {
+            if (uploaded % chunk_size) {
+                current_chunk_percent = ((uploaded % chunk_size) / chunk_size * 100).toFixed(2);
+            } else {
+                current_chunk_percent = 100;
+            }
         } else {
-            current_chunk_percent = 100;
+            var left_chunk_size = file.size - chunk_size * (chunk_amount - 1);
+            if (uploaded % left_chunk_size) {
+                current_chunk_percent = ((uploaded % chunk_size) / left_chunk_size * 100).toFixed(2);
+            } else {
+                current_chunk_percent = 100;
+            }
         }
-
         currentProgessBar.width(current_chunk_percent + '%');
         currentProgessBar.attr('aria-valuenow', current_chunk_percent);
         var text = "块" + current_uploading_chunk + "上传进度" + current_chunk_percent + '%';
@@ -175,6 +183,12 @@ FileProgress.prototype.setComplete = function(up, info) {
         "<div><strong>Hash:</strong>" + res.hash + "<div>";
 
     td.parent().html(str);
+
+    // var nextTr = this.fileProgressWrapper.next();
+    // var isChunk = nextTr.find('td').length === 1;
+    // if (isChunk) {
+    //     nextTr.hide();
+    // }
 };
 FileProgress.prototype.setError = function() {
     this.fileProgressWrapper.find('td:eq(2)').attr('class', 'text-warning');
