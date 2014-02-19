@@ -1,78 +1,74 @@
+/*global plupload */
 function FileProgress(file, targetID) {
     this.fileProgressID = file.id;
     this.file = file;
 
     this.opacity = 100;
     this.height = 0;
-    this.fileProgressWrapper = document.getElementById(this.fileProgressID);
-    if (!this.fileProgressWrapper) {
+    this.fileProgressWrapper = $('#' + this.fileProgressID);
+    if (!this.fileProgressWrapper.length) {
         // <div class="progress">
         //   <div class="progress-bar progress-bar-info" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100" style="width: 20%">
         //     <span class="sr-only">20% Complete</span>
         //   </div>
         // </div>
-        this.fileProgressWrapper = document.createElement('tr');
-        this.fileProgressWrapper.id = this.fileProgressID;
-        this.fileProgressWrapper.className = "progressContainer";
 
-        this.fileProgressElement = document.createElement('td');
+        this.fileProgressWrapper = $('<tr></tr>');
+        var Wrappeer = this.fileProgressWrapper;
+        Wrappeer.attr('id', this.fileProgressID).addClass('progressContainer');
 
-        var progressText = document.createElement("td");
-        progressText.className = "progressName";
-        progressText.appendChild(document.createTextNode(file.name));
+        var progressText = $("<td/>");
+        progressText.addClass('progressName').text(file.name);
+
 
         var fileSize = plupload.formatSize(file.size).toUpperCase();
-        var progressSize = document.createElement("td");
-        progressSize.className = "progressFileSize";
-        progressSize.appendChild(document.createTextNode(fileSize));
+        var progressSize = $("<td/>");
+        progressSize.addClass("progressFileSize").text(fileSize);
 
-        var progressBarTd = document.createElement('td');
-        var progressBarBox = document.createElement('div');
-        progressBarBox.className = "info";
-        var progressBarWrapper = document.createElement("div");
-        progressBarWrapper.className = "progress";
-        var progressBar = document.createElement('div');
-        progressBar.className = 'progress-bar progress-bar-info';
-        progressBar.setAttribute('role', 'progressbar');
-        progressBar.setAttribute('aria-valuemax', 100);
-        progressBar.setAttribute('aria-valuenow', 0);
-        progressBar.setAttribute('aria-valuein', 0);
-
-        progressBar.style.width = "0%";
-        var progressBarPercent = document.createElement('span');
-        progressBarPercent.className = "sr-only";
-
-        var progressCancel = document.createElement("a");
-        progressCancel.className = "progressCancel";
-        progressCancel.href = "#";
-        progressCancel.style.visibility = "hidden";
+        var progressBarTd = $("<td/>");
+        var progressBarBox = $("<div/>");
+        progressBarBox.addClass('info');
+        var progressBarWrapper = $("<div/>");
+        progressBarWrapper.addClass("progress");
 
 
+        var progressBar = $("<div/>");
+        progressBar.addClass("progress-bar progress-bar-info")
+            .attr('role', 'progressbar')
+            .attr('aria-valuemax', 100)
+            .attr('aria-valuenow', 0)
+            .attr('aria-valuein', 0)
+            .width('0%');
 
-        progressCancel.appendChild(document.createTextNode(" "));
-        progressBarPercent.appendChild(document.createTextNode(fileSize));
-        progressBar.appendChild(progressBarPercent);
-        progressBarWrapper.appendChild(progressBar);
-        progressBarBox.appendChild(progressBarWrapper);
-        progressBarBox.appendChild(progressCancel);
-
-
-        var progressBarStatus = document.createElement('div');
-        progressBarStatus.className = "status text-center";
-        progressBarBox.appendChild(progressBarStatus);
-        progressBarTd.appendChild(progressBarBox);
+        var progressBarPercent = $('<span class=sr-only />');
+        progressBarPercent.text(fileSize);
 
 
-        this.fileProgressWrapper.appendChild(progressText);
-        this.fileProgressWrapper.appendChild(progressSize);
-        this.fileProgressWrapper.appendChild(progressBarTd);
+        var progressCancel = $('<a href=# />');
+        progressCancel.hide().addClass('progressCancel').text('');
 
-        document.getElementById(targetID).appendChild(this.fileProgressWrapper);
+
+        progressBar.append(progressBarPercent);
+        progressBarWrapper.append(progressBar);
+        progressBarBox.append(progressBarWrapper);
+        progressBarBox.append(progressCancel);
+
+
+        var progressBarStatus = $('<div class="status text-center"/>');
+        progressBarBox.append(progressBarStatus);
+        progressBarTd.append(progressBarBox);
+
+
+        Wrappeer.append(progressText);
+        Wrappeer.append(progressSize);
+        Wrappeer.append(progressBarTd);
+
+        $('#' + targetID).append(Wrappeer);
     } else {
         this.reset();
     }
 
-    this.height = this.fileProgressWrapper.offsetHeight;
+    this.height = this.fileProgressWrapper.offset().top;
     this.setTimer(null);
 }
 
@@ -85,12 +81,8 @@ FileProgress.prototype.getTimer = function(timer) {
 };
 
 FileProgress.prototype.reset = function() {
-    this.fileProgressWrapper.className = "progressContainer";
-
-    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].childNodes[0].innerHTML = "&nbsp;";
-    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].className = 'progress-bar progress-bar-info';
-    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].setAttribute('aria-valuenow', 0);
-    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].style.width = '0%';
+    this.fileProgressWrapper.attr('class', "progressContainer");
+    this.fileProgressWrapper.find('td').find('.progress-bar-info').attr('aria-valuenow', 0).width('0%').find('span').text('');
     this.appear();
 };
 
@@ -99,68 +91,50 @@ FileProgress.prototype.setChunkProgess = function(chunk_size) {
     if (chunk_amount === 1) {
         return false;
     }
-    var viewProgess = document.createElement('button');
-    viewProgess.className = "btn btn-default";
-    viewProgess.innerHTML = "查看分片上传进度";
 
-    var progressBarChunk = document.createElement('div');
-    progressBarChunk.style.display = 'none';
+    var viewProgess = $('<button class="btn btn-default">查看分片上传进度</button>');
+
+    var progressBarChunk = $('<div/>');
+    progressBarChunk.hide();
     for (var i = 1; i <= chunk_amount; i++) {
-        var progressBarWrapper = document.createElement('div');
-        progressBarWrapper.setAttribute('class', 'progress-chunk');
+        var progressBarWrapper = $('<div class=progress-chunk></div');
 
-        var progressBar = document.createElement('div');
-        progressBar.className = 'progress-bar progress-bar-info text-left';
-        progressBar.setAttribute('role', 'progressbar');
-        progressBar.setAttribute('aria-valuemax', 100);
-        progressBar.setAttribute('aria-valuenow', 0);
-        progressBar.setAttribute('aria-valuein', 0);
-        progressBar.setAttribute('id', this.file.id + '_' + i);
-        progressBar.innerHTML = "&nbsp;";
-        progressBar.style.width = "0%";
+        var progressBar = $("<div/>");
+        progressBar.addClass("progress-bar progress-bar-info text-left")
+            .attr('role', 'progressbar')
+            .attr('aria-valuemax', 100)
+            .attr('aria-valuenow', 0)
+            .attr('aria-valuein', 0)
+            .width('0%')
+            .attr('id', this.file.id + '_' + i)
+            .text('');
 
-        // var progressBarInner = document.createElement('div');
-        // progressBarInner.className = 'progress-bar progress-bar-info text-left';
-        // progressBarInner.setAttribute('role', 'progressbar');
-        // progressBarInner.setAttribute('aria-valuemax', 100);
-        // // progressBarInner.setAttribute('aria-valuenow', 0);
-        // progressBarInner.setAttribute('aria-valuein', 0);
-        // progressBarInner.innerHTML = "&nbsp;";
-        // progressBarInner.style.width = "0%";
+        var progressBarStatus = $('<span/>');
+        progressBarStatus.addClass('chunk-status').text();
 
-        // progressBar.appendChild(progressBarInner);
+        progressBarWrapper.append(progressBar);
+        progressBarWrapper.append(progressBarStatus);
 
 
-        var progressBarStatus = document.createElement('span');
-        progressBarStatus.setAttribute('class', 'chunk-status');
-        var text = document.createTextNode('');
-        progressBarStatus.appendChild(text);
-
-        progressBarWrapper.appendChild(progressBar);
-        progressBarWrapper.appendChild(progressBarStatus);
-
-
-        progressBarChunk.appendChild(progressBarWrapper);
+        progressBarChunk.append(progressBarWrapper);
     }
-    this.fileProgressWrapper.childNodes[2].childNodes[0].appendChild(viewProgess);
-    this.fileProgressWrapper.childNodes[2].childNodes[0].appendChild(progressBarChunk);
+    this.fileProgressWrapper.find('td>div').append(viewProgess).append(progressBarChunk);
 };
 
 FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
-    this.fileProgressWrapper.className = "progressContainer green";
+    this.fileProgressWrapper.attr('class', "progressContainer green");
 
     var file = this.file;
     var uploaded = file.loaded;
 
     var size = plupload.formatSize(uploaded).toUpperCase();
     var formatSpeed = plupload.formatSize(speed).toUpperCase();
-    var progressbar = this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0];
-    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[2].innerHTML = "已上传: " + size + " 上传速度： " + formatSpeed + "/s";
+    var progressbar = this.fileProgressWrapper.find('td .progress').find('.progress-bar-info');
+    this.fileProgressWrapper.find('.status').text("已上传: " + size + " 上传速度： " + formatSpeed + "/s");
 
-    progressbar.childNodes[0].innerHTML = "&nbsp;";
-    progressbar.className = 'progress-bar progress-bar-info';
-    progressbar.setAttribute('aria-valuenow', parseInt(percentage, 10));
-    progressbar.style.width = percentage;
+    // progressbar.find('span').text("");
+    progressbar.attr('aria-valuenow', parseInt(percentage, 10));
+    progressbar.css('width', percentage);
 
 
     if (chunk_size) {
@@ -170,7 +144,7 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
         }
         var current_uploading_chunk = Math.ceil(uploaded / chunk_size);
 
-        var currentProgessBar = document.getElementById(file.id + "_" + current_uploading_chunk);
+        var currentProgessBar = $('#' + file.id + "_" + current_uploading_chunk);
         var current_chunk_percent;
         if (uploaded % chunk_size) {
             current_chunk_percent = ((uploaded % chunk_size) / chunk_size * 100).toFixed(2);
@@ -178,19 +152,19 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
             current_chunk_percent = 100;
         }
 
-        currentProgessBar.style.width = current_chunk_percent + '%';
-        currentProgessBar.setAttribute('aria-valuenow', current_chunk_percent);
+        currentProgessBar.width(current_chunk_percent + '%');
+        currentProgessBar.attr('aria-valuenow', current_chunk_percent);
         var text = "块" + current_uploading_chunk + "上传进度" + current_chunk_percent + '%';
-        currentProgessBar.parentNode.childNodes[1].innerHTML = text;
+        currentProgessBar.next().html(text);
     }
 
     this.appear();
 };
 
 FileProgress.prototype.setComplete = function(up, info) {
-    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].setAttribute('aria-valuenow', 100);
-    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].style.width = "100%";
-    this.fileProgressWrapper.childNodes[2].childNodes[0].style.display = 'none';
+    var td = this.fileProgressWrapper.find('td:eq(2)>.progress');
+    td.hide().find('.progress-bar').attr('aria-valuenow', 100).width('100%');
+
     var res = info;
     var domain = up.getOption('domain');
     var url = domain + encodeURI(res.key);
@@ -198,12 +172,11 @@ FileProgress.prototype.setComplete = function(up, info) {
     var str = "<div><strong>Link:</strong><a href=" + url + " target='_blank' > " + link + "</a></div>" +
         "<div><strong>Hash:</strong>" + res.hash + "<div>";
 
-    this.fileProgressWrapper.childNodes[2].innerHTML = str;
+    td.html(str);
 };
 FileProgress.prototype.setError = function() {
-    this.fileProgressWrapper.childNodes[2].className = 'text-warning';
-    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].style.display = 'none';
-    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].style.width = "0%";
+    this.fileProgressWrapper.find('td:eq(2)').attr('class', 'text-warning');
+    this.fileProgressWrapper.find('td:eq(2) .progress').css('width', 0).hide();
 };
 
 FileProgress.prototype.setCancelled = function(manual) {
@@ -211,14 +184,13 @@ FileProgress.prototype.setCancelled = function(manual) {
     if (!manual) {
         progressContainer += ' red';
     }
-    this.fileProgressWrapper.className = progressContainer;
-    this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[0].style.width = "0%";
+    this.fileProgressWrapper.attr('class', progressContainer);
+    this.fileProgressWrapper.find('td .progress').find('.progress-bar-info').css('width', 0);
 };
 
 FileProgress.prototype.setStatus = function(status, isUploading) {
     if (!isUploading) {
-        this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[2].innerHTML = status;
-        this.fileProgressWrapper.childNodes[2].childNodes[0].childNodes[2].className = 'status text-left';
+        this.fileProgressWrapper.find('.status').text(status).attr('class', 'status text-left');
     }
 };
 
@@ -248,21 +220,21 @@ FileProgress.prototype.appear = function() {
         this.setTimer(null);
     }
 
-    if (this.fileProgressWrapper.filters) {
+    if (this.fileProgressWrapper[0].filters) {
         try {
-            this.fileProgressWrapper.filters.item("DXImageTransform.Microsoft.Alpha").opacity = 100;
+            this.fileProgressWrapper[0].filters.item("DXImageTransform.Microsoft.Alpha").opacity = 100;
         } catch (e) {
             // If it is not set initially, the browser will throw an error.  This will set it if it is not set yet.
-            this.fileProgressWrapper.style.filter = "progid:DXImageTransform.Microsoft.Alpha(opacity=100)";
+            this.fileProgressWrapper.css('filter', "progid:DXImageTransform.Microsoft.Alpha(opacity=100)");
         }
     } else {
-        this.fileProgressWrapper.style.opacity = 1;
+        this.fileProgressWrapper.css('opacity', 1);
     }
 
-    this.fileProgressWrapper.style.height = "";
+    this.fileProgressWrapper.css('height', '');
 
-    this.height = this.fileProgressWrapper.offsetHeight;
+    this.height = this.fileProgressWrapper.offset().top;
     this.opacity = 100;
-    this.fileProgressWrapper.style.display = "";
+    this.fileProgressWrapper.show();
 
 };
