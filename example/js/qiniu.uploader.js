@@ -1,5 +1,7 @@
 function Qiniu(op) {
-
+    if (!op.uptoken_url || !op.domain) {
+        return false;
+    }
     var option = {};
 
     var Error_Handler = op.init && op.init.Error;
@@ -9,17 +11,16 @@ function Qiniu(op) {
     op.init.FileUploaded = function() {};
 
     var uptoken_url = op.uptoken_url;
+    this.domain = op.domain;
 
     //Todo ie7 handler / parseJson bug;
 
-    if (!uptoken_url) {
-        return false;
-    }
+
     var ie = detectIEVersion();
     if (ie && ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
         /*
         link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
-        when plupload chunk_size setting is't null ,it cause bug in ie8/9 which runs  flash runtimes and doesn't support html5 .
+        when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
         */
         op.chunk_size = 0;
 
@@ -54,13 +55,13 @@ function Qiniu(op) {
         var ajax = createAjax();
         ajax.open('GET', uptoken_url, true);
         ajax.setRequestHeader("If-Modified-Since", "0");
-        ajax.send();
         ajax.onreadystatechange = function() {
             if (ajax.readyState === 4 && ajax.status === 200) {
-                var res = $.parseJSON(ajax.responseText);
+                var res = parseJSON(ajax.responseText);
                 token = res.uptoken;
             }
         };
+        ajax.send();
     };
 
     uploader.bind('Init', function(up, params) {
