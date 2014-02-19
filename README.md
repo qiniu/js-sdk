@@ -3,7 +3,7 @@ qiniu-js-sdk
 
 基于七牛API及Plupload开发的前端JavaScript SDK
 
-示例网站：[七牛Plupload上传Demo-配合PHP SDK](http://plupload.sinaapp.com/)
+示例网站：[七牛JavaScript SDK 示例网站 - 配合nodejs SDK ](http://plupload.sinaapp.com/)
 
 ##依赖
 
@@ -61,6 +61,8 @@ qiniu-js-sdk
     ```
 4. 运行网站、访问该页面，选择文件后上传
 
+5. 可对上传成功的图片进行数据处理
+
 ## API使用手册 (Todo 详细使用说明)
 
 *  初始化
@@ -81,7 +83,7 @@ qiniu-js-sdk
 
 1. 本SDK依赖Plupload，初始化之前请引入Plupload插件
 
-2. 本SDK依赖服务端提供uptoken，所以必须构建后端服务
+2. 本SDK依赖服务端颁发uptoken，必须构建后端服务
 
 3. 如果您想了解更多七牛的上传策略，建议您仔细阅读七牛的官方文档 - [七牛官方文档-上传](http://developer.qiniu.com/docs/v6/api/reference/up/)
 
