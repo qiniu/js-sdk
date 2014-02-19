@@ -153,13 +153,16 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
                 current_chunk_percent = ((uploaded % chunk_size) / chunk_size * 100).toFixed(2);
             } else {
                 current_chunk_percent = 100;
+                currentProgessBar.removeClass().addClass('alert-success');
             }
         } else {
-            var left_chunk_size = file.size - chunk_size * (chunk_amount - 1);
-            if (uploaded % left_chunk_size) {
-                current_chunk_percent = ((uploaded % chunk_size) / left_chunk_size * 100).toFixed(2);
+            var last_chunk_size = file.size - chunk_size * (chunk_amount - 1);
+            var left_file_size = file.size - uploaded;
+            if (left_file_size % last_chunk_size) {
+                current_chunk_percent = ((uploaded % chunk_size) / last_chunk_size * 100).toFixed(2);
             } else {
                 current_chunk_percent = 100;
+                currentProgessBar.removeClass().addClass('alert-success');
             }
         }
         currentProgessBar.width(current_chunk_percent + '%');

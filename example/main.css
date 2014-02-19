@@ -42,13 +42,8 @@ tr .progress-bar {
     min-height: 20px;
     float: none;
 }
-tr .progress-chunk {
-/*    position: relative;
-    margin-top: 20px;
-    width: 300px;*/
-}
-tr .progress-chunk:first-child {
-    margin-top: 0px;
+tr .progress-chunk, tr .progress-chunk div {
+  height: 20px;
 }
 
 tr .progress-chunk .chunk-status {
