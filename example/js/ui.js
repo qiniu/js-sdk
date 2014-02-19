@@ -191,16 +191,22 @@ FileProgress.prototype.setComplete = function(up, info) {
     td.parent().html(str);
 
     var progressNameTd = this.fileProgressWrapper.find('.progressName');
+    var imageView = '?imageView2/1/w/100/h/100';
+
     var img = new Image();
-    $(img).attr('src', url);
+    $(img).attr('src', url + imageView);
+
     timeId = setTimeout(function() {
         //showErrTip();
         $(img).unbind();
     }, 3500);
+
     $(img).on('load', function() {
-        var $img = $('<img/>');
-        $img.attr('src', url);
-        progressNameTd.append($img);
+        var Img = $('<img/>');
+        var imgWrapper = $('<div>');
+        imgWrapper.addClass('imgWrapper').append(Img);
+        Img.attr('src', url + imageView);
+        progressNameTd.append(imgWrapper);
     }).on('error', function() {
         clearTimeout(timeId);
     });

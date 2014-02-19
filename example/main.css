@@ -131,7 +131,9 @@ button {
   -webkit-user-select: none;
   outline: none;
 }
-
+td .imgWrapper {
+  margin-top: 20px;
+}
 table button.btn {
     /*margin:20px 0;*/
 }
