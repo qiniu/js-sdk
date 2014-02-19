@@ -38,20 +38,20 @@ h1 .btn:hover {
 	position: relative;
     height: 100%;
 }
-.info .progress-bar {
-
+tr .progress-bar {
     min-height: 20px;
     float: none;
 }
-.info .progress-chunk {
-    position: relative;
+tr .progress-chunk {
+/*    position: relative;
     margin-top: 20px;
+    width: 300px;*/
 }
-.info .progress-chunk:first-child {
+tr .progress-chunk:first-child {
     margin-top: 0px;
 }
 
-.info .progress-chunk .chunk-status {
+tr .progress-chunk .chunk-status {
     position: absolute;
     left: 24px;
     top: 0;

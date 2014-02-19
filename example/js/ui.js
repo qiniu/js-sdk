@@ -92,12 +92,13 @@ FileProgress.prototype.setChunkProgess = function(chunk_size) {
         return false;
     }
 
-    var viewProgess = $('<button class="btn btn-default">查看分片上传进度</button>');
+    var viewProgess = $('<button class="btn btn-default">查看分块上传进度</button>');
 
+    var progressBarChunkTr = $('<tr><td colspan=3></td></tr>');
     var progressBarChunk = $('<div/>');
-    progressBarChunk.hide();
+    // progressBarChunk.hide();
     for (var i = 1; i <= chunk_amount; i++) {
-        var progressBarWrapper = $('<div class=progress-chunk></div');
+        var progressBarWrapper = $('<div class="progress-chunk col-md-2"></div');
 
         var progressBar = $("<div/>");
         progressBar.addClass("progress-bar progress-bar-info text-left")
@@ -118,7 +119,9 @@ FileProgress.prototype.setChunkProgess = function(chunk_size) {
 
         progressBarChunk.append(progressBarWrapper);
     }
-    this.fileProgressWrapper.find('td>div').append(viewProgess).append(progressBarChunk);
+    this.fileProgressWrapper.find('td>div').append(viewProgess);
+    progressBarChunkTr.hide().find('td').append(progressBarChunk);
+    progressBarChunkTr.insertAfter(this.fileProgressWrapper);
 };
 
 FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {

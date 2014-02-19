@@ -162,6 +162,6 @@ $(function() {
     });
 
     $('body').on('click', 'table button.btn', function() {
-        $(this).next('div').toggle();
+        $(this).parents('tr').next().toggle();
     });
 });
