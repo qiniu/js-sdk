@@ -138,7 +138,6 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
     var progressbar = this.fileProgressWrapper.find('td .progress').find('.progress-bar-info');
     this.fileProgressWrapper.find('.status').text("已上传: " + size + " 上传速度： " + formatSpeed + "/s");
 
-    // progressbar.find('span').text("");
     progressbar.attr('aria-valuenow', parseInt(percentage, 10)).css('width', percentage);
 
 
@@ -188,7 +187,7 @@ FileProgress.prototype.setComplete = function(up, info) {
     var str = "<div><strong>Link:</strong><a href=" + url + " target='_blank' > " + link + "</a></div>" +
         "<div><strong>Hash:</strong>" + res.hash + "<div>";
 
-    td.parent().html(str);
+    td.html(str);
 
     var progressNameTd = this.fileProgressWrapper.find('.progressName');
     var imageView = '?imageView2/1/w/100/h/100';
@@ -198,7 +197,7 @@ FileProgress.prototype.setComplete = function(up, info) {
     $(img).attr('src', url + imageView);
 
     var timeId = setTimeout(function() {
-        //showErrTip();
+        // $(img).attr('src','btn-default');
         $(img).unbind();
     }, 3500);
 
@@ -209,56 +208,57 @@ FileProgress.prototype.setComplete = function(up, info) {
         var Img = $('<img/>');
         Img.attr('src', url + imageView);
 
-        var linkWrapper = $('<div class="linkWrapper">');
-        var imageMogr2Img = $('<a/>');
-        imageMogr2Img.attr('data-href', res.key).text('查看旋转效果');
+        // var linkWrapper = $('<div class="linkWrapper">');
+        // var imageMogr2Img = $('<a/>');
+        // imageMogr2Img.attr('data-href', res.key).text('查看旋转效果');
 
-        var watermarkImg = $('<a/>');
-        watermarkImg.attr('data-href', res.key).text('查看水印效果');
+        // var watermarkImg = $('<a/>');
+        // watermarkImg.attr('data-href', res.key).text('查看水印效果');
 
-        imageMogr2Img.on('click', function() {
-            $('#myModal').modal();
-            var modalBody = $('#myModal').find('.modal-body');
-            var url = Q.imageMogr2({
-                'auto-orient': true,
-                'strip': true,
-                'thumbnail': '1000x1000',
-                'crop': '!300x400a10a10',
-                'quality': 40,
-                'rotate': 20,
-                'format': 'png'
-            }, $(this).data('href'));
-            modalBody.find('img').attr('src', url);
-            modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
-            return false;
-        });
+        // imageMogr2Img.on('click', function() {
+        //     $('#myModal').modal();
+        //     var modalBody = $('#myModal').find('.modal-body');
+        //     var url = Q.imageMogr2({
+        //         'auto-orient': true,
+        //         'strip': true,
+        //         'thumbnail': '1000x1000',
+        //         'crop': '!300x400a10a10',
+        //         'quality': 40,
+        //         'rotate': 20,
+        //         'format': 'png'
+        //     }, $(this).data('href'));
+        //     modalBody.find('img').attr('src', url);
+        //     modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
+        //     return false;
+        // });
 
-        watermarkImg.on('click', function() {
-            var modalBody = $('#myModal').find('.modal-body');
-            var url = Q.watermark({
-                mode: 1,
-                image: 'http://www.b1.qiniudn.com/images/logo-2.png',
-                dissolve: 100,
-                gravity: 'SouthEast',
-                dx: 100,
-                dy: 100
-            }, $(this).data('href'));
-            $('#myModal').modal();
-            modalBody.find('img').attr('src', url);
-            modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
+        // watermarkImg.on('click', function() {
+        //     var modalBody = $('#myModal').find('.modal-body');
+        //     var url = Q.watermark({
+        //         mode: 1,
+        //         image: 'http://www.b1.qiniudn.com/images/logo-2.png',
+        //         dissolve: 100,
+        //         gravity: 'SouthEast',
+        //         dx: 100,
+        //         dy: 100
+        //     }, $(this).data('href'));
+        //     $('#myModal').modal();
+        //     modalBody.find('img').attr('src', url);
+        //     modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
 
-            return false;
-        });
+        //     return false;
+        // });
 
-        linkWrapper.append(imageMogr2Img).append($('<br>')).append(watermarkImg).hide();
-        imgWrapper.append(Img).append(linkWrapper);
+        // linkWrapper.append(imageMogr2Img).append($('<br>')).append(watermarkImg).hide();
+        // imgWrapper.append(Img).append(linkWrapper);
+        imgWrapper.append(Img);
         Wrapper.append(imgWrapper);
 
-        imgWrapper.on('mouseover', function() {
-            linkWrapper.show();
-        }).on('mouseout', function() {
-            linkWrapper.hide();
-        });
+        // imgWrapper.on('mouseover', function() {
+        //     linkWrapper.show();
+        // }).on('mouseout', function() {
+        //     linkWrapper.hide();
+        // });
 
         progressNameTd.append(Wrapper);
     }).on('error', function() {
