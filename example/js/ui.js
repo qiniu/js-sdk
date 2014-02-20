@@ -1,4 +1,5 @@
 /*global plupload */
+/*global isImage */
 function FileProgress(file, targetID) {
     this.fileProgressID = file.id;
     this.file = file;
@@ -193,108 +194,118 @@ FileProgress.prototype.setComplete = function(up, info) {
     var progressNameTd = this.fileProgressWrapper.find('.progressName');
     var imageView = '?imageView2/1/w/100/h/100';
 
-    var img = new Image();
 
-    $(img).attr('src', url + imageView);
+    var isImg = isImage(url);
 
-
-    // Wrapper.append(showImg);
-    // imgWrapper.append(showImg);
     var Wrapper = $('<div class="Wrapper"/>');
     var imgWrapper = $('<div class="imgWrapper col-md-3"/>');
     var showImg = $('<img/>');
-    showImg.attr('src', 'loading.gif');
-    imgWrapper.append(showImg);
+
+
     Wrapper.append(imgWrapper);
     progressNameTd.append(Wrapper);
 
-
-    var timeId = setTimeout(function() {
-
+    if (!isImg) {
         showImg.attr('src', 'default.png');
+        imgWrapper.append(showImg);
         Wrapper.addClass('default');
+    } else {
+        var img = new Image();
 
-        $(img).unbind();
-    }, 3500);
-
-    $(img).on('load', function() {
-        // var Wrapper = $('<div class=Wrapper/>');
-
-        clearTimeout(timeId);
-        // var Img = $('<img/>');
-        showImg.attr('src', url + imageView);
-
-        // var linkWrapper = $('<div class="linkWrapper">');
-        // var imageMogr2Img = $('<a/>');
-        // imageMogr2Img.attr('data-href', res.key).text('查看旋转效果');
-
-        // var watermarkImg = $('<a/>');
-        // watermarkImg.attr('data-href', res.key).text('查看水印效果');
-
-        // imageMogr2Img.on('click', function() {
-        //     $('#myModal').modal();
-        //     var modalBody = $('#myModal').find('.modal-body');
-        //     var url = Q.imageMogr2({
-        //         'auto-orient': true,
-        //         'strip': true,
-        //         'thumbnail': '1000x1000',
-        //         'crop': '!300x400a10a10',
-        //         'quality': 40,
-        //         'rotate': 20,
-        //         'format': 'png'
-        //     }, $(this).data('href'));
-        //     modalBody.find('img').attr('src', url);
-        //     modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
-        //     return false;
-        // });
-
-        // watermarkImg.on('click', function() {
-        //     var modalBody = $('#myModal').find('.modal-body');
-        //     var url = Q.watermark({
-        //         mode: 1,
-        //         image: 'http://www.b1.qiniudn.com/images/logo-2.png',
-        //         dissolve: 100,
-        //         gravity: 'SouthEast',
-        //         dx: 100,
-        //         dy: 100
-        //     }, $(this).data('href'));
-        //     $('#myModal').modal();
-        //     modalBody.find('img').attr('src', url);
-        //     modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
-
-        //     return false;
-        // });
-
-        // linkWrapper.append(imageMogr2Img).append($('<br>')).append(watermarkImg).hide();
-        // imgWrapper.append(Img).append(linkWrapper);
+        $(img).attr('src', url + imageView);
 
 
-        var infoWrapper = $('<div class="infoWrapper col-md-5"></div>');
-        var exifLink = $('<a href="" target="_blank">查看exif</a>');
-        exifLink.attr('href', url + '?exif');
+        // Wrapper.append(showImg);
+        // imgWrapper.append(showImg);
+        showImg.attr('src', 'loading.gif');
+        imgWrapper.append(showImg);
 
-        var imageInfo = Q.imageInfo(res.key);
-        var infoArea = $('<div/>');
-        infoArea.html('格式：' + imageInfo.format + '  <br />宽度：' + imageInfo.width + '  <br />高度：' + imageInfo.height);
+        var timeId = setTimeout(function() {
 
-        console.log(imageInfo);
-        infoWrapper.append(exifLink).append(infoArea);
+            showImg.attr('src', 'default.png');
+            Wrapper.addClass('default');
 
-        Wrapper.append(infoWrapper);
+            $(img).unbind();
+        }, 3500);
 
-        // imgWrapper.on('mouseover', function() {
-        //     linkWrapper.show();
-        // }).on('mouseout', function() {
-        //     linkWrapper.hide();
-        // });
+        $(img).on('load', function() {
+            // var Wrapper = $('<div class=Wrapper/>');
+
+            clearTimeout(timeId);
+            // var Img = $('<img/>');
+            showImg.attr('src', url + imageView);
+
+            // var linkWrapper = $('<div class="linkWrapper">');
+            // var imageMogr2Img = $('<a/>');
+            // imageMogr2Img.attr('data-href', res.key).text('查看旋转效果');
+
+            // var watermarkImg = $('<a/>');
+            // watermarkImg.attr('data-href', res.key).text('查看水印效果');
+
+            // imageMogr2Img.on('click', function() {
+            //     $('#myModal').modal();
+            //     var modalBody = $('#myModal').find('.modal-body');
+            //     var url = Q.imageMogr2({
+            //         'auto-orient': true,
+            //         'strip': true,
+            //         'thumbnail': '1000x1000',
+            //         'crop': '!300x400a10a10',
+            //         'quality': 40,
+            //         'rotate': 20,
+            //         'format': 'png'
+            //     }, $(this).data('href'));
+            //     modalBody.find('img').attr('src', url);
+            //     modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
+            //     return false;
+            // });
+
+            // watermarkImg.on('click', function() {
+            //     var modalBody = $('#myModal').find('.modal-body');
+            //     var url = Q.watermark({
+            //         mode: 1,
+            //         image: 'http://www.b1.qiniudn.com/images/logo-2.png',
+            //         dissolve: 100,
+            //         gravity: 'SouthEast',
+            //         dx: 100,
+            //         dy: 100
+            //     }, $(this).data('href'));
+            //     $('#myModal').modal();
+            //     modalBody.find('img').attr('src', url);
+            //     modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
+
+            //     return false;
+            // });
+
+            // linkWrapper.append(imageMogr2Img).append($('<br>')).append(watermarkImg).hide();
+            // imgWrapper.append(Img).append(linkWrapper);
 
 
-    }).on('error', function() {
-        showImg.attr('src', 'default.png');
-        Wrapper.addClass('default');
-        clearTimeout(timeId);
-    });
+            var infoWrapper = $('<div class="infoWrapper col-md-5"></div>');
+            var exifLink = $('<a href="" target="_blank">查看exif</a>');
+            exifLink.attr('href', url + '?exif');
 
+            var imageInfo = Q.imageInfo(res.key);
+            var infoArea = $('<div/>');
+            infoArea.html('格式：' + imageInfo.format + '  <br />宽度：' + imageInfo.width + '  <br />高度：' + imageInfo.height);
+
+            console.log(imageInfo);
+            infoWrapper.append(exifLink).append(infoArea);
+
+            Wrapper.append(infoWrapper);
+
+            // imgWrapper.on('mouseover', function() {
+            //     linkWrapper.show();
+            // }).on('mouseout', function() {
+            //     linkWrapper.hide();
+            // });
+
+
+        }).on('error', function() {
+            showImg.attr('src', 'default.png');
+            Wrapper.addClass('default');
+            clearTimeout(timeId);
+        });
+    }
     // var nextTr = this.fileProgressWrapper.next();
     // var isChunk = nextTr.find('td').length === 1;
     // if (isChunk) {
