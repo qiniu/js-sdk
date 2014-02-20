@@ -197,21 +197,32 @@ FileProgress.prototype.setComplete = function(up, info) {
 
     $(img).attr('src', url + imageView);
 
+
+    // Wrapper.append(showImg);
+    // imgWrapper.append(showImg);
+    var Wrapper = $('<div class="Wrapper"/>');
+    var imgWrapper = $('<div class="imgWrapper col-md-3"/>');
+    var showImg = $('<img/>');
+    showImg.attr('src', 'loading.gif');
+    imgWrapper.append(showImg);
+    Wrapper.append(imgWrapper);
+    progressNameTd.append(Wrapper);
+
+
     var timeId = setTimeout(function() {
-        var Wrapper = $('<div class="Wrapper default"/>');
-        var defaultImg = $('<img/>');
-        defaultImg.attr('src', 'default.png');
-        Wrapper.append(defaultImg);
-        progressNameTd.append(Wrapper);
+
+        showImg.attr('src', 'default.png');
+        Wrapper.addClass('default');
+
         $(img).unbind();
     }, 3500);
 
     $(img).on('load', function() {
-        var Wrapper = $('<div class=Wrapper/>');
+        // var Wrapper = $('<div class=Wrapper/>');
 
-        var imgWrapper = $('<div class="imgWrapper col-md-3"/>');
-        var Img = $('<img/>');
-        Img.attr('src', url + imageView);
+        clearTimeout(timeId);
+        // var Img = $('<img/>');
+        showImg.attr('src', url + imageView);
 
         // var linkWrapper = $('<div class="linkWrapper">');
         // var imageMogr2Img = $('<a/>');
@@ -256,7 +267,7 @@ FileProgress.prototype.setComplete = function(up, info) {
 
         // linkWrapper.append(imageMogr2Img).append($('<br>')).append(watermarkImg).hide();
         // imgWrapper.append(Img).append(linkWrapper);
-        imgWrapper.append(Img);
+
 
         var infoWrapper = $('<div class="infoWrapper col-md-5"></div>');
         var exifLink = $('<a href="" target="_blank">查看exif</a>');
@@ -269,7 +280,7 @@ FileProgress.prototype.setComplete = function(up, info) {
         console.log(imageInfo);
         infoWrapper.append(exifLink).append(infoArea);
 
-        Wrapper.append(imgWrapper).append(infoWrapper);
+        Wrapper.append(infoWrapper);
 
         // imgWrapper.on('mouseover', function() {
         //     linkWrapper.show();
@@ -277,16 +288,10 @@ FileProgress.prototype.setComplete = function(up, info) {
         //     linkWrapper.hide();
         // });
 
-        progressNameTd.append(Wrapper);
 
-
-        clearTimeout(timeId);
     }).on('error', function() {
-        var Wrapper = $('<div class="Wrapper default"/>');
-        var defaultImg = $('<img/>');
-        defaultImg.attr('src', 'default.png');
-        Wrapper.append(defaultImg);
-        progressNameTd.append(Wrapper);
+        showImg.attr('src', 'default.png');
+        Wrapper.addClass('default');
         clearTimeout(timeId);
     });
 
