@@ -98,16 +98,6 @@ tr .progress .chunk-status {
 
 
 }
-/*#container a:hover,#container a:active,#container a:focus ,.no-padding button:hover,.no-padding button:active,.no-padding button:focus{
-  border-color: #bebebe;
-  text-decoration: none;
-  background-color: #fff;
-  color: #262626;
-  outline: none;
-	-webkit-box-shadow: 0 1px 0 rgba(230, 230, 230, 0.8);
-  box-shadow: 0 1px 0 rgba(230, 230, 230, 0.8);
-}*/
-
 
 button {
     border-radius: 3px;
@@ -201,4 +191,8 @@ pre  {
   outline: none;
     -webkit-box-shadow: 0 1px 0 rgba(230, 230, 230, 0.8);
   box-shadow: 0 1px 0 rgba(230, 230, 230, 0.8);
+}
+
+a {
+    cursor: pointer;
 }
