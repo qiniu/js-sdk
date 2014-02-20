@@ -12,7 +12,7 @@
       <script src="js/Respond-1.4.2/respond.min.js"></script>
     <![endif]-->
 </head>
-<body>
+<body id="reset-bootstrap">
 <div class="container">
 	<div class="text-left col-md-12 wrapper">
 		<h1 class="text-left col-md-12 ">
@@ -38,7 +38,7 @@
 				<small>本示例限制最大上传文件100M。</small>
 			</li>
 		</ul>
-        </div>
+    </div>
         <div class="col-md-12">
             <div id="container">
                 <a class="btn btn-default btn-lg " id="pickfiles" href="#" >
@@ -123,12 +123,70 @@
         });
 		</code></pre>
 		</div>
-
-
-		</div>
-	</div>
+</div>
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">图片效果查看</h4>
+      </div>
+      <div class="modal-body">
+        <div class="modal-body-wrapper text-center">
+            <a href="" target="_blank">
+                <img src="" alt="">
+            </a>
+        </div>
+        <div class="modal-body-footer">
+            <div class="watermark">
+                <a href="#" data-href="" class="btn btn-default">
+                    左上角水印
+                </a>
+                <a href="#" data-href="" class="btn btn-default">
+                    左下角水印
+                </a>
+                <a href="#" data-href="" class="btn btn-default">
+                    右上角水印
+                </a>
+                <a href="#" data-href="" class="btn btn-default">
+                    右下角水印
+                </a>
+                <a href="#" data-href="" class="btn btn-default">
+                    无水印
+                </a>
+            </div>
+            <div class="imageMogr2">
+                <a href="#" data-href="" class="btn btn-default">
+                    左旋
+                </a>
+                <a href="#" data-href="" class="btn btn-default">
+                    右旋
+                </a>
+                <a href="#" data-href="" class="btn btn-default">
+                    无旋转
+                </a>
+            </div>
+<!--             <div class="imageView2">
+                <a href="#" data-href="" class="btn btn-default">
+                    缩略图
+                </a>
+                <a href="#" data-href="" class="btn btn-default">
+                    缩略图
+                </a>
+                <a href="#" data-href="" class="btn btn-default">
+                    缩略图
+                </a>
+            </div> -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+      </div>
+    </div>
+  </div>
 </div>
 <script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
+<script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="js/plupload/plupload.full.min.js"></script>
 <script type="text/javascript" src="js/plupload/i18n/zh_CN.js"></script>
 <script type="text/javascript" src="/js/ui.js"></script>
