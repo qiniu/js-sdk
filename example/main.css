@@ -144,6 +144,7 @@ td .Wrapper.default {
 td .Wrapper.default img{
   width:100px;
   height:100px;
+  /*border: 1px solid #adadad;*/
 }
 td .imgWrapper {
   position: relative;

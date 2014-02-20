@@ -275,6 +275,7 @@ FileProgress.prototype.setComplete = function(up, info) {
             var infoWrapper = $('<div class="infoWrapper col-md-5"></div>');
 
             var exif = Q.exif(res.key);
+            console.log(exif);
             if (exif) {
                 var exifLink = $('<a href="" target="_blank">查看exif</a>');
                 exifLink.attr('href', url + '?exif');
