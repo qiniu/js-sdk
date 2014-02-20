@@ -226,7 +226,7 @@ FileProgress.prototype.setComplete = function(up, info) {
             Wrapper.addClass('default');
 
             $(img).unbind();
-        }, 3500);
+        }, 5000);
 
         $(img).on('load', function() {
             // var Wrapper = $('<div class=Wrapper/>');
