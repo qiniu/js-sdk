@@ -185,10 +185,10 @@ FileProgress.prototype.setComplete = function(up, info) {
     var url = domain + encodeURI(res.key);
     var link = domain + res.key;
     var str = "<div><strong>Link:</strong><a href=" + url + " target='_blank' > " + link + "</a></div>" +
-        "<div class=hash><strong>Hash:</strong>" + res.hash + "</div>" +
-        "<button class='btn btn-default'>查看分块上传进度</button>";
+        "<div class=hash><strong>Hash:</strong>" + res.hash + "</div>";
+    // "<button class='btn btn-default'>查看分块上传进度</button>";
 
-    td.parent().html(str);
+    td.html(str).removeClass().next().next('.status').hide();
 
     var progressNameTd = this.fileProgressWrapper.find('.progressName');
     var imageView = '?imageView2/1/w/100/h/100';

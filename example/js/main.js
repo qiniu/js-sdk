@@ -175,7 +175,7 @@ $(function() {
         $(this).parents('tr').next().toggle();
     });
 
-    $('#myModal').find('.modal-body-footer').find('a').on('click', function() {
-        $(this).addClass('disabled').siblings().removeClass('disabled');
-    });
+    // $('#myModal').find('.modal-body-footer').find('a').on('click', function() {
+    //     $(this).addClass('disabled').siblings().removeClass('disabled');
+    // });
 });
