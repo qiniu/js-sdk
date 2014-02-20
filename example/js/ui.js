@@ -200,25 +200,18 @@ FileProgress.prototype.setComplete = function(up, info) {
     var Wrapper = $('<div class="Wrapper"/>');
     var imgWrapper = $('<div class="imgWrapper col-md-3"/>');
     var showImg = $('<img/>');
+    showImg.attr('src', 'loading.gif');
 
-
+    imgWrapper.append(showImg);
     Wrapper.append(imgWrapper);
     progressNameTd.append(Wrapper);
 
     if (!isImg) {
         showImg.attr('src', 'default.png');
-        imgWrapper.append(showImg);
         Wrapper.addClass('default');
     } else {
         var img = new Image();
-
         $(img).attr('src', url + imageView);
-
-
-        // Wrapper.append(showImg);
-        // imgWrapper.append(showImg);
-        showImg.attr('src', 'loading.gif');
-        imgWrapper.append(showImg);
 
         var timeId = setTimeout(function() {
 
