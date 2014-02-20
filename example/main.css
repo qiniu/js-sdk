@@ -125,10 +125,19 @@ button {
 td .Wrapper {
   margin-top: 20px;
   text-align: center;
+  overflow: hidden;
+}
+td .Wrapper .infoWrapper{
+  width:40%;
+  height:100px;
+  margin-left: 10px;
+  text-align: left;
+  line-height: 25px;
 }
 td .Wrapper.default {
   margin-top: 20px;
   text-align: left;
+  padding-left: 15px;
 }
 td .Wrapper.default img{
   width:100px;

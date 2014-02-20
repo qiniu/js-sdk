@@ -209,7 +209,7 @@ FileProgress.prototype.setComplete = function(up, info) {
     $(img).on('load', function() {
         var Wrapper = $('<div class=Wrapper/>');
 
-        var imgWrapper = $('<div class="imgWrapper"/>');
+        var imgWrapper = $('<div class="imgWrapper col-md-3"/>');
         var Img = $('<img/>');
         Img.attr('src', url + imageView);
 
@@ -257,7 +257,19 @@ FileProgress.prototype.setComplete = function(up, info) {
         // linkWrapper.append(imageMogr2Img).append($('<br>')).append(watermarkImg).hide();
         // imgWrapper.append(Img).append(linkWrapper);
         imgWrapper.append(Img);
-        Wrapper.append(imgWrapper);
+
+        var infoWrapper = $('<div class="infoWrapper col-md-5"></div>');
+        var exifLink = $('<a href="" target="_blank">查看exif</a>');
+        exifLink.attr('href', url + '?exif');
+
+        var imageInfo = Q.imageInfo(res.key);
+        var infoArea = $('<div/>');
+        infoArea.html('格式：' + imageInfo.format + '  <br />宽度：' + imageInfo.width + '  <br />高度：' + imageInfo.height);
+
+        console.log(imageInfo);
+        infoWrapper.append(exifLink).append(infoArea);
+
+        Wrapper.append(imgWrapper).append(infoWrapper);
 
         // imgWrapper.on('mouseover', function() {
         //     linkWrapper.show();
@@ -266,6 +278,8 @@ FileProgress.prototype.setComplete = function(up, info) {
         // });
 
         progressNameTd.append(Wrapper);
+
+
         clearTimeout(timeId);
     }).on('error', function() {
         var Wrapper = $('<div class="Wrapper default"/>');
