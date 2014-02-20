@@ -9,8 +9,25 @@ var detectIEVersion = function() {
         v++;
     }
     return v > 4 ? v : false;
-}
+};
 
+var isImage = function(url) {
+    var res, suffix = "";
+    var imageSuffixes = ["png", "jpg", "jpeg", "gif", "bmp"];
+    var suffixMatch = /\.([a-zA-Z0-9]+)(\?|\@|$)/;
+
+    if (!url || !suffixMatch.test(url)) {
+        return false;
+    }
+    res = suffixMatch.exec(url);
+    suffix = res[1].toLowerCase();
+    for (var i = 0, l = imageSuffixes.length; i < l; i++) {
+        if (suffix === imageSuffixes[i]) {
+            return true;
+        }
+    }
+    return false;
+};
 var utf8_encode = function(argString) {
     // http://kevin.vanzonneveld.net
     // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
@@ -150,7 +167,7 @@ var createAjax = function(argument) {
         xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
     }
     return xmlhttp;
-}
+};
 
 var parseJSON = function(data) {
     // Attempt to parse using the native JSON parser first
@@ -175,15 +192,13 @@ var parseJSON = function(data) {
             }
         }
     }
-}
+};
 
 var trim = function(text) {
-    return text == null ? "" : trim.call(text);
-}
-
-var cancelUpload = function() {
-    uploader.destroy();
+    return text === null ? "" : trim.call(text);
 };
+
+
 
 function Qiniu(op) {
     if (!op.uptoken_url || !op.domain) {
@@ -393,14 +408,13 @@ function Qiniu(op) {
                 }
             }
             up.refresh(); // Reposition Flash/Silverlight
-        }
+        };
     })(Error_Handler));
 
 
 
     uploader.bind('FileUploaded', (function(FileUploaded_Handler) {
         return function(up, file, info) {
-            console.log(FileUploaded_Handler);
             var res = parseJSON(info.response);
             // console.log(info.response);
             // console.log(this === uploader);

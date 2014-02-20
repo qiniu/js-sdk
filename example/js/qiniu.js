@@ -415,7 +415,6 @@ function Qiniu(op) {
 
     uploader.bind('FileUploaded', (function(FileUploaded_Handler) {
         return function(up, file, info) {
-            console.log(FileUploaded_Handler);
             var res = parseJSON(info.response);
             // console.log(info.response);
             // console.log(this === uploader);
