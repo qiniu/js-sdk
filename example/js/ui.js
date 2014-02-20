@@ -199,7 +199,7 @@ FileProgress.prototype.setComplete = function(up, info) {
 
     var Wrapper = $('<div class="Wrapper"/>');
     var imgWrapper = $('<div class="imgWrapper col-md-3"/>');
-    var showImg = $('<img/>');
+    var showImg = $('<img width=20 height=20/>');
     showImg.attr('src', 'loading.gif');
 
     imgWrapper.append(showImg);
