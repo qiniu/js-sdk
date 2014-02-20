@@ -126,6 +126,14 @@ td .Wrapper {
   margin-top: 20px;
   text-align: center;
 }
+td .Wrapper.default {
+  margin-top: 20px;
+  text-align: left;
+}
+td .Wrapper.default img{
+  width:100px;
+  height:100px;
+}
 td .imgWrapper {
   position: relative;
   width:100px;

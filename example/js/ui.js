@@ -198,8 +198,11 @@ FileProgress.prototype.setComplete = function(up, info) {
     $(img).attr('src', url + imageView);
 
     var timeId = setTimeout(function() {
-        var Img = $('<img/>');
-        Img.attr('src', 'default.png');
+        var Wrapper = $('<div class="Wrapper default"/>');
+        var defaultImg = $('<img/>');
+        defaultImg.attr('src', 'default.png');
+        Wrapper.append(defaultImg);
+        progressNameTd.append(Wrapper);
         $(img).unbind();
     }, 3500);
 
@@ -263,7 +266,13 @@ FileProgress.prototype.setComplete = function(up, info) {
         // });
 
         progressNameTd.append(Wrapper);
+        clearTimeout(timeId);
     }).on('error', function() {
+        var Wrapper = $('<div class="Wrapper default"/>');
+        var defaultImg = $('<img/>');
+        defaultImg.attr('src', 'default.png');
+        Wrapper.append(defaultImg);
+        progressNameTd.append(Wrapper);
         clearTimeout(timeId);
     });
 
