@@ -165,7 +165,8 @@ $(function() {
         e.stopPropagation();
     });
     $('#show_code').on('click', function() {
-        $('pre').toggle();
+        // $('pre').toggle();
+        $('#myModal-code').modal();
     });
     $('pre code').each(function(i, e) {
         hljs.highlightBlock(e);

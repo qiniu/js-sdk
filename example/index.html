@@ -12,12 +12,15 @@
       <script src="js/Respond-1.4.2/respond.min.js"></script>
     <![endif]-->
 </head>
-<body id="reset-bootstrap">
+<body>
 <div class="container">
 	<div class="text-left col-md-12 wrapper">
 		<h1 class="text-left col-md-12 ">
 			七牛云存储 - JavaScript SDK
-                <a class="btn btn-default" href="https://github.com/sunln/qiniu-js-sdk" target="_blank">
+            <a class="btn btn-default view_code" id="show_code">
+                查看初始化代码
+            </a>
+            <a class="btn btn-default view_github" href="https://github.com/sunln/qiniu-js-sdk" target="_blank">
 				<img src="http://qtestbucket.qiniudn.com/GitHub-Mark-32px.png">
 				View Source on Github
 			</a>
@@ -29,7 +32,7 @@
 				</small>
 			</li>
 			<li>
-				<small>部分高级浏览器支持文件、文件夹拖曳上传。</small>
+				<small>大于4M文件采用分块上传。</small>
 			</li>
 			<li>
 				<small>临时上传的空间不定时清空，请勿保存重要文件。</small>
@@ -39,6 +42,7 @@
 			</li>
 		</ul>
     </div>
+    <div class="body">
         <div class="col-md-12">
             <div id="container">
                 <a class="btn btn-default btn-lg " id="pickfiles" href="#" >
@@ -78,11 +82,8 @@
                 </tbody>
             </table>
         </div>
-        <div class="col-md-12 ">
-            <a class="link" id="show_code">查看核心源码</a>
-        </div>
         <div class="col-md-12">
-		<pre><code>
+<!-- 		<pre><code>
         //引入Plupload 、qiniu.js后
 
         var Q = new Qiniu({
@@ -121,8 +122,64 @@
                 }
             }
         });
-		</code></pre>
+		</code></pre> -->
 		</div>
+    </div>
+    <div class="modal fade" id="myModal-code" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myModalLabel">查看初始化代码</h4>
+          </div>
+          <div class="modal-body">
+            <pre><code>
+            //引入Plupload 、qiniu.js后
+
+            var Q = new Qiniu({
+                runtimes: 'html5,flash,html4', //上传方式,依次退化
+                browse_button: 'pickfiles', //上传选择的点选按钮，必须
+                uptoken_url: '/token', //请求uptoken的Url，必须
+                domain: 'http://qiniu-plupload.qiniudn.com/',//buckete 域名，下载资源时用到，必须
+                container: 'container',//上传区域DOM ID，默认是browser_button的父元素，
+                drop_element: 'container', //拖曳上传区域元素的ID
+                max_file_size: '100mb', //最大文件体积限制
+                flash_swf_url: 'js/plupload/Moxie.swf',//引入flash
+                max_retries: 3,//上传失败最大重试次数
+                dragdrop: true, //开启可拖曳上传
+                chunk_size: '4mb',//分片上传时，每片的体积
+                auto_start: true, //选择文件后自动上传，若关闭需要自己绑定事件触发上传
+                init: {
+                    'FilesAdded': function(up, files) {
+                        plupload.each(files, function(file) {
+                            //文件添加进队列后,处理相关的事情
+                        });
+                    },
+                    'BeforeUpload': function(up, file) {
+                       //每个文件上传前,处理相关的事情
+                    },
+                    'UploadProgress': function(up, file) {
+                        //每个文件上传时,处理相关的事情
+                    },
+                    'FileUploaded': function(up, file, info) {
+                       //每个文件上传成功后,处理相关的事情
+                    },
+                    'Error': function(up, err, errTip) {
+                        //上传出错时,处理相关的事情
+                    },
+                    'UploadComplete': function() {
+                        //队列文件处理完毕后,处理相关的事情
+                    }
+                }
+            });
+            </code></pre>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+          </div>
+        </div>
+      </div>
+    </div>
 </div>
 <!--<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-dialog">
@@ -186,6 +243,8 @@
   </div>
 </div>
 -->
+
+
 <script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
 <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
 <script type="text/javascript" src="js/plupload/plupload.full.min.js"></script>
