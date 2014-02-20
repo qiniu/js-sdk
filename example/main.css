@@ -37,6 +37,7 @@ h1 .btn:hover {
 .info {
 	position: relative;
     height: 100%;
+    /*margin-bottom: 20px;*/
 }
 tr .progress-bar {
     min-height: 20px;
@@ -145,8 +146,8 @@ td .imgWrapper .linkWrapper a{
     line-height: 50px;
 
 }
-table button.btn {
-    /*margin:20px 0;*/
+table td .hash {
+    margin-bottom: 20px;
 }
 pre  {
     margin-top: 20px;

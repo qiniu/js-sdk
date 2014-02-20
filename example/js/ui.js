@@ -178,16 +178,17 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
 
 FileProgress.prototype.setComplete = function(up, info) {
     var td = this.fileProgressWrapper.find('td:eq(2) .progress');
-    td.hide().find('.progress-bar').attr('aria-valuenow', 100).width('100%');
+    // td.find('.progress-bar').attr('aria-valuenow', 100).width('100%');
 
     var res = info;
     var domain = up.getOption('domain');
     var url = domain + encodeURI(res.key);
     var link = domain + res.key;
     var str = "<div><strong>Link:</strong><a href=" + url + " target='_blank' > " + link + "</a></div>" +
-        "<div><strong>Hash:</strong>" + res.hash + "<div>";
+        "<div class=hash><strong>Hash:</strong>" + res.hash + "</div>" +
+        "<button class='btn btn-default'>查看分块上传进度</button>";
 
-    td.html(str);
+    td.parent().html(str);
 
     var progressNameTd = this.fileProgressWrapper.find('.progressName');
     var imageView = '?imageView2/1/w/100/h/100';
@@ -197,7 +198,8 @@ FileProgress.prototype.setComplete = function(up, info) {
     $(img).attr('src', url + imageView);
 
     var timeId = setTimeout(function() {
-        // $(img).attr('src','btn-default');
+        var Img = $('<img/>');
+        Img.attr('src', 'default.png');
         $(img).unbind();
     }, 3500);
 
