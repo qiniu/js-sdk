@@ -199,8 +199,7 @@ FileProgress.prototype.setComplete = function(up, info) {
 
     var Wrapper = $('<div class="Wrapper"/>');
     var imgWrapper = $('<div class="imgWrapper col-md-3"/>');
-    var showImg = $('<img width=20 height=20/>');
-    showImg.attr('src', 'loading.gif');
+    var showImg = $('<img src="loading.gif"/>');
 
     imgWrapper.append(showImg);
     Wrapper.append(imgWrapper);
@@ -274,8 +273,13 @@ FileProgress.prototype.setComplete = function(up, info) {
 
 
             var infoWrapper = $('<div class="infoWrapper col-md-5"></div>');
-            var exifLink = $('<a href="" target="_blank">查看exif</a>');
-            exifLink.attr('href', url + '?exif');
+
+            var exif = Q.exif(res.key);
+            if (exif) {
+                var exifLink = $('<a href="" target="_blank">查看exif</a>');
+                exifLink.attr('href', url + '?exif');
+            }
+
 
             var imageInfo = Q.imageInfo(res.key);
             var infoArea = $('<div/>');
