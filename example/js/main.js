@@ -11,16 +11,16 @@ var Q = new Qiniu({
     uptoken_url: '/token',
     domain: 'http://qiniu-plupload.qiniudn.com/',
     auto_start: true,
-    filters: {
-        mime_types: [{
-            title: "Image files",
-            extensions: "jpg,gif,png,jpeg"
-        }]
-        // }, {
-        //     title: "Zip files",
-        //     extensions: "zip"
-        // }]
-    },
+    // filters: {
+    //     mime_types: [{
+    //         title: "Image files",
+    //         extensions: "jpg,gif,png,jpeg"
+    //     }]
+    //     // }, {
+    //     //     title: "Zip files",
+    //     //     extensions: "zip"
+    //     // }]
+    // },
     init: {
         'FilesAdded': function(up, files) {
             $('table').show();
@@ -173,5 +173,9 @@ $(function() {
 
     $('body').on('click', 'table button.btn', function() {
         $(this).parents('tr').next().toggle();
+    });
+
+    $('#myModal').find('.modal-body-footer').find('a').on('click', function() {
+        $(this).addClass('disabled').siblings().removeClass('disabled');
     });
 });
