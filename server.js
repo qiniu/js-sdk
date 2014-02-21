@@ -30,10 +30,10 @@ app.get('/', function(req, res) {
     res.sendfile(__dirname + '/example/index.html')
 });
 
-qiniu.conf.ACCESS_KEY = '0MLvWPnyya1WtPnXFy9KLyGHyFPNdZceomLVk0c9';
-qiniu.conf.SECRET_KEY = 'o5itRgrXxoD6XQ5wDWKQ7h--eWvWyQVKcsIURuEV';
+qiniu.conf.ACCESS_KEY = '<Your Access Key>';
+qiniu.conf.SECRET_KEY = '<Your Secret Key>';
 
-var uptoken = new qiniu.rs.PutPolicy('qiniu-plupload');
+var uptoken = new qiniu.rs.PutPolicy('<Your Buckete Name>');
 
 
 app.listen(3000);
