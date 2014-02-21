@@ -22,12 +22,12 @@ qiniu-js-sdk
 
 ## 安装和运行程序
 * 独立开发
-    1. 获取源代码：
+    *  获取源代码：
         `git clone https://github.com/SunLn/qiniu-js-sdk.git`
 
-    2. 利用[七牛服务端SDK](http://developer.qiniu.com/docs/v6/sdk/)构建后端服务，提供一个api URL地址供前端初始化uptoken
+    * 利用[七牛服务端SDK](http://developer.qiniu.com/docs/v6/sdk/)构建后端服务，提供一个api URL地址供前端初始化uptoken
 
-    3. 在页面引入Plupload，及qiniu.js,初始化SDK,保存
+    * 在页面引入Plupload，及qiniu.js,初始化SDK,保存
 
     ```
 
@@ -70,22 +70,22 @@ qiniu-js-sdk
 
     ```
 
-    4. 运行网站、访问该页面，选择文件后上传
+    * 运行网站、访问该页面，选择文件后上传
 
-    5. 可对上传成功的图片进行数据处理
+    * 可对上传成功的图片进行数据处理
 
 * 运行示例
 
-    如果你机器上装有nodejs环境，也可以clone本项目后，进入example目录,修改server.js，通过运行`node server.js` 或者 `make`启动
+    * 如果你机器上装有nodejs环境，也可以clone本项目后，进入example目录,修改server.js，通过运行`node server.js` 或者 `make`启动
 
-```
+    ```
 
-    qiniu.conf.ACCESS_KEY = '<Your Access Key>';
+        qiniu.conf.ACCESS_KEY = '<Your Access Key>';
 
-    qiniu.conf.SECRET_KEY = '<Your Secret Key>';
+        qiniu.conf.SECRET_KEY = '<Your Secret Key>';
 
-    var uptoken = new qiniu.rs.PutPolicy('<Your Buckete Name>');
-```
+        var uptoken = new qiniu.rs.PutPolicy('<Your Buckete Name>');
+    ```
 
 ## API使用手册 (Todo 详细使用说明)
 
