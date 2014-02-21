@@ -3,8 +3,21 @@ qiniu-js-sdk
 
 基于七牛API及Plupload开发的前端JavaScript SDK
 
-示例网站：[七牛JavaScript SDK 示例网站 - 配合nodejs SDK ](http://upqiniu.duapp.com/)
+示例网站：[七牛JavaScript SDK 示例网站 - 配合七牛nodejs SDK ](http://upqiniu.duapp.com/)
 
+## 功能简介
+
+* 上传
+ * html5模式大于4M时可分块上传，小于4M时直传
+ * Flash、html4模式直接上传
+* 下载
+* 数据处理（图片）
+ * imageView2（缩略图）
+ * imageMogr2（高级处理，包含缩放、裁剪、旋转等）
+ * imageInfo （获取基本信息）
+ * exif      （获取图片EXIF信息）
+ * watermark （文字、图片水印）
+ * pipeline  （管道，可对imageView2、imageMogr2、watermark进行链式处理）
 
 ## 安装和运行程序
 
