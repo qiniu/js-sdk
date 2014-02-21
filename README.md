@@ -10,6 +10,7 @@ qiniu-js-sdk
 * 上传
  * html5模式大于4M时可分块上传，小于4M时直传
  * Flash、html4模式直接上传
+ * 继承了Plupload的功能，可筛选文件上传、拖曳上传等
 * 下载
 * 数据处理（图片）
  * imageView2（缩略图）
@@ -20,15 +21,16 @@ qiniu-js-sdk
  * pipeline  （管道，可对imageView2、imageMogr2、watermark进行链式处理）
 
 ## 安装和运行程序
+* 独立开发
+    1. 获取源代码：
+        `git clone https://github.com/SunLn/qiniu-js-sdk.git`
 
-1. 获取源代码：
-    `git clone https://github.com/SunLn/qiniu-js-sdk.git`
+    2. 利用[七牛服务端SDK](http://developer.qiniu.com/docs/v6/sdk/)构建后端服务，提供一个api URL地址供前端初始化uptoken
 
-2. 利用[七牛服务端SDK](http://developer.qiniu.com/docs/v6/sdk/)构建后端服务，提供一个api URL地址供前端初始化uptoken
+    3. 在页面引入Plupload，及qiniu.js,初始化SDK,保存
 
-3. 在页面引入Plupload，及qiniu.js,初始化SDK,保存
+    ```
 
-	```{javascript}
         var Q = new Qiniu({
             runtimes: 'html5,flash,html4', //上传方式,依次退化
             browse_button: 'pickfiles', //上传选择的点选按钮，必须
@@ -65,10 +67,25 @@ qiniu-js-sdk
                 }
             }
         });
-    ```
-4. 运行网站、访问该页面，选择文件后上传
 
-5. 可对上传成功的图片进行数据处理
+    ```
+
+    4. 运行网站、访问该页面，选择文件后上传
+
+    5. 可对上传成功的图片进行数据处理
+
+* 运行示例
+
+    如果你机器上装有nodejs环境，也可以clone本项目后，进入example目录,修改server.js，通过运行`node server.js` 或者 `make`启动
+
+```
+
+    qiniu.conf.ACCESS_KEY = '<Your Access Key>';
+
+    qiniu.conf.SECRET_KEY = '<Your Secret Key>';
+
+    var uptoken = new qiniu.rs.PutPolicy('<Your Buckete Name>');
+```
 
 ## API使用手册 (Todo 详细使用说明)
 
@@ -101,8 +118,13 @@ qiniu-js-sdk
 ## 贡献代码
 
 1. 登录 https://github.com
+
 2. Fork https://github.com/SunLn/qiniu-js-sdk.git
+
 3. 创建您的特性分支 (git checkout -b new-feature)
+
 4. 提交您的改动 (git commit -am 'Added some features or fixed a bug')
+
 5. 将您的改动记录提交到远程 git 仓库 (git push origin new-feature)
+
 6. 然后到 github 网站的该 git 远程仓库的 new-feature 分支下发起 Pull Request
