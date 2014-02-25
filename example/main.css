@@ -184,7 +184,11 @@ pre  {
     max-height: 70%;
 }
 .container .modal-body-footer , .container .modal-body-footer div{
-    margin-top: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.container .modal-dialog .modal-body-footer  {
+  margin-top: 0px;
 }
 .container .modal-dialog .modal-body-footer span {
   margin-right: 20px;
