@@ -11,16 +11,6 @@ var Q = new Qiniu({
     uptoken_url: '/token',
     domain: 'http://qiniu-plupload.qiniudn.com/',
     auto_start: true,
-    // filters: {
-    //     mime_types: [{
-    //         title: "Image files",
-    //         extensions: "jpg,gif,png,jpeg"
-    //     }]
-    //     // }, {
-    //     //     title: "Zip files",
-    //     //     extensions: "zip"
-    //     // }]
-    // },
     init: {
         'FilesAdded': function(up, files) {
             $('table').show();
@@ -176,7 +166,132 @@ $(function() {
         $(this).parents('tr').next().toggle();
     });
 
-    // $('#myModal').find('.modal-body-footer').find('a').on('click', function() {
-    //     $(this).addClass('disabled').siblings().removeClass('disabled');
+
+    var getRotate = function(url) {
+        if (!url) {
+            return 0;
+        }
+        var arr = url.split('/');
+        console.log(arr);
+        for (var i = 0, len = arr.length; i < len; i++) {
+            if (arr[i] === 'rotate') {
+                return parseInt(arr[i + 1]);
+            }
+        }
+        return 0;
+    }
+    $('#myModal-img .modal-body-footer').find('a').on('click', function() {
+        var img = $('#myModal-img').find('.modal-body img');
+        var key = img.data('key');
+        var oldUrl = img.attr('src');
+        var fopArr = [];
+        var rotate = getRotate(oldUrl);
+        if (!$(this).hasClass('no-disable-click')) {
+            $(this).addClass('disabled').siblings().removeClass('disabled');
+        } else {
+            $(this).siblings().removeClass('disabled');
+            var imageMogr = $(this).data('imagemogr');
+            if (imageMogr === 'left') {
+                rotate = rotate - 90 < 0 ? rotate + 270 : rotate - 90;
+            } else if (imageMogr === 'right') {
+                rotate = rotate + 90 > 360 ? rotate - 270 : rotate + 90;
+            }
+        }
+
+        fopArr.push({
+            'fop': 'imageMogr2',
+            'auto-orient': true,
+            'strip': true,
+            'thumbnail': '500x500',
+            'rotate': rotate,
+            'format': 'png'
+        });
+
+        $('#myModal-img .modal-body-footer').find('a.disabled').each(function() {
+            // console.log($(this));
+
+            // if ($(this).parent().attr('class') !== 'imageMogr2') {
+            // if ($(this).hasClass('')) {
+            var watermark = $(this).data('watermark');
+            var imageView = $(this).data('imageview');
+            var imageMogr = $(this).data('imagemogr');
+
+            if (watermark) {
+                fopArr.push({
+                    fop: 'watermark',
+                    mode: 1,
+                    image: 'http://www.b1.qiniudn.com/images/logo-2.png',
+                    dissolve: 100,
+                    gravity: watermark,
+                    dx: 100,
+                    dy: 100
+                });
+            }
+            fopArr.push({
+                fop: 'imageView2',
+                mode: 1,
+                w: 1200,
+                h: 1200,
+                q: 100,
+                format: 'png'
+            });
+
+
+            if (imageMogr === 'no-rotate') {
+                fopArr.push({
+                    'fop': 'imageMogr2',
+                    'auto-orient': true,
+                    'strip': true,
+                    'thumbnail': '500x500',
+                    'rotate': 0,
+                    'format': 'png'
+                });
+            }
+            // }
+            // }
+        });
+
+
+        var newUrl = Q.pipeline(fopArr, key);
+        console.log(Q.pipeline(fopArr, key));
+        img.attr('src', newUrl);
+        img.parent('a').attr('href', newUrl);
+    });
+
+    // $('table').on('click', '.progressName .imageMogr', function() {
+    //     $('#myModal-img').modal();
+    //     var modalBody = $('#myModal-img').find('.modal-body');
+    //     var url = Q.imageMogr2({
+    //         'auto-orient': true,
+    //         'strip': true,
+    //         'thumbnail': '500x500',
+    //         // 'crop': '!150x200a10a10',
+    //         'quality': 40,
+    //         'rotate': 20,
+    //         'format': 'png'
+    //     }, $(this).data('href'));
+    //     modalBody.find('img').attr('src', url);
+    //     modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
+    //     return false;
+    // }).on('click', '.watermark', function() {
+    //     var modalBody = $('#myModal-img').find('.modal-body');
+    //     var url = Q.watermark({
+    //         mode: 1,
+    //         image: 'http://www.b1.qiniudn.com/images/logo-2.png',
+    //         dissolve: 100,
+    //         gravity: 'SouthEast',
+    //         dx: 100,
+    //         dy: 100
+    //     }, $(this).data('href'));
+    //     $('#myModal-img').modal();
+    //     modalBody.find('img').attr('src', url);
+    //     modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
+
+    //     return false;
     // });
+    // $('.imgWrapper').on('mouseover', '.imgWrapper', function() {
+    //     linkWrapper.show();
+    // }).on('mouseout', '.imgWrapper', function() {
+    //     linkWrapper.hide();
+    // })
 });

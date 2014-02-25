@@ -28,14 +28,14 @@
 		<ul class="tip col-md-12 text-mute">
 			<li>
 				<small>
-					JavaScript SDK 基于 Plupload 开发，可以通过 HTML5 或 Flash 等模式直传文件至七牛云存储。
+					JavaScript SDK 基于 Plupload 开发，可以通过 Html5 或 Flash 等模式上传文件至七牛云存储。
 				</small>
 			</li>
 			<li>
 				<small>临时上传的空间不定时清空，请勿保存重要文件。</small>
 			</li>
             <li>
-                <small>大于4M文件采用分块上传。</small>
+                <small>Html5模式大于4M文件采用分块上传。</small>
             </li>
 			<li>
 				<small>本示例限制最大上传文件100M。</small>
@@ -175,74 +175,81 @@
             </code></pre>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            <button type="button" class="btn btn-primary" data-dismiss="modal">关闭</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade" id="myModal-img" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title" id="myModalLabel">图片效果查看</h4>
+          </div>
+          <div class="modal-body">
+            <div class="modal-body-wrapper text-center">
+                <a href="" target="_blank" >
+                    <img src="" alt="" data-key="">
+                </a>
+            </div>
+            <div class="modal-body-footer">
+                <div class="watermark">
+                    <span>水印控制：</span>
+                    <a href="#" data-watermark="NorthWest" class="btn btn-default">
+                        左上角水印
+                    </a>
+                    <a href="#" data-watermark="SouthWest" class="btn btn-default">
+                        左下角水印
+                    </a>
+                    <a href="#" data-watermark="NorthEast" class="btn btn-default">
+                        右上角水印
+                    </a>
+                    <a href="#" data-watermark="SouthEast" class="btn btn-default">
+                        右下角水印
+                    </a>
+                    <a href="#" data-watermark="false" class="btn btn-default">
+                        无水印
+                    </a>
+                </div>
+                 <div class="imageView2">
+                    <span>缩略控制：</span>
+                    <a href="#" data-imageview="large" class="btn btn-default">
+                        大缩略图
+                    </a>
+                    <a href="#" data-imageview="middle" class="btn btn-default">
+                        中缩略图
+                    </a>
+                    <a href="#" data-imageview="small" class="btn btn-default">
+                        小缩略图
+                    </a>
+                </div>
+                <div class="imageMogr2">
+                    <span>高级控制：</span>
+                    <a href="#" data-imagemogr="left" class="btn btn-default no-disable-click" >
+                        逆时针
+                    </a>
+                    <a href="#" data-imagemogr="right" class="btn btn-default no-disable-click">
+                        顺时针
+                    </a>
+                    <a href="#" data-imagemogr="no-rotate" class="btn btn-default">
+                        无旋转
+                    </a>
+                </div>
+
+            </div>
+          </div>
+          <div class="modal-footer">
+          <span class="pull-left">本示例仅演示了简单的几个图片处理API，</span>
+            <a href="http://developer.qiniu.com/docs/v6/api/reference/fop/image/" target="_blank" class="pull-left">了解更多功能</a>
+            <button type="button" class="btn btn-primary" data-dismiss="modal">关闭</button>
           </div>
         </div>
       </div>
     </div>
 </div>
-<!--<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="myModalLabel">图片效果查看</h4>
-      </div>
-      <div class="modal-body">
-        <div class="modal-body-wrapper text-center">
-            <a href="" target="_blank">
-                <img src="" alt="">
-            </a>
-        </div>
-        <div class="modal-body-footer">
-            <div class="watermark">
-                <a href="#" data-href="" class="btn btn-default">
-                    左上角水印
-                </a>
-                <a href="#" data-href="" class="btn btn-default">
-                    左下角水印
-                </a>
-                <a href="#" data-href="" class="btn btn-default">
-                    右上角水印
-                </a>
-                <a href="#" data-href="" class="btn btn-default">
-                    右下角水印
-                </a>
-                <a href="#" data-href="" class="btn btn-default">
-                    无水印
-                </a>
-            </div>
-            <div class="imageMogr2">
-                <a href="#" data-href="" class="btn btn-default">
-                    左旋
-                </a>
-                <a href="#" data-href="" class="btn btn-default">
-                    右旋
-                </a>
-                <a href="#" data-href="" class="btn btn-default">
-                    无旋转
-                </a>
-            </div>
-             <div class="imageView2">
-                <a href="#" data-href="" class="btn btn-default">
-                    缩略图
-                </a>
-                <a href="#" data-href="" class="btn btn-default">
-                    缩略图
-                </a>
-                <a href="#" data-href="" class="btn btn-default">
-                    缩略图
-                </a>
-            </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
-      </div>
-    </div>
-  </div>
-</div>
--->
+
+
 
 
 <script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>

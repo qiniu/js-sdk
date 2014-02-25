@@ -384,7 +384,7 @@ function Qiniu(op) {
                         }
                         var errorObj = parseJSON(err.response);
                         console.log(errorObj);
-                        errTip = errTip + '(' + err.status + '：' + errorObj.error.error + ')';
+                        errTip = errTip + '(' + err.status + '：' + errorObj.error + ')';
                         break;
                     case plupload.SECURITY_ERROR:
                         errTip = '安全配置错误。请联系网站管理员。';

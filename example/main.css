@@ -153,14 +153,14 @@ td .imgWrapper {
 }
 td .imgWrapper .linkWrapper {
     position: absolute;
-    left: 0;
+    left: 15px;
     top: 0;
-      width:100px;
-      height: 100px;
-      text-align: center;
-      opacity: 0.5;
-      background-color: #000;
-      cursor: pointer;
+    width:100px;
+    height: 100px;
+    text-align: center;
+    opacity: 0.5;
+    background-color: #000;
+    cursor: pointer;
 }
 td .imgWrapper .linkWrapper a{
     line-height: 50px;
@@ -176,13 +176,19 @@ pre  {
 .container .modal-dialog {
     width: 40%;
 }
+.container .modal-dialog .modal-content {
+     max-height: 90%;
+}
 .container .modal-dialog  .modal-body img{
     max-width: 95%;
+    max-height: 70%;
 }
 .container .modal-body-footer , .container .modal-body-footer div{
     margin-top: 20px;
 }
-
+.container .modal-dialog .modal-body-footer span {
+  margin-right: 20px;
+}
 .body .btn-default {
     border-radius: 3px;
   -webkit-box-shadow: 0 1px 0 rgba(243, 243, 243, 0.75);
