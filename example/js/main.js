@@ -241,13 +241,13 @@ $(function() {
             if (originHeight < $(window).height()) {
                 switch (imageView) {
                     case 'large':
-                        height = originHeight * 0.9;
+                        height = originHeight * 0.5;
                         break
                     case 'middle':
-                        height = originHeight * 0.5;
+                        height = originHeight * 0.3;
                         break;
                     case 'small':
-                        height = originHeight * 0.3;
+                        height = originHeight * 0.1;
                         break;
                     default:
                         height = originHeight;
@@ -256,13 +256,13 @@ $(function() {
             } else {
                 switch (imageView) {
                     case 'large':
-                        height = originHeight * 0.5;
+                        height = originHeight * 0.4;
                         break
                     case 'middle':
-                        height = originHeight * 0.3;
+                        height = originHeight * 0.2;
                         break;
                     case 'small':
-                        height = originHeight * 0.2;
+                        height = originHeight * 0.05;
                         break;
                     default:
                         height = originHeight;

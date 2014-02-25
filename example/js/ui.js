@@ -235,7 +235,9 @@ FileProgress.prototype.setComplete = function(up, info) {
             watermarkImg.attr('data-key', res.key).text('查看水印效果');
 
             function initImg(url, key, height) {
-                $('#myModal-img').modal();
+                $('#myModal-img').modal().on('hide.bs.modal', function() {
+                    $('#myModal-img').find('.btn-default').removeClass('disabled');
+                });
                 var modalBody = $('#myModal-img').find('.modal-body');
                 console.log(height, 'height');
                 modalBody.find('img').attr('src', url).data('key', key).data('h', height);
@@ -244,31 +246,63 @@ FileProgress.prototype.setComplete = function(up, info) {
             }
             imageMogr2Img.on('click', function() {
                 var key = $(this).data('key');
-                var height = $(this).parents('.Wrapper').find('.origin-height').text();
-                var url = Q.imageMogr2({
+                var height = parseInt($(this).parents('.Wrapper').find('.origin-height').text(), 10);
+                var originHeight = height;
+                if (height > $(window).height()) {
+                    height = parseInt(height * 0.2, 10);
+                } else {
+                    height = parseInt(height * 0.3, 10);
+                }
+                var fopArr = [];
+                fopArr.push({
+                    fop: 'imageView2',
+                    mode: 3,
+                    h: height,
+                    q: 100,
+                    format: 'png'
+                });
+                fopArr.push({
+                    fop: 'imageMogr2',
                     'auto-orient': true,
                     'strip': true,
                     'thumbnail': '500x500',
                     'quality': 40,
                     'rotate': 20,
                     'format': 'png'
-                }, key);
-                initImg(url, key, height);
+                });
+                var url = Q.pipeline(fopArr, key);
+                initImg(url, key, originHeight);
                 return false;
             });
 
             watermarkImg.on('click', function() {
                 var key = $(this).data('key');
-                var height = $(this).parent('.Wrapper').find('.origin-height').text();
-                var url = Q.watermark({
+                var height = parseInt($(this).parents('.Wrapper').find('.origin-height').text(), 10);
+                var originHeight = height;
+                if (height > $(window).height()) {
+                    height = parseInt(height * 0.2, 10);
+                } else {
+                    height = parseInt(height * 0.3, 10);
+                }
+                var fopArr = [];
+                fopArr.push({
+                    fop: 'imageView2',
+                    mode: 3,
+                    h: height,
+                    q: 100,
+                    format: 'png'
+                });
+                fopArr.push({
+                    fop: 'watermark',
                     mode: 1,
                     image: 'http://www.b1.qiniudn.com/images/logo-2.png',
                     dissolve: 100,
                     gravity: 'SouthEast',
                     dx: 100,
                     dy: 100
-                }, key);
-                initImg(url, key, height);
+                });
+                var url = Q.pipeline(fopArr, key);
+                initImg(url, key, originHeight);
 
                 return false;
             });
