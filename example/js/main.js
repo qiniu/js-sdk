@@ -179,7 +179,8 @@ $(function() {
             }
         }
         return 0;
-    }
+    };
+
     $('#myModal-img .modal-body-footer').find('a').on('click', function() {
         var img = $('#myModal-img').find('.modal-body img');
         var key = img.data('key');
@@ -289,11 +290,20 @@ $(function() {
             }
         });
 
-
         var newUrl = Q.pipeline(fopArr, key);
+
+        var newImg = new Image();
+        img.attr('src', 'loading.gif');
+        newImg.onload = function() {
+            img.attr('src', newUrl);
+            img.parent('a').attr('href', newUrl);
+        }
+        newImg.src = newUrl;
+
+
+
         // console.log(Q.pipeline(fopArr, key));
-        img.attr('src', newUrl);
-        img.parent('a').attr('href', newUrl);
+
     });
 
     // $('table').on('click', '.progressName .imageMogr', function() {
