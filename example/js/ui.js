@@ -234,27 +234,32 @@ FileProgress.prototype.setComplete = function(up, info) {
             var watermarkImg = $('<a class="watermark"/>');
             watermarkImg.attr('data-key', res.key).text('查看水印效果');
 
-            imageMogr2Img.on('click', function() {
+            function initImg(url, key, height) {
                 $('#myModal-img').modal();
                 var modalBody = $('#myModal-img').find('.modal-body');
+                console.log(height, 'height');
+                modalBody.find('img').attr('src', url).data('key', key).data('h', height);
+                modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
+
+            }
+            imageMogr2Img.on('click', function() {
                 var key = $(this).data('key');
+                var height = $(this).parents('.Wrapper').find('.origin-height').text();
                 var url = Q.imageMogr2({
                     'auto-orient': true,
                     'strip': true,
                     'thumbnail': '500x500',
-                    // 'crop': '!150x200a10a10',
                     'quality': 40,
                     'rotate': 20,
                     'format': 'png'
                 }, key);
-                modalBody.find('img').attr('src', url).data('key', key);
-                modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
+                initImg(url, key, height);
                 return false;
             });
 
             watermarkImg.on('click', function() {
-                var modalBody = $('#myModal-img').find('.modal-body');
                 var key = $(this).data('key');
+                var height = $(this).parent('.Wrapper').find('.origin-height').text();
                 var url = Q.watermark({
                     mode: 1,
                     image: 'http://www.b1.qiniudn.com/images/logo-2.png',
@@ -263,9 +268,7 @@ FileProgress.prototype.setComplete = function(up, info) {
                     dx: 100,
                     dy: 100
                 }, key);
-                $('#myModal-img').modal();
-                modalBody.find('img').attr('src', url).data('key', key);
-                modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
+                initImg(url, key, height);
 
                 return false;
             });
@@ -277,7 +280,6 @@ FileProgress.prototype.setComplete = function(up, info) {
             var infoWrapper = $('<div class="infoWrapper col-md-5"></div>');
 
             var exif = Q.exif(res.key);
-            console.log(exif);
             if (exif) {
                 var exifLink = $('<a href="" target="_blank">查看exif</a>');
                 exifLink.attr('href', url + '?exif');
@@ -287,7 +289,10 @@ FileProgress.prototype.setComplete = function(up, info) {
 
             var imageInfo = Q.imageInfo(res.key);
             var infoArea = $('<div/>');
-            infoArea.html('格式：' + imageInfo.format + '  <br />宽度：' + imageInfo.width + '  <br />高度：' + imageInfo.height);
+            var infoInner = '<div>格式：<span class="origin-format">' + imageInfo.format + '</span></div>' +
+                '<div>宽度：<span class="orgin-width">' + imageInfo.width + '</span></div>' +
+                '<div>高度：<span class="origin-height">' + imageInfo.height + '</span></div>';
+            infoArea.html(infoInner);
 
             console.log(imageInfo);
             infoWrapper.append(infoArea);

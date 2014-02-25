@@ -175,7 +175,7 @@ $(function() {
         console.log(arr);
         for (var i = 0, len = arr.length; i < len; i++) {
             if (arr[i] === 'rotate') {
-                return parseInt(arr[i + 1]);
+                return parseInt(arr[i + 1], 10);
             }
         }
         return 0;
@@ -184,6 +184,7 @@ $(function() {
         var img = $('#myModal-img').find('.modal-body img');
         var key = img.data('key');
         var oldUrl = img.attr('src');
+        var originHeight = parseInt(img.data('h'), 10);
         var fopArr = [];
         var rotate = getRotate(oldUrl);
         if (!$(this).hasClass('no-disable-click')) {
@@ -196,22 +197,21 @@ $(function() {
             } else if (imageMogr === 'right') {
                 rotate = rotate + 90 > 360 ? rotate - 270 : rotate + 90;
             }
+            console.log(rotate, 'rotate');
+            fopArr.push({
+                'fop': 'imageMogr2',
+                'auto-orient': true,
+                'strip': true,
+                // 'thumbnail': '500x500',
+                'rotate': rotate,
+                'format': 'png'
+            });
         }
+        // console.log(rotate, 'rotate');
 
-        fopArr.push({
-            'fop': 'imageMogr2',
-            'auto-orient': true,
-            'strip': true,
-            'thumbnail': '500x500',
-            'rotate': rotate,
-            'format': 'png'
-        });
 
         $('#myModal-img .modal-body-footer').find('a.disabled').each(function() {
-            // console.log($(this));
 
-            // if ($(this).parent().attr('class') !== 'imageMogr2') {
-            // if ($(this).hasClass('')) {
             var watermark = $(this).data('watermark');
             var imageView = $(this).data('imageview');
             var imageMogr = $(this).data('imagemogr');
@@ -227,11 +227,41 @@ $(function() {
                     dy: 100
                 });
             }
+            var height;
+            if (originHeight < $(window).height()) {
+                switch (imageView) {
+                    case 'large':
+                        height = originHeight * 0.9;
+                        break
+                    case 'middle':
+                        height = originHeight * 0.5;
+                        break;
+                    case 'small':
+                        height = originHeight * 0.3;
+                        break;
+                    default:
+                        break;
+                };
+            } else {
+                switch (imageView) {
+                    case 'large':
+                        height = originHeight * 0.5;
+                        break
+                    case 'middle':
+                        height = originHeight * 0.3;
+                        break;
+                    case 'small':
+                        height = originHeight * 0.2;
+                        break;
+                    default:
+                        break;
+                };
+            }
+            console.log(height);
             fopArr.push({
                 fop: 'imageView2',
-                mode: 1,
-                w: 1200,
-                h: 1200,
+                mode: 3,
+                h: parseInt(height, 10),
                 q: 100,
                 format: 'png'
             });
@@ -247,8 +277,6 @@ $(function() {
                     'format': 'png'
                 });
             }
-            // }
-            // }
         });
 
 
