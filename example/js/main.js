@@ -189,6 +189,15 @@ $(function() {
         var rotate = getRotate(oldUrl);
         if (!$(this).hasClass('no-disable-click')) {
             $(this).addClass('disabled').siblings().removeClass('disabled');
+            if (!$(this).data('imagemogr') !== 'no-rotate') {
+                fopArr.push({
+                    'fop': 'imageMogr2',
+                    'auto-orient': true,
+                    'strip': true,
+                    'rotate': rotate,
+                    'format': 'png'
+                });
+            }
         } else {
             $(this).siblings().removeClass('disabled');
             var imageMogr = $(this).data('imagemogr');
@@ -202,11 +211,11 @@ $(function() {
                 'fop': 'imageMogr2',
                 'auto-orient': true,
                 'strip': true,
-                // 'thumbnail': '500x500',
                 'rotate': rotate,
                 'format': 'png'
             });
         }
+
         // console.log(rotate, 'rotate');
 
 
@@ -240,6 +249,7 @@ $(function() {
                         height = originHeight * 0.3;
                         break;
                     default:
+                        height = originHeight;
                         break;
                 };
             } else {
@@ -254,6 +264,7 @@ $(function() {
                         height = originHeight * 0.2;
                         break;
                     default:
+                        height = originHeight;
                         break;
                 };
             }
@@ -272,7 +283,6 @@ $(function() {
                     'fop': 'imageMogr2',
                     'auto-orient': true,
                     'strip': true,
-                    'thumbnail': '500x500',
                     'rotate': 0,
                     'format': 'png'
                 });
@@ -281,7 +291,7 @@ $(function() {
 
 
         var newUrl = Q.pipeline(fopArr, key);
-        console.log(Q.pipeline(fopArr, key));
+        // console.log(Q.pipeline(fopArr, key));
         img.attr('src', newUrl);
         img.parent('a').attr('href', newUrl);
     });
