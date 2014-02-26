@@ -41,11 +41,11 @@ qiniu-js-sdk
 
     后端服务应提供一个URL地址，供SDK初始化使用，前端通过Ajax请求该地址后获得upToken。Ajax请求成功后，服务端返回应以下类似的json：
 
-        ```
+    ```
         {
             "uptoken": "0MLvWPnyya1WtPnXFy9KLyGHyFPNdZceomL..."
         }
-        ```
+    ```
 * 引入Plupload
 
     1. [Plupload下载](http://plupload.com/download)
@@ -186,15 +186,13 @@ qiniu-js-sdk
     *  imageInfo
 
     ```
-
-        Q.imageInfo(key); // key为上传成功后的文件名
+        var imageInfoObj = Q.imageInfo(key);
     ```
     具体 imageInfo 解释见[图片基本信息（imageInfo）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/imageinfo.html)
     *  exif
 
     ```
-
-        Q.exif(key); // key为上传成功后的文件名
+        var exifOjb = Q.exif(key);
     ```
 
     具体 exif 解释见[图片EXIF信息（exif）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/exif.html)
