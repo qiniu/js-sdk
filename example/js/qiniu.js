@@ -510,15 +510,12 @@ Qiniu.prototype.imageMogr2 = function(op, key) {
         quality = op.quality || '',
         rotate = op.rotate || '',
         format = op.format || '';
-    if (!auto_orient) {
-        return false;
-    }
-    // if (crop.indexOf('!') === -1 || (crop.indexOf('a') === -1) && (crop.indexOf('-') === -1)) {
-    //     return false;
-    // }
+    blur = op.blur || '';
     //Todo check option
 
-    var imageUrl = auto_orient ? 'imageMogr2' + '/auto-orient' : '';
+    var imageUrl = 'imageMogr2'
+
+    imageUrl += auto_orient ? '/auto-orient' : '';
     imageUrl += thumbnail ? '/thumbnail/' + thumbnail : '';
     imageUrl += strip ? '/strip' : '';
     imageUrl += gravity ? '/gravity/' + gravity : '';
@@ -526,6 +523,7 @@ Qiniu.prototype.imageMogr2 = function(op, key) {
     imageUrl += crop ? '/crop/' + crop : '';
     imageUrl += rotate ? '/rotate/' + rotate : '';
     imageUrl += format ? '/format/' + format : '';
+    imageUrl += blur ? '/blur/' + blur : '';
 
     if (key) {
         imageUrl = this.getUrl(key) + '?' + imageUrl;
