@@ -275,7 +275,7 @@ $(function() {
             img.parent('a').attr('href', newUrl);
         };
         newImg.src = newUrl;
-
+        return false;
     });
 
 });

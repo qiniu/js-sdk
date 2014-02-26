@@ -232,10 +232,7 @@ FileProgress.prototype.setComplete = function(up, info) {
             linkWrapper.attr('href', url).attr('title', '查看原图');
 
             function initImg(url, key, height) {
-                $('#myModal-img').modal().on('hide.bs.modal', function() {
-                    $('#myModal-img').find('.btn-default').removeClass('disabled');
-                    $('#myModal-img').find('.text-warning').hide();
-                });
+                $('#myModal-img').modal();
                 var modalBody = $('#myModal-img').find('.modal-body');
                 if (height < 100) {
                     $('#myModal-img').find('.text-warning').show();
@@ -287,6 +284,15 @@ FileProgress.prototype.setComplete = function(up, info) {
                     dy: 100
                 });
                 var url = Q.pipeline(fopArr, key);
+                $('#myModal-img').on('hide.bs.modal', function() {
+                    $('#myModal-img').find('.btn-default').removeClass('disabled');
+                    $('#myModal-img').find('.text-warning').hide();
+                }).on('show.bs.modal', function() {
+                    $('#myModal-img').find('.imageView').find('a:eq(0)').addClass('disabled');
+                    $('#myModal-img').find('.watermark').find('a:eq(3)').addClass('disabled');
+                    $('#myModal-img').find('.text-warning').hide();
+                });
+
                 initImg(url, key, height);
 
                 return false;
