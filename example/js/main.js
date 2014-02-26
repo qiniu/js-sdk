@@ -236,24 +236,6 @@ $(function() {
                 });
             }
             var height;
-            // if (originHeight < $(window).height()) {
-
-            // } else {
-            //     switch (imageView) {
-            //         case 'large':
-            //             height = originHeight * 0.4;
-            //             break
-            //         case 'middle':
-            //             height = originHeight * 0.2;
-            //             break;
-            //         case 'small':
-            //             height = originHeight * 0.05;
-            //             break;
-            //         default:
-            //             height = originHeight;
-            //             break;
-            //     };
-            // }
             switch (imageView) {
                 case 'large':
                     height = originHeight * 0.9;
@@ -301,40 +283,4 @@ $(function() {
 
     });
 
-    // $('table').on('click', '.progressName .imageMogr', function() {
-    //     $('#myModal-img').modal();
-    //     var modalBody = $('#myModal-img').find('.modal-body');
-    //     var url = Q.imageMogr2({
-    //         'auto-orient': true,
-    //         'strip': true,
-    //         'thumbnail': '500x500',
-    //         // 'crop': '!150x200a10a10',
-    //         'quality': 40,
-    //         'rotate': 20,
-    //         'format': 'png'
-    //     }, $(this).data('href'));
-    //     modalBody.find('img').attr('src', url);
-    //     modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
-    //     return false;
-    // }).on('click', '.watermark', function() {
-    //     var modalBody = $('#myModal-img').find('.modal-body');
-    //     var url = Q.watermark({
-    //         mode: 1,
-    //         image: 'http://www.b1.qiniudn.com/images/logo-2.png',
-    //         dissolve: 100,
-    //         gravity: 'SouthEast',
-    //         dx: 100,
-    //         dy: 100
-    //     }, $(this).data('href'));
-    //     $('#myModal-img').modal();
-    //     modalBody.find('img').attr('src', url);
-    //     modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
-
-    //     return false;
-    // });
-    // $('.imgWrapper').on('mouseover', '.imgWrapper', function() {
-    //     linkWrapper.show();
-    // }).on('mouseout', '.imgWrapper', function() {
-    //     linkWrapper.hide();
-    // })
 });

@@ -199,9 +199,10 @@ FileProgress.prototype.setComplete = function(up, info) {
 
     var Wrapper = $('<div class="Wrapper"/>');
     var imgWrapper = $('<div class="imgWrapper col-md-3"/>');
+    var linkWrapper = $('<a class="linkWrapper" target="_blank"/>');
     var showImg = $('<img src="loading.gif"/>');
-
-    imgWrapper.append(showImg);
+    linkWrapper.append(showImg);
+    imgWrapper.append(linkWrapper);
     Wrapper.append(imgWrapper);
     progressNameTd.append(Wrapper);
 
@@ -221,18 +222,11 @@ FileProgress.prototype.setComplete = function(up, info) {
         }, 5000);
 
         $(img).on('load', function() {
-            // var Wrapper = $('<div class=Wrapper/>');
 
             clearTimeout(timeId);
-            // var Img = $('<img/>');
             showImg.attr('src', url + imageView);
 
-            var linkWrapper = $('<div class="linkWrapper">');
-            // var imageMogr2Img = $('<a class="imageMogr"/>');
-            // imageMogr2Img.attr('data-key', res.key).text('查看旋转效果');
-
-            // var watermarkImg = $('<a class="watermark"/>');
-            // watermarkImg.attr('data-key', res.key).text('查看水印效果');
+            linkWrapper.attr('href', url).attr('title', '查看原图');
 
             function initImg(url, key, height) {
                 $('#myModal-img').modal().on('hide.bs.modal', function() {
@@ -244,72 +238,6 @@ FileProgress.prototype.setComplete = function(up, info) {
                 modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
 
             }
-            // imageMogr2Img.on('click', function() {
-            //     var key = $(this).data('key');
-            //     var height = parseInt($(this).parents('.Wrapper').find('.origin-height').text(), 10);
-            //     var originHeight = height;
-            //     if (height > $(window).height() - 300) {
-            //         height = parseInt($(window).height() - 300, 10);
-            //     } else {
-            //         height = parseInt(height, 10);
-            //     }
-            //     var fopArr = [];
-            //     fopArr.push({
-            //         fop: 'imageView2',
-            //         mode: 3,
-            //         h: height,
-            //         q: 100,
-            //         format: 'png'
-            //     });
-            //     fopArr.push({
-            //         fop: 'imageMogr2',
-            //         'auto-orient': true,
-            //         'strip': true,
-            //         // 'thumbnail': '500x500',
-            //         'quality': 40,
-            //         'rotate': 20,
-            //         'format': 'png'
-            //     });
-            //     var url = Q.pipeline(fopArr, key);
-            //     initImg(url, key, height);
-            //     return false;
-            // });
-
-            // watermarkImg.on('click', function() {
-            //     var key = $(this).data('key');
-            //     var height = parseInt($(this).parents('.Wrapper').find('.origin-height').text(), 10);
-            //     var originHeight = height;
-            //     if (height > $(window).height() - 300) {
-            //         height = parseInt($(window).height() - 300, 10);
-            //     } else {
-            //         height = parseInt(height, 10);
-            //     }
-            //     var fopArr = [];
-            //     fopArr.push({
-            //         fop: 'imageView2',
-            //         mode: 3,
-            //         h: height,
-            //         q: 100,
-            //         format: 'png'
-            //     });
-            //     fopArr.push({
-            //         fop: 'watermark',
-            //         mode: 1,
-            //         image: 'http://www.b1.qiniudn.com/images/logo-2.png',
-            //         dissolve: 100,
-            //         gravity: 'SouthEast',
-            //         dx: 100,
-            //         dy: 100
-            //     });
-            //     var url = Q.pipeline(fopArr, key);
-            //     initImg(url, key, height);
-
-            //     return false;
-            // });
-
-            // linkWrapper.append(imageMogr2Img).append($('<br>')).append(watermarkImg).hide();
-            imgWrapper.append(linkWrapper);
-
 
             var infoWrapper = $('<div class="infoWrapper col-md-6"></div>');
 
@@ -326,7 +254,6 @@ FileProgress.prototype.setComplete = function(up, info) {
             fopLink.on('click', function() {
                 var key = $(this).data('key');
                 var height = parseInt($(this).parents('.Wrapper').find('.origin-height').text(), 10);
-                var originHeight = height;
                 if (height > $(window).height() - 300) {
                     height = parseInt($(window).height() - 300, 10);
                 } else {
@@ -358,8 +285,8 @@ FileProgress.prototype.setComplete = function(up, info) {
             var imageInfo = Q.imageInfo(res.key);
             var infoArea = $('<div/>');
             var infoInner = '<div>格式：<span class="origin-format">' + imageInfo.format + '</span></div>' +
-                '<div>宽度：<span class="orgin-width">' + imageInfo.width + '</span></div>' +
-                '<div>高度：<span class="origin-height">' + imageInfo.height + '</span></div>';
+                '<div>宽度：<span class="orgin-width">' + imageInfo.width + 'px</span></div>' +
+                '<div>高度：<span class="origin-height">' + imageInfo.height + 'px</span></div>';
             infoArea.html(infoInner);
 
             console.log(imageInfo);
@@ -367,24 +294,12 @@ FileProgress.prototype.setComplete = function(up, info) {
 
             Wrapper.append(infoWrapper);
 
-            imgWrapper.on('mouseover', function() {
-                linkWrapper.show();
-            }).on('mouseout', function() {
-                linkWrapper.hide();
-            });
-
-
         }).on('error', function() {
             showImg.attr('src', 'default.png');
             Wrapper.addClass('default');
             clearTimeout(timeId);
         });
     }
-    // var nextTr = this.fileProgressWrapper.next();
-    // var isChunk = nextTr.find('td').length === 1;
-    // if (isChunk) {
-    //     nextTr.hide();
-    // }
 };
 FileProgress.prototype.setError = function() {
     this.fileProgressWrapper.find('td:eq(2)').attr('class', 'text-warning');

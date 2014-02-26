@@ -153,9 +153,6 @@ td .imgWrapper .linkWrapper {
     top: 0;
     width:100px;
     height: 100px;
-    text-align: center;
-    opacity: 0.5;
-    background-color: #000;
     cursor: pointer;
 }
 td .imgWrapper .linkWrapper a{
