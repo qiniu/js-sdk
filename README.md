@@ -35,13 +35,17 @@ qiniu-js-sdk
 * 服务端准备
 
     本SDK依赖服务端颁发upToken，可以通过以下二种方式实现：
-    1.  利用[七牛服务端SDK](http://developer.qiniu.com/docs/v6/sdk/)构建后端服务，提供一个URL地址，前端通过Ajax请求该地址后返回upToken。
+    1.  利用[七牛服务端SDK](http://developer.qiniu.com/docs/v6/sdk/)构建后端服务
+    2.  利用七牛底层API构建服务，详见七牛[上传策略](http://developer.qiniu.com/docs/v6/api/reference/security/put-policy.html)和[上传凭证](http://developer.qiniu.com/docs/v6/api/reference/security/upload-token.html)
 
 
+    后端服务应提供一个URL地址，供SDK初始化使用，前端通过Ajax请求该地址后获得upToken。Ajax请求成功后，服务端返回应以下类似的json：
+        ```
 
-
-    3.  利用七牛底层API构建服务，详见七牛[上传策略](http://developer.qiniu.com/docs/v6/api/reference/security/put-policy.html)和[上传凭证](http://developer.qiniu.com/docs/v6/api/reference/security/upload-token.html)
-
+        {
+            "uptoken": "0MLvWPnyya1WtPnXFy9KLyGHyFPNdZceomL..."
+        }
+        ```
 * 引入Plupload
 
     1. [Plupload下载](http://plupload.com/download)
@@ -58,7 +62,7 @@ qiniu-js-sdk
         var Q = new Qiniu({
             runtimes: 'html5,flash,html4',    //上传模式,依次退化
             browse_button: 'pickfiles',       //上传选择的点选按钮，**必须**
-            uptoken_url: '/token',            //请求upToken的Url，**必须**（服务端提供）
+            uptoken_url: '/token',            //Ajax请求upToken的Url，**必须**（服务端提供）
             domain: 'http://qiniu-plupload.qiniudn.com/',   //buckete 域名，下载资源时用到，**必须**
             container: 'container',           //上传区域DOM ID，默认是browser_button的父元素，
             max_file_size: '100mb',           //最大文件体积限制
@@ -81,7 +85,18 @@ qiniu-js-sdk
                        //每个文件上传时,处理相关的事情
                 },
                 'FileUploaded': function(up, file, info) {
-                       //每个文件上传成功后,处理相关的事情
+                       // 每个文件上传成功后,处理相关的事情
+                       // 其中 info 是文件上传成功后，服务端返回的json，形式如
+                       // {
+                       //    "hash": "Fh8xVqod2MQ1mocfI4S4KpRL6D98",
+                       //    "key": "gogopher.jpg"
+                       //  }
+                       // 参考http://developer.qiniu.com/docs/v6/api/overview/up/response/simple-response.html
+
+
+                       // var domain = up.getOption('domain');
+                       // var res = parseJSON(info);
+                       // var sourceLink = domain + res.key; // 获取上传成功后的资源链接
                 },
                 'Error': function(up, err, errTip) {
                        //上传出错时,处理相关的事情
@@ -102,7 +117,7 @@ qiniu-js-sdk
 
     ```
 
-        // `Q`对象为初始化SDK时赋值的对象，下同
+        // `Q`对象为初始化SDK时赋值的对象｀var Q = new Qiniu({});｀，下同
         Q.watermark({
              mode: 1,  // 图片水印
              image: 'http://www.b1.qiniudn.com/images/logo-2.png', // 图片水印的Url
