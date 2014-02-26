@@ -201,15 +201,20 @@ FileProgress.prototype.setComplete = function(up, info) {
     var imgWrapper = $('<div class="imgWrapper col-md-3"/>');
     var linkWrapper = $('<a class="linkWrapper" target="_blank"/>');
     var showImg = $('<img src="loading.gif"/>');
-    linkWrapper.append(showImg);
-    imgWrapper.append(linkWrapper);
-    Wrapper.append(imgWrapper);
+
     progressNameTd.append(Wrapper);
 
     if (!isImg) {
         showImg.attr('src', 'default.png');
         Wrapper.addClass('default');
+
+        imgWrapper.append(showImg);
+        Wrapper.append(imgWrapper);
     } else {
+        linkWrapper.append(showImg);
+        imgWrapper.append(linkWrapper);
+        Wrapper.append(imgWrapper);
+
         var img = new Image();
         $(img).attr('src', url + imageView);
 
@@ -236,7 +241,6 @@ FileProgress.prototype.setComplete = function(up, info) {
                 console.log(height, 'height');
                 modalBody.find('img').attr('src', url).data('key', key).data('h', height);
                 modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
-
             }
 
             var infoWrapper = $('<div class="infoWrapper col-md-6"></div>');
@@ -289,7 +293,6 @@ FileProgress.prototype.setComplete = function(up, info) {
                 '<div>高度：<span class="origin-height">' + imageInfo.height + 'px</span></div>';
             infoArea.html(infoInner);
 
-            console.log(imageInfo);
             infoWrapper.append(infoArea);
 
             Wrapper.append(infoWrapper);
