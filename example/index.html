@@ -163,7 +163,7 @@
                     <a href="#" data-watermark="NorthEast" class="btn btn-default">
                         右上角
                     </a>
-                    <a href="#" data-watermark="SouthEast" class="btn btn-default">
+                    <a href="#" data-watermark="SouthEast" class="btn btn-default disabled">
                         右下角
                     </a>
                     <a href="#" data-watermark="false" class="btn btn-default">
@@ -172,7 +172,7 @@
                 </div>
                  <div class="imageView2">
                     <span>缩略控制：</span>
-                    <a href="#" data-imageview="large" class="btn btn-default">
+                    <a href="#" data-imageview="large" class="btn btn-default disabled">
                         大缩略图
                     </a>
                     <a href="#" data-imageview="middle" class="btn btn-default">
@@ -194,12 +194,19 @@
                         无旋转
                     </a>
                 </div>
-
+                <div class="text-warning">
+                    备注：小图片水印效果不明显，建议使用大图片预览水印效果
+                </div>
             </div>
           </div>
           <div class="modal-footer">
-          <span class="pull-left">本示例仅演示了简单的图片处理效果，</span>
-            <a href="http://developer.qiniu.com/docs/v6/api/reference/fop/image/" target="_blank" class="pull-left">了解更多功能</a>
+            <span class="pull-left">本示例仅演示了简单的图片处理效果，了解更多请点击</span>
+
+            <a href="https://github.com/SunLn/qiniu-js-sdk" target="_blank" class="pull-left">本SDK文档</a>
+            <span class="pull-left">或</span>
+
+            <a href="http://developer.qiniu.com/docs/v6/api/reference/fop/image/" target="_blank" class="pull-left">七牛官方文档</a>
+
             <button type="button" class="btn btn-primary" data-dismiss="modal">关闭</button>
           </div>
         </div>

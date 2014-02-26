@@ -97,7 +97,6 @@ FileProgress.prototype.setChunkProgess = function(chunk_size) {
 
     var progressBarChunkTr = $('<tr><td colspan=3></td></tr>');
     var progressBarChunk = $('<div/>');
-    // progressBarChunk.hide();
     for (var i = 1; i <= chunk_amount; i++) {
         var col = $('<div class="col-md-2"/>');
         var progressBarWrapper = $('<div class="progress progress-striped"></div');
@@ -179,7 +178,6 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
 
 FileProgress.prototype.setComplete = function(up, info) {
     var td = this.fileProgressWrapper.find('td:eq(2) .progress');
-    // td.find('.progress-bar').attr('aria-valuenow', 100).width('100%');
 
     var res = info;
     var domain = up.getOption('domain');
@@ -187,7 +185,6 @@ FileProgress.prototype.setComplete = function(up, info) {
     var link = domain + res.key;
     var str = "<div><strong>Link:</strong><a href=" + url + " target='_blank' > " + link + "</a></div>" +
         "<div class=hash><strong>Hash:</strong>" + res.hash + "</div>";
-    // "<button class='btn btn-default'>查看分块上传进度</button>";
 
     td.html(str).removeClass().next().next('.status').hide();
 
@@ -226,6 +223,7 @@ FileProgress.prototype.setComplete = function(up, info) {
             $(img).unbind();
         }, 5000);
 
+        var height_space = 340;
         $(img).on('load', function() {
 
             clearTimeout(timeId);
@@ -236,11 +234,19 @@ FileProgress.prototype.setComplete = function(up, info) {
             function initImg(url, key, height) {
                 $('#myModal-img').modal().on('hide.bs.modal', function() {
                     $('#myModal-img').find('.btn-default').removeClass('disabled');
+                    $('#myModal-img').find('.text-warning').hide();
                 });
                 var modalBody = $('#myModal-img').find('.modal-body');
-                console.log(height, 'height');
-                modalBody.find('img').attr('src', url).data('key', key).data('h', height);
-                modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
+                if (height < 100) {
+                    $('#myModal-img').find('.text-warning').show();
+                }
+                var newImg = new Image();
+                modalBody.find('img').attr('src', 'loading.gif');
+                newImg.onload = function() {
+                    modalBody.find('img').attr('src', url).data('key', key).data('h', height);
+                    modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
+                };
+                newImg.src = url;
             }
 
             var infoWrapper = $('<div class="infoWrapper col-md-6"></div>');
@@ -253,13 +259,13 @@ FileProgress.prototype.setComplete = function(up, info) {
             }
 
             var fopLink = $('<a class="fopLink"/>');
-            fopLink.attr('data-key', res.key).text('查看效果');
+            fopLink.attr('data-key', res.key).text('查看处理效果');
             infoWrapper.append(fopLink);
             fopLink.on('click', function() {
                 var key = $(this).data('key');
                 var height = parseInt($(this).parents('.Wrapper').find('.origin-height').text(), 10);
-                if (height > $(window).height() - 300) {
-                    height = parseInt($(window).height() - 300, 10);
+                if (height > $(window).height() - height_space) {
+                    height = parseInt($(window).height() - height_space, 10);
                 } else {
                     height = parseInt(height, 10);
                 }
@@ -324,25 +330,6 @@ FileProgress.prototype.setStatus = function(status, isUploading) {
     }
 };
 
-// Show/Hide the cancel button
-FileProgress.prototype.toggleCancel = function(show, up) {
-    // var self = this;
-    // if (up) {
-    //     self.fileProgressWrapper.childNodes[0].onclick = function() {
-    //         //绑定事件 取消当前上传文件
-    //         self.setCancelled();
-    //         self.setStatus("取消上传");
-    //         var status_before = self.file.status;
-    //         up.removeFile(self.file);
-    //         if (up.state === plupload.STARTED && status_before === plupload.UPLOADING) {
-    //             up.stop();
-    //             up.start();
-    //         }
-    //         return true;
-    //     };
-    // }
-
-};
 
 FileProgress.prototype.appear = function() {
     if (this.getTimer() !== null) {

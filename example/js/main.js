@@ -15,7 +15,6 @@ var Q = new Qiniu({
         'FilesAdded': function(up, files) {
             $('table').show();
             $('#success').hide();
-            console.log(up.runtime);
             plupload.each(files, function(file) {
                 var progress = new FileProgress(file, 'fsUploadProgress');
                 progress.setStatus("等待...");
@@ -170,7 +169,6 @@ $(function() {
             return 0;
         }
         var arr = url.split('/');
-        console.log(arr);
         for (var i = 0, len = arr.length; i < len; i++) {
             if (arr[i] === 'rotate') {
                 return parseInt(arr[i + 1], 10);
@@ -188,7 +186,7 @@ $(function() {
         var rotate = getRotate(oldUrl);
         if (!$(this).hasClass('no-disable-click')) {
             $(this).addClass('disabled').siblings().removeClass('disabled');
-            if ($(this).data('imagemogr') === 'no-rotate') {
+            if ($(this).data('imagemogr') !== 'no-rotate') {
                 fopArr.push({
                     'fop': 'imageMogr2',
                     'auto-orient': true,
@@ -205,7 +203,6 @@ $(function() {
             } else if (imageMogr === 'right') {
                 rotate = rotate + 90 > 360 ? rotate - 270 : rotate + 90;
             }
-            console.log(rotate, 'rotate');
             fopArr.push({
                 'fop': 'imageMogr2',
                 'auto-orient': true,
@@ -214,9 +211,6 @@ $(function() {
                 'format': 'png'
             });
         }
-
-        console.log(rotate, 'rotate');
-
 
         $('#myModal-img .modal-body-footer').find('a.disabled').each(function() {
 
@@ -235,30 +229,31 @@ $(function() {
                     dy: 100
                 });
             }
-            var height;
-            switch (imageView) {
-                case 'large':
-                    height = originHeight * 0.9;
-                    break;
-                case 'middle':
-                    height = originHeight * 0.5;
-                    break;
-                case 'small':
-                    height = originHeight * 0.1;
-                    break;
-                default:
-                    height = originHeight;
-                    break;
-            }
-            console.log(height);
-            fopArr.push({
-                fop: 'imageView2',
-                mode: 3,
-                h: parseInt(height, 10),
-                q: 100,
-                format: 'png'
-            });
 
+            if (imageView) {
+                var height;
+                switch (imageView) {
+                    case 'large':
+                        height = originHeight;
+                        break;
+                    case 'middle':
+                        height = originHeight * 0.5;
+                        break;
+                    case 'small':
+                        height = originHeight * 0.1;
+                        break;
+                    default:
+                        height = originHeight;
+                        break;
+                }
+                fopArr.push({
+                    fop: 'imageView2',
+                    mode: 3,
+                    h: parseInt(height, 10),
+                    q: 100,
+                    format: 'png'
+                });
+            }
 
             if (imageMogr === 'no-rotate') {
                 fopArr.push({
