@@ -34,29 +34,11 @@ qiniu-js-sdk
 ## 安装和运行程序
 * 服务端准备
 
-    本SDK依赖服务端颁发upToken，可以通过以下三种方式实现：
+    本SDK依赖服务端颁发upToken，可以通过以下二种方式实现：
     1.  利用[七牛服务端SDK](http://developer.qiniu.com/docs/v6/sdk/)构建后端服务，提供一个URL地址，前端通过Ajax请求该地址后返回upToken。
 
 
-    2.  直接运行本SDK示例网站的服务
-        *  [安装nodejs](http://nodejs.org/download/)
-        *  获取源代码：
-        `git clone https://github.com/SunLn/qiniu-js-sdk.git`
-        *  进入`example`目录,修改`server.js`，`Access Key`和`Secret Key` 按如下方式获取
-            * [开通七牛开发者帐号](https://portal.qiniu.com/signup)
-            * [登录七牛开发者自助平台，查看 AccessKey 和 SecretKey](https://portal.qiniu.com/setting/key) 。
 
-            ```
-
-                qiniu.conf.ACCESS_KEY = '<Your Access Key>';
-
-                qiniu.conf.SECRET_KEY = '<Your Secret Key>';
-
-                var uptoken = new qiniu.rs.PutPolicy('<Your Buckete Name>');
-
-            ```
-
-        *  运行`node server.js` 或者 `make`启动
 
     3.  利用七牛底层API构建服务，详见七牛[上传策略](http://developer.qiniu.com/docs/v6/api/reference/security/put-policy.html)和[上传凭证](http://developer.qiniu.com/docs/v6/api/reference/security/upload-token.html)
 
@@ -120,6 +102,7 @@ qiniu-js-sdk
 
     ```
 
+        // `Q`对象为初始化SDK时赋值的对象，下同
         Q.watermark({
              mode: 1,  // 图片水印
              image: 'http://www.b1.qiniudn.com/images/logo-2.png', // 图片水印的Url
@@ -175,7 +158,7 @@ qiniu-js-sdk
            gravity: 'NorthWest',    // 裁剪锚点参数
            quality: 40,  // 图片质量，取值范围1-100
            rotate: 20,   // 旋转角度，取值范围1-360，缺省为不旋转。
-           format: 'png' // 新图的输出格式，取值范围：jpg，gif，png，webp等
+           format: 'png',// 新图的输出格式，取值范围：jpg，gif，png，webp等
            blur:'3x5'    // 高斯模糊参数
          }, key);
 
@@ -195,8 +178,71 @@ qiniu-js-sdk
 
         Q.exif(key); // key为上传成功后的文件名
     ```
-        具体 exif 解释见[图片EXIF信息（exif）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/exif.html)
-    *  pipeline
+
+    具体 exif 解释见[图片EXIF信息（exif）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/exif.html)
+    *  pipeline(管道操作）
+
+    ```
+
+        var popArr = [{
+            fop: 'watermark', // 指定watermark操作
+            mode: 2, // 此参数同watermark函数的参数，下同。
+            text: 'hello world !',
+            dissolve: 50,
+            gravity: 'SouthWest',
+            fontsize: 500,
+            font : '黑体',
+            dx: 100,
+            dy: 100,
+            fill: '#FFF000'
+        },
+         {
+            fop: 'imageView2',  // 指定imageView2操作
+            mode: 3,  // 此参数同imageView2函数的参数，下同
+            w: 100,
+            h: 100,
+            q: 100,
+            format: 'png'
+        }，{
+           fop: 'imageMogr2',  // 指定imageMogr2操作
+           auto-orient: true,  // 此参数同imageMogr2函数的参数，下同。
+           strip: true,
+           thumbnail: '1000x1000'
+           crop: '!300x400a10a10',
+           gravity: 'NorthWest',
+           quality: 40,
+           rotate: 20,
+           format: 'png',
+           blur:'3x5'
+        }];
+        Q.pipeline(popArr, key));
+
+    ```
+
+## 运行示例
+
+直接运行本SDK示例网站的服务
+
+*  [安装nodejs](http://nodejs.org/download/)
+*  获取源代码：
+    `git clone https://github.com/SunLn/qiniu-js-sdk.git`
+*  进入`example`目录,修改`server.js`，`Access Key`和`Secret Key` 按如下方式获取
+
+    * [开通七牛开发者帐号](https://portal.qiniu.com/signup)
+    * [登录七牛开发者自助平台，查看 AccessKey 和 SecretKey](https://portal.qiniu.com/setting/key) 。
+
+        ```
+
+            qiniu.conf.ACCESS_KEY = '<Your Access Key>';
+
+            qiniu.conf.SECRET_KEY = '<Your Secret Key>';
+
+            var uptoken = new qiniu.rs.PutPolicy('<Your Buckete Name>');
+
+        ```
+
+    *  运行`node server.js` 或者 `make`启动
+    *  访问`http://127.0.0.1:3000/`或`http://localhost:3000/`
 
 ## 说明
 
