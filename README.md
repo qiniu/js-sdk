@@ -40,8 +40,8 @@ qiniu-js-sdk
 
 
     后端服务应提供一个URL地址，供SDK初始化使用，前端通过Ajax请求该地址后获得upToken。Ajax请求成功后，服务端返回应以下类似的json：
-        ```
 
+        ```
         {
             "uptoken": "0MLvWPnyya1WtPnXFy9KLyGHyFPNdZceomL..."
         }
@@ -85,18 +85,16 @@ qiniu-js-sdk
                        //每个文件上传时,处理相关的事情
                 },
                 'FileUploaded': function(up, file, info) {
-                       // 每个文件上传成功后,处理相关的事情
-                       // 其中 info 是文件上传成功后，服务端返回的json，形式如
+                       //每个文件上传成功后,处理相关的事情
+                       //其中 info 是文件上传成功后，服务端返回的json，形式如
                        // {
                        //    "hash": "Fh8xVqod2MQ1mocfI4S4KpRL6D98",
                        //    "key": "gogopher.jpg"
                        //  }
-                       // 参考http://developer.qiniu.com/docs/v6/api/overview/up/response/simple-response.html
-
-
-                       // var domain = up.getOption('domain');
-                       // var res = parseJSON(info);
-                       // var sourceLink = domain + res.key; // 获取上传成功后的资源链接
+                        // 参考http://developer.qiniu.com/docs/v6/api/overview/up/response/simple-response.html
+                        //var domain = up.getOption('domain');
+                        //var res = parseJSON(info);
+                        //var sourceLink = domain + res.key;
                 },
                 'Error': function(up, err, errTip) {
                        //上传出错时,处理相关的事情
@@ -117,8 +115,11 @@ qiniu-js-sdk
 
     ```
 
-        // `Q`对象为初始化SDK时赋值的对象｀var Q = new Qiniu({});｀，下同
-        Q.watermark({
+        // Q 对象为初始化SDK时声明的对象，下同
+        // key 为每个文件上传成功后，服务端返回的json字段，即资源的最终名字，下同
+        // key 可在每个文件'FileUploaded'事件被触发时获得
+
+        var imgLink = Q.watermark({
              mode: 1,  // 图片水印
              image: 'http://www.b1.qiniudn.com/images/logo-2.png', // 图片水印的Url
              dissolve: 50,          // 透明度，取值范围1-100
@@ -127,13 +128,15 @@ qiniu-js-sdk
              dy: 100   // 纵轴边距，单位:像素(px)
          }, key);
 
+         // imgLink 可以赋值给 html 的 img 元素的src 属性，下同
+
     ```
 
     或
 
     ```
 
-        Q.watermark({
+        var imgLink = Q.watermark({
              mode: 2,  // 文字水印
              text: 'hello world !', // 水印文字字体
              dissolve: 50,          // 透明度，取值范围1-100
@@ -151,7 +154,7 @@ qiniu-js-sdk
 
     ```
 
-        Q.imageView2({
+        var imgLink = Q.imageView2({
            mode: 3,  // 缩略模式，共6种[0-5]，具体含义参考http://developer.qiniu.com/docs/v6/api/reference/fop/image/imageview2.html
            w: 100,   // 具体含义由缩略模式决定
            h: 100,   // 具体含义由缩略模式决定
@@ -165,7 +168,7 @@ qiniu-js-sdk
 
     ```
 
-        Q.imageMogr2({
+        var imgLink = Q.imageMogr2({
            auto-orient: true,  // 布尔值，是否根据原图EXIF信息自动旋正，便于后续处理，建议放在首位。
            strip: true,   // 布尔值，是否去除图片中的元信息
            thumbnail: '1000x1000'   // 缩放操作参数
@@ -199,7 +202,7 @@ qiniu-js-sdk
 
     ```
 
-        var popArr = [{
+        var fopArr = [{
             fop: 'watermark', // 指定watermark操作
             mode: 2, // 此参数同watermark函数的参数，下同。
             text: 'hello world !',
@@ -230,10 +233,12 @@ qiniu-js-sdk
            format: 'png',
            blur:'3x5'
         }];
-        Q.pipeline(popArr, key));
+        // fopArr 可以为三种类型'watermark'、'imageMogr2'、'imageView2'中的任意1-3个
+        // 例如只对'watermark'、'imageMogr2'进行管道操作，则只需fopArr包含'watermark'、'imageMogr2'对象的元素即可
+        var imgLink = Q.pipeline(fopArr, key));
 
     ```
-    具体 管道操作 解释见[图片EXIF信息（exif）](http://developer.qiniu.com/docs/v6/api/overview/fop/pipeline.html)
+    具体 管道操作 解释见[管道操作](http://developer.qiniu.com/docs/v6/api/overview/fop/pipeline.html)
 
 ## 运行示例
 
