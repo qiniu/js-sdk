@@ -46,7 +46,6 @@ var Q = new Qiniu({
             var progress = new FileProgress(err.file, 'fsUploadProgress');
             progress.setError();
             progress.setStatus(errTip);
-            // progress.setCancelled();
         }
     }
 });
@@ -155,7 +154,6 @@ $(function() {
         e.stopPropagation();
     });
     $('#show_code').on('click', function() {
-        // $('pre').toggle();
         $('#myModal-code').modal();
     });
     $('pre code').each(function(i, e) {
@@ -300,10 +298,6 @@ $(function() {
             img.parent('a').attr('href', newUrl);
         };
         newImg.src = newUrl;
-
-
-
-        // console.log(Q.pipeline(fopArr, key));
 
     });
 
