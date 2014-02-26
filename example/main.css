@@ -131,11 +131,14 @@ td .Wrapper {
   overflow: hidden;
 }
 td .Wrapper .infoWrapper{
-  width:40%;
+  width:50%;
   height:100px;
   margin-left: 10px;
   text-align: left;
   line-height: 25px;
+}
+td .Wrapper .infoWrapper a:first-child{
+  margin-right: 10px;
 }
 td .Wrapper.default {
   margin-top: 20px;

@@ -228,11 +228,11 @@ FileProgress.prototype.setComplete = function(up, info) {
             showImg.attr('src', url + imageView);
 
             var linkWrapper = $('<div class="linkWrapper">');
-            var imageMogr2Img = $('<a class="imageMogr"/>');
-            imageMogr2Img.attr('data-key', res.key).text('查看旋转效果');
+            // var imageMogr2Img = $('<a class="imageMogr"/>');
+            // imageMogr2Img.attr('data-key', res.key).text('查看旋转效果');
 
-            var watermarkImg = $('<a class="watermark"/>');
-            watermarkImg.attr('data-key', res.key).text('查看水印效果');
+            // var watermarkImg = $('<a class="watermark"/>');
+            // watermarkImg.attr('data-key', res.key).text('查看水印效果');
 
             function initImg(url, key, height) {
                 $('#myModal-img').modal().on('hide.bs.modal', function() {
@@ -244,45 +244,93 @@ FileProgress.prototype.setComplete = function(up, info) {
                 modalBody.find('.modal-body-wrapper').find('a').attr('href', url);
 
             }
-            imageMogr2Img.on('click', function() {
-                var key = $(this).data('key');
-                var height = parseInt($(this).parents('.Wrapper').find('.origin-height').text(), 10);
-                var originHeight = height;
-                if (height > $(window).height()) {
-                    height = parseInt(height * 0.2, 10);
-                } else {
-                    height = parseInt(height * 0.3, 10);
-                }
-                var fopArr = [];
-                fopArr.push({
-                    fop: 'imageView2',
-                    mode: 3,
-                    h: height,
-                    q: 100,
-                    format: 'png'
-                });
-                fopArr.push({
-                    fop: 'imageMogr2',
-                    'auto-orient': true,
-                    'strip': true,
-                    'thumbnail': '500x500',
-                    'quality': 40,
-                    'rotate': 20,
-                    'format': 'png'
-                });
-                var url = Q.pipeline(fopArr, key);
-                initImg(url, key, originHeight);
-                return false;
-            });
+            // imageMogr2Img.on('click', function() {
+            //     var key = $(this).data('key');
+            //     var height = parseInt($(this).parents('.Wrapper').find('.origin-height').text(), 10);
+            //     var originHeight = height;
+            //     if (height > $(window).height() - 300) {
+            //         height = parseInt($(window).height() - 300, 10);
+            //     } else {
+            //         height = parseInt(height, 10);
+            //     }
+            //     var fopArr = [];
+            //     fopArr.push({
+            //         fop: 'imageView2',
+            //         mode: 3,
+            //         h: height,
+            //         q: 100,
+            //         format: 'png'
+            //     });
+            //     fopArr.push({
+            //         fop: 'imageMogr2',
+            //         'auto-orient': true,
+            //         'strip': true,
+            //         // 'thumbnail': '500x500',
+            //         'quality': 40,
+            //         'rotate': 20,
+            //         'format': 'png'
+            //     });
+            //     var url = Q.pipeline(fopArr, key);
+            //     initImg(url, key, height);
+            //     return false;
+            // });
 
-            watermarkImg.on('click', function() {
+            // watermarkImg.on('click', function() {
+            //     var key = $(this).data('key');
+            //     var height = parseInt($(this).parents('.Wrapper').find('.origin-height').text(), 10);
+            //     var originHeight = height;
+            //     if (height > $(window).height() - 300) {
+            //         height = parseInt($(window).height() - 300, 10);
+            //     } else {
+            //         height = parseInt(height, 10);
+            //     }
+            //     var fopArr = [];
+            //     fopArr.push({
+            //         fop: 'imageView2',
+            //         mode: 3,
+            //         h: height,
+            //         q: 100,
+            //         format: 'png'
+            //     });
+            //     fopArr.push({
+            //         fop: 'watermark',
+            //         mode: 1,
+            //         image: 'http://www.b1.qiniudn.com/images/logo-2.png',
+            //         dissolve: 100,
+            //         gravity: 'SouthEast',
+            //         dx: 100,
+            //         dy: 100
+            //     });
+            //     var url = Q.pipeline(fopArr, key);
+            //     initImg(url, key, height);
+
+            //     return false;
+            // });
+
+            // linkWrapper.append(imageMogr2Img).append($('<br>')).append(watermarkImg).hide();
+            imgWrapper.append(linkWrapper);
+
+
+            var infoWrapper = $('<div class="infoWrapper col-md-6"></div>');
+
+            var exif = Q.exif(res.key);
+            if (exif) {
+                var exifLink = $('<a href="" target="_blank">查看exif</a>');
+                exifLink.attr('href', url + '?exif');
+                infoWrapper.append(exifLink);
+            }
+
+            var fopLink = $('<a class="fopLink"/>');
+            fopLink.attr('data-key', res.key).text('查看效果');
+            infoWrapper.append(fopLink);
+            fopLink.on('click', function() {
                 var key = $(this).data('key');
                 var height = parseInt($(this).parents('.Wrapper').find('.origin-height').text(), 10);
                 var originHeight = height;
-                if (height > $(window).height()) {
-                    height = parseInt(height * 0.2, 10);
+                if (height > $(window).height() - 300) {
+                    height = parseInt($(window).height() - 300, 10);
                 } else {
-                    height = parseInt(height * 0.3, 10);
+                    height = parseInt(height, 10);
                 }
                 var fopArr = [];
                 fopArr.push({
@@ -302,24 +350,10 @@ FileProgress.prototype.setComplete = function(up, info) {
                     dy: 100
                 });
                 var url = Q.pipeline(fopArr, key);
-                initImg(url, key, originHeight);
+                initImg(url, key, height);
 
                 return false;
             });
-
-            linkWrapper.append(imageMogr2Img).append($('<br>')).append(watermarkImg).hide();
-            imgWrapper.append(linkWrapper);
-
-
-            var infoWrapper = $('<div class="infoWrapper col-md-5"></div>');
-
-            var exif = Q.exif(res.key);
-            if (exif) {
-                var exifLink = $('<a href="" target="_blank">查看exif</a>');
-                exifLink.attr('href', url + '?exif');
-                infoWrapper.append(exifLink);
-            }
-
 
             var imageInfo = Q.imageInfo(res.key);
             var infoArea = $('<div/>');

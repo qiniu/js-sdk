@@ -190,7 +190,7 @@ $(function() {
         var rotate = getRotate(oldUrl);
         if (!$(this).hasClass('no-disable-click')) {
             $(this).addClass('disabled').siblings().removeClass('disabled');
-            if (!$(this).data('imagemogr') !== 'no-rotate') {
+            if ($(this).data('imagemogr') === 'no-rotate') {
                 fopArr.push({
                     'fop': 'imageMogr2',
                     'auto-orient': true,
@@ -217,7 +217,7 @@ $(function() {
             });
         }
 
-        // console.log(rotate, 'rotate');
+        console.log(rotate, 'rotate');
 
 
         $('#myModal-img .modal-body-footer').find('a.disabled').each(function() {
@@ -238,36 +238,37 @@ $(function() {
                 });
             }
             var height;
-            if (originHeight < $(window).height()) {
-                switch (imageView) {
-                    case 'large':
-                        height = originHeight * 0.5;
-                        break
-                    case 'middle':
-                        height = originHeight * 0.3;
-                        break;
-                    case 'small':
-                        height = originHeight * 0.1;
-                        break;
-                    default:
-                        height = originHeight;
-                        break;
-                };
-            } else {
-                switch (imageView) {
-                    case 'large':
-                        height = originHeight * 0.4;
-                        break
-                    case 'middle':
-                        height = originHeight * 0.2;
-                        break;
-                    case 'small':
-                        height = originHeight * 0.05;
-                        break;
-                    default:
-                        height = originHeight;
-                        break;
-                };
+            // if (originHeight < $(window).height()) {
+
+            // } else {
+            //     switch (imageView) {
+            //         case 'large':
+            //             height = originHeight * 0.4;
+            //             break
+            //         case 'middle':
+            //             height = originHeight * 0.2;
+            //             break;
+            //         case 'small':
+            //             height = originHeight * 0.05;
+            //             break;
+            //         default:
+            //             height = originHeight;
+            //             break;
+            //     };
+            // }
+            switch (imageView) {
+                case 'large':
+                    height = originHeight * 0.9;
+                    break;
+                case 'middle':
+                    height = originHeight * 0.5;
+                    break;
+                case 'small':
+                    height = originHeight * 0.1;
+                    break;
+                default:
+                    height = originHeight;
+                    break;
             }
             console.log(height);
             fopArr.push({
@@ -297,7 +298,7 @@ $(function() {
         newImg.onload = function() {
             img.attr('src', newUrl);
             img.parent('a').attr('href', newUrl);
-        }
+        };
         newImg.src = newUrl;
 
 
