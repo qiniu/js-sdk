@@ -131,7 +131,7 @@ qiniu-js-sdk
          }, key);
 
     ```
-    具体水印参数解释见[水印（watermark））](http://developer.qiniu.com/docs/v6/api/reference/fop/image/watermark.html)
+    具体水印参数解释见[水印（watermark）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/watermark.html)
     *  imageView2
 
     ```
@@ -218,6 +218,7 @@ qiniu-js-sdk
         Q.pipeline(popArr, key));
 
     ```
+    具体 管道操作 解释见[图片EXIF信息（exif）](http://developer.qiniu.com/docs/v6/api/overview/fop/pipeline.html)
 
 ## 运行示例
 
