@@ -513,9 +513,7 @@ Qiniu.prototype.imageMogr2 = function(op, key) {
     if (!auto_orient) {
         return false;
     }
-    // if (crop.indexOf('!') === -1 || (crop.indexOf('a') === -1) && (crop.indexOf('-') === -1)) {
-    //     return false;
-    // }
+
     //Todo check option
 
     var imageUrl = auto_orient ? 'imageMogr2' + '/auto-orient' : '';

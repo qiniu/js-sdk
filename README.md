@@ -35,8 +35,8 @@ qiniu-js-sdk
 * 服务端准备
 
     本SDK依赖服务端颁发upToken，可以通过以下二种方式实现：
-    1.  利用[七牛服务端SDK](http://developer.qiniu.com/docs/v6/sdk/)构建后端服务
-    2.  利用七牛底层API构建服务，详见七牛[上传策略](http://developer.qiniu.com/docs/v6/api/reference/security/put-policy.html)和[上传凭证](http://developer.qiniu.com/docs/v6/api/reference/security/upload-token.html)
+    *   利用[七牛服务端SDK](http://developer.qiniu.com/docs/v6/sdk/)构建后端服务
+    *   利用七牛底层API构建服务，详见七牛[上传策略](http://developer.qiniu.com/docs/v6/api/reference/security/put-policy.html)和[上传凭证](http://developer.qiniu.com/docs/v6/api/reference/security/upload-token.html)
 
 
     后端服务应提供一个URL地址，供SDK初始化使用，前端通过Ajax请求该地址后获得upToken。Ajax请求成功后，服务端返回应以下类似的json：
@@ -91,10 +91,11 @@ qiniu-js-sdk
                        //    "hash": "Fh8xVqod2MQ1mocfI4S4KpRL6D98",
                        //    "key": "gogopher.jpg"
                        //  }
-                        // 参考http://developer.qiniu.com/docs/v6/api/overview/up/response/simple-response.html
-                        //var domain = up.getOption('domain');
-                        //var res = parseJSON(info);
-                        //var sourceLink = domain + res.key;
+                       // 参考http://developer.qiniu.com/docs/v6/api/overview/up/response/simple-response.html
+
+                       // var domain = up.getOption('domain');
+                       // var res = parseJSON(info);
+                       // var sourceLink = domain + res.key; 获取上传成功后的文件的Url
                 },
                 'Error': function(up, err, errTip) {
                        //上传出错时,处理相关的事情
@@ -155,7 +156,7 @@ qiniu-js-sdk
     ```
 
         var imgLink = Q.imageView2({
-           mode: 3,  // 缩略模式，共6种[0-5]，具体含义参考http://developer.qiniu.com/docs/v6/api/reference/fop/image/imageview2.html
+           mode: 3,  // 缩略模式，共6种[0-5]
            w: 100,   // 具体含义由缩略模式决定
            h: 100,   // 具体含义由缩略模式决定
            q: 100,   // 新图的图像质量，取值范围：1-100
@@ -211,8 +212,7 @@ qiniu-js-sdk
             dx: 100,
             dy: 100,
             fill: '#FFF000'
-        },
-         {
+        },{
             fop: 'imageView2',  // 指定imageView2操作
             mode: 3,  // 此参数同imageView2函数的参数，下同
             w: 100,
@@ -220,42 +220,42 @@ qiniu-js-sdk
             q: 100,
             format: 'png'
         }，{
-           fop: 'imageMogr2',  // 指定imageMogr2操作
-           auto-orient: true,  // 此参数同imageMogr2函数的参数，下同。
-           strip: true,
-           thumbnail: '1000x1000'
-           crop: '!300x400a10a10',
-           gravity: 'NorthWest',
-           quality: 40,
-           rotate: 20,
-           format: 'png',
-           blur:'3x5'
+            fop: 'imageMogr2',  // 指定imageMogr2操作
+            auto-orient: true,  // 此参数同imageMogr2函数的参数，下同。
+            strip: true,
+            thumbnail: '1000x1000'
+            crop: '!300x400a10a10',
+            gravity: 'NorthWest',
+            quality: 40,
+            rotate: 20,
+            format: 'png',
+            blur:'3x5'
         }];
         // fopArr 可以为三种类型'watermark'、'imageMogr2'、'imageView2'中的任意1-3个
         // 例如只对'watermark'、'imageMogr2'进行管道操作，则如下即可
-         // var fopArr = [{
-         //    fop: 'watermark', // 指定watermark操作
-         //    mode: 2, // 此参数同watermark函数的参数，下同。
-         //    text: 'hello world !',
-         //    dissolve: 50,
-         //     gravity: 'SouthWest',
-         //     fontsize: 500,
-         //     font : '黑体',
-         //     dx: 100,
-         //     dy: 100,
-         //     fill: '#FFF000'
-         // },{
-         //    fop: 'imageMogr2',  // 指定imageMogr2操作
-         //    auto-orient: true,  // 此参数同imageMogr2函数的参数，下同。
-         //    strip: true,
-         //    thumbnail: '1000x1000'
-         //    crop: '!300x400a10a10',
-         //    gravity: 'NorthWest',
-         //    quality: 40,
-         //    rotate: 20,
-         //    format: 'png',
-         //    blur:'3x5'
-         // }];
+        // var fopArr = [{
+        //    fop: 'watermark', // 指定watermark操作
+        //    mode: 2, // 此参数同watermark函数的参数，下同。
+        //    text: 'hello world !',
+        //    dissolve: 50,
+        //     gravity: 'SouthWest',
+        //     fontsize: 500,
+        //     font : '黑体',
+        //     dx: 100,
+        //     dy: 100,
+        //     fill: '#FFF000'
+        // },{
+        //    fop: 'imageMogr2',  // 指定imageMogr2操作
+        //    auto-orient: true,  // 此参数同imageMogr2函数的参数，下同。
+        //    strip: true,
+        //    thumbnail: '1000x1000'
+        //    crop: '!300x400a10a10',
+        //    gravity: 'NorthWest',
+        //    quality: 40,
+        //    rotate: 20,
+        //    format: 'png',
+        //    blur:'3x5'
+        // }];
 
 
         var imgLink = Q.pipeline(fopArr, key));
