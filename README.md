@@ -48,14 +48,14 @@ qiniu-js-sdk
     ```
 * 引入Plupload
 
-    1. [Plupload下载](http://plupload.com/download)
+    *   [Plupload下载](http://plupload.com/download)
 
-    2. 引入`plupload.full.min.js`（产品环境）或 引入`plupload.dev.js`和`moxie.js`（开发调试）
+    *   引入`plupload.full.min.js`（产品环境）或 引入`plupload.dev.js`和`moxie.js`（开发调试）
 
 * 引入qiu.js，初始化SDK
-    1. 获取SDK源码 `git clone https://github.com/SunLn/qiniu-js-sdk.git`，`qiu.js`位于`src`目录内
+    *   获取SDK源码 `git clone https://github.com/SunLn/qiniu-js-sdk.git`，`qiu.js`位于`src`目录内
 
-    2. 初始化SDK
+    *   初始化SDK
 
     ```
 
@@ -232,11 +232,36 @@ qiniu-js-sdk
            blur:'3x5'
         }];
         // fopArr 可以为三种类型'watermark'、'imageMogr2'、'imageView2'中的任意1-3个
-        // 例如只对'watermark'、'imageMogr2'进行管道操作，则只需fopArr包含'watermark'、'imageMogr2'对象的元素即可
+        // 例如只对'watermark'、'imageMogr2'进行管道操作，则如下即可
+         // var fopArr = [{
+         //    fop: 'watermark', // 指定watermark操作
+         //    mode: 2, // 此参数同watermark函数的参数，下同。
+         //    text: 'hello world !',
+         //    dissolve: 50,
+         //     gravity: 'SouthWest',
+         //     fontsize: 500,
+         //     font : '黑体',
+         //     dx: 100,
+         //     dy: 100,
+         //     fill: '#FFF000'
+         // },{
+         //    fop: 'imageMogr2',  // 指定imageMogr2操作
+         //    auto-orient: true,  // 此参数同imageMogr2函数的参数，下同。
+         //    strip: true,
+         //    thumbnail: '1000x1000'
+         //    crop: '!300x400a10a10',
+         //    gravity: 'NorthWest',
+         //    quality: 40,
+         //    rotate: 20,
+         //    format: 'png',
+         //    blur:'3x5'
+         // }];
+
+
         var imgLink = Q.pipeline(fopArr, key));
 
     ```
-    具体 管道操作 解释见[管道操作](http://developer.qiniu.com/docs/v6/api/overview/fop/pipeline.html)
+    具体管道操作解释见[管道操作](http://developer.qiniu.com/docs/v6/api/overview/fop/pipeline.html)
 
 ## 运行示例
 
@@ -260,8 +285,8 @@ qiniu-js-sdk
 
         ```
 
-    *  运行`node server.js` 或者 `make`启动
-    *  访问`http://127.0.0.1:3000/`或`http://localhost:3000/`
+*  运行`node server.js` 或者 `make`启动
+*  访问`http://127.0.0.1:3000/`或`http://localhost:3000/`
 
 ## 说明
 
