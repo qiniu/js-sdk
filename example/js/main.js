@@ -1,4 +1,4 @@
-Qiniu.uploader({
+var uploader = Qiniu.uploader({
     runtimes: 'html5,flash,html4',
     browse_button: 'pickfiles',
     container: 'container',
@@ -46,6 +46,10 @@ Qiniu.uploader({
             progress.setStatus(errTip);
         }
     }
+});
+
+uploader.bind('FileUploaded', function() {
+    console.log('hello man,a file is uploaded');
 });
 
 $(function() {
