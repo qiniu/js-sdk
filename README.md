@@ -269,6 +269,7 @@ qiniu-js-sdk
 直接运行本SDK示例网站的服务
 
 *  [安装nodejs](http://nodejs.org/download/)
+
 *  获取源代码：
     `git clone https://github.com/SunLn/qiniu-js-sdk.git`
 *  进入`example`目录,修改`server.js`，`Access Key`和`Secret Key` 按如下方式获取
@@ -286,8 +287,8 @@ qiniu-js-sdk
 
         ```
 
-*  运行`node server.js` 或者 `make`启动
-*  访问`http://127.0.0.1:3000/`或`http://localhost:3000/`
+*  运行`node example/server.js` 或者 `make`启动
+*  访问`http://127.0.0.1:18080/`或`http://localhost:18080/`
 
 ## 说明
 
