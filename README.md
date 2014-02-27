@@ -315,3 +315,12 @@ qiniu-js-sdk
 5. 将您的改动记录提交到远程 git 仓库 (git push origin new-feature)
 
 6. 然后到 github 网站的该 git 远程仓库的 new-feature 分支下发起 Pull Request
+
+
+## 许可证
+
+> Copyright (c) 2014 qiniu.com
+
+## 基于 MIT 协议发布:
+
+> [www.opensource.org/licenses/MIT](http://www.opensource.org/licenses/MIT)
