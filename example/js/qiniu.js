@@ -337,7 +337,6 @@ function Qiniu(op) {
         return function(up, err) {
             var errTip = '';
             var file = err.file;
-            // console.log('file', file);
             if (file) {
                 switch (err.code) {
                     case plupload.FAILED:
@@ -380,7 +379,6 @@ function Qiniu(op) {
                                 break;
                         }
                         var errorObj = this.parseJSON(err.response);
-                        console.log(errorObj);
                         errTip = errTip + '(' + err.status + '：' + errorObj.error + ')';
                         break;
                     case plupload.SECURITY_ERROR:
@@ -413,10 +411,7 @@ function Qiniu(op) {
     uploader.bind('FileUploaded', (function(FileUploaded_Handler) {
         return function(up, file, info) {
             var res = that.parseJSON(info.response);
-            // console.log(info.response);
-            // console.log(that === uploader);
             ctx = ctx ? ctx : res.ctx;
-            // console.log('FileUploaded_Handler', uploader.Error_Handler);
             if (ctx) {
                 var url = 'http://up.qiniu.com/mkfile/' + file.size + '/key/' + that.URLSafeBase64Encode(file.name);
                 var ajax = that.createAjax();
@@ -428,13 +423,11 @@ function Qiniu(op) {
                     if (ajax.readyState === 4 && ajax.status === 200) {
                         var info = ajax.responseText;
                         if (FileUploaded_Handler) {
-                            // console.log('FileUploaded_Handler');
                             FileUploaded_Handler(up, file, info);
                         }
                     }
                 };
             } else {
-                // console.log('FileUploaded_Handler', FileUploaded_Handler);
                 if (FileUploaded_Handler) {
                     FileUploaded_Handler(up, file, info.response);
                 }
@@ -486,16 +479,6 @@ Qiniu.prototype.imageView2 = function(op, key) {
 
 
 Qiniu.prototype.imageMogr2 = function(op, key) {
-
-    // mageMogr2/auto-orient
-    //           /thumbnail/<imageSizeGeometry>
-    //           /strip
-    //           /gravity/<gravityType>
-    //           /crop/<imageSizeAndOffsetGeometry>
-    //           /quality/<imageQuality>
-    //           /rotate/<rotateDegree>
-    //           /format/<destinationImageFormat>
-
     var auto_orient = op['auto-orient'] || '',
         thumbnail = op.thumbnail || '',
         strip = op.strip || '',
