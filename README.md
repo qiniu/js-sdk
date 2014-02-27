@@ -6,7 +6,7 @@ qiniu-js-sdk
 示例网站：[七牛JavaScript SDK 示例网站 - 配合七牛nodejs SDK ](http://upqiniu.duapp.com/)
 ## 概述
 
-本SDK适用于IE8+、chrome、Firefox 等浏览器，基于 七牛云存储官方API 构建，其中上传功能基于 Plupload 插件封装。开发者使用本 SDK 可以方便的从浏览器端上传文件至七牛云存储，并对上传成功后的图片进行丰富的数据处理操作。本 SDK 可使开发者忽略上传底层实现细节，而更多的关注 UI 层的展现。
+本SDK适用于IE8+、Chrome、Firefox、Safari 等浏览器，基于 七牛云存储官方API 构建，其中上传功能基于 Plupload 插件封装。开发者使用本 SDK 可以方便的从浏览器端上传文件至七牛云存储，并对上传成功后的图片进行丰富的数据处理操作。本 SDK 可使开发者忽略上传底层实现细节，而更多的关注 UI 层的展现。
 
 ### 功能简介
 
@@ -49,12 +49,12 @@ qiniu-js-sdk
 
     *   引入`plupload.full.min.js`（产品环境）或 引入`plupload.dev.js`和`moxie.js`（开发调试）
 
-* 引入qiu.js，初始化SDK
-    *   获取SDK源码 `git clone https://github.com/SunLn/qiniu-js-sdk.git`，`qiu.js`位于`src`目录内
+* 引入qiniu.js，初始化SDK
+    *   获取SDK源码 `git clone https://github.com/SunLn/qiniu-js-sdk.git`，`qiniu.js`位于`src`目录内
 
     *   初始化SDK
 
-    ```
+    ```javascript
 
         var Q = new Qiniu({
             runtimes: 'html5,flash,html4',    //上传模式,依次退化
@@ -112,7 +112,7 @@ qiniu-js-sdk
 
     *  watermark（水印）
 
-    ```
+    ```javascript
 
         // Q 对象为初始化SDK时声明的对象，下同
         // key 为每个文件上传成功后，服务端返回的json字段，即资源的最终名字，下同
@@ -133,7 +133,7 @@ qiniu-js-sdk
 
     或
 
-    ```
+    ```javascript
 
         var imgLink = Q.watermark({
              mode: 2,  // 文字水印
@@ -151,7 +151,7 @@ qiniu-js-sdk
     具体水印参数解释见[水印（watermark）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/watermark.html)
     *  imageView2
 
-    ```
+    ```javascript
 
         var imgLink = Q.imageView2({
            mode: 3,  // 缩略模式，共6种[0-5]
@@ -165,7 +165,7 @@ qiniu-js-sdk
     具体缩略参数解释见[图片处理（imageView2）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/imageview2.html)
     *  imageMogr2
 
-    ```
+    ```javascript
 
         var imgLink = Q.imageMogr2({
            auto-orient: true,  // 布尔值，是否根据原图EXIF信息自动旋正，便于后续处理，建议放在首位。
@@ -179,12 +179,12 @@ qiniu-js-sdk
            blur:'3x5'    // 高斯模糊参数
          }, key);
 
-    ```
+    ```javascript
 
     具体高级图像处理参数解释见[高级图像处理（imageMogr2）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/imagemogr2.html)
     *  imageInfo
 
-    ```
+    ```javascript
         var imageInfoObj = Q.imageInfo(key);
     ```
     具体 imageInfo 解释见[图片基本信息（imageInfo）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/imageinfo.html)
@@ -192,7 +192,7 @@ qiniu-js-sdk
     Ajax跨域限制，IE系列此函数只支持IE10+
     *  exif
 
-    ```
+    ```javascript
         var exifOjb = Q.exif(key);
     ```
 
@@ -201,7 +201,7 @@ qiniu-js-sdk
     Ajax跨域限制，IE系列此函数只支持IE10+
     *  pipeline(管道操作）
 
-    ```
+    ```javascript
 
         var fopArr = [{
             fop: 'watermark', // 指定watermark操作
@@ -233,6 +233,7 @@ qiniu-js-sdk
             format: 'png',
             blur:'3x5'
         }];
+
         // fopArr 可以为三种类型'watermark'、'imageMogr2'、'imageView2'中的任意1-3个
         // 例如只对'watermark'、'imageMogr2'进行管道操作，则如下即可
         // var fopArr = [{
