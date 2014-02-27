@@ -206,8 +206,7 @@ function QiniuJsSDK() {
         return text === null ? "" : this.trim.call(text);
     };
 
-    //Todo ie7 handler / this.parseJson bug;
-
+    //Todo ie7 handler / this.parseJSON bug;
 
     var that = this;
     this.uploader = function(op) {
@@ -643,7 +642,6 @@ function QiniuJsSDK() {
         return false;
     };
 
-    // return this;
 }
 
 var Qiniu = new QiniuJsSDK();
