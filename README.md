@@ -61,9 +61,9 @@ qiniu-js-sdk
 
         var Q = new Qiniu({
             runtimes: 'html5,flash,html4',    //上传模式,依次退化
-            browse_button: 'pickfiles',       //上传选择的点选按钮，**必须**
-            uptoken_url: '/token',            //Ajax请求upToken的Url，**必须**（服务端提供）
-            domain: 'http://qiniu-plupload.qiniudn.com/',   //bucket 域名，下载资源时用到，**必须**
+            browse_button: 'pickfiles',       //上传选择的点选按钮，**必需**
+            uptoken_url: '/token',            //Ajax请求upToken的Url，**必需**（服务端提供）
+            domain: 'http://qiniu-plupload.qiniudn.com/',   //bucket 域名，下载资源时用到，**必需**
             container: 'container',           //上传区域DOM ID，默认是browser_button的父元素，
             max_file_size: '100mb',           //最大文件体积限制
             flash_swf_url: 'js/plupload/Moxie.swf',  //引入flash,相对路径
@@ -106,7 +106,7 @@ qiniu-js-sdk
             }
         });
 
-        // domain 为七牛空间（bucket)对应的域名，选择某个空间后，可通过’ 空间设置->基本设置->域名设置‘查看获取
+        // domain 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取
     ```
 
 * 运行网站，通过点击`pickfiles`元素，选择文件后上传
@@ -123,8 +123,8 @@ qiniu-js-sdk
 
         var imgLink = Q.watermark({
              mode: 1,  // 图片水印
-             image: 'http://www.b1.qiniudn.com/images/logo-2.png', // 图片水印的Url
-             dissolve: 50,          // 透明度，取值范围1-100
+             image: 'http://www.b1.qiniudn.com/images/logo-2.png', // 图片水印的Url，mode = 1 时 **必需**
+             dissolve: 50,          // 透明度，取值范围1-100，非必需，下同
              gravity: 'SouthWest',  // 水印位置，为以下参数[NorthWest、North、NorthEast、West、Center、East、SouthWest、South、SouthEast]之一
              dx: 100,  // 横轴边距，单位:像素(px)
              dy: 100   // 纵轴边距，单位:像素(px)
@@ -140,8 +140,8 @@ qiniu-js-sdk
 
         var imgLink = Q.watermark({
              mode: 2,  // 文字水印
-             text: 'hello world !', // 水印文字字体
-             dissolve: 50,          // 透明度，取值范围1-100
+             text: 'hello world !', // 水印文字，mode = 2 时 **必需**
+             dissolve: 50,          // 透明度，取值范围1-100，非必需，下同
              gravity: 'SouthWest',  // 水印位置，同上
              fontsize: 500,         // 字体大小，单位: 缇
              font : '黑体',          // 水印文字字体
