@@ -188,6 +188,8 @@ qiniu-js-sdk
         var imageInfoObj = Q.imageInfo(key);
     ```
     具体 imageInfo 解释见[图片基本信息（imageInfo）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/imageinfo.html)
+
+    Ajax跨域限制，IE系列此函数只支持IE10+
     *  exif
 
     ```
@@ -195,6 +197,8 @@ qiniu-js-sdk
     ```
 
     具体 exif 解释见[图片EXIF信息（exif）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/exif.html)
+
+    Ajax跨域限制，IE系列此函数只支持IE10+
     *  pipeline(管道操作）
 
     ```
