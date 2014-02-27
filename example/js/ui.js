@@ -1,4 +1,5 @@
 /*global plupload */
+/*global qiniu */
 function FileProgress(file, targetID) {
     this.fileProgressID = file.id;
     this.file = file;
@@ -302,7 +303,7 @@ FileProgress.prototype.setComplete = function(up, info) {
                     dx: 100,
                     dy: 100
                 });
-                var url = Q.pipeline(fopArr, key);
+                var url = Qiniu.pipeline(fopArr, key);
                 $('#myModal-img').on('hide.bs.modal', function() {
                     $('#myModal-img').find('.btn-default').removeClass('disabled');
                     $('#myModal-img').find('.text-warning').hide();
@@ -317,16 +318,16 @@ FileProgress.prototype.setComplete = function(up, info) {
                 return false;
             });
 
-            var ie = Q.detectIEVersion();
+            var ie = Qiniu.detectIEVersion();
             if (!(ie && ie <= 9)) {
-                var exif = Q.exif(res.key);
+                var exif = Qiniu.exif(res.key);
                 if (exif) {
                     var exifLink = $('<a href="" target="_blank">查看exif</a>');
                     exifLink.attr('href', url + '?exif');
                     infoWrapper.append(exifLink);
                 }
 
-                var imageInfo = Q.imageInfo(res.key);
+                var imageInfo = Qiniu.imageInfo(res.key);
                 var infoArea = $('<div/>');
                 var infoInner = '<div>格式：<span class="origin-format">' + imageInfo.format + '</span></div>' +
                     '<div>宽度：<span class="orgin-width">' + imageInfo.width + 'px</span></div>' +

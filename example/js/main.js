@@ -1,4 +1,4 @@
-var Q = new Qiniu({
+Qiniu.uploader({
     runtimes: 'html5,flash,html4',
     browse_button: 'pickfiles',
     container: 'container',
@@ -187,7 +187,7 @@ $(function() {
             }
         });
 
-        var newUrl = Q.pipeline(fopArr, key);
+        var newUrl = Qiniu.pipeline(fopArr, key);
 
         var newImg = new Image();
         img.attr('src', 'loading.gif');
