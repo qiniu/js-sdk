@@ -1,4 +1,4 @@
 install : all
 
 all :
-	node server.js
+	node example/server.js
