@@ -439,6 +439,8 @@ function QiniuJsSDK() {
 
             };
         })(FileUploaded_Handler));
+
+        return uploader;
     };
 
     this.getUrl = function(key) {
