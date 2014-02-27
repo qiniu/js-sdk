@@ -209,11 +209,6 @@ function QiniuJsSDK() {
     //Todo ie7 handler / this.parseJson bug;
 
 
-
-
-
-    // this.uploader = uploader;
-
     var that = this;
     this.uploader = function(op) {
         if (!op.uptoken_url || !op.domain) {
