@@ -56,7 +56,7 @@ qiniu-js-sdk
 
     ```javascript
 
-        var Q = new Qiniu({
+        Qiniu.uploader({
             runtimes: 'html5,flash,html4',    //上传模式,依次退化
             browse_button: 'pickfiles',       //上传选择的点选按钮，**必需**
             uptoken_url: '/token',            //Ajax请求upToken的Url，**必需**（服务端提供）
@@ -114,11 +114,10 @@ qiniu-js-sdk
 
     ```javascript
 
-        // Q 对象为初始化SDK时声明的对象，下同
         // key 为每个文件上传成功后，服务端返回的json字段，即资源的最终名字，下同
         // key 可在每个文件'FileUploaded'事件被触发时获得
 
-        var imgLink = Q.watermark({
+        var imgLink = Qiniu.watermark({
              mode: 1,  // 图片水印
              image: 'http://www.b1.qiniudn.com/images/logo-2.png', // 图片水印的Url，mode = 1 时 **必需**
              dissolve: 50,          // 透明度，取值范围1-100，非必需，下同
@@ -135,7 +134,7 @@ qiniu-js-sdk
 
     ```javascript
 
-        var imgLink = Q.watermark({
+        var imgLink = Qiniu.watermark({
              mode: 2,  // 文字水印
              text: 'hello world !', // 水印文字，mode = 2 时 **必需**
              dissolve: 50,          // 透明度，取值范围1-100，非必需，下同
@@ -153,7 +152,7 @@ qiniu-js-sdk
 
     ```javascript
 
-        var imgLink = Q.imageView2({
+        var imgLink = Qiniu.imageView2({
            mode: 3,  // 缩略模式，共6种[0-5]
            w: 100,   // 具体含义由缩略模式决定
            h: 100,   // 具体含义由缩略模式决定
@@ -167,7 +166,7 @@ qiniu-js-sdk
 
     ```javascript
 
-        var imgLink = Q.imageMogr2({
+        var imgLink = Qiniu.imageMogr2({
            auto-orient: true,  // 布尔值，是否根据原图EXIF信息自动旋正，便于后续处理，建议放在首位。
            strip: true,   // 布尔值，是否去除图片中的元信息
            thumbnail: '1000x1000'   // 缩放操作参数
@@ -179,13 +178,13 @@ qiniu-js-sdk
            blur:'3x5'    // 高斯模糊参数
          }, key);
 
-    ```javascript
+    ```
 
     具体高级图像处理参数解释见[高级图像处理（imageMogr2）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/imagemogr2.html)
     *  imageInfo
 
     ```javascript
-        var imageInfoObj = Q.imageInfo(key);
+        var imageInfoObj = Qiniu.imageInfo(key);
     ```
     具体 imageInfo 解释见[图片基本信息（imageInfo）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/imageinfo.html)
 
@@ -193,7 +192,7 @@ qiniu-js-sdk
     *  exif
 
     ```javascript
-        var exifOjb = Q.exif(key);
+        var exifOjb = Qiniu.exif(key);
     ```
 
     具体 exif 解释见[图片EXIF信息（exif）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/exif.html)
@@ -261,7 +260,7 @@ qiniu-js-sdk
         // }];
 
 
-        var imgLink = Q.pipeline(fopArr, key));
+        var imgLink = Qiniu.pipeline(fopArr, key));
 
     ```
     具体管道操作解释见[管道操作](http://developer.qiniu.com/docs/v6/api/overview/fop/pipeline.html)
@@ -279,7 +278,7 @@ qiniu-js-sdk
     * [开通七牛开发者帐号](https://portal.qiniu.com/signup)
     * [登录七牛开发者自助平台，查看 AccessKey 和 SecretKey](https://portal.qiniu.com/setting/key) 。
 
-        ```
+        ```javascript
 
             qiniu.conf.ACCESS_KEY = '<Your Access Key>';
 
