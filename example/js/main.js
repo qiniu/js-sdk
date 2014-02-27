@@ -5,7 +5,6 @@ var Q = new Qiniu({
     drop_element: 'container',
     max_file_size: '100mb',
     flash_swf_url: 'js/plupload/Moxie.swf',
-    // max_retries: 3,
     dragdrop: true,
     chunk_size: '4mb',
     uptoken_url: '/token',
@@ -38,7 +37,7 @@ var Q = new Qiniu({
         },
         'FileUploaded': function(up, file, info) {
             var progress = new FileProgress(file, 'fsUploadProgress');
-            progress.setComplete(up, parseJSON(info));
+            progress.setComplete(up, info);
         },
         'Error': function(up, err, errTip) {
             $('table').show();
@@ -70,9 +69,11 @@ $(function() {
         $('#container').addClass('draging');
         e.stopPropagation();
     });
+
     $('#show_code').on('click', function() {
         $('#myModal-code').modal();
     });
+
     $('pre code').each(function(i, e) {
         hljs.highlightBlock(e);
     });
