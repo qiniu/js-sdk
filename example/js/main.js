@@ -70,13 +70,15 @@ $(function() {
         e.stopPropagation();
     });
 
+
+
     $('#show_code').on('click', function() {
         $('#myModal-code').modal();
+        $('pre code').each(function(i, e) {
+            hljs.highlightBlock(e);
+        });
     });
 
-    $('pre code').each(function(i, e) {
-        hljs.highlightBlock(e);
-    });
 
     $('body').on('click', 'table button.btn', function() {
         $(this).parents('tr').next().toggle();
