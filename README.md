@@ -220,7 +220,7 @@ qiniu-js-sdk
             h: 100,
             q: 100,
             format: 'png'
-        }，{
+        },{
             fop: 'imageMogr2',  // 指定imageMogr2操作
             auto-orient: true,  // 此参数同imageMogr2函数的参数，下同。
             strip: true,
