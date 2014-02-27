@@ -25,10 +25,7 @@ qiniu-js-sdk
 
 ### SDK构成介绍
 * Plupload
-* qiniu.js，SDK主体文件，由以下三个文件合并
- * qiniu.utils.js，基础函数
- * qiniu.uploader.js,上传功能实现
- * qiniu.image.js，图片处理实现
+* qiniu.js，SDK主体文件，上传功能\数据处理实现
 
 
 ## 安装和运行程序
