@@ -283,7 +283,8 @@ FileProgress.prototype.setComplete = function(up, info) {
                 if (height > $(window).height() - height_space) {
                     height = parseInt($(window).height() - height_space, 10);
                 } else {
-                    height = parseInt(height, 10);
+                    height = parseInt(height, 10) || 500;
+                    //set a default height 500 for ie9-
                 }
                 var fopArr = [];
                 fopArr.push({
