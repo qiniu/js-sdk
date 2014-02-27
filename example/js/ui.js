@@ -264,12 +264,6 @@ FileProgress.prototype.setComplete = function(up, info) {
 
             var infoWrapper = $('<div class="infoWrapper col-md-6"></div>');
 
-            var exif = Q.exif(res.key);
-            if (exif) {
-                var exifLink = $('<a href="" target="_blank">查看exif</a>');
-                exifLink.attr('href', url + '?exif');
-                infoWrapper.append(exifLink);
-            }
 
             var fopLink = $('<a class="fopLink"/>');
             fopLink.attr('data-key', res.key).text('查看处理效果');
@@ -314,14 +308,24 @@ FileProgress.prototype.setComplete = function(up, info) {
                 return false;
             });
 
-            var imageInfo = Q.imageInfo(res.key);
-            var infoArea = $('<div/>');
-            var infoInner = '<div>格式：<span class="origin-format">' + imageInfo.format + '</span></div>' +
-                '<div>宽度：<span class="orgin-width">' + imageInfo.width + 'px</span></div>' +
-                '<div>高度：<span class="origin-height">' + imageInfo.height + 'px</span></div>';
-            infoArea.html(infoInner);
+            var ie = Q.detectIEVersion();
+            if (!(ie && ie <= 9)) {
+                var exif = Q.exif(res.key);
+                if (exif) {
+                    var exifLink = $('<a href="" target="_blank">查看exif</a>');
+                    exifLink.attr('href', url + '?exif');
+                    infoWrapper.append(exifLink);
+                }
 
-            infoWrapper.append(infoArea);
+                var imageInfo = Q.imageInfo(res.key);
+                var infoArea = $('<div/>');
+                var infoInner = '<div>格式：<span class="origin-format">' + imageInfo.format + '</span></div>' +
+                    '<div>宽度：<span class="orgin-width">' + imageInfo.width + 'px</span></div>' +
+                    '<div>高度：<span class="origin-height">' + imageInfo.height + 'px</span></div>';
+                infoArea.html(infoInner);
+
+                infoWrapper.append(infoArea);
+            }
 
             Wrapper.append(infoWrapper);
 
