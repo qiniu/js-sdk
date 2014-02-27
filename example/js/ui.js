@@ -151,8 +151,7 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
 
         for (var index = 0; index < current_uploading_chunk; index++) {
             pre_chunk = $('#' + file.id + "_" + index);
-            pre_chunk.width('100%');
-            pre_chunk.attr('aria-valuenow', 100);
+            pre_chunk.width('100%').removeClass().addClass('alert-success').attr('aria-valuenow', 100);
             text = "块" + index + "上传进度100%";
             pre_chunk.next().html(text);
         }
