@@ -287,7 +287,7 @@ qiniu-js-sdk
 
         ```
 
-*  运行`node example/server.js` 或者 `make`启动
+*  在`example`目录运行`node server.js` 或者 在根目录运行`make`启动
 *  访问`http://127.0.0.1:18080/`或`http://localhost:18080/`
 
 ## 说明
