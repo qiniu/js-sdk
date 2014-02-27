@@ -384,7 +384,7 @@ function QiniuJsSDK() {
                                     errTip = "未知错误。";
                                     break;
                             }
-                            var errorObj = this.parseJSON(err.response);
+                            var errorObj = that.parseJSON(err.response);
                             errTip = errTip + '(' + err.status + '：' + errorObj.error + ')';
                             break;
                         case plupload.SECURITY_ERROR:
