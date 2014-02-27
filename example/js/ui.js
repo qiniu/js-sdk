@@ -146,6 +146,15 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
             return false;
         }
         var current_uploading_chunk = Math.ceil(uploaded / chunk_size);
+        var pre_chunk, text;
+
+        for (var index = 0; index < current_uploading_chunk; index++) {
+            pre_chunk = $('#' + file.id + "_" + index);
+            pre_chunk.width('100%');
+            pre_chunk.attr('aria-valuenow', 100);
+            text = "块" + index + "上传进度100%";
+            pre_chunk.next().html(text);
+        }
 
         var currentProgessBar = $('#' + file.id + "_" + current_uploading_chunk);
         var current_chunk_percent;
@@ -168,7 +177,7 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
         }
         currentProgessBar.width(current_chunk_percent + '%');
         currentProgessBar.attr('aria-valuenow', current_chunk_percent);
-        var text = "块" + current_uploading_chunk + "上传进度" + current_chunk_percent + '%';
+        text = "块" + current_uploading_chunk + "上传进度" + current_chunk_percent + '%';
         currentProgessBar.next().html(text);
     }
 
