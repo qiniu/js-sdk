@@ -3,7 +3,7 @@ var express = require('express');
 var app = express();
 
 app.configure(function() {
-    app.use(express.static(__dirname + '/example'));
+    app.use(express.static(__dirname + '/'));
 });
 
 app.use(function(req, res, next) {
@@ -27,17 +27,17 @@ app.get('/token', function(req, res, next) {
 
 app.get('/', function(req, res) {
     res.setHeader('Pragma', 'no-cache');
-    res.sendfile(__dirname + '/example/index.html')
+    res.sendfile(__dirname + '/index.html')
 });
 
-qiniu.conf.ACCESS_KEY = '0MLvWPnyya1WtPnXFy9KLyGHyFPNdZceomLVk0c9';
-qiniu.conf.SECRET_KEY = 'o5itRgrXxoD6XQ5wDWKQ7h--eWvWyQVKcsIURuEV';
+qiniu.conf.ACCESS_KEY = '<Your Access Key>';
+qiniu.conf.SECRET_KEY = '<Your Secret Key>';
 
-var uptoken = new qiniu.rs.PutPolicy('qiniu-plupload');
+var uptoken = new qiniu.rs.PutPolicy('<Your Bucket Name>');
 
 
-app.listen(3000);
+app.listen(18080);
 
-console.log(qiniu);
+
 
 console.log('server runing at localhost:' + 3000)
