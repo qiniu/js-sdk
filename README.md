@@ -14,7 +14,7 @@ qiniu-js-sdk
  * html5模式大于4M时可分块上传，小于4M时直传
  * Flash、html4模式直接上传
  * 继承了Plupload的功能，可筛选文件上传、拖曳上传等
-* 下载
+* 下载(公有资源)
 * 数据处理（图片）
  * imageView2（缩略图）
  * imageMogr2（高级处理，包含缩放、裁剪、旋转等）
