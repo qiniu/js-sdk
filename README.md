@@ -63,7 +63,7 @@ qiniu-js-sdk
             runtimes: 'html5,flash,html4',    //上传模式,依次退化
             browse_button: 'pickfiles',       //上传选择的点选按钮，**必须**
             uptoken_url: '/token',            //Ajax请求upToken的Url，**必须**（服务端提供）
-            domain: 'http://qiniu-plupload.qiniudn.com/',   //buckete 域名，下载资源时用到，**必须**
+            domain: 'http://qiniu-plupload.qiniudn.com/',   //bucket 域名，下载资源时用到，**必须**
             container: 'container',           //上传区域DOM ID，默认是browser_button的父元素，
             max_file_size: '100mb',           //最大文件体积限制
             flash_swf_url: 'js/plupload/Moxie.swf',  //引入flash,相对路径
@@ -106,6 +106,7 @@ qiniu-js-sdk
             }
         });
 
+        // domain 为七牛空间（bucket)对应的域名，选择某个空间后，可通过’ 空间设置->基本设置->域名设置‘查看获取
     ```
 
 * 运行网站，通过点击`pickfiles`元素，选择文件后上传
@@ -129,7 +130,7 @@ qiniu-js-sdk
              dy: 100   // 纵轴边距，单位:像素(px)
          }, key);
 
-         // imgLink 可以赋值给 html 的 img 元素的src 属性，下同
+         // imgLink 可以赋值给 html 的 img 元素的 src 属性，下同
 
     ```
 
@@ -281,7 +282,7 @@ qiniu-js-sdk
 
             qiniu.conf.SECRET_KEY = '<Your Secret Key>';
 
-            var uptoken = new qiniu.rs.PutPolicy('<Your Buckete Name>');
+            var uptoken = new qiniu.rs.PutPolicy('<Your Bucket Name>');
 
         ```
 
@@ -298,7 +299,7 @@ qiniu-js-sdk
 
 4. 如果您想了解更多七牛的图片处理，建议您仔细阅读 [七牛官方文档-图片处理](http://developer.qiniu.com/docs/v6/api/reference/fop/image/)
 
-5. 本SDK示例，生成upToken时，指定的`Buckete Name`为公有空间，所以可以公开访问上传成功后的资源。若您生成upToken时，指定的`Buckete Name`为私有空间，那您还需要在服务端进行额外的处理才能访问您上传的资源。具体参见[下载凭证](http://developer.qiniu.com/docs/v6/api/reference/security/download-token.html)。本SDK数据处理部分功能不适用于私有空间。
+5. 本SDK示例生成upToken时，指定的`Bucket Name`为公有空间，所以可以公开访问上传成功后的资源。若您生成upToken时，指定的`Bucket Name`为私有空间，那您还需要在服务端进行额外的处理才能访问您上传的资源。具体参见[下载凭证](http://developer.qiniu.com/docs/v6/api/reference/security/download-token.html)。本SDK数据处理部分功能不适用于私有空间。
 
 ## 贡献代码
 
