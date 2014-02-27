@@ -213,6 +213,11 @@ function QiniuJsSDK() {
         if (!op.uptoken_url || !op.domain) {
             throw 'uptoken_url or domain is required!';
         }
+
+        if (!op.browse_button) {
+            throw 'browse_button is required!';
+        }
+
         var option = {};
 
         var Error_Handler = op.init && op.init.Error;
