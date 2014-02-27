@@ -1,5 +1,4 @@
 /*global plupload */
-/*global isImage */
 function FileProgress(file, targetID) {
     this.fileProgressID = file.id;
     this.file = file;
@@ -179,7 +178,7 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
 FileProgress.prototype.setComplete = function(up, info) {
     var td = this.fileProgressWrapper.find('td:eq(2) .progress');
 
-    var res = info;
+    var res = $.parseJSON(info);
     var domain = up.getOption('domain');
     var url = domain + encodeURI(res.key);
     var link = domain + res.key;
@@ -191,6 +190,23 @@ FileProgress.prototype.setComplete = function(up, info) {
     var progressNameTd = this.fileProgressWrapper.find('.progressName');
     var imageView = '?imageView2/1/w/100/h/100';
 
+    var isImage = function(url) {
+        var res, suffix = "";
+        var imageSuffixes = ["png", "jpg", "jpeg", "gif", "bmp"];
+        var suffixMatch = /\.([a-zA-Z0-9]+)(\?|\@|$)/;
+
+        if (!url || !suffixMatch.test(url)) {
+            return false;
+        }
+        res = suffixMatch.exec(url);
+        suffix = res[1].toLowerCase();
+        for (var i = 0, l = imageSuffixes.length; i < l; i++) {
+            if (suffix === imageSuffixes[i]) {
+                return true;
+            }
+        }
+        return false;
+    };
 
     var isImg = isImage(url);
 
