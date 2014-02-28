@@ -339,6 +339,7 @@ FileProgress.prototype.setComplete = function(up, info) {
 FileProgress.prototype.setError = function() {
     this.fileProgressWrapper.find('td:eq(2)').attr('class', 'text-warning');
     this.fileProgressWrapper.find('td:eq(2) .progress').css('width', 0).hide();
+    this.fileProgressWrapper.find('button').hide();
 };
 
 FileProgress.prototype.setCancelled = function(manual) {
