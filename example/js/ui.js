@@ -95,7 +95,7 @@ FileProgress.prototype.setChunkProgess = function(chunk_size) {
 
     var viewProgess = $('<button class="btn btn-default">查看分块上传进度</button>');
 
-    var progressBarChunkTr = $('<tr><td colspan=3></td></tr>');
+    var progressBarChunkTr = $('<tr class="chunk-status-tr"><td colspan=3></td></tr>');
     var progressBarChunk = $('<div/>');
     for (var i = 1; i <= chunk_amount; i++) {
         var col = $('<div class="col-md-2"/>');
@@ -340,6 +340,7 @@ FileProgress.prototype.setError = function() {
     this.fileProgressWrapper.find('td:eq(2)').attr('class', 'text-warning');
     this.fileProgressWrapper.find('td:eq(2) .progress').css('width', 0).hide();
     this.fileProgressWrapper.find('button').hide();
+    this.fileProgressWrapper.next('.chunk-status-tr').hide();
 };
 
 FileProgress.prototype.setCancelled = function(manual) {
