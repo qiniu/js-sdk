@@ -355,6 +355,7 @@ function QiniuJsSDK() {
                             errTip = '文件验证失败。请稍后重试。';
                             break;
                         case plupload.HTTP_ERROR:
+                            var errorObj = that.parseJSON(err.response);
                             switch (err.status) {
                                 case 400:
                                     errTip = "请求报文格式错误。";
@@ -373,6 +374,7 @@ function QiniuJsSDK() {
                                     break;
                                 case 614:
                                     errTip = "文件已存在。";
+                                    errorObj = that.parseJSON(errorObj.error);
                                     break;
                                 case 631:
                                     errTip = "指定空间不存在。";
@@ -384,7 +386,6 @@ function QiniuJsSDK() {
                                     errTip = "未知错误。";
                                     break;
                             }
-                            var errorObj = that.parseJSON(err.response);
                             errTip = errTip + '(' + err.status + '：' + errorObj.error + ')';
                             break;
                         case plupload.SECURITY_ERROR:
