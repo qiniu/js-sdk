@@ -240,18 +240,9 @@ FileProgress.prototype.setComplete = function(up, info) {
         var img = new Image();
         $(img).attr('src', url + imageView);
 
-        var timeId = setTimeout(function() {
-
-            showImg.attr('src', 'default.png');
-            Wrapper.addClass('default');
-
-            $(img).unbind();
-        }, 5000);
-
         var height_space = 340;
         $(img).on('load', function() {
 
-            clearTimeout(timeId);
             showImg.attr('src', url + imageView);
 
             linkWrapper.attr('href', url).attr('title', '查看原图');
@@ -259,7 +250,7 @@ FileProgress.prototype.setComplete = function(up, info) {
             function initImg(url, key, height) {
                 $('#myModal-img').modal();
                 var modalBody = $('#myModal-img').find('.modal-body');
-                if (height < 100) {
+                if (height <= 300) {
                     $('#myModal-img').find('.text-warning').show();
                 }
                 var newImg = new Image();
@@ -283,8 +274,8 @@ FileProgress.prototype.setComplete = function(up, info) {
                 if (height > $(window).height() - height_space) {
                     height = parseInt($(window).height() - height_space, 10);
                 } else {
-                    height = parseInt(height, 10) || 500;
-                    //set a default height 500 for ie9-
+                    height = parseInt(height, 10) || 300;
+                    //set a default height 300 for ie9-
                 }
                 var fopArr = [];
                 fopArr.push({
@@ -342,7 +333,6 @@ FileProgress.prototype.setComplete = function(up, info) {
         }).on('error', function() {
             showImg.attr('src', 'default.png');
             Wrapper.addClass('default');
-            clearTimeout(timeId);
         });
     }
 };
