@@ -50,7 +50,7 @@ qiniu-js-sdk
     *   引入`plupload.full.min.js`（产品环境）或 引入`plupload.dev.js`和`moxie.js`（开发调试）
 
 * 引入qiniu.js
-    *   获取SDK源码 `git clone https://github.com/SunLn/qiniu-js-sdk.git`，`qiniu.js`位于`src`目录内
+    *   获取SDK源码 `git clone git@github.com:qiniupd/qiniu-js-sdk.git`，`qiniu.js`位于`src`目录内
 
 * 初始化上传
 
@@ -278,7 +278,7 @@ qiniu-js-sdk
 *  [安装nodejs](http://nodejs.org/download/)
 
 *  获取源代码：
-    `git clone https://github.com/SunLn/qiniu-js-sdk.git`
+    `git clone git@github.com:qiniupd/qiniu-js-sdk.git`
 *  进入`example`目录,修改`server.js`，`Access Key`和`Secret Key` 按如下方式获取
 
     * [开通七牛开发者帐号](https://portal.qiniu.com/signup)
@@ -313,7 +313,7 @@ qiniu-js-sdk
 
 1. 登录 https://github.com
 
-2. Fork https://github.com/SunLn/qiniu-js-sdk.git
+2. Fork git@github.com:qiniupd/qiniu-js-sdk.git
 
 3. 创建您的特性分支 (git checkout -b new-feature)
 
