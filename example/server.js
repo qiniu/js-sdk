@@ -13,7 +13,6 @@ app.use(function(req, res, next) {
 });
 
 app.get('/token', function(req, res, next) {
-    console.log("=====================>>>>token");
     var token = uptoken.token();
     res.header("Cache-Control", "max-age=0, private, must-revalidate");
     res.header("Pragma", "no-cache");
@@ -37,7 +36,3 @@ var uptoken = new qiniu.rs.PutPolicy(config.Bucket_Name);
 
 
 app.listen(config.Port);
-
-
-
-console.log('server runing at localhost: ' + config.Port)
