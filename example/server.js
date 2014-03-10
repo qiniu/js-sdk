@@ -1,5 +1,6 @@
 var qiniu = require('qiniu');
 var express = require('express');
+var config = require('./config.js');
 var app = express();
 
 app.configure(function() {
@@ -17,7 +18,6 @@ app.get('/token', function(req, res, next) {
     res.header("Cache-Control", "max-age=0, private, must-revalidate");
     res.header("Pragma", "no-cache");
     res.header("Expires", 0);
-    console.log(token);
     if (token) {
         res.json({
             uptoken: token
@@ -30,14 +30,14 @@ app.get('/', function(req, res) {
     res.sendfile(__dirname + '/index.html')
 });
 
-qiniu.conf.ACCESS_KEY = '<Your Access Key>';
-qiniu.conf.SECRET_KEY = '<Your Secret Key>';
+qiniu.conf.ACCESS_KEY = config.ACCESS_KEY;
+qiniu.conf.SECRET_KEY = config.SECRET_KEY;
 
-var uptoken = new qiniu.rs.PutPolicy('<Your Bucket Name>');
-
-
-app.listen(18080);
+var uptoken = new qiniu.rs.PutPolicy(config.Bucket_Name);
 
 
+app.listen(config.Port);
 
-console.log('server runing at localhost:' + 3000)
+
+
+console.log('server runing at localhost: ' + config.Port)
