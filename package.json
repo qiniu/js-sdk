@@ -1,0 +1,12 @@
+{
+    "name": "qiniu-js-sdk",
+    "version": "1.0.0-beta",
+    "private": false,
+    "scripts": {
+        "start": "node demo/server.js"
+    },
+    "dependencies": {
+        "express": "~3.4.7",
+        "qiniu": "~6.1.1"
+    }
+}
