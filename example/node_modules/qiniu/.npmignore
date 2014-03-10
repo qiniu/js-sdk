@@ -1,7 +1,0 @@
-test/
-test-env.sh
-.travis.yml
-coverage.html
-lib-cov/
-Makefile
-docs/
