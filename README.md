@@ -279,22 +279,23 @@ qiniu-js-sdk
 
 *  获取源代码：
     `git clone git@github.com:qiniupd/qiniu-js-sdk.git`
-*  进入`example`目录,修改`server.js`，`Access Key`和`Secret Key` 按如下方式获取
+*  进入`demo`目录,修改`config.js`，`Access Key`和`Secret Key` 按如下方式获取
 
     * [开通七牛开发者帐号](https://portal.qiniu.com/signup)
     * [登录七牛开发者自助平台，查看 AccessKey 和 SecretKey](https://portal.qiniu.com/setting/key) 。
 
         ```javascript
 
-            qiniu.conf.ACCESS_KEY = '<Your Access Key>';
-
-            qiniu.conf.SECRET_KEY = '<Your Secret Key>';
-
-            var uptoken = new qiniu.rs.PutPolicy('<Your Bucket Name>');
+            module.exports = {
+                'ACCESS_KEY': '<Your Access Key>',
+                'SECRET_KEY': '<Your Secret Key>',
+                'Bucket_Name': '<Your Bucket Name>',
+                'Port': 18080
+            }
 
         ```
 
-*  在`example`目录运行`node server.js` 或者 在根目录运行`make`启动
+*  在`demo`目录运行`node server.js` 或者 在根目录运行`make`启动
 *  访问`http://127.0.0.1:18080/`或`http://localhost:18080/`
 
 ## 说明
