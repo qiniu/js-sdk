@@ -301,11 +301,11 @@ function QiniuJsSDK() {
                 'SOUND': 'mp3,mid,wav,flac,ape,mp3pro,wma',
                 'VIDEO': 'rmvb,rm,mp4,avi,mov,wmv,mkv,flv,f4v,mpeg-1,mpeg-2,mpeg-4,asf'
             }
-            if (postfix.indexOf(filetypes.IMG)) {
+            if (filetypes.IMG.indexOf(postfix) >= 0) {
                 filetype = 'IMG';
-            } else if (postfix.indexOf(filetypes.SOUND)) {
+            } else if (filetypes.SOUND.indexOf(postfix) >= 0) {
                 filetype = 'SOUND';
-            } else if (postfix.indexOf(filetypes.VIDEO)) {
+            } else if (filetypes.VIDEO.indexOf(postfix) >= 0) {
                 filetype = 'VIDEO';
             }
             if (up.getOption('unique_names_postfix')) {
