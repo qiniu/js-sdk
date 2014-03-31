@@ -272,7 +272,7 @@ function QiniuJsSDK() {
             };
             ajax.send();
         };
-
+				
         uploader.bind('Init', function(up, params) {
             getUpToken();
         });
@@ -291,6 +291,31 @@ function QiniuJsSDK() {
 
             ctx = '';
 
+            /////////unique_names with postfix
+            filename = file.name;   //default key
+            tmp = file.name.split("").reverse().join("");  //reversal name
+            postfix = tmp.split('.')[0].split("").reverse().join("").toLowerCase();  //get the postfix and make it lower-case
+            filetype = 'FILE';   //default filetype
+            filetypes = {        //filetypes list
+                'IMG': 'jpg,png,gif,jpeg,bmp',
+                'SOUND': 'mp3,mid,wav,flac,ape,mp3pro,wma',
+                'VIDEO': 'rmvb,rm,mp4,avi,mov,wmv,mkv,flv,f4v,mpeg-1,mpeg-2,mpeg-4,asf'
+            }
+            if (postfix.indexOf(filetypes.IMG)) {
+                filetype = 'IMG';
+            } else if (postfix.indexOf(filetypes.SOUND)) {
+                filetype = 'SOUND';
+            } else if (postfix.indexOf(filetypes.VIDEO)) {
+                filetype = 'VIDEO';
+            }
+            if (up.getOption('unique_names_postfix')) {
+                rand = Math.random();
+                rand = Math.round(rand*100000);
+                var time = new Date();
+                filename = filetype + "_" + time.getTime() + rand + "." + postfix;
+            }
+            /////////unique_names with postfix
+            
             function directUpload() {
                 up.setOption({
                     'url': 'http://up.qiniu.com/',
@@ -298,7 +323,7 @@ function QiniuJsSDK() {
                     'chunk_size': undefined,
                     'multipart_params': {
                         'token': token,
-                        'key': file.name
+                        'key': filename
                     }
                 });
             }
@@ -355,8 +380,6 @@ function QiniuJsSDK() {
                             errTip = '文件验证失败。请稍后重试。';
                             break;
                         case plupload.HTTP_ERROR:
-                            var errorObj = that.parseJSON(err.response);
-                            var errorText = errorObj.error;
                             switch (err.status) {
                                 case 400:
                                     errTip = "请求报文格式错误。";
@@ -375,8 +398,6 @@ function QiniuJsSDK() {
                                     break;
                                 case 614:
                                     errTip = "文件已存在。";
-                                    errorObj = that.parseJSON(errorObj.error);
-                                    errorText = errorObj.error || 'file exists';
                                     break;
                                 case 631:
                                     errTip = "指定空间不存在。";
@@ -388,7 +409,8 @@ function QiniuJsSDK() {
                                     errTip = "未知错误。";
                                     break;
                             }
-                            errTip = errTip + '(' + err.status + '：' + errorText + ')';
+                            var errorObj = that.parseJSON(err.response);
+                            errTip = errTip + '(' + err.status + '：' + errorObj.error + ')';
                             break;
                         case plupload.SECURITY_ERROR:
                             errTip = '安全配置错误。请联系网站管理员。';
@@ -410,8 +432,6 @@ function QiniuJsSDK() {
                     if (Error_Handler) {
                         Error_Handler(up, err, errTip);
                     }
-                } else {
-
                 }
                 up.refresh(); // Reposition Flash/Silverlight
             };
@@ -429,19 +449,10 @@ function QiniuJsSDK() {
                     ajax.setRequestHeader('Authorization', 'UpToken ' + token);
                     ajax.send(ctx);
                     ajax.onreadystatechange = function() {
-                        if (ajax.readyState === 4) {
-                            if (ajax.status === 200) {
-                                var info = ajax.responseText;
-                                if (FileUploaded_Handler) {
-                                    FileUploaded_Handler(up, file, info);
-                                }
-                            } else {
-                                uploader.trigger('Error', {
-                                    status: ajax.status,
-                                    response: ajax.responseText,
-                                    file: file,
-                                    code: -200
-                                });
+                        if (ajax.readyState === 4 && ajax.status === 200) {
+                            var info = ajax.responseText;
+                            if (FileUploaded_Handler) {
+                                FileUploaded_Handler(up, file, info);
                             }
                         }
                     };

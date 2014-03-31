@@ -272,7 +272,7 @@ function QiniuJsSDK() {
             };
             ajax.send();
         };
-
+				
         uploader.bind('Init', function(up, params) {
             getUpToken();
         });
@@ -291,6 +291,31 @@ function QiniuJsSDK() {
 
             ctx = '';
 
+            /////////unique_names with postfix
+            filename = file.name;   //default key
+            tmp = file.name.split("").reverse().join("");  //reversal name
+            postfix = tmp.split('.')[0].split("").reverse().join("").toLowerCase();  //get the postfix and make it lower-case
+            filetype = 'FILE';   //default filetype
+            filetypes = {        //filetypes list
+                'IMG': 'jpg,png,gif,jpeg,bmp',
+                'SOUND': 'mp3,mid,wav,flac,ape,mp3pro,wma',
+                'VIDEO': 'rmvb,rm,mp4,avi,mov,wmv,mkv,flv,f4v,mpeg-1,mpeg-2,mpeg-4,asf'
+            }
+            if (postfix.indexOf(filetypes.IMG)) {
+                filetype = 'IMG';
+            } else if (postfix.indexOf(filetypes.SOUND)) {
+                filetype = 'SOUND';
+            } else if (postfix.indexOf(filetypes.VIDEO)) {
+                filetype = 'VIDEO';
+            }
+            if (up.getOption('unique_names_postfix')) {
+                rand = Math.random();
+                rand = Math.round(rand*100000);
+                var time = new Date();
+                filename = filetype + "_" + time.getTime() + rand + "." + postfix;
+            }
+            /////////unique_names with postfix
+            
             function directUpload() {
                 up.setOption({
                     'url': 'http://up.qiniu.com/',
@@ -298,7 +323,7 @@ function QiniuJsSDK() {
                     'chunk_size': undefined,
                     'multipart_params': {
                         'token': token,
-                        'key': file.name
+                        'key': filename
                     }
                 });
             }
