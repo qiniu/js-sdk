@@ -327,13 +327,8 @@ function QiniuJsSDK() {
                     'multipart': true,
                     'chunk_size': undefined,
                     'multipart_params': {
-<<<<<<< HEAD
-                        'token': token,
                         'key': filename
-=======
                         'token': that.token,
-                        'key': file.name
->>>>>>> qiniu/master
                     }
                 });
             }
