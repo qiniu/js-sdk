@@ -249,7 +249,7 @@ function QiniuJsSDK() {
         }
 
 
-        var token = '';
+        that.token = '';
         var ctx = '';
 
         plupload.extend(option, op, {
@@ -260,17 +260,22 @@ function QiniuJsSDK() {
         });
 
         var uploader = new plupload.Uploader(option);
+
         var getUpToken = function() {
-            var ajax = that.createAjax();
-            ajax.open('GET', uptoken_url, true);
-            ajax.setRequestHeader("If-Modified-Since", "0");
-            ajax.onreadystatechange = function() {
-                if (ajax.readyState === 4 && ajax.status === 200) {
-                    var res = that.parseJSON(ajax.responseText);
-                    token = res.uptoken;
-                }
-            };
-            ajax.send();
+            if (!op.uptoken) {
+                var ajax = that.createAjax();
+                ajax.open('GET', uptoken_url, true);
+                ajax.setRequestHeader("If-Modified-Since", "0");
+                ajax.onreadystatechange = function() {
+                    if (ajax.readyState === 4 && ajax.status === 200) {
+                        var res = that.parseJSON(ajax.responseText);
+                        that.token = res.uptoken;
+                    }
+                };
+                ajax.send();
+            } else {
+                that.token = op.uptoken;
+            }
         };
 				
         uploader.bind('Init', function(up, params) {
@@ -322,8 +327,13 @@ function QiniuJsSDK() {
                     'multipart': true,
                     'chunk_size': undefined,
                     'multipart_params': {
+<<<<<<< HEAD
                         'token': token,
                         'key': filename
+=======
+                        'token': that.token,
+                        'key': file.name
+>>>>>>> qiniu/master
                     }
                 });
             }
@@ -340,7 +350,7 @@ function QiniuJsSDK() {
                         'multipart': false,
                         'chunk_size': chunk_size,
                         'headers': {
-                            'Authorization': 'UpToken ' + token
+                            'Authorization': 'UpToken ' + that.token
                         },
                         'multipart_params': {}
                     });
@@ -446,7 +456,7 @@ function QiniuJsSDK() {
                     var ajax = that.createAjax();
                     ajax.open('POST', url, true);
                     ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
-                    ajax.setRequestHeader('Authorization', 'UpToken ' + token);
+                    ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
                     ajax.send(ctx);
                     ajax.onreadystatechange = function() {
                         if (ajax.readyState === 4 && ajax.status === 200) {
