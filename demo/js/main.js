@@ -1,3 +1,8 @@
+/*global Qiniu */
+/*global plupload */
+/*global FileProgress */
+/*global hljs */
+
 var uploader = Qiniu.uploader({
     runtimes: 'html5,flash,html4',
     browse_button: 'pickfiles',
@@ -9,6 +14,7 @@ var uploader = Qiniu.uploader({
     chunk_size: '4mb',
     uptoken_url: '/token',
     domain: 'http://qiniu-plupload.qiniudn.com/',
+    unique_names: true,
     auto_start: true,
     init: {
         'FilesAdded': function(up, files) {
