@@ -336,36 +336,49 @@ function QiniuJsSDK() {
             //     filename = filetype + "_" + time.getTime() + rand + postfix;
             // }
             /////////unique_names with postfix
+            var getFileKey = function(up, file, func) {
+                var key = '';
+                if (!op.save_key) {
+                    if (up.getOption('unique_names_postfix')) {
+                        var ext = that.getFileExtension(file);
+                        key = ext ? file.id + '.' + ext : file.id;
+                    } else if (typeof func === 'function') {
+                        key = func(up, file);
+                    } else {
+                        key = file.name;
+                    }
+                }
+                return key;
+            };
 
-            function directUpload() {
+            var directUpload = function(up, file, func) {
+
+                var multipart_params_obj;
+                if (op.save_key) {
+                    multipart_params_obj = {
+                        'token': that.token
+                    }
+                } else {
+                    multipart_params_obj = {
+                        'key': getFileKey(up, file, func),
+                        'token': that.token
+                    }
+                }
+
                 up.setOption({
                     'url': 'http://up.qiniu.com/',
                     'multipart': true,
                     'chunk_size': undefined,
-                    'multipart_params': {
-                        'key': filename,
-                        'token': that.token
-                    }
+                    'multipart_params': multipart_params_obj
                 });
             }
 
-            var getFileKey = function(up, file, func) {
-                if (up.getOption('unique_names_postfix')) {
-                    var ext = that.getFileExtension(file);
-                    key = ext ? file.id + '.' + ext : file.id;
-                } else if (typeof func === 'function') {
-                    key = func(up, file);
-                } else {
-                    key = file.name;
-                }
-                return key;
-            };
 
             var chunk_size = up.getOption('chunk_size');
 
             if (uploader.runtime === 'html5' && chunk_size) {
                 if (file.size < chunk_size) {
-                    directUpload();
+                    directUpload(up, file, func);
                 } else {
                     var blockSize = chunk_size;
                     ctx = '';
@@ -380,7 +393,7 @@ function QiniuJsSDK() {
                     });
                 }
             } else {
-                directUpload();
+                directUpload(up, file, func);
             }
         });
 
