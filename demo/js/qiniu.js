@@ -298,8 +298,13 @@ function QiniuJsSDK() {
 
             /////////unique_names with postfix
             var filename = file.name;   //default key
-            var tmp = file.name.split("").reverse().join("");  //reversal name
-            var postfix = tmp.split('.')[0].split("").reverse().join("").toLowerCase();  //get the postfix and make it lower-case
+            var tmp = file.name.split(".");  //reversal name
+			var postfix;
+			if (tmp.length === 1 || (a[0] === "" && a.length === 2)) {
+				postfix = "";
+			} else {
+				postfix = "." + tmp.pop().toLowerCase();  //get the postfix and make it lower-case
+			}
             var filetype = 'FILE';   //default filetype
             var filetypes = {        //filetypes list
                 'IMG': 'jpg,png,gif,jpeg,bmp',
@@ -314,10 +319,10 @@ function QiniuJsSDK() {
                 filetype = 'VIDEO';
             }
             if (up.getOption('unique_names_postfix')) {
-                rand = Math.random();
+                var rand = Math.random();
                 rand = Math.round(rand*100000);
                 var time = new Date();
-                filename = filetype + "_" + time.getTime() + rand + "." + postfix;
+                filename = filetype + "_" + time.getTime() + rand + postfix;
             }
             /////////unique_names with postfix
             
