@@ -35,6 +35,17 @@ function QiniuJsSDK() {
         return false;
     };
 
+    this.getFileExtension = function(filename) {
+        var tempArr = file.name.split(".");
+        var ext;
+        if (tempArr.length === 1 || (tempArr[0] === "" && tempArr.length === 2)) {
+            ext = "";
+        } else {
+            ext = tempArr.pop().toLowerCase(); //get the extension and make it lower-case
+        }
+        return ext;
+    };
+
     this.utf8_encode = function(argString) {
         // http://kevin.vanzonneveld.net
         // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
@@ -277,7 +288,7 @@ function QiniuJsSDK() {
                 that.token = op.uptoken;
             }
         };
-				
+
         uploader.bind('Init', function(up, params) {
             getUpToken();
         });
@@ -297,46 +308,59 @@ function QiniuJsSDK() {
             ctx = '';
 
             /////////unique_names with postfix
-            var filename = file.name;   //default key
-            var tmp = file.name.split(".");  //reversal name
-			var postfix;
-			if (tmp.length === 1 || (a[0] === "" && a.length === 2)) {
-				postfix = "";
-			} else {
-				postfix = "." + tmp.pop().toLowerCase();  //get the postfix and make it lower-case
-			}
-            var filetype = 'FILE';   //default filetype
-            var filetypes = {        //filetypes list
-                'IMG': 'jpg,png,gif,jpeg,bmp',
-                'SOUND': 'mp3,mid,wav,flac,ape,mp3pro,wma',
-                'VIDEO': 'rmvb,rm,mp4,avi,mov,wmv,mkv,flv,f4v,mpeg-1,mpeg-2,mpeg-4,asf'
-            }
-            if (filetypes.IMG.indexOf(postfix) >= 0) {
-                filetype = 'IMG';
-            } else if (filetypes.SOUND.indexOf(postfix) >= 0) {
-                filetype = 'SOUND';
-            } else if (filetypes.VIDEO.indexOf(postfix) >= 0) {
-                filetype = 'VIDEO';
-            }
-            if (up.getOption('unique_names_postfix')) {
-                var rand = Math.random();
-                rand = Math.round(rand*100000);
-                var time = new Date();
-                filename = filetype + "_" + time.getTime() + rand + postfix;
-            }
+            // var filename = file.name; //default key
+            // var tmp = file.name.split("."); //reversal name
+            // var postfix;
+            // if (tmp.length === 1 || (tmp[0] === "" && tmp.length === 2)) {
+            //     postfix = "";
+            // } else {
+            //     postfix = "." + tmp.pop().toLowerCase(); //get the postfix and make it lower-case
+            // }
+            // var filetype = 'FILE'; //default filetype
+            // var filetypes = { //filetypes list
+            //     'IMG': 'jpg,png,gif,jpeg,bmp',
+            //     'SOUND': 'mp3,mid,wav,flac,ape,mp3pro,wma',
+            //     'VIDEO': 'rmvb,rm,mp4,avi,mov,wmv,mkv,flv,f4v,mpeg-1,mpeg-2,mpeg-4,asf'
+            // };
+            // if (filetypes.IMG.indexOf(postfix) >= 0) {
+            //     filetype = 'IMG';
+            // } else if (filetypes.SOUND.indexOf(postfix) >= 0) {
+            //     filetype = 'SOUND';
+            // } else if (filetypes.VIDEO.indexOf(postfix) >= 0) {
+            //     filetype = 'VIDEO';
+            // }
+            // if (up.getOption('unique_names_postfix')) {
+            //     var rand = Math.random();
+            //     rand = Math.round(rand * 100000);
+            //     var time = new Date();
+            //     filename = filetype + "_" + time.getTime() + rand + postfix;
+            // }
             /////////unique_names with postfix
-            
+
             function directUpload() {
                 up.setOption({
                     'url': 'http://up.qiniu.com/',
                     'multipart': true,
                     'chunk_size': undefined,
                     'multipart_params': {
-                        'key': filename
-                        'token': that.token,
+                        'key': filename,
+                        'token': that.token
                     }
                 });
             }
+
+            var getFileKey = function(up, file, func) {
+                if (up.getOption('unique_names_postfix')) {
+                    var ext = that.getFileExtension(file);
+                    key = ext ? file.id + '.' + ext : file.id;
+                } else if (typeof func === 'function') {
+                    key = func(up, file);
+                } else {
+                    key = file.name;
+                }
+                return key;
+            };
+
             var chunk_size = up.getOption('chunk_size');
 
             if (uploader.runtime === 'html5' && chunk_size) {
@@ -445,8 +469,6 @@ function QiniuJsSDK() {
                     if (Error_Handler) {
                         Error_Handler(up, err, errTip);
                     }
-                } else {
-
                 }
                 up.refresh(); // Reposition Flash/Silverlight
             };
@@ -457,7 +479,8 @@ function QiniuJsSDK() {
                 var res = that.parseJSON(info.response);
                 ctx = ctx ? ctx : res.ctx;
                 if (ctx) {
-                    var url = 'http://up.qiniu.com/mkfile/' + file.size + '/key/' + that.URLSafeBase64Encode(file.name);
+                    // var url = 'http://up.qiniu.com/mkfile/' + file.size + '/key/' + that.URLSafeBase64Encode(file.name);
+                    var url = 'http://up.qiniu.com/mkfile/' + file.size;
                     var ajax = that.createAjax();
                     ajax.open('POST', url, true);
                     ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
