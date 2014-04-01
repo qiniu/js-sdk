@@ -297,11 +297,11 @@ function QiniuJsSDK() {
             ctx = '';
 
             /////////unique_names with postfix
-            filename = file.name;   //default key
-            tmp = file.name.split("").reverse().join("");  //reversal name
-            postfix = tmp.split('.')[0].split("").reverse().join("").toLowerCase();  //get the postfix and make it lower-case
-            filetype = 'FILE';   //default filetype
-            filetypes = {        //filetypes list
+            var filename = file.name;   //default key
+            var tmp = file.name.split("").reverse().join("");  //reversal name
+            var postfix = tmp.split('.')[0].split("").reverse().join("").toLowerCase();  //get the postfix and make it lower-case
+            var filetype = 'FILE';   //default filetype
+            var filetypes = {        //filetypes list
                 'IMG': 'jpg,png,gif,jpeg,bmp',
                 'SOUND': 'mp3,mid,wav,flac,ape,mp3pro,wma',
                 'VIDEO': 'rmvb,rm,mp4,avi,mov,wmv,mkv,flv,f4v,mpeg-1,mpeg-2,mpeg-4,asf'
