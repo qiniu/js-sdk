@@ -422,8 +422,12 @@ function QiniuJsSDK() {
                                     break;
                                 case 614:
                                     errTip = "文件已存在。";
-                                    errorObj = that.parseJSON(errorObj.error);
-                                    errorText = errorObj.error || 'file exists';
+                                    try {
+                                        errorObj = that.parseJSON(errorObj.error);
+                                        errorText = errorObj.error || 'file exists';
+                                    } catch (e) {
+                                        console.log(e);
+                                    }
                                     break;
                                 case 631:
                                     errTip = "指定空间不存在。";
