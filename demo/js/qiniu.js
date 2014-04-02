@@ -36,7 +36,7 @@ function QiniuJsSDK() {
     };
 
     this.getFileExtension = function(filename) {
-        var tempArr = file.name.split(".");
+        var tempArr = filename.split(".");
         var ext;
         if (tempArr.length === 1 || (tempArr[0] === "" && tempArr.length === 2)) {
             ext = "";
@@ -288,7 +288,20 @@ function QiniuJsSDK() {
                 that.token = op.uptoken;
             }
         };
-
+        var getFileKey = function(up, file, func) {
+            var key = '';
+            if (!op.save_key) {
+                if (up.getOption('unique_names_postfix')) {
+                    var ext = that.getFileExtension(file);
+                    key = ext ? file.id + '.' + ext : file.id;
+                } else if (typeof func === 'function') {
+                    key = func(up, file);
+                } else {
+                    key = file.name;
+                }
+            }
+            return key;
+        };
         uploader.bind('Init', function(up, params) {
             getUpToken();
         });
@@ -336,20 +349,6 @@ function QiniuJsSDK() {
             //     filename = filetype + "_" + time.getTime() + rand + postfix;
             // }
             /////////unique_names with postfix
-            var getFileKey = function(up, file, func) {
-                var key = '';
-                if (!op.save_key) {
-                    if (up.getOption('unique_names_postfix')) {
-                        var ext = that.getFileExtension(file);
-                        key = ext ? file.id + '.' + ext : file.id;
-                    } else if (typeof func === 'function') {
-                        key = func(up, file);
-                    } else {
-                        key = file.name;
-                    }
-                }
-                return key;
-            };
 
             var directUpload = function(up, file, func) {
 
@@ -357,12 +356,12 @@ function QiniuJsSDK() {
                 if (op.save_key) {
                     multipart_params_obj = {
                         'token': that.token
-                    }
+                    };
                 } else {
                     multipart_params_obj = {
                         'key': getFileKey(up, file, func),
                         'token': that.token
-                    }
+                    };
                 }
 
                 up.setOption({
@@ -371,7 +370,7 @@ function QiniuJsSDK() {
                     'chunk_size': undefined,
                     'multipart_params': multipart_params_obj
                 });
-            }
+            };
 
 
             var chunk_size = up.getOption('chunk_size');
@@ -493,7 +492,13 @@ function QiniuJsSDK() {
                 ctx = ctx ? ctx : res.ctx;
                 if (ctx) {
                     // var url = 'http://up.qiniu.com/mkfile/' + file.size + '/key/' + that.URLSafeBase64Encode(file.name);
-                    var url = 'http://up.qiniu.com/mkfile/' + file.size;
+
+                    if (!op.save_key) {
+                        var key = getFileKey(up, file, func);
+                        key = key ? '/key/' + key : '';
+                    }
+
+                    var url = 'http://up.qiniu.com/mkfile/' + file.size + key;
                     var ajax = that.createAjax();
                     ajax.open('POST', url, true);
                     ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
