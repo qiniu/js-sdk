@@ -220,6 +220,7 @@ function QiniuJsSDK() {
     //Todo ie7 handler / this.parseJSON bug;
 
     var that = this;
+
     this.uploader = function(op) {
         if (!op.domain) {
             throw 'uptoken_url or domain is required!';
@@ -238,30 +239,32 @@ function QiniuJsSDK() {
         op.init.FileUploaded = function() {};
 
         that.uptoken_url = op.uptoken_url;
+        that.token = '';
         this.domain = op.domain;
-        var ie = that.detectIEVersion();
-        if (ie && ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
-            /*
+        var ctx = '';
+
+        var reset_chunk_size = function() {
+            var ie = that.detectIEVersion();
+            if (ie && ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
+                /*
         link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
         when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
         */
-            op.chunk_size = 0;
+                op.chunk_size = 0;
 
-        } else {
-            var BLOCK_BITS = 20;
-            var MAX_CHUNK_SIZE = 4 << BLOCK_BITS; //4M
+            } else {
+                var BLOCK_BITS = 20;
+                var MAX_CHUNK_SIZE = 4 << BLOCK_BITS; //4M
 
-            var chunk_size = plupload.parseSize(op.chunk_size);
-            if (chunk_size > MAX_CHUNK_SIZE) {
-                op.chunk_size = MAX_CHUNK_SIZE;
+                var chunk_size = plupload.parseSize(op.chunk_size);
+                if (chunk_size > MAX_CHUNK_SIZE) {
+                    op.chunk_size = MAX_CHUNK_SIZE;
+                }
+                //qiniu service  max_chunk_size is 4m
+                //reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
             }
-            //qiniu service  max_chunk_size is 4m
-            //reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
         }
-
-
-        that.token = '';
-        var ctx = '';
+        reset_chunk_size();
 
         plupload.extend(option, op, {
             url: 'http://up.qiniu.com',
