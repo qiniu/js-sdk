@@ -35,6 +35,17 @@ function QiniuJsSDK() {
         return false;
     };
 
+    this.getFileExtension = function(filename) {
+        var tempArr = filename.split(".");
+        var ext;
+        if (tempArr.length === 1 || (tempArr[0] === "" && tempArr.length === 2)) {
+            ext = "";
+        } else {
+            ext = tempArr.pop().toLowerCase(); //get the extension and make it lower-case
+        }
+        return ext;
+    };
+
     this.utf8_encode = function(argString) {
         // http://kevin.vanzonneveld.net
         // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
@@ -209,8 +220,9 @@ function QiniuJsSDK() {
     //Todo ie7 handler / this.parseJSON bug;
 
     var that = this;
+
     this.uploader = function(op) {
-        if (!op.uptoken_url || !op.domain) {
+        if (!op.domain) {
             throw 'uptoken_url or domain is required!';
         }
 
@@ -226,45 +238,39 @@ function QiniuJsSDK() {
         op.init.Error = function() {};
         op.init.FileUploaded = function() {};
 
-        var uptoken_url = op.uptoken_url;
+        that.uptoken_url = op.uptoken_url;
+        that.token = '';
+        that.key_handler = typeof op.key_handler === 'function' ? op.key_handler : '';
         this.domain = op.domain;
-        var ie = that.detectIEVersion();
-        if (ie && ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
-            /*
+        var ctx = '';
+
+        var reset_chunk_size = function() {
+            var ie = that.detectIEVersion();
+            if (ie && ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
+                /*
         link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
         when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
         */
-            op.chunk_size = 0;
+                op.chunk_size = 0;
 
-        } else {
-            var BLOCK_BITS = 20;
-            var MAX_CHUNK_SIZE = 4 << BLOCK_BITS; //4M
+            } else {
+                var BLOCK_BITS = 20;
+                var MAX_CHUNK_SIZE = 4 << BLOCK_BITS; //4M
 
-            var chunk_size = plupload.parseSize(op.chunk_size);
-            if (chunk_size > MAX_CHUNK_SIZE) {
-                op.chunk_size = MAX_CHUNK_SIZE;
+                var chunk_size = plupload.parseSize(op.chunk_size);
+                if (chunk_size > MAX_CHUNK_SIZE) {
+                    op.chunk_size = MAX_CHUNK_SIZE;
+                }
+                //qiniu service  max_chunk_size is 4m
+                //reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
             }
-            //qiniu service  max_chunk_size is 4m
-            //reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
         }
-
-
-        that.token = '';
-        var ctx = '';
-
-        plupload.extend(option, op, {
-            url: 'http://up.qiniu.com',
-            multipart_params: {
-                token: ''
-            }
-        });
-
-        var uploader = new plupload.Uploader(option);
+        reset_chunk_size();
 
         var getUpToken = function() {
             if (!op.uptoken) {
                 var ajax = that.createAjax();
-                ajax.open('GET', uptoken_url, true);
+                ajax.open('GET', that.uptoken_url, true);
                 ajax.setRequestHeader("If-Modified-Since", "0");
                 ajax.onreadystatechange = function() {
                     if (ajax.readyState === 4 && ajax.status === 200) {
@@ -277,7 +283,31 @@ function QiniuJsSDK() {
                 that.token = op.uptoken;
             }
         };
-				
+
+        var getFileKey = function(up, file, func) {
+            var key = '';
+            if (!op.save_key) {
+                if (up.getOption('unique_names_postfix')) {
+                    var ext = that.getFileExtension(file);
+                    key = ext ? file.id + '.' + ext : file.id;
+                } else if (typeof func === 'function') {
+                    key = func(up, file);
+                } else {
+                    key = file.name;
+                }
+            }
+            return key;
+        };
+
+        plupload.extend(option, op, {
+            url: 'http://up.qiniu.com',
+            multipart_params: {
+                token: ''
+            }
+        });
+
+        var uploader = new plupload.Uploader(option);
+
         uploader.bind('Init', function(up, params) {
             getUpToken();
         });
@@ -296,47 +326,34 @@ function QiniuJsSDK() {
 
             ctx = '';
 
-            /////////unique_names with postfix
-            var filename = file.name;   //default key
-            var tmp = file.name.split("").reverse().join("");  //reversal name
-            var postfix = tmp.split('.')[0].split("").reverse().join("").toLowerCase();  //get the postfix and make it lower-case
-            var filetype = 'FILE';   //default filetype
-            var filetypes = {        //filetypes list
-                'IMG': 'jpg,png,gif,jpeg,bmp',
-                'SOUND': 'mp3,mid,wav,flac,ape,mp3pro,wma',
-                'VIDEO': 'rmvb,rm,mp4,avi,mov,wmv,mkv,flv,f4v,mpeg-1,mpeg-2,mpeg-4,asf'
-            }
-            if (filetypes.IMG.indexOf(postfix) >= 0) {
-                filetype = 'IMG';
-            } else if (filetypes.SOUND.indexOf(postfix) >= 0) {
-                filetype = 'SOUND';
-            } else if (filetypes.VIDEO.indexOf(postfix) >= 0) {
-                filetype = 'VIDEO';
-            }
-            if (up.getOption('unique_names_postfix')) {
-                rand = Math.random();
-                rand = Math.round(rand*100000);
-                var time = new Date();
-                filename = filetype + "_" + time.getTime() + rand + "." + postfix;
-            }
-            /////////unique_names with postfix
-            
-            function directUpload() {
+            var directUpload = function(up, file, func) {
+
+                var multipart_params_obj;
+                if (op.save_key) {
+                    multipart_params_obj = {
+                        'token': that.token
+                    };
+                } else {
+                    multipart_params_obj = {
+                        'key': getFileKey(up, file, func),
+                        'token': that.token
+                    };
+                }
+
                 up.setOption({
                     'url': 'http://up.qiniu.com/',
                     'multipart': true,
                     'chunk_size': undefined,
-                    'multipart_params': {
-                        'key': filename
-                        'token': that.token,
-                    }
+                    'multipart_params': multipart_params_obj
                 });
-            }
+            };
+
+
             var chunk_size = up.getOption('chunk_size');
 
             if (uploader.runtime === 'html5' && chunk_size) {
                 if (file.size < chunk_size) {
-                    directUpload();
+                    directUpload(up, file, that.key_handler);
                 } else {
                     var blockSize = chunk_size;
                     ctx = '';
@@ -351,7 +368,7 @@ function QiniuJsSDK() {
                     });
                 }
             } else {
-                directUpload();
+                directUpload(up, file, that.key_handler);
             }
         });
 
@@ -405,8 +422,12 @@ function QiniuJsSDK() {
                                     break;
                                 case 614:
                                     errTip = "文件已存在。";
-                                    errorObj = that.parseJSON(errorObj.error);
-                                    errorText = errorObj.error || 'file exists';
+                                    try {
+                                        errorObj = that.parseJSON(errorObj.error);
+                                        errorText = errorObj.error || 'file exists';
+                                    } catch (e) {
+                                        console.log(e);
+                                    }
                                     break;
                                 case 631:
                                     errTip = "指定空间不存在。";
@@ -440,8 +461,6 @@ function QiniuJsSDK() {
                     if (Error_Handler) {
                         Error_Handler(up, err, errTip);
                     }
-                } else {
-
                 }
                 up.refresh(); // Reposition Flash/Silverlight
             };
@@ -452,7 +471,12 @@ function QiniuJsSDK() {
                 var res = that.parseJSON(info.response);
                 ctx = ctx ? ctx : res.ctx;
                 if (ctx) {
-                    var url = 'http://up.qiniu.com/mkfile/' + file.size + '/key/' + that.URLSafeBase64Encode(file.name);
+                    if (!op.save_key) {
+                        var key = getFileKey(up, file, func);
+                        key = key ? '/key/' + key : '';
+                    }
+
+                    var url = 'http://up.qiniu.com/mkfile/' + file.size + key;
                     var ajax = that.createAjax();
                     ajax.open('POST', url, true);
                     ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
