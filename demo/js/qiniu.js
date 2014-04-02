@@ -221,7 +221,7 @@ function QiniuJsSDK() {
 
     var that = this;
     this.uploader = function(op) {
-        if (!op.uptoken_url || !op.domain) {
+        if (!op.domain) {
             throw 'uptoken_url or domain is required!';
         }
 
@@ -237,7 +237,7 @@ function QiniuJsSDK() {
         op.init.Error = function() {};
         op.init.FileUploaded = function() {};
 
-        var uptoken_url = op.uptoken_url;
+        that.uptoken_url = op.uptoken_url;
         this.domain = op.domain;
         var ie = that.detectIEVersion();
         if (ie && ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
@@ -275,7 +275,7 @@ function QiniuJsSDK() {
         var getUpToken = function() {
             if (!op.uptoken) {
                 var ajax = that.createAjax();
-                ajax.open('GET', uptoken_url, true);
+                ajax.open('GET', that.uptoken_url, true);
                 ajax.setRequestHeader("If-Modified-Since", "0");
                 ajax.onreadystatechange = function() {
                     if (ajax.readyState === 4 && ajax.status === 200) {
@@ -288,6 +288,7 @@ function QiniuJsSDK() {
                 that.token = op.uptoken;
             }
         };
+
         var getFileKey = function(up, file, func) {
             var key = '';
             if (!op.save_key) {
@@ -302,6 +303,7 @@ function QiniuJsSDK() {
             }
             return key;
         };
+
         uploader.bind('Init', function(up, params) {
             getUpToken();
         });
@@ -319,36 +321,6 @@ function QiniuJsSDK() {
         uploader.bind('BeforeUpload', function(up, file) {
 
             ctx = '';
-
-            /////////unique_names with postfix
-            // var filename = file.name; //default key
-            // var tmp = file.name.split("."); //reversal name
-            // var postfix;
-            // if (tmp.length === 1 || (tmp[0] === "" && tmp.length === 2)) {
-            //     postfix = "";
-            // } else {
-            //     postfix = "." + tmp.pop().toLowerCase(); //get the postfix and make it lower-case
-            // }
-            // var filetype = 'FILE'; //default filetype
-            // var filetypes = { //filetypes list
-            //     'IMG': 'jpg,png,gif,jpeg,bmp',
-            //     'SOUND': 'mp3,mid,wav,flac,ape,mp3pro,wma',
-            //     'VIDEO': 'rmvb,rm,mp4,avi,mov,wmv,mkv,flv,f4v,mpeg-1,mpeg-2,mpeg-4,asf'
-            // };
-            // if (filetypes.IMG.indexOf(postfix) >= 0) {
-            //     filetype = 'IMG';
-            // } else if (filetypes.SOUND.indexOf(postfix) >= 0) {
-            //     filetype = 'SOUND';
-            // } else if (filetypes.VIDEO.indexOf(postfix) >= 0) {
-            //     filetype = 'VIDEO';
-            // }
-            // if (up.getOption('unique_names_postfix')) {
-            //     var rand = Math.random();
-            //     rand = Math.round(rand * 100000);
-            //     var time = new Date();
-            //     filename = filetype + "_" + time.getTime() + rand + postfix;
-            // }
-            /////////unique_names with postfix
 
             var directUpload = function(up, file, func) {
 
@@ -491,8 +463,6 @@ function QiniuJsSDK() {
                 var res = that.parseJSON(info.response);
                 ctx = ctx ? ctx : res.ctx;
                 if (ctx) {
-                    // var url = 'http://up.qiniu.com/mkfile/' + file.size + '/key/' + that.URLSafeBase64Encode(file.name);
-
                     if (!op.save_key) {
                         var key = getFileKey(up, file, func);
                         key = key ? '/key/' + key : '';
