@@ -287,7 +287,7 @@ function QiniuJsSDK() {
         var getFileKey = function(up, file, func) {
             var key = '';
             if (!op.save_key) {
-                if (up.getOption('unique_names_postfix')) {
+                if (up.getOption('unique_names')) {
                     var ext = that.getFileExtension(file);
                     key = ext ? file.id + '.' + ext : file.id;
                 } else if (typeof func === 'function') {
