@@ -288,7 +288,7 @@ function QiniuJsSDK() {
             var key = '';
             if (!op.save_key) {
                 if (up.getOption('unique_names')) {
-                    var ext = that.getFileExtension(file);
+                    var ext = that.getFileExtension(file.name);
                     key = ext ? file.id + '.' + ext : file.id;
                 } else if (typeof func === 'function') {
                     key = func(up, file);
