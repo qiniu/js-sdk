@@ -14,7 +14,8 @@ var uploader = Qiniu.uploader({
     chunk_size: '4mb',
     uptoken_url: '/token',
     domain: 'http://qiniu-plupload.qiniudn.com/',
-    unique_names: true,
+    // unique_names: true,
+    // save_key: true,
     auto_start: true,
     init: {
         'FilesAdded': function(up, files) {
@@ -51,6 +52,12 @@ var uploader = Qiniu.uploader({
             progress.setError();
             progress.setStatus(errTip);
         }
+        // ,
+        // 'Key': function(up, file) {
+        //     var key = "";
+        //     // do something with key
+        //     return key
+        // }
     }
 });
 
