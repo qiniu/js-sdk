@@ -278,6 +278,10 @@ qiniu-js-sdk
 
 *  [安装nodejs](http://nodejs.org/download/)
 
+*  [安装npm](https://www.npmjs.org/)
+
+*  安装七牛 Node.js SDK、express `npm install`
+
 *  获取源代码：
     `git clone git@github.com:qiniupd/qiniu-js-sdk.git`
 *  进入`demo`目录,修改`config.js`，`Access Key`和`Secret Key` 按如下方式获取
