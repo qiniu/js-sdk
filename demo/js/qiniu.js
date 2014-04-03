@@ -472,8 +472,9 @@ function QiniuJsSDK() {
                 ctx = ctx ? ctx : res.ctx;
                 if (ctx) {
                     if (!op.save_key) {
-                        var key = getFileKey(up, file, func);
-                        key = key ? '/key/' + key : '';
+                        var key = getFileKey(up, file, that.key_handler);
+                        console.log(key);
+                        key = key ? '/key/' + that.URLSafeBase64Encode(key) : '';
                     }
 
                     var url = 'http://up.qiniu.com/mkfile/' + file.size + key;
