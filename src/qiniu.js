@@ -240,29 +240,28 @@ function QiniuJsSDK() {
 
         that.uptoken_url = op.uptoken_url;
         that.token = '';
-        that.key_handler = typeof op.key_handler === 'function' ? op.key_handler : '';
+        that.key_handler = typeof op.init.Key === 'function' ? op.init.Key : '';
         this.domain = op.domain;
         var ctx = '';
 
         var reset_chunk_size = function() {
             var ie = that.detectIEVersion();
+            var BLOCK_BITS, MAX_CHUNK_SIZE, chunk_size;
             if (ie && ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
-                /*
-        link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
-        when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
-        */
+                //  link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
+                //  when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
                 op.chunk_size = 0;
 
             } else {
-                var BLOCK_BITS = 20;
-                var MAX_CHUNK_SIZE = 4 << BLOCK_BITS; //4M
+                BLOCK_BITS = 20;
+                MAX_CHUNK_SIZE = 4 << BLOCK_BITS; //4M
 
-                var chunk_size = plupload.parseSize(op.chunk_size);
+                chunk_size = plupload.parseSize(op.chunk_size);
                 if (chunk_size > MAX_CHUNK_SIZE) {
                     op.chunk_size = MAX_CHUNK_SIZE;
                 }
-                //qiniu service  max_chunk_size is 4m
-                //reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
+                // qiniu service  max_chunk_size is 4m
+                // reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
             }
         }
         reset_chunk_size();
@@ -287,8 +286,8 @@ function QiniuJsSDK() {
         var getFileKey = function(up, file, func) {
             var key = '';
             if (!op.save_key) {
-                if (up.getOption('unique_names_postfix')) {
-                    var ext = that.getFileExtension(file);
+                if (up.getOption('unique_names')) {
+                    var ext = that.getFileExtension(file.name);
                     key = ext ? file.id + '.' + ext : file.id;
                 } else if (typeof func === 'function') {
                     key = func(up, file);
@@ -471,9 +470,11 @@ function QiniuJsSDK() {
                 var res = that.parseJSON(info.response);
                 ctx = ctx ? ctx : res.ctx;
                 if (ctx) {
+                    var key = '';
+
                     if (!op.save_key) {
-                        var key = getFileKey(up, file, func);
-                        key = key ? '/key/' + key : '';
+                        key = getFileKey(up, file, that.key_handler);
+                        key = key ? '/key/' + that.URLSafeBase64Encode(key) : '';
                     }
 
                     var url = 'http://up.qiniu.com/mkfile/' + file.size + key;
