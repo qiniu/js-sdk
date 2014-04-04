@@ -284,9 +284,11 @@ function QiniuJsSDK() {
         };
 
         var getFileKey = function(up, file, func) {
-            var key = '';
+            var key = '',
+                unique_names = false;
             if (!op.save_key) {
-                if (up.getOption('unique_names')) {
+                unique_names = up.getOption('unique_names') || (up.settings && up.settings.unique_names);
+                if (unique_names) {
                     var ext = that.getFileExtension(file.name);
                     key = ext ? file.id + '.' + ext : file.id;
                 } else if (typeof func === 'function') {
@@ -313,7 +315,8 @@ function QiniuJsSDK() {
         uploader.init();
 
         uploader.bind('FilesAdded', function(up, files) {
-            if (up.getOption('auto_start')) {
+            var auto_start = up.getOption('auto_start') || (up.settings && up.settings.auto_start);
+            if (auto_start) {
                 $.each(files, function(i, file) {
                     up.start();
                 });
@@ -348,7 +351,7 @@ function QiniuJsSDK() {
             };
 
 
-            var chunk_size = up.getOption('chunk_size');
+            var chunk_size = up.getOption('chunk_size') || (up.settings && up.settings.chunk_size);
 
             if (uploader.runtime === 'html5' && chunk_size) {
                 if (file.size < chunk_size) {
@@ -376,7 +379,8 @@ function QiniuJsSDK() {
 
             ctx = ctx ? ctx + ',' + res.ctx : res.ctx;
             var leftSize = info.total - info.offset;
-            var chunk_size = up.getOption('chunk_size');
+            var chunk_size = up.getOption('chunk_size') || (up.settings && up.settings.chunk_size);
+
             if (leftSize < chunk_size) {
                 up.setOption({
                     'url': 'http://up.qiniu.com/mkblk/' + leftSize
@@ -395,7 +399,8 @@ function QiniuJsSDK() {
                             errTip = '上传失败。请稍后再试。';
                             break;
                         case plupload.FILE_SIZE_ERROR:
-                            errTip = '浏览器最大可上传' + up.getOption('max_file_size') + '。更大文件请使用命令行工具。';
+                            var max_file_size = up.getOption('max_file_size') || (up.settings && up.settings.max_file_size);
+                            errTip = '浏览器最大可上传' + max_file_size + '。更大文件请使用命令行工具。';
                             break;
                         case plupload.FILE_EXTENSION_ERROR:
                             errTip = '文件验证失败。请稍后重试。';
