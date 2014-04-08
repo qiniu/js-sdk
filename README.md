@@ -313,11 +313,12 @@ qiniu-js-sdk
 
 ## 说明
 
-1. 本SDK依赖Plupload，初始化之前请引入Plupload插件
+1. 本SDK依赖Plupload，初始化之前请引入Plupload。
 
-2. 本SDK依赖服务端颁发uptoken，可以提供Ajax请求地址 `uptoken_url` 或者直接设置 `uptoken` 实现，建议前者。
+2. 本SDK依赖uptoken，可以通过提供Ajax请求地址 `uptoken_url` 或者直接设置 `uptoken` 实现，强烈建议前者。
 
-3. 如果您想了解更多七牛的上传策略，建议您仔细阅读 [七牛官方文档-上传](http://developer.qiniu.com/docs/v6/api/reference/up/)
+3. 如果您想了解更多七牛的上传策略，建议您仔细阅读 [七牛官方文档-上传](http://developer.qiniu.com/docs/v6/api/reference/up/)。
+   另外，七牛的上传策略是在后端服务指定的，本SDK的 setOption API 只是设置 Plupload的初始化参数，和上传策略无关。
 
 4. 如果您想了解更多七牛的图片处理，建议您仔细阅读 [七牛官方文档-图片处理](http://developer.qiniu.com/docs/v6/api/reference/fop/image/)
 
