@@ -61,8 +61,8 @@ qiniu-js-sdk
         browse_button: 'pickfiles',       //上传选择的点选按钮，**必需**
         uptoken_url: '/token',            //Ajax请求upToken的Url，**强烈建议设置**（服务端提供）
         // uptoken : '<Your upload token>', //若未指定uptoken_url,则必须指定 uptoken ,uptoken由其他程序生成
-        // unique_names: true, // 默认 false，key为文件名。若开启该选项，SDK为自动生成上传成功后的key（文件名）。
-        // save_key: true,   // 默认 false。若在服务端生成uptoken的上传策略中指定了 `sava_key`，则开启，SDK会忽略对key的处理     
+        // unique_names: true, // 默认 false，key为文件名。若开启该选项，SDK会为每个文件自动生成key（文件名）
+        // save_key: true,   // 默认 false。若在服务端生成uptoken的上传策略中指定了 `sava_key`，则开启，SDK在前端将不对key进行任何处理
         domain: 'http://qiniu-plupload.qiniudn.com/',   //bucket 域名，下载资源时用到，**必需**
         container: 'container',           //上传区域DOM ID，默认是browser_button的父元素，
         max_file_size: '100mb',           //最大文件体积限制
@@ -286,11 +286,9 @@ qiniu-js-sdk
 
 直接运行本SDK示例网站的服务
 
-*  [安装nodejs](http://nodejs.org/download/)
+*  安装 [Nodejs](http://nodejs.org/download/)、[npm](https://www.npmjs.org/)
 
-*  [安装npm](https://www.npmjs.org/)
-
-*  安装七牛 Node.js SDK、express `npm install`
+*  `npm install`，安装七牛 Node.js SDK、Express
 
 *  获取源代码：
     `git clone git@github.com:qiniupd/qiniu-js-sdk.git`
@@ -317,7 +315,7 @@ qiniu-js-sdk
 
 1. 本SDK依赖Plupload，初始化之前请引入Plupload插件
 
-2. 本SDK依赖服务端颁发uptoken，可以提供Ajax请求地址 `uptoken_url` 或者直接设置 `uptoken` 实现，建议前者。  
+2. 本SDK依赖服务端颁发uptoken，可以提供Ajax请求地址 `uptoken_url` 或者直接设置 `uptoken` 实现，建议前者。
 
 3. 如果您想了解更多七牛的上传策略，建议您仔细阅读 [七牛官方文档-上传](http://developer.qiniu.com/docs/v6/api/reference/up/)
 
