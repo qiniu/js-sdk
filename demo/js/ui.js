@@ -137,9 +137,11 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
     var formatSpeed = plupload.formatSize(speed).toUpperCase();
     var progressbar = this.fileProgressWrapper.find('td .progress').find('.progress-bar-info');
     this.fileProgressWrapper.find('.status').text("已上传: " + size + " 上传速度： " + formatSpeed + "/s");
-
-    progressbar.attr('aria-valuenow', parseInt(percentage, 10)).css('width', percentage);
-
+    percentage = parseInt(percentage, 10);
+    if (file.status !== plupload.DONE && percentage === 100) {
+        percentage = 99;
+    }
+    progressbar.attr('aria-valuenow', percentage).css('width', percentage + '%');
 
     if (chunk_size) {
         var chunk_amount = Math.ceil(file.size / chunk_size);
