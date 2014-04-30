@@ -344,6 +344,16 @@ function QiniuJsSDK() {
                     };
                 }
 
+                var x_vars = op.x_vars;
+                if (x_vars !== undefined && typeof x_vars === 'object') {
+                    for (var x_key in x_vars) {
+                        if (x_vars.hasOwnProperty(x_key) && typeof x_vars[x_key] === 'function') {
+                            multipart_params_obj['x:' + x_key] = x_vars[x_key](up, file);
+                        }
+                    }
+                }
+
+
                 up.setOption({
                     'url': 'http://up.qiniu.com/',
                     'multipart': true,
@@ -480,13 +490,23 @@ function QiniuJsSDK() {
                 ctx = ctx ? ctx : res.ctx;
                 if (ctx) {
                     var key = '';
-
                     if (!op.save_key) {
                         key = getFileKey(up, file, that.key_handler);
                         key = key ? '/key/' + that.URLSafeBase64Encode(key) : '';
                     }
 
-                    var url = 'http://up.qiniu.com/mkfile/' + file.size + key;
+                    var x_vars = op.x_vars,
+                        x_vars_url = '';
+                    if (x_vars !== undefined && typeof x_vars === 'object') {
+                        for (var x_key in x_vars) {
+                            if (x_vars.hasOwnProperty(x_key) && typeof x_vars[x_key] === 'function') {
+                                var x_val = that.URLSafeBase64Encode(x_vars[x_key](up, file));
+                                x_vars_url += '/x:' + x_key + '/' + x_val;
+                            }
+                        }
+                    }
+
+                    var url = 'http://up.qiniu.com/mkfile/' + file.size + key + x_vars_url;
                     var ajax = that.createAjax();
                     ajax.open('POST', url, true);
                     ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
