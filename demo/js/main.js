@@ -52,7 +52,6 @@ var uploader = Qiniu.uploader({
         },
         'FileUploaded': function(up, file, info) {
             var progress = new FileProgress(file, 'fsUploadProgress');
-            console.log(up, info);
             progress.setComplete(up, info);
         },
         'Error': function(up, err, errTip) {
