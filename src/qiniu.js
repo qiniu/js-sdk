@@ -350,7 +350,7 @@ function QiniuJsSDK() {
                         if (x_vars.hasOwnProperty(x_key)) {
                             if (typeof x_vars[x_key] === 'function') {
                                 multipart_params_obj['x:' + x_key] = x_vars[x_key](up, file);
-                            } else if (typeof x_vars[x_key] === 'string') {
+                            } else if (typeof x_vars[x_key] !== 'object') {
                                 multipart_params_obj['x:' + x_key] = x_vars[x_key];
                             }
                         }
@@ -507,7 +507,7 @@ function QiniuJsSDK() {
                             if (x_vars.hasOwnProperty(x_key)) {
                                 if (typeof x_vars[x_key] === 'function') {
                                     x_val = that.URLSafeBase64Encode(x_vars[x_key](up, file));
-                                } else if (typeof x_vars[x_key] === 'string') {
+                                } else if (typeof x_vars[x_key] !== 'object') {
                                     x_val = that.URLSafeBase64Encode(x_vars[x_key]);
                                 }
                                 x_vars_url += '/x:' + x_key + '/' + x_val;
@@ -525,6 +525,7 @@ function QiniuJsSDK() {
                         if (ajax.readyState === 4) {
                             if (ajax.status === 200) {
                                 var info = ajax.responseText;
+
                                 if (FileUploaded_Handler) {
                                     FileUploaded_Handler(up, file, info);
                                 }
