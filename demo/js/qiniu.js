@@ -347,8 +347,12 @@ function QiniuJsSDK() {
                 var x_vars = op.x_vars;
                 if (x_vars !== undefined && typeof x_vars === 'object') {
                     for (var x_key in x_vars) {
-                        if (x_vars.hasOwnProperty(x_key) && typeof x_vars[x_key] === 'function') {
-                            multipart_params_obj['x:' + x_key] = x_vars[x_key](up, file);
+                        if (x_vars.hasOwnProperty(x_key)) {
+                            if (typeof x_vars[x_key] === 'function') {
+                                multipart_params_obj['x:' + x_key] = x_vars[x_key](up, file);
+                            } else if (typeof x_vars[x_key] === 'string') {
+                                multipart_params_obj['x:' + x_key] = x_vars[x_key];
+                            }
                         }
                     }
                 }
@@ -496,11 +500,16 @@ function QiniuJsSDK() {
                     }
 
                     var x_vars = op.x_vars,
+                        x_val = '',
                         x_vars_url = '';
                     if (x_vars !== undefined && typeof x_vars === 'object') {
                         for (var x_key in x_vars) {
-                            if (x_vars.hasOwnProperty(x_key) && typeof x_vars[x_key] === 'function') {
-                                var x_val = that.URLSafeBase64Encode(x_vars[x_key](up, file));
+                            if (x_vars.hasOwnProperty(x_key)) {
+                                if (typeof x_vars[x_key] === 'function') {
+                                    x_val = that.URLSafeBase64Encode(x_vars[x_key](up, file));
+                                } else if (typeof x_vars[x_key] === 'string') {
+                                    x_val = that.URLSafeBase64Encode(x_vars[x_key]);
+                                }
                                 x_vars_url += '/x:' + x_key + '/' + x_val;
                             }
                         }
