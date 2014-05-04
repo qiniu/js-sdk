@@ -16,6 +16,14 @@ var uploader = Qiniu.uploader({
     domain: 'http://qiniu-plupload.qiniudn.com/',
     // unique_names: true,
     // save_key: true,
+    // x_vars: {
+    //     'id': '1234',
+    //     'time': function(up, file) {
+    //         var time = (new Date()).getTime();
+    //         // do something with 'time'
+    //         return time;
+    //     },
+    // },
     auto_start: true,
     init: {
         'FilesAdded': function(up, files) {

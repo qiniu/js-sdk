@@ -77,7 +77,7 @@ qiniu-js-sdk
         //    'time' : function(up,file) {
         //        var time = (new Date()).getTime();
                   // do something with 'time'
-        //        returnt time;
+        //        return time;
         //    },
         //    'size' : function(up,file) {
         //        var size = file.size;
