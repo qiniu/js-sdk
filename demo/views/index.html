@@ -25,6 +25,8 @@
 				View Source on Github
 			</a>
 		</h1>
+        <input type="hidden" id="domain" value="<%= domain %>">
+        <input type="hidden" id="uptoken_url" value="<%= uptoken_url %>">
 		<ul class="tip col-md-12 text-mute">
 			<li>
 				<small>
@@ -91,7 +93,7 @@
                 uptoken_url: '/token',            //Ajax请求upToken的Url，**强烈建议设置**（服务端提供）
                 // uptoken : '<Your upload token>', //若未指定uptoken_url,则必须指定 uptoken ,uptoken由其他程序生成
                 // unique_names: true, // 默认 false，key为文件名。若开启该选项，SDK为自动生成上传成功后的key（文件名）。
-                // save_key: true,   // 默认 false。若在服务端生成uptoken的上传策略中指定了 `sava_key`，则开启，SDK会忽略对key的处理     
+                // save_key: true,   // 默认 false。若在服务端生成uptoken的上传策略中指定了 `sava_key`，则开启，SDK会忽略对key的处理
                 domain: 'http://qiniu-plupload.qiniudn.com/',   //bucket 域名，下载资源时用到，**必需**
                 container: 'container',           //上传区域DOM ID，默认是browser_button的父元素，
                 max_file_size: '100mb',           //最大文件体积限制

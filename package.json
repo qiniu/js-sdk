@@ -8,5 +8,6 @@
     "dependencies": {
         "express": "~3.4.7",
         "qiniu": "~6.1.1"
+        "ejs": "~1.0.0"
     }
 }
