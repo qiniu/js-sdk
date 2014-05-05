@@ -1,2 +1,3 @@
 node_*
 .DS_Store
+demo/js/qiniu.js
