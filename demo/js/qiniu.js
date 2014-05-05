@@ -540,6 +540,16 @@ function QiniuJsSDK() {
                         }
                     };
                 } else {
+                    if (op.downtoken_url) {
+                        var ajax = that.createAjax();
+                        ajax.open('POST', op.downtoken_url, true);
+                        console.log(op.downtoken_url, info.response);
+                        // ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+                        // ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
+                        ajax.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                        var key = that.parseJSON(info.response).key;
+                        ajax.send('key=' + key + '&domain=' + op.domain);
+                    }
                     if (FileUploaded_Handler) {
                         FileUploaded_Handler(up, file, info.response);
                     }

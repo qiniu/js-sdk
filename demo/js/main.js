@@ -12,8 +12,9 @@ var uploader = Qiniu.uploader({
     flash_swf_url: 'js/plupload/Moxie.swf',
     dragdrop: true,
     chunk_size: '4mb',
-    uptoken_url: '/token',
-    domain: 'http://qiniu-plupload.qiniudn.com/',
+    uptoken_url: '/uptoken',
+    downtoken_url: '/downtoken',
+    domain: 'http://b-pri-unpro.qiniudn.com/',
     // unique_names: true,
     // save_key: true,
     // x_vars: {
