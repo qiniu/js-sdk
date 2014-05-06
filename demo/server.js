@@ -11,13 +11,6 @@ app.configure(function() {
 app.set('views', __dirname + '/views');
 app.engine('html', require('ejs').renderFile);
 
-
-app.use(function(req, res, next) {
-    req.headers['if-none-match'] = 'no-match-for-this';
-    next();
-});
-
-
 app.use(express.urlencoded());
 
 app.get('/uptoken', function(req, res, next) {
@@ -32,31 +25,41 @@ app.get('/uptoken', function(req, res, next) {
     }
 });
 
-function downloadUrl(domain, key, mac) {
-    var baseUrl = qiniu.rs.makeBaseUrl(domain, key);
-    console.log(baseUrl)
-    var policy = new qiniu.rs.GetPolicy();
-    return policy.makeRequest(baseUrl, mac);
-}
-
 app.post('/downtoken', function(req, res) {
-    // console.log(req.query)
-    // console.log(req)
-    res.header("Cache-Control", "max-age=0, private, must-revalidate");
-    res.header("Pragma", "no-cache");
-    res.header("Expires", 0);
-    console.log(req.body);
+
     var key = req.body.key,
         domain = req.body.domain;
-    console.log('key>>>>>>', key)
-    console.log('key>>>>>>', domain)
-    var mac = {
-        'secretKey': config.SECRET_KEY
+
+    //trim 'http://'
+    if (domain.indexOf('http://') != -1) {
+        domain = domain.substr(7);
     }
-    var token = downloadUrl(domain, key, mac);
-    if (token) {
+    //trim 'https://'
+    if (domain.indexOf('https://') != -1) {
+        domain = domain.substr(8);
+    }
+    //trim '/' if the domain's last char is '/'
+    if (domain.lastIndexOf('/') === domain.length - 1) {
+        domain = domain.substr(0, domain.length - 1);
+    }
+
+    var baseUrl = qiniu.rs.makeBaseUrl(domain, key);
+    var deadline = 3600 + Math.floor(Date.now() / 1000);
+
+    if (baseUrl.indexOf('?') >= 0) {
+        baseUrl += '&e=';
+    } else {
+        baseUrl += '?e=';
+    }
+    baseUrl += deadline;
+    var signature = qiniu.util.hmacSha1(baseUrl, config.SECRET_KEY);
+    var encodedSign = qiniu.util.base64ToUrlSafe(signature);
+    var downloadToken = config.ACCESS_KEY + ':' + encodedSign;
+
+    if (downloadToken) {
         res.json({
-            downtoken: token
+            downtoken: downloadToken,
+            url: baseUrl + '&token=' + downloadToken
         })
     }
 });
