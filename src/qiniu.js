@@ -1,5 +1,6 @@
 /*global plupload */
 /*global ActiveXObject */
+/*exported Qiniu */
 
 function QiniuJsSDK() {
 
@@ -207,7 +208,9 @@ function QiniuJsSDK() {
                 // Logic borrowed from http://json.org/json2.js
                 if (/^[\],:{}\s]*$/.test(data.replace(/\\(?:["\\\/bfnrt]|u[\da-fA-F]{4})/g, "@").replace(/"[^"\\\r\n]*"|true|false|null|-?(?:\d+\.|)\d+(?:[eE][+-]?\d+|)/g, "]").replace(/(?:^|:|,)(?:\s*\[)+/g, ""))) {
 
-                    return (new Function("return " + data))();
+                    return (function() {
+                        return data;
+                    })();
                 }
             }
         }
@@ -232,8 +235,8 @@ function QiniuJsSDK() {
 
         var option = {};
 
-        var Error_Handler = op.init && op.init.Error;
-        var FileUploaded_Handler = op.init && op.init.FileUploaded;
+        var _Error_Handler = op.init && op.init.Error;
+        var _FileUploaded_Handler = op.init && op.init.FileUploaded;
 
         op.init.Error = function() {};
         op.init.FileUploaded = function() {};
@@ -406,7 +409,7 @@ function QiniuJsSDK() {
 
         });
 
-        uploader.bind('Error', (function(Error_Handler) {
+        uploader.bind('Error', (function(_Error_Handler) {
             return function(up, err) {
                 var errTip = '';
                 var file = err.file;
@@ -448,7 +451,7 @@ function QiniuJsSDK() {
                                         errorObj = that.parseJSON(errorObj.error);
                                         errorText = errorObj.error || 'file exists';
                                     } catch (e) {
-                                        console.log(e);
+                                        // console.log(e);
                                     }
                                     break;
                                 case 631:
@@ -480,15 +483,15 @@ function QiniuJsSDK() {
                             errTip = err.message + err.details;
                             break;
                     }
-                    if (Error_Handler) {
-                        Error_Handler(up, err, errTip);
+                    if (_Error_Handler) {
+                        _Error_Handler(up, err, errTip);
                     }
                 }
                 up.refresh(); // Reposition Flash/Silverlight
             };
-        })(Error_Handler));
+        })(_Error_Handler));
 
-        uploader.bind('FileUploaded', (function(FileUploaded_Handler) {
+        uploader.bind('FileUploaded', (function(_FileUploaded_Handler) {
             return function(up, file, info) {
                 var res = that.parseJSON(info.response);
                 ctx = ctx ? ctx : res.ctx;
@@ -526,9 +529,10 @@ function QiniuJsSDK() {
                             if (ajax.status === 200) {
                                 var info = ajax.responseText;
 
-                                if (FileUploaded_Handler) {
-                                    FileUploaded_Handler(up, file, info);
+                                if (_FileUploaded_Handler) {
+                                    _FileUploaded_Handler(up, file, info);
                                 }
+
                             } else {
                                 uploader.trigger('Error', {
                                     status: ajax.status,
@@ -540,13 +544,13 @@ function QiniuJsSDK() {
                         }
                     };
                 } else {
-                    if (FileUploaded_Handler) {
-                        FileUploaded_Handler(up, file, info.response);
+                    if (_FileUploaded_Handler) {
+                        _FileUploaded_Handler(up, file, info.response);
                     }
                 }
 
             };
-        })(FileUploaded_Handler));
+        })(_FileUploaded_Handler));
 
         return uploader;
     };

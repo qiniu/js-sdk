@@ -7,6 +7,12 @@
     },
     "dependencies": {
         "express": "~3.4.7",
-        "qiniu": "~6.1.1"
+        "qiniu": "~6.1.1",
+        "ejs": "~1.0.0",
+        "grunt": "~0.4.2",
+        "grunt-contrib-jshint": "~0.7.2",
+        "grunt-contrib-watch": "~0.5.3",
+        "grunt-contrib-uglify": "~0.2.2",
+        "grunt-contrib-copy": "~0.5.0"
     }
 }
