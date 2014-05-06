@@ -190,11 +190,18 @@ FileProgress.prototype.setComplete = function(up, info) {
     var td = this.fileProgressWrapper.find('td:eq(2) .progress');
 
     var res = $.parseJSON(info);
-    var domain = up.getOption('domain');
-    var url = domain + encodeURI(res.key);
-    var link = domain + res.key;
-    var str = "<div><strong>Link:</strong><a href=" + url + " target='_blank' > " + link + "</a></div>" +
-        "<div class=hash><strong>Hash:</strong>" + res.hash + "</div>";
+    var url;
+    if (res.url) {
+        url = res.url;
+        str = "<div><strong>Link:</strong><a href=" + res.url + " target='_blank' > " + res.url + "</a></div>" +
+            "<div class=hash><strong>Hash:</strong>" + res.hash + "</div>";
+    } else {
+        var domain = up.getOption('domain');
+        url = domain + encodeURI(res.key);
+        var link = domain + res.key;
+        str = "<div><strong>Link:</strong><a href=" + url + " target='_blank' > " + link + "</a></div>" +
+            "<div class=hash><strong>Hash:</strong>" + res.hash + "</div>";
+    }
 
     td.html(str).removeClass().next().next('.status').hide();
 
@@ -240,12 +247,14 @@ FileProgress.prototype.setComplete = function(up, info) {
         Wrapper.append(imgWrapper);
 
         var img = new Image();
-        $(img).attr('src', url + imageView);
+        if (!'/imageView/'.test(url)) {
+            url += imageView
+        } //todo
+        $(img).attr('src', url);
 
         var height_space = 340;
         $(img).on('load', function() {
-
-            showImg.attr('src', url + imageView);
+            showImg.attr('src', url);
 
             linkWrapper.attr('href', url).attr('title', '查看原图');
 
