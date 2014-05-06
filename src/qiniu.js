@@ -493,6 +493,41 @@ function QiniuJsSDK() {
 
         uploader.bind('FileUploaded', (function(_FileUploaded_Handler) {
             return function(up, file, info) {
+
+                var get_downtoken = function(info) {
+                    var ajax_downtoken = that.createAjax();
+                    ajax_downtoken.open('POST', op.downtoken_url, true);
+                    ajax_downtoken.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                    ajax_downtoken.onreadystatechange = function() {
+                        if (ajax_downtoken.readyState === 4) {
+                            if (ajax_downtoken.status === 200) {
+                                var res_downtoken;
+                                try {
+                                    res_downtoken = that.parseJSON(ajax_downtoken.responseText);
+                                } catch (e) {
+                                    throw ('invalid json format');
+                                }
+                                var info_extended = {};
+                                plupload.extend(info_extended, res_downtoken, {
+                                    key: that.parseJSON(info).key,
+                                    hash: that.parseJSON(info).hash
+                                });
+                                if (_FileUploaded_Handler) {
+                                    _FileUploaded_Handler(up, file, JSON.stringify(info_extended));
+                                }
+                            } else {
+                                uploader.trigger('Error', {
+                                    status: ajax_downtoken.status,
+                                    response: ajax_downtoken.responseText,
+                                    file: file,
+                                    code: -200
+                                });
+                            }
+                        }
+                    };
+                    ajax_downtoken.send('key=' + that.parseJSON(info).key + '&domain=' + op.domain);
+                };
+
                 var res = that.parseJSON(info.response);
                 ctx = ctx ? ctx : res.ctx;
                 if (ctx) {
@@ -523,13 +558,13 @@ function QiniuJsSDK() {
                     ajax.open('POST', url, true);
                     ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
                     ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
-                    ajax.send(ctx);
                     ajax.onreadystatechange = function() {
                         if (ajax.readyState === 4) {
                             if (ajax.status === 200) {
                                 var info = ajax.responseText;
-
-                                if (_FileUploaded_Handler) {
+                                if (op.downtoken_url) {
+                                    get_downtoken(info);
+                                } else if (_FileUploaded_Handler) {
                                     _FileUploaded_Handler(up, file, info);
                                 }
 
@@ -543,8 +578,11 @@ function QiniuJsSDK() {
                             }
                         }
                     };
+                    ajax.send(ctx);
                 } else {
-                    if (_FileUploaded_Handler) {
+                    if (op.downtoken_url) {
+                        get_downtoken(info.response);
+                    } else if (_FileUploaded_Handler) {
                         _FileUploaded_Handler(up, file, info.response);
                     }
                 }
