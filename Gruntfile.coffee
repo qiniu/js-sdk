@@ -1,5 +1,5 @@
 module.exports = (grunt) ->
-    JS_PATH = 'js/'
+    JS_PATH = 'src/'
     JS_FILE = JS_PATH+'qiniu.js'
 
     grunt.initConfig
@@ -12,16 +12,31 @@ module.exports = (grunt) ->
             compress:
                 options:
                     report: 'min'
-                files: [{
-                    expand: true
-                    src: [JS_FILE]
-                }]
+                files:
+                    'src/qiniu.min.js' : [JS_FILE]
         copy:
             main:
-                expand: true,
-                flatten: true,
-                src: 'src/qiniu.js',
+                expand: true
+                flatten: true
+                src: 'src/qiniu.js'
                 dest: 'demo/js/'
+        watch:
+            options:
+               livereload: true
+               debounceDelay: 600
+            js:
+               files: JS_FILE
+               tasks: 'jshint'
+               options:
+                   spawn:false
+            copy:
+               files: [JS_FILE]
+               tasks: 'copy'
+            uglify:
+                options:
+                    report: 'min'
+                files: [JS_FILE]
+                tasks: 'uglify'
 
     grunt.loadNpmTasks 'grunt-contrib-watch'
     grunt.loadNpmTasks 'grunt-contrib-uglify'
@@ -33,10 +48,12 @@ module.exports = (grunt) ->
 
     grunt.registerTask 'production', [
         'jshint'
+        'copy'
         'uglify:compress'
     ]
 
     grunt.registerTask 'default', [
         'jshint'
         'copy'
+        'uglify:compress'
     ]
