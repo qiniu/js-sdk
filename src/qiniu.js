@@ -509,10 +509,7 @@ function QiniuJsSDK() {
                                         throw ('invalid json format');
                                     }
                                     var info_extended = {};
-                                    plupload.extend(info_extended, res_downtoken, {
-                                        key: that.parseJSON(info).key,
-                                        hash: that.parseJSON(info).hash
-                                    });
+                                    plupload.extend(info_extended, that.parseJSON(info), res_downtoken);
                                     if (_FileUploaded_Handler) {
                                         _FileUploaded_Handler(up, file, JSON.stringify(info_extended));
                                     }
