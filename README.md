@@ -303,6 +303,8 @@ qiniu-js-sdk
 
 *  安装 [Nodejs](http://nodejs.org/download/)、[npm](https://www.npmjs.org/)
 
+*  `npm install -g grunt-cli`，安装 Grunt
+
 *  `npm install`，安装七牛 Node.js SDK、Express
 
 *  获取源代码：
@@ -318,12 +320,15 @@ qiniu-js-sdk
                 'ACCESS_KEY': '<Your Access Key>',
                 'SECRET_KEY': '<Your Secret Key>',
                 'Bucket_Name': '<Your Bucket Name>',
-                'Port': 18080
+                'Port': 18080,
+                'Uptoken_Url': '<Your Uptoken_Url>',
+                'Domain': '<Your Bucket Domain>'
             }
 
         ```
 
-*  在`demo`目录运行`node server.js` 或者 在根目录运行`make`启动
+*  在根目录运行`make`启动
+
 *  访问`http://127.0.0.1:18080/`或`http://localhost:18080/`
 
 ## 说明
