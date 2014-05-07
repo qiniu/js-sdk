@@ -518,7 +518,7 @@ function QiniuJsSDK() {
                                         status: ajax_downtoken.status,
                                         response: ajax_downtoken.responseText,
                                         file: file,
-                                        code: -200
+                                        code: plupload.HTTP_ERROR
                                     });
                                 }
                             }
