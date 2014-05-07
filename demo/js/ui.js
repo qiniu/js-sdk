@@ -247,9 +247,9 @@ FileProgress.prototype.setComplete = function(up, info) {
         Wrapper.append(imgWrapper);
 
         var img = new Image();
-        if (!'/imageView/'.test(url)) {
+        if (!/imageView/.test(url)) {
             url += imageView
-        } //todo
+        }
         $(img).attr('src', url);
 
         var height_space = 340;
