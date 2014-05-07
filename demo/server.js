@@ -46,8 +46,7 @@ app.post('/downtoken', function(req, res) {
     var baseUrl = qiniu.rs.makeBaseUrl(domain, key);
     var deadline = 3600 + Math.floor(Date.now() / 1000);
 
-    baseUrl += '?imageView/2/w/200/h/200';
-    baseUrl += '&e=' + deadline;
+    baseUrl += '?e=' + deadline;
     var signature = qiniu.util.hmacSha1(baseUrl, config.SECRET_KEY);
     var encodedSign = qiniu.util.base64ToUrlSafe(signature);
     var downloadToken = config.ACCESS_KEY + ':' + encodedSign;
