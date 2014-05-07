@@ -451,7 +451,7 @@ function QiniuJsSDK() {
                                         errorObj = that.parseJSON(errorObj.error);
                                         errorText = errorObj.error || 'file exists';
                                     } catch (e) {
-                                        // console.log(e);
+                                        throw ('invalid json format');
                                     }
                                     break;
                                 case 631:
@@ -493,6 +493,42 @@ function QiniuJsSDK() {
 
         uploader.bind('FileUploaded', (function(_FileUploaded_Handler) {
             return function(up, file, info) {
+
+                var last_step = function(up, file, info) {
+                    if (op.downtoken_url) {
+                        var ajax_downtoken = that.createAjax();
+                        ajax_downtoken.open('POST', op.downtoken_url, true);
+                        ajax_downtoken.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                        ajax_downtoken.onreadystatechange = function() {
+                            if (ajax_downtoken.readyState === 4) {
+                                if (ajax_downtoken.status === 200) {
+                                    var res_downtoken;
+                                    try {
+                                        res_downtoken = that.parseJSON(ajax_downtoken.responseText);
+                                    } catch (e) {
+                                        throw ('invalid json format');
+                                    }
+                                    var info_extended = {};
+                                    plupload.extend(info_extended, that.parseJSON(info), res_downtoken);
+                                    if (_FileUploaded_Handler) {
+                                        _FileUploaded_Handler(up, file, JSON.stringify(info_extended));
+                                    }
+                                } else {
+                                    uploader.trigger('Error', {
+                                        status: ajax_downtoken.status,
+                                        response: ajax_downtoken.responseText,
+                                        file: file,
+                                        code: plupload.HTTP_ERROR
+                                    });
+                                }
+                            }
+                        };
+                        ajax_downtoken.send('key=' + that.parseJSON(info).key + '&domain=' + op.domain);
+                    } else if (_FileUploaded_Handler) {
+                        _FileUploaded_Handler(up, file, info);
+                    }
+                };
+
                 var res = that.parseJSON(info.response);
                 ctx = ctx ? ctx : res.ctx;
                 if (ctx) {
@@ -523,15 +559,11 @@ function QiniuJsSDK() {
                     ajax.open('POST', url, true);
                     ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
                     ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
-                    ajax.send(ctx);
                     ajax.onreadystatechange = function() {
                         if (ajax.readyState === 4) {
                             if (ajax.status === 200) {
                                 var info = ajax.responseText;
-
-                                if (_FileUploaded_Handler) {
-                                    _FileUploaded_Handler(up, file, info);
-                                }
+                                last_step(up, file, info);
 
                             } else {
                                 uploader.trigger('Error', {
@@ -543,10 +575,9 @@ function QiniuJsSDK() {
                             }
                         }
                     };
+                    ajax.send(ctx);
                 } else {
-                    if (_FileUploaded_Handler) {
-                        _FileUploaded_Handler(up, file, info.response);
-                    }
+                    last_step(up, file, info.response);
                 }
 
             };

@@ -3,6 +3,6 @@ module.exports = {
     'SECRET_KEY': '<Your Secret Key>',
     'Bucket_Name': '<Your Bucket Name>',
     'Port': 18080,
-    'Uptoken_Url': '/token',
+    'Uptoken_Url': '/uptoken',
     'Domain': 'http://qiniu-plupload.qiniudn.com/'
-}
+};

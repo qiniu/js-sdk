@@ -59,7 +59,9 @@ qiniu-js-sdk
     var uploader = Qiniu.uploader({
         runtimes: 'html5,flash,html4',    //上传模式,依次退化
         browse_button: 'pickfiles',       //上传选择的点选按钮，**必需**
-        uptoken_url: '/token',            //Ajax请求upToken的Url，**强烈建议设置**（服务端提供）
+        uptoken_url: '/uptoken',            //Ajax请求upToken的Url，**强烈建议设置**（服务端提供）
+        // downtoken_url: '/downtoken',
+        // Ajax请求downToken的Url，私有空间时使用,JS-SDK将向该地址POST文件的key和domain,服务端返回的JSON必须包含`url`字段，`url`值为该文件的下载地址
         // uptoken : '<Your upload token>', //若未指定uptoken_url,则必须指定 uptoken ,uptoken由其他程序生成
         // unique_names: true, // 默认 false，key为文件名。若开启该选项，SDK会为每个文件自动生成key（文件名）
         // save_key: true,   // 默认 false。若在服务端生成uptoken的上传策略中指定了 `sava_key`，则开启，SDK在前端将不对key进行任何处理
@@ -301,6 +303,8 @@ qiniu-js-sdk
 
 *  安装 [Nodejs](http://nodejs.org/download/)、[npm](https://www.npmjs.org/)
 
+*  `npm install -g grunt-cli`，安装 Grunt
+
 *  `npm install`，安装七牛 Node.js SDK、Express
 
 *  获取源代码：
@@ -316,12 +320,15 @@ qiniu-js-sdk
                 'ACCESS_KEY': '<Your Access Key>',
                 'SECRET_KEY': '<Your Secret Key>',
                 'Bucket_Name': '<Your Bucket Name>',
-                'Port': 18080
+                'Port': 18080,
+                'Uptoken_Url': '<Your Uptoken_Url>',
+                'Domain': '<Your Bucket Domain>'
             }
 
         ```
 
-*  在`demo`目录运行`node server.js` 或者 在根目录运行`make`启动
+*  在根目录运行`make`启动
+
 *  访问`http://127.0.0.1:18080/`或`http://localhost:18080/`
 
 ## 说明
