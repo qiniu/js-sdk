@@ -303,10 +303,6 @@ qiniu-js-sdk
 
 *  安装 [Nodejs](http://nodejs.org/download/)、[npm](https://www.npmjs.org/)
 
-*  `npm install -g grunt-cli`，安装 Grunt
-
-*  `npm install`，安装七牛 Node.js SDK、Express
-
 *  获取源代码：
     `git clone git@github.com:qiniupd/qiniu-js-sdk.git`
 *  进入`demo`目录,修改`config.js`，`Access Key`和`Secret Key` 按如下方式获取
