@@ -65,18 +65,11 @@ app.get('/', function(req, res) {
         uptoken_url: config.Uptoken_Url
     });
 });
-app.get('/form.html', function(req, res) {
-    res.render('form.html', {
-        domain: config.Domain,
-        uptoken_url: config.Uptoken_Url
-    });
-});
 
 qiniu.conf.ACCESS_KEY = config.ACCESS_KEY;
 qiniu.conf.SECRET_KEY = config.SECRET_KEY;
 
-//function PutPolicy(scope, callbackUrl, callbackBody, returnUrl, returnBody,asyncOps, endUser, expires)
-var uptoken = new qiniu.rs.PutPolicy(config.Bucket_Name, '', '', '', '{"fname": $(fname), "x:content": "I am rwf", "suffix": "$(suffix)"}'); //, 'http://www.baidu.com', '{}');
+var uptoken = new qiniu.rs.PutPolicy(config.Bucket_Name);
 
 
 app.listen(config.Port, function() {
