@@ -305,7 +305,7 @@ function QiniuJsSDK() {
         };
 
         plupload.extend(option, op, {
-            url: 'http://up.qiniu.com',
+            url: 'http://upload.qiniu.com',
             chunk_size: 0,
             multipart_params: {
                 token: ''
@@ -363,7 +363,7 @@ function QiniuJsSDK() {
 
 
                 up.setOption({
-                    'url': 'http://up.qiniu.com/',
+                    'url': 'http://upload.qiniu.com/',
                     'multipart': true,
                     'chunk_size': undefined,
                     'multipart_params': multipart_params_obj
@@ -381,7 +381,7 @@ function QiniuJsSDK() {
                     var blockSize = chunk_size;
                     ctx = '';
                     up.setOption({
-                        'url': 'http://up.qiniu.com/mkblk/' + blockSize,
+                        'url': 'http://upload.qiniu.com/mkblk/' + blockSize,
                         'multipart': false,
                         'chunk_size': chunk_size,
                         'headers': {
@@ -404,7 +404,7 @@ function QiniuJsSDK() {
             chunk_size = chunk_size || (up.settings && up.settings.chunk_size);
             if (leftSize < chunk_size) {
                 up.setOption({
-                    'url': 'http://up.qiniu.com/mkblk/' + leftSize
+                    'url': 'http://upload.qiniu.com/mkblk/' + leftSize
                 });
             }
 
@@ -555,7 +555,7 @@ function QiniuJsSDK() {
                         }
                     }
 
-                    var url = 'http://up.qiniu.com/mkfile/' + file.size + key + x_vars_url;
+                    var url = 'http://upload.qiniu.com/mkfile/' + file.size + key + x_vars_url;
                     var ajax = that.createAjax();
                     ajax.open('POST', url, true);
                     ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
