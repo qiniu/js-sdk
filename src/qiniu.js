@@ -306,6 +306,7 @@ function QiniuJsSDK() {
 
         plupload.extend(option, op, {
             url: 'http://up.qiniu.com',
+            chunk_size: 0,
             multipart_params: {
                 token: ''
             }
