@@ -306,7 +306,6 @@ function QiniuJsSDK() {
 
         plupload.extend(option, op, {
             url: 'http://upload.qiniu.com',
-            chunk_size: 0,
             multipart_params: {
                 token: ''
             }
@@ -378,8 +377,17 @@ function QiniuJsSDK() {
                 if (file.size < chunk_size) {
                     directUpload(up, file, that.key_handler);
                 } else {
+                    var localFileInfo = localStorage.getItem(file.name);
                     var blockSize = chunk_size;
-                    ctx = '';
+                    if (localFileInfo) {
+                        localFileInfo = JSON.parse(localFileInfo);
+                        file.loaded = localFileInfo.offset;
+                        file.percent = localFileInfo.percent;
+                        ctx = localFileInfo.ctx;
+                        if (localFileInfo.offset + blockSize > file.size) {
+                            blockSize = file.size - localFileInfo.ctx;
+                        }
+                    }
                     up.setOption({
                         'url': 'http://upload.qiniu.com/mkblk/' + blockSize,
                         'multipart': false,
@@ -407,7 +415,12 @@ function QiniuJsSDK() {
                     'url': 'http://upload.qiniu.com/mkblk/' + leftSize
                 });
             }
-
+            localStorage.setItem(file.name, JSON.stringify({
+                ctx: ctx,
+                percent: file.percent,
+                total: info.total,
+                offset: info.offset
+            }));
         });
 
         uploader.bind('Error', (function(_Error_Handler) {
@@ -565,7 +578,7 @@ function QiniuJsSDK() {
                             if (ajax.status === 200) {
                                 var info = ajax.responseText;
                                 last_step(up, file, info);
-
+                                localStorage.removeItem(file.name);
                             } else {
                                 uploader.trigger('Error', {
                                     status: ajax.status,
