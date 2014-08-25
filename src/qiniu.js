@@ -1,4 +1,4 @@
-/*global plupload */
+/*global plupload ,mOxie*/
 /*global ActiveXObject */
 /*exported Qiniu */
 
@@ -250,11 +250,17 @@ function QiniuJsSDK() {
         var reset_chunk_size = function() {
             var ie = that.detectIEVersion();
             var BLOCK_BITS, MAX_CHUNK_SIZE, chunk_size;
+            var isSpecialSafari = (mOxie.Env.browser === "Safari" && mOxie.Env.version <= 5 && mOxie.Env.os === "Windows" && mOxie.Env.osVersion === "7") || (mOxie.Env.browser === "Safari" && mOxie.Env.os === "iOS" && mOxie.Env.osVersion === "7");
             if (ie && ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
                 //  link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
                 //  when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
                 op.chunk_size = 0;
 
+            } else if (isSpecialSafari) {
+                // win7 safari / iOS7 safari have bug when in chunk upload mode
+                // reset chunk_size to 0
+                // disable chunk in special version safari
+                op.chunk_size = 0;
             } else {
                 BLOCK_BITS = 20;
                 MAX_CHUNK_SIZE = 4 << BLOCK_BITS; //4M
@@ -372,7 +378,6 @@ function QiniuJsSDK() {
 
             var chunk_size = up.getOption && up.getOption('chunk_size');
             chunk_size = chunk_size || (up.settings && up.settings.chunk_size);
-
             if (uploader.runtime === 'html5' && chunk_size) {
                 if (file.size < chunk_size) {
                     directUpload(up, file, that.key_handler);
@@ -392,6 +397,7 @@ function QiniuJsSDK() {
                         'url': 'http://up.qiniu.com/mkblk/' + blockSize,
                         'multipart': false,
                         'chunk_size': chunk_size,
+                        'required_features': "chunks",
                         'headers': {
                             'Authorization': 'UpToken ' + that.token
                         },
