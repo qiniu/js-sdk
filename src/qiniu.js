@@ -258,8 +258,8 @@ function QiniuJsSDK() {
 
             } else if (isSpecialSafari) {
                 // win7 safari / iOS7 safari have bug when in chunk upload mode
-                //reset chunk_size to 0
-                //disable chunk in special version safari
+                // reset chunk_size to 0
+                // disable chunk in special version safari
                 op.chunk_size = 0;
             } else {
                 BLOCK_BITS = 20;
@@ -378,7 +378,6 @@ function QiniuJsSDK() {
 
             var chunk_size = up.getOption && up.getOption('chunk_size');
             chunk_size = chunk_size || (up.settings && up.settings.chunk_size);
-            console.log(uploader.runtime);
             if (uploader.runtime === 'html5' && chunk_size) {
                 if (file.size < chunk_size) {
                     directUpload(up, file, that.key_handler);
