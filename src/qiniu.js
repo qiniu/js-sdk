@@ -320,7 +320,6 @@ function QiniuJsSDK() {
         var uploader = new plupload.Uploader(option);
 
         uploader.bind('Init', function(up, params) {
-            getUpToken();
         });
         uploader.init();
 
@@ -336,6 +335,7 @@ function QiniuJsSDK() {
         });
 
         uploader.bind('BeforeUpload', function(up, file) {
+            getUpToken();
 
             ctx = '';
 
