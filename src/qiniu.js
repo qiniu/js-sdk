@@ -386,11 +386,18 @@ function QiniuJsSDK() {
                     var blockSize = chunk_size;
                     if (localFileInfo) {
                         localFileInfo = JSON.parse(localFileInfo);
-                        file.loaded = localFileInfo.offset;
-                        file.percent = localFileInfo.percent;
-                        ctx = localFileInfo.ctx;
-                        if (localFileInfo.offset + blockSize > file.size) {
-                            blockSize = file.size - localFileInfo.ctx;
+                        var now = (new Date()).getTime();
+                        var before = localFileInfo.time || 0;
+                        var aDay = 24 * 60 * 60 * 1000; //  milliseconds
+                        if (now - before < aDay) {
+                            file.loaded = localFileInfo.offset;
+                            file.percent = localFileInfo.percent;
+                            ctx = localFileInfo.ctx;
+                            if (localFileInfo.offset + blockSize > file.size) {
+                                blockSize = file.size - localFileInfo.offset;
+                            }
+                        } else {
+                            localStorage.removeItem(file.name);
                         }
                     }
                     up.setOption({
@@ -425,7 +432,8 @@ function QiniuJsSDK() {
                 ctx: ctx,
                 percent: file.percent,
                 total: info.total,
-                offset: info.offset
+                offset: info.offset,
+                time: (new Date()).getTime()
             }));
         });
 
