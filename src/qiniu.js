@@ -36,16 +36,6 @@ function QiniuJsSDK() {
         return false;
     };
 
-    this.getFileExtension = function(filename) {
-        var tempArr = filename.split(".");
-        var ext;
-        if (tempArr.length === 1 || (tempArr[0] === "" && tempArr.length === 2)) {
-            ext = "";
-        } else {
-            ext = tempArr.pop().toLowerCase(); //get the extension and make it lower-case
-        }
-        return ext;
-    };
 
     this.URLSafeBase64Encode = function(v) {
         v = mOxie.btoa(v);
@@ -173,7 +163,7 @@ function QiniuJsSDK() {
                 unique_names = up.getOption && up.getOption('unique_names');
                 unique_names = unique_names || (up.settings && up.settings.unique_names);
                 if (unique_names) {
-                    var ext = that.getFileExtension(file.name);
+                    var ext = mOxie.Mime.getFileExtension(file.name);
                     key = ext ? file.id + '.' + ext : file.id;
                 } else if (typeof func === 'function') {
                     key = func(up, file);
