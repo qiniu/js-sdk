@@ -390,7 +390,7 @@ function QiniuJsSDK() {
                         file.percent = localFileInfo.percent;
                         ctx = localFileInfo.ctx;
                         if (localFileInfo.offset + blockSize > file.size) {
-                            blockSize = file.size - localFileInfo.ctx;
+                            blockSize = file.size - localFileInfo.offset;
                         }
                     }
                     up.setOption({
