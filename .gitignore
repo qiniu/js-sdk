@@ -2,3 +2,4 @@ node_*
 .DS_Store
 demo/js/qiniu.js
 Gruntfile.js
+demo/config.js
