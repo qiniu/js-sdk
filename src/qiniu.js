@@ -589,10 +589,10 @@ function QiniuJsSDK() {
                     ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
                     ajax.onreadystatechange = function() {
                         if (ajax.readyState === 4) {
+                            localStorage.removeItem(file.name);
                             if (ajax.status === 200) {
                                 var info = ajax.responseText;
                                 last_step(up, file, info);
-                                localStorage.removeItem(file.name);
                             } else {
                                 uploader.trigger('Error', {
                                     status: ajax.status,
