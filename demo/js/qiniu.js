@@ -479,7 +479,7 @@ function QiniuJsSDK() {
                                         errorObj = that.parseJSON(errorObj.error);
                                         errorText = errorObj.error || 'file exists';
                                     } catch (e) {
-                                        throw ('invalid json format');
+                                        errorText = errorObj.error || 'file exists';
                                     }
                                     break;
                                 case 631:
