@@ -390,11 +390,16 @@ function QiniuJsSDK() {
                         var before = localFileInfo.time || 0;
                         var aDay = 24 * 60 * 60 * 1000; //  milliseconds
                         if (now - before < aDay) {
-                            file.loaded = localFileInfo.offset;
-                            file.percent = localFileInfo.percent;
-                            ctx = localFileInfo.ctx;
-                            if (localFileInfo.offset + blockSize > file.size) {
-                                blockSize = file.size - localFileInfo.offset;
+                            if (localFileInfo.percent !== 100) {
+                                file.percent = localFileInfo.percent;
+                                file.loaded = localFileInfo.offset;
+                                ctx = localFileInfo.ctx;
+                                if (localFileInfo.offset + blockSize > file.size) {
+                                    blockSize = file.size - localFileInfo.offset;
+                                }
+                            } else {
+                                // 进度100%时，删除对应的localStorage，避免 499 bug
+                                localStorage.removeItem(file.name);
                             }
                         } else {
                             localStorage.removeItem(file.name);
