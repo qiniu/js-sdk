@@ -175,7 +175,7 @@ function QiniuJsSDK() {
         };
 
         plupload.extend(option, op, {
-            url: 'http://up.qiniu.com',
+            url: up_host,
             multipart_params: {
                 token: ''
             }
@@ -388,97 +388,107 @@ function QiniuJsSDK() {
             };
         })(_Error_Handler));
 
-        uploader.bind('FileUploaded', (function(_FileUploaded_Handler) {
-            return function(up, file, info) {
+        uploader.bind('FileUploaded', function(up, file, info) {
 
-                var last_step = function(up, file, info) {
-                    if (op.downtoken_url) {
-                        var ajax_downtoken = that.createAjax();
-                        ajax_downtoken.open('POST', op.downtoken_url, true);
-                        ajax_downtoken.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-                        ajax_downtoken.onreadystatechange = function() {
-                            if (ajax_downtoken.readyState === 4) {
-                                if (ajax_downtoken.status === 200) {
-                                    var res_downtoken;
-                                    try {
-                                        res_downtoken = that.parseJSON(ajax_downtoken.responseText);
-                                    } catch (e) {
-                                        throw ('invalid json format');
-                                    }
-                                    var info_extended = {};
-                                    plupload.extend(info_extended, that.parseJSON(info), res_downtoken);
-                                    if (_FileUploaded_Handler) {
-                                        _FileUploaded_Handler(up, file, JSON.stringify(info_extended));
-                                    }
-                                } else {
-                                    uploader.trigger('Error', {
-                                        status: ajax_downtoken.status,
-                                        response: ajax_downtoken.responseText,
-                                        file: file,
-                                        code: plupload.HTTP_ERROR
-                                    });
-                                }
-                            }
-                        };
-                        ajax_downtoken.send('key=' + that.parseJSON(info).key + '&domain=' + op.domain);
-                    } else if (_FileUploaded_Handler) {
-                        _FileUploaded_Handler(up, file, info);
-                    }
-                };
-
-                var res = that.parseJSON(info.response);
-                ctx = ctx ? ctx : res.ctx;
-                if (ctx) {
-                    var key = '';
-                    if (!op.save_key) {
-                        key = getFileKey(up, file, that.key_handler);
-                        key = key ? '/key/' + that.URLSafeBase64Encode(key) : '';
-                    }
-
-                    var x_vars = op.x_vars,
-                        x_val = '',
-                        x_vars_url = '';
-                    if (x_vars !== undefined && typeof x_vars === 'object') {
-                        for (var x_key in x_vars) {
-                            if (x_vars.hasOwnProperty(x_key)) {
-                                if (typeof x_vars[x_key] === 'function') {
-                                    x_val = that.URLSafeBase64Encode(x_vars[x_key](up, file));
-                                } else if (typeof x_vars[x_key] !== 'object') {
-                                    x_val = that.URLSafeBase64Encode(x_vars[x_key]);
-                                }
-                                x_vars_url += '/x:' + x_key + '/' + x_val;
-                            }
-                        }
-                    }
-
-                    var url = up_host + '/mkfile/' + file.size + key + x_vars_url;
-                    var ajax = that.createAjax();
-                    ajax.open('POST', url, true);
-                    ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
-                    ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
-                    ajax.onreadystatechange = function() {
-                        if (ajax.readyState === 4) {
-                            localStorage.removeItem(file.name);
-                            if (ajax.status === 200) {
-                                var info = ajax.responseText;
-                                last_step(up, file, info);
-                            } else {
-                                uploader.trigger('Error', {
-                                    status: ajax.status,
-                                    response: ajax.responseText,
-                                    file: file,
-                                    code: -200
-                                });
-                            }
-                        }
-                    };
-                    ajax.send(ctx);
-                } else {
-                    last_step(up, file, info.response);
+            var makeFile = function(that) {
+                var key = '';
+                if (!op.save_key) {
+                    key = getFileKey(up, file, that.key_handler);
+                    key = key ? '/key/' + that.URLSafeBase64Encode(key) : '';
                 }
 
+                var x_vars_url = getXVarsURL();
+                var url = up_host + '/mkfile/' + file.size + key + x_vars_url;
+                var ajax = that.createAjax();
+                ajax.open('POST', url, true);
+                ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+                ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
+                ajax.onreadystatechange = function() {
+                    if (ajax.readyState === 4) {
+                        localStorage.removeItem(file.name);
+                        if (ajax.status === 200) {
+                            var info = ajax.responseText;
+                            finish(up, file, info);
+                        } else {
+                            uploader.trigger('Error', {
+                                status: ajax.status,
+                                response: ajax.responseText,
+                                file: file,
+                                code: -200
+                            });
+                        }
+                    }
+                };
+                ajax.send(ctx);
             };
-        })(_FileUploaded_Handler));
+
+            var getXVarsURL = function() {
+                var x_vars = op.x_vars,
+                    x_val = '',
+                    x_vars_url = '';
+                if (x_vars !== undefined && typeof x_vars === 'object') {
+                    for (var x_key in x_vars) {
+                        if (x_vars.hasOwnProperty(x_key)) {
+                            if (typeof x_vars[x_key] === 'function') {
+                                x_val = that.URLSafeBase64Encode(x_vars[x_key](up, file));
+                            } else if (typeof x_vars[x_key] !== 'object') {
+                                x_val = that.URLSafeBase64Encode(x_vars[x_key]);
+                            }
+                            x_vars_url += '/x:' + x_key + '/' + x_val;
+                        }
+                    }
+                }
+                return x_vars_url;
+            };
+
+            var finish = function(up, file, info) {
+                if (op.downtoken_url) {
+                    getDownloadURL(that);
+                } else if (_FileUploaded_Handler) {
+                    _FileUploaded_Handler(up, file, info);
+                }
+            };
+
+            var getDownloadURL = function(that) {
+                var ajax_downtoken = that.createAjax();
+                ajax_downtoken.open('POST', op.downtoken_url, true);
+                ajax_downtoken.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                ajax_downtoken.onreadystatechange = function() {
+                    if (ajax_downtoken.readyState === 4) {
+                        if (ajax_downtoken.status === 200) {
+                            var res_downtoken;
+                            try {
+                                res_downtoken = that.parseJSON(ajax_downtoken.responseText);
+                            } catch (e) {
+                                throw ('invalid json format');
+                            }
+                            var info_extended = {};
+                            plupload.extend(info_extended, that.parseJSON(info), res_downtoken);
+                            if (_FileUploaded_Handler) {
+                                _FileUploaded_Handler(up, file, JSON.stringify(info_extended));
+                            }
+                        } else {
+                            uploader.trigger('Error', {
+                                status: ajax_downtoken.status,
+                                response: ajax_downtoken.responseText,
+                                file: file,
+                                code: plupload.HTTP_ERROR
+                            });
+                        }
+                    }
+                };
+                ajax_downtoken.send('key=' + that.parseJSON(info).key + '&domain=' + op.domain);
+            };
+
+            var res = that.parseJSON(info.response);
+            ctx = ctx ? ctx : res.ctx;
+            if (ctx) {
+                makeFile(that);
+            } else {
+                finish(up, file, info.response);
+            }
+
+        });
 
         return uploader;
     };
@@ -495,199 +505,7 @@ function QiniuJsSDK() {
         return domain + key;
     };
 
-    this.imageView2 = function(op, key) {
-        var mode = op.mode || '',
-            w = op.w || '',
-            h = op.h || '',
-            q = op.quality || '',
-            format = op.format || '';
-        if (!mode) {
-            return false;
-        }
-        if (!w && !h) {
-            return false;
-        }
 
-        var imageUrl = 'imageView2/' + mode;
-        imageUrl += w ? '/w/' + w : '';
-        imageUrl += h ? '/h/' + h : '';
-        imageUrl += q ? '/q/' + q : '';
-        imageUrl += format ? '/format/' + format : '';
-        if (key) {
-            imageUrl = this.getUrl(key) + '?' + imageUrl;
-        }
-        return imageUrl;
-    };
-
-
-    this.imageMogr2 = function(op, key) {
-        var auto_orient = op['auto-orient'] || '',
-            thumbnail = op.thumbnail || '',
-            strip = op.strip || '',
-            gravity = op.gravity || '',
-            crop = op.crop || '',
-            quality = op.quality || '',
-            rotate = op.rotate || '',
-            format = op.format || '',
-            blur = op.blur || '';
-        //Todo check option
-
-        var imageUrl = 'imageMogr2';
-
-        imageUrl += auto_orient ? '/auto-orient' : '';
-        imageUrl += thumbnail ? '/thumbnail/' + thumbnail : '';
-        imageUrl += strip ? '/strip' : '';
-        imageUrl += gravity ? '/gravity/' + gravity : '';
-        imageUrl += quality ? '/quality/' + quality : '';
-        imageUrl += crop ? '/crop/' + crop : '';
-        imageUrl += rotate ? '/rotate/' + rotate : '';
-        imageUrl += format ? '/format/' + format : '';
-        imageUrl += blur ? '/blur/' + blur : '';
-
-        if (key) {
-            imageUrl = this.getUrl(key) + '?' + imageUrl;
-        }
-        return imageUrl;
-    };
-
-    this.watermark = function(op, key) {
-
-        var mode = op.mode;
-        if (!mode) {
-            return false;
-        }
-
-        var imageUrl = 'watermark/' + mode;
-
-        if (mode === 1) {
-            var image = op.image || '';
-            if (!image) {
-                return false;
-            }
-            imageUrl += image ? '/image/' + this.URLSafeBase64Encode(image) : '';
-        } else if (mode === 2) {
-            var text = op.text ? op.text : '',
-                font = op.font ? op.font : '',
-                fontsize = op.fontsize ? op.fontsize : '',
-                fill = op.fill ? op.fill : '';
-            if (!text) {
-                return false;
-            }
-            imageUrl += text ? '/text/' + this.URLSafeBase64Encode(text) : '';
-            imageUrl += font ? '/font/' + this.URLSafeBase64Encode(font) : '';
-            imageUrl += fontsize ? '/fontsize/' + fontsize : '';
-            imageUrl += fill ? '/fill/' + this.URLSafeBase64Encode(fill) : '';
-        } else {
-            // Todo mode3
-            return false;
-        }
-
-        var dissolve = op.dissolve || '',
-            gravity = op.gravity || '',
-            dx = op.dx || '',
-            dy = op.dy || '';
-
-        imageUrl += dissolve ? '/dissolve/' + dissolve : '';
-        imageUrl += gravity ? '/gravity/' + gravity : '';
-        imageUrl += dx ? '/dx/' + dx : '';
-        imageUrl += dy ? '/dy/' + dy : '';
-
-        if (key) {
-            imageUrl = this.getUrl(key) + '?' + imageUrl;
-        }
-        return imageUrl;
-
-    };
-
-    this.imageInfo = function(key) {
-        if (!key) {
-            return false;
-        }
-        var url = this.getUrl(key) + '?imageInfo';
-        var xhr = this.createAjax();
-        var info;
-        var that = this;
-        xhr.open('GET', url, false);
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                info = that.parseJSON(xhr.responseText);
-            }
-        };
-        xhr.send();
-        return info;
-    };
-
-
-    this.exif = function(key) {
-        if (!key) {
-            return false;
-        }
-        var url = this.getUrl(key) + '?exif';
-        var xhr = this.createAjax();
-        var info;
-        var that = this;
-        xhr.open('GET', url, false);
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                info = that.parseJSON(xhr.responseText);
-            }
-        };
-        xhr.send();
-        return info;
-    };
-
-    this.get = function(type, key) {
-        if (!key || !type) {
-            return false;
-        }
-        if (type === 'exif') {
-            return this.exif(key);
-        } else if (type === 'imageInfo') {
-            return this.imageInfo(key);
-        }
-        return false;
-    };
-
-
-    this.pipeline = function(arr, key) {
-
-        var isArray = Object.prototype.toString.call(arr) === '[object Array]';
-        var option, errOp, imageUrl = '';
-        if (isArray) {
-            for (var i = 0, len = arr.length; i < len; i++) {
-                option = arr[i];
-                if (!option.fop) {
-                    return false;
-                }
-                switch (option.fop) {
-                    case 'watermark':
-                        imageUrl += this.watermark(option) + '|';
-                        break;
-                    case 'imageView2':
-                        imageUrl += this.imageView2(option) + '|';
-                        break;
-                    case 'imageMogr2':
-                        imageUrl += this.imageMogr2(option) + '|';
-                        break;
-                    default:
-                        errOp = true;
-                        break;
-                }
-                if (errOp) {
-                    return false;
-                }
-            }
-            if (key) {
-                imageUrl = this.getUrl(key) + '?' + imageUrl;
-                var length = imageUrl.length;
-                if (imageUrl.slice(length - 1) === '|') {
-                    imageUrl = imageUrl.slice(0, length - 1);
-                }
-            }
-            return imageUrl;
-        }
-        return false;
-    };
 
 }
 

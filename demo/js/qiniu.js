@@ -36,146 +36,9 @@ function QiniuJsSDK() {
         return false;
     };
 
-    this.getFileExtension = function(filename) {
-        var tempArr = filename.split(".");
-        var ext;
-        if (tempArr.length === 1 || (tempArr[0] === "" && tempArr.length === 2)) {
-            ext = "";
-        } else {
-            ext = tempArr.pop().toLowerCase(); //get the extension and make it lower-case
-        }
-        return ext;
-    };
-
-    this.utf8_encode = function(argString) {
-        // http://kevin.vanzonneveld.net
-        // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
-        // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-        // +   improved by: sowberry
-        // +    tweaked by: Jack
-        // +   bugfixed by: Onno Marsman
-        // +   improved by: Yves Sucaet
-        // +   bugfixed by: Onno Marsman
-        // +   bugfixed by: Ulrich
-        // +   bugfixed by: Rafal Kukawski
-        // +   improved by: kirilloid
-        // +   bugfixed by: kirilloid
-        // *     example 1: this.utf8_encode('Kevin van Zonneveld');
-        // *     returns 1: 'Kevin van Zonneveld'
-
-        if (argString === null || typeof argString === 'undefined') {
-            return '';
-        }
-
-        var string = (argString + ''); // .replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-        var utftext = '',
-            start, end, stringl = 0;
-
-        start = end = 0;
-        stringl = string.length;
-        for (var n = 0; n < stringl; n++) {
-            var c1 = string.charCodeAt(n);
-            var enc = null;
-
-            if (c1 < 128) {
-                end++;
-            } else if (c1 > 127 && c1 < 2048) {
-                enc = String.fromCharCode(
-                    (c1 >> 6) | 192, (c1 & 63) | 128
-                );
-            } else if (c1 & 0xF800 ^ 0xD800 > 0) {
-                enc = String.fromCharCode(
-                    (c1 >> 12) | 224, ((c1 >> 6) & 63) | 128, (c1 & 63) | 128
-                );
-            } else { // surrogate pairs
-                if (c1 & 0xFC00 ^ 0xD800 > 0) {
-                    throw new RangeError('Unmatched trail surrogate at ' + n);
-                }
-                var c2 = string.charCodeAt(++n);
-                if (c2 & 0xFC00 ^ 0xDC00 > 0) {
-                    throw new RangeError('Unmatched lead surrogate at ' + (n - 1));
-                }
-                c1 = ((c1 & 0x3FF) << 10) + (c2 & 0x3FF) + 0x10000;
-                enc = String.fromCharCode(
-                    (c1 >> 18) | 240, ((c1 >> 12) & 63) | 128, ((c1 >> 6) & 63) | 128, (c1 & 63) | 128
-                );
-            }
-            if (enc !== null) {
-                if (end > start) {
-                    utftext += string.slice(start, end);
-                }
-                utftext += enc;
-                start = end = n + 1;
-            }
-        }
-
-        if (end > start) {
-            utftext += string.slice(start, stringl);
-        }
-
-        return utftext;
-    };
-
-    this.base64_encode = function(data) {
-        // http://kevin.vanzonneveld.net
-        // +   original by: Tyler Akins (http://rumkin.com)
-        // +   improved by: Bayron Guevara
-        // +   improved by: Thunder.m
-        // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-        // +   bugfixed by: Pellentesque Malesuada
-        // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-        // -    depends on: this.utf8_encode
-        // *     example 1: this.base64_encode('Kevin van Zonneveld');
-        // *     returns 1: 'S2V2aW4gdmFuIFpvbm5ldmVsZA=='
-        // mozilla has this native
-        // - but breaks in 2.0.0.12!
-        //if (typeof this.window['atob'] == 'function') {
-        //    return atob(data);
-        //}
-        var b64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
-        var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
-            ac = 0,
-            enc = '',
-            tmp_arr = [];
-
-        if (!data) {
-            return data;
-        }
-
-        data = this.utf8_encode(data + '');
-
-        do { // pack three octets into four hexets
-            o1 = data.charCodeAt(i++);
-            o2 = data.charCodeAt(i++);
-            o3 = data.charCodeAt(i++);
-
-            bits = o1 << 16 | o2 << 8 | o3;
-
-            h1 = bits >> 18 & 0x3f;
-            h2 = bits >> 12 & 0x3f;
-            h3 = bits >> 6 & 0x3f;
-            h4 = bits & 0x3f;
-
-            // use hexets to index into b64, and append result to encoded string
-            tmp_arr[ac++] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
-        } while (i < data.length);
-
-        enc = tmp_arr.join('');
-
-        switch (data.length % 3) {
-            case 1:
-                enc = enc.slice(0, -2) + '==';
-                break;
-            case 2:
-                enc = enc.slice(0, -1) + '=';
-                break;
-        }
-
-        return enc;
-    };
 
     this.URLSafeBase64Encode = function(v) {
-        v = this.base64_encode(v);
+        v = mOxie.btoa(v);
         return v.replace(/\//g, '_').replace(/\+/g, '-');
     };
 
@@ -246,6 +109,7 @@ function QiniuJsSDK() {
         that.key_handler = typeof op.init.Key === 'function' ? op.init.Key : '';
         this.domain = op.domain;
         var ctx = '';
+        var up_host = 'http://up.qiniu.com';
 
         var reset_chunk_size = function() {
             var ie = that.detectIEVersion();
@@ -299,7 +163,7 @@ function QiniuJsSDK() {
                 unique_names = up.getOption && up.getOption('unique_names');
                 unique_names = unique_names || (up.settings && up.settings.unique_names);
                 if (unique_names) {
-                    var ext = that.getFileExtension(file.name);
+                    var ext = mOxie.Mime.getFileExtension(file.name);
                     key = ext ? file.id + '.' + ext : file.id;
                 } else if (typeof func === 'function') {
                     key = func(up, file);
@@ -311,7 +175,7 @@ function QiniuJsSDK() {
         };
 
         plupload.extend(option, op, {
-            url: 'http://up.qiniu.com',
+            url: up_host,
             multipart_params: {
                 token: ''
             }
@@ -368,7 +232,7 @@ function QiniuJsSDK() {
 
 
                 up.setOption({
-                    'url': 'http://up.qiniu.com/',
+                    'url': up_host,
                     'multipart': true,
                     'chunk_size': undefined,
                     'multipart_params': multipart_params_obj
@@ -398,7 +262,7 @@ function QiniuJsSDK() {
                                     blockSize = file.size - localFileInfo.offset;
                                 }
                             } else {
-                                // 删除localStorage，避免 499 bug
+                                // 进度100%时，删除对应的localStorage，避免 499 bug
                                 localStorage.removeItem(file.name);
                             }
                         } else {
@@ -406,7 +270,7 @@ function QiniuJsSDK() {
                         }
                     }
                     up.setOption({
-                        'url': 'http://up.qiniu.com/mkblk/' + blockSize,
+                        'url': up_host + '/mkblk/' + blockSize,
                         'multipart': false,
                         'chunk_size': chunk_size,
                         'required_features': "chunks",
@@ -430,7 +294,7 @@ function QiniuJsSDK() {
             chunk_size = chunk_size || (up.settings && up.settings.chunk_size);
             if (leftSize < chunk_size) {
                 up.setOption({
-                    'url': 'http://up.qiniu.com/mkblk/' + leftSize
+                    'url': up_host + '/mkblk/' + leftSize
                 });
             }
             localStorage.setItem(file.name, JSON.stringify({
@@ -524,97 +388,107 @@ function QiniuJsSDK() {
             };
         })(_Error_Handler));
 
-        uploader.bind('FileUploaded', (function(_FileUploaded_Handler) {
-            return function(up, file, info) {
+        uploader.bind('FileUploaded', function(up, file, info) {
 
-                var last_step = function(up, file, info) {
-                    if (op.downtoken_url) {
-                        var ajax_downtoken = that.createAjax();
-                        ajax_downtoken.open('POST', op.downtoken_url, true);
-                        ajax_downtoken.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-                        ajax_downtoken.onreadystatechange = function() {
-                            if (ajax_downtoken.readyState === 4) {
-                                if (ajax_downtoken.status === 200) {
-                                    var res_downtoken;
-                                    try {
-                                        res_downtoken = that.parseJSON(ajax_downtoken.responseText);
-                                    } catch (e) {
-                                        throw ('invalid json format');
-                                    }
-                                    var info_extended = {};
-                                    plupload.extend(info_extended, that.parseJSON(info), res_downtoken);
-                                    if (_FileUploaded_Handler) {
-                                        _FileUploaded_Handler(up, file, JSON.stringify(info_extended));
-                                    }
-                                } else {
-                                    uploader.trigger('Error', {
-                                        status: ajax_downtoken.status,
-                                        response: ajax_downtoken.responseText,
-                                        file: file,
-                                        code: plupload.HTTP_ERROR
-                                    });
-                                }
-                            }
-                        };
-                        ajax_downtoken.send('key=' + that.parseJSON(info).key + '&domain=' + op.domain);
-                    } else if (_FileUploaded_Handler) {
-                        _FileUploaded_Handler(up, file, info);
-                    }
-                };
-
-                var res = that.parseJSON(info.response);
-                ctx = ctx ? ctx : res.ctx;
-                if (ctx) {
-                    var key = '';
-                    if (!op.save_key) {
-                        key = getFileKey(up, file, that.key_handler);
-                        key = key ? '/key/' + that.URLSafeBase64Encode(key) : '';
-                    }
-
-                    var x_vars = op.x_vars,
-                        x_val = '',
-                        x_vars_url = '';
-                    if (x_vars !== undefined && typeof x_vars === 'object') {
-                        for (var x_key in x_vars) {
-                            if (x_vars.hasOwnProperty(x_key)) {
-                                if (typeof x_vars[x_key] === 'function') {
-                                    x_val = that.URLSafeBase64Encode(x_vars[x_key](up, file));
-                                } else if (typeof x_vars[x_key] !== 'object') {
-                                    x_val = that.URLSafeBase64Encode(x_vars[x_key]);
-                                }
-                                x_vars_url += '/x:' + x_key + '/' + x_val;
-                            }
-                        }
-                    }
-
-                    var url = 'http://up.qiniu.com/mkfile/' + file.size + key + x_vars_url;
-                    var ajax = that.createAjax();
-                    ajax.open('POST', url, true);
-                    ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
-                    ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
-                    ajax.onreadystatechange = function() {
-                        if (ajax.readyState === 4) {
-                            localStorage.removeItem(file.name);
-                            if (ajax.status === 200) {
-                                var info = ajax.responseText;
-                                last_step(up, file, info);
-                            } else {
-                                uploader.trigger('Error', {
-                                    status: ajax.status,
-                                    response: ajax.responseText,
-                                    file: file,
-                                    code: -200
-                                });
-                            }
-                        }
-                    };
-                    ajax.send(ctx);
-                } else {
-                    last_step(up, file, info.response);
+            var makeFile = function(that) {
+                var key = '';
+                if (!op.save_key) {
+                    key = getFileKey(up, file, that.key_handler);
+                    key = key ? '/key/' + that.URLSafeBase64Encode(key) : '';
                 }
 
+                var x_vars_url = getXVarsURL();
+                var url = up_host + '/mkfile/' + file.size + key + x_vars_url;
+                var ajax = that.createAjax();
+                ajax.open('POST', url, true);
+                ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+                ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
+                ajax.onreadystatechange = function() {
+                    if (ajax.readyState === 4) {
+                        localStorage.removeItem(file.name);
+                        if (ajax.status === 200) {
+                            var info = ajax.responseText;
+                            finish(up, file, info);
+                        } else {
+                            uploader.trigger('Error', {
+                                status: ajax.status,
+                                response: ajax.responseText,
+                                file: file,
+                                code: -200
+                            });
+                        }
+                    }
+                };
+                ajax.send(ctx);
             };
-        })(_FileUploaded_Handler));
+
+            var getXVarsURL = function() {
+                var x_vars = op.x_vars,
+                    x_val = '',
+                    x_vars_url = '';
+                if (x_vars !== undefined && typeof x_vars === 'object') {
+                    for (var x_key in x_vars) {
+                        if (x_vars.hasOwnProperty(x_key)) {
+                            if (typeof x_vars[x_key] === 'function') {
+                                x_val = that.URLSafeBase64Encode(x_vars[x_key](up, file));
+                            } else if (typeof x_vars[x_key] !== 'object') {
+                                x_val = that.URLSafeBase64Encode(x_vars[x_key]);
+                            }
+                            x_vars_url += '/x:' + x_key + '/' + x_val;
+                        }
+                    }
+                }
+                return x_vars_url;
+            };
+
+            var finish = function(up, file, info) {
+                if (op.downtoken_url) {
+                    getDownloadURL(that);
+                } else if (_FileUploaded_Handler) {
+                    _FileUploaded_Handler(up, file, info);
+                }
+            };
+
+            var getDownloadURL = function(that) {
+                var ajax_downtoken = that.createAjax();
+                ajax_downtoken.open('POST', op.downtoken_url, true);
+                ajax_downtoken.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                ajax_downtoken.onreadystatechange = function() {
+                    if (ajax_downtoken.readyState === 4) {
+                        if (ajax_downtoken.status === 200) {
+                            var res_downtoken;
+                            try {
+                                res_downtoken = that.parseJSON(ajax_downtoken.responseText);
+                            } catch (e) {
+                                throw ('invalid json format');
+                            }
+                            var info_extended = {};
+                            plupload.extend(info_extended, that.parseJSON(info), res_downtoken);
+                            if (_FileUploaded_Handler) {
+                                _FileUploaded_Handler(up, file, JSON.stringify(info_extended));
+                            }
+                        } else {
+                            uploader.trigger('Error', {
+                                status: ajax_downtoken.status,
+                                response: ajax_downtoken.responseText,
+                                file: file,
+                                code: plupload.HTTP_ERROR
+                            });
+                        }
+                    }
+                };
+                ajax_downtoken.send('key=' + that.parseJSON(info).key + '&domain=' + op.domain);
+            };
+
+            var res = that.parseJSON(info.response);
+            ctx = ctx ? ctx : res.ctx;
+            if (ctx) {
+                makeFile(that);
+            } else {
+                finish(up, file, info.response);
+            }
+
+        });
 
         return uploader;
     };
@@ -631,199 +505,7 @@ function QiniuJsSDK() {
         return domain + key;
     };
 
-    this.imageView2 = function(op, key) {
-        var mode = op.mode || '',
-            w = op.w || '',
-            h = op.h || '',
-            q = op.quality || '',
-            format = op.format || '';
-        if (!mode) {
-            return false;
-        }
-        if (!w && !h) {
-            return false;
-        }
 
-        var imageUrl = 'imageView2/' + mode;
-        imageUrl += w ? '/w/' + w : '';
-        imageUrl += h ? '/h/' + h : '';
-        imageUrl += q ? '/q/' + q : '';
-        imageUrl += format ? '/format/' + format : '';
-        if (key) {
-            imageUrl = this.getUrl(key) + '?' + imageUrl;
-        }
-        return imageUrl;
-    };
-
-
-    this.imageMogr2 = function(op, key) {
-        var auto_orient = op['auto-orient'] || '',
-            thumbnail = op.thumbnail || '',
-            strip = op.strip || '',
-            gravity = op.gravity || '',
-            crop = op.crop || '',
-            quality = op.quality || '',
-            rotate = op.rotate || '',
-            format = op.format || '',
-            blur = op.blur || '';
-        //Todo check option
-
-        var imageUrl = 'imageMogr2';
-
-        imageUrl += auto_orient ? '/auto-orient' : '';
-        imageUrl += thumbnail ? '/thumbnail/' + thumbnail : '';
-        imageUrl += strip ? '/strip' : '';
-        imageUrl += gravity ? '/gravity/' + gravity : '';
-        imageUrl += quality ? '/quality/' + quality : '';
-        imageUrl += crop ? '/crop/' + crop : '';
-        imageUrl += rotate ? '/rotate/' + rotate : '';
-        imageUrl += format ? '/format/' + format : '';
-        imageUrl += blur ? '/blur/' + blur : '';
-
-        if (key) {
-            imageUrl = this.getUrl(key) + '?' + imageUrl;
-        }
-        return imageUrl;
-    };
-
-    this.watermark = function(op, key) {
-
-        var mode = op.mode;
-        if (!mode) {
-            return false;
-        }
-
-        var imageUrl = 'watermark/' + mode;
-
-        if (mode === 1) {
-            var image = op.image || '';
-            if (!image) {
-                return false;
-            }
-            imageUrl += image ? '/image/' + this.URLSafeBase64Encode(image) : '';
-        } else if (mode === 2) {
-            var text = op.text ? op.text : '',
-                font = op.font ? op.font : '',
-                fontsize = op.fontsize ? op.fontsize : '',
-                fill = op.fill ? op.fill : '';
-            if (!text) {
-                return false;
-            }
-            imageUrl += text ? '/text/' + this.URLSafeBase64Encode(text) : '';
-            imageUrl += font ? '/font/' + this.URLSafeBase64Encode(font) : '';
-            imageUrl += fontsize ? '/fontsize/' + fontsize : '';
-            imageUrl += fill ? '/fill/' + this.URLSafeBase64Encode(fill) : '';
-        } else {
-            // Todo mode3
-            return false;
-        }
-
-        var dissolve = op.dissolve || '',
-            gravity = op.gravity || '',
-            dx = op.dx || '',
-            dy = op.dy || '';
-
-        imageUrl += dissolve ? '/dissolve/' + dissolve : '';
-        imageUrl += gravity ? '/gravity/' + gravity : '';
-        imageUrl += dx ? '/dx/' + dx : '';
-        imageUrl += dy ? '/dy/' + dy : '';
-
-        if (key) {
-            imageUrl = this.getUrl(key) + '?' + imageUrl;
-        }
-        return imageUrl;
-
-    };
-
-    this.imageInfo = function(key) {
-        if (!key) {
-            return false;
-        }
-        var url = this.getUrl(key) + '?imageInfo';
-        var xhr = this.createAjax();
-        var info;
-        var that = this;
-        xhr.open('GET', url, false);
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                info = that.parseJSON(xhr.responseText);
-            }
-        };
-        xhr.send();
-        return info;
-    };
-
-
-    this.exif = function(key) {
-        if (!key) {
-            return false;
-        }
-        var url = this.getUrl(key) + '?exif';
-        var xhr = this.createAjax();
-        var info;
-        var that = this;
-        xhr.open('GET', url, false);
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                info = that.parseJSON(xhr.responseText);
-            }
-        };
-        xhr.send();
-        return info;
-    };
-
-    this.get = function(type, key) {
-        if (!key || !type) {
-            return false;
-        }
-        if (type === 'exif') {
-            return this.exif(key);
-        } else if (type === 'imageInfo') {
-            return this.imageInfo(key);
-        }
-        return false;
-    };
-
-
-    this.pipeline = function(arr, key) {
-
-        var isArray = Object.prototype.toString.call(arr) === '[object Array]';
-        var option, errOp, imageUrl = '';
-        if (isArray) {
-            for (var i = 0, len = arr.length; i < len; i++) {
-                option = arr[i];
-                if (!option.fop) {
-                    return false;
-                }
-                switch (option.fop) {
-                    case 'watermark':
-                        imageUrl += this.watermark(option) + '|';
-                        break;
-                    case 'imageView2':
-                        imageUrl += this.imageView2(option) + '|';
-                        break;
-                    case 'imageMogr2':
-                        imageUrl += this.imageMogr2(option) + '|';
-                        break;
-                    default:
-                        errOp = true;
-                        break;
-                }
-                if (errOp) {
-                    return false;
-                }
-            }
-            if (key) {
-                imageUrl = this.getUrl(key) + '?' + imageUrl;
-                var length = imageUrl.length;
-                if (imageUrl.slice(length - 1) === '|') {
-                    imageUrl = imageUrl.slice(0, length - 1);
-                }
-            }
-            return imageUrl;
-        }
-        return false;
-    };
 
 }
 
