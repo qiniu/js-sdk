@@ -244,44 +244,48 @@ function QiniuJsSDK() {
                 });
             };
 
+            var makeBlock = function(up, file) {
+                var localFileInfo = localStorage.getItem(file.name);
+                var blockSize = chunk_size;
+                if (localFileInfo) {
+                    localFileInfo = JSON.parse(localFileInfo);
+                    var now = (new Date()).getTime();
+                    var before = localFileInfo.time || 0;
+                    var aDay = 24 * 60 * 60 * 1000; //  milliseconds
+                    if (now - before < aDay) {
+                        if (localFileInfo.percent !== 100) {
+                            file.percent = localFileInfo.percent;
+                            file.loaded = localFileInfo.offset;
+                            ctx = localFileInfo.ctx;
+                            if (localFileInfo.offset + blockSize > file.size) {
+                                blockSize = file.size - localFileInfo.offset;
+                            }
+                        } else {
+                            // 进度100%时，删除对应的localStorage，避免 499 bug
+                            localStorage.removeItem(file.name);
+                        }
+                    } else {
+                        localStorage.removeItem(file.name);
+                    }
+                }
+                up.setOption({
+                    'url': up_host + '/mkblk/' + blockSize,
+                    'multipart': false,
+                    'chunk_size': chunk_size,
+                    'required_features': "chunks",
+                    'headers': {
+                        'Authorization': 'UpToken ' + that.token
+                    },
+                    'multipart_params': {}
+                });
+            };
+
             var chunk_size = getOption(up, 'chunk_size');
             if (uploader.runtime === 'html5' && chunk_size) {
                 if (file.size < chunk_size) {
                     directUpload(up, file, that.key_handler);
                 } else {
-                    var localFileInfo = localStorage.getItem(file.name);
-                    var blockSize = chunk_size;
-                    if (localFileInfo) {
-                        localFileInfo = JSON.parse(localFileInfo);
-                        var now = (new Date()).getTime();
-                        var before = localFileInfo.time || 0;
-                        var aDay = 24 * 60 * 60 * 1000; //  milliseconds
-                        if (now - before < aDay) {
-                            if (localFileInfo.percent !== 100) {
-                                file.percent = localFileInfo.percent;
-                                file.loaded = localFileInfo.offset;
-                                ctx = localFileInfo.ctx;
-                                if (localFileInfo.offset + blockSize > file.size) {
-                                    blockSize = file.size - localFileInfo.offset;
-                                }
-                            } else {
-                                // 进度100%时，删除对应的localStorage，避免 499 bug
-                                localStorage.removeItem(file.name);
-                            }
-                        } else {
-                            localStorage.removeItem(file.name);
-                        }
-                    }
-                    up.setOption({
-                        'url': up_host + '/mkblk/' + blockSize,
-                        'multipart': false,
-                        'chunk_size': chunk_size,
-                        'required_features': "chunks",
-                        'headers': {
-                            'Authorization': 'UpToken ' + that.token
-                        },
-                        'multipart_params': {}
-                    });
+                    makeBlock(up, file);
                 }
             } else {
                 directUpload(up, file, that.key_handler);
@@ -289,24 +293,27 @@ function QiniuJsSDK() {
         });
 
         uploader.bind('ChunkUploaded', function(up, file, info) {
+            var saveUploadInfo = function(file) {
+                localStorage.setItem(file.name, JSON.stringify({
+                    ctx: ctx,
+                    percent: file.percent,
+                    total: info.total,
+                    offset: info.offset,
+                    time: (new Date()).getTime()
+                }));
+            };
+
             var res = that.parseJSON(info.response);
 
             ctx = ctx ? ctx + ',' + res.ctx : res.ctx;
             var leftSize = info.total - info.offset;
-            var chunk_size = up.getOption && up.getOption('chunk_size');
-            chunk_size = chunk_size || (up.settings && up.settings.chunk_size);
+            var chunk_size = getOption(up, 'chunk_size');
             if (leftSize < chunk_size) {
                 up.setOption({
                     'url': up_host + '/mkblk/' + leftSize
                 });
             }
-            localStorage.setItem(file.name, JSON.stringify({
-                ctx: ctx,
-                percent: file.percent,
-                total: info.total,
-                offset: info.offset,
-                time: (new Date()).getTime()
-            }));
+            saveUploadInfo(file);
         });
 
         uploader.bind('Error', function(up, err) {
