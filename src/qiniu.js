@@ -1,4 +1,5 @@
 /*global plupload ,mOxie*/
+/*global ActiveXObject */
 /*exported Qiniu */
 
 function QiniuJsSDK() {
@@ -39,6 +40,16 @@ function QiniuJsSDK() {
     this.URLSafeBase64Encode = function(v) {
         v = mOxie.btoa(v);
         return v.replace(/\//g, '_').replace(/\+/g, '-');
+    };
+
+    this.createAjax = function(argument) {
+        var xmlhttp = {};
+        if (window.XMLHttpRequest) {
+            xmlhttp = new XMLHttpRequest();
+        } else {
+            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        return xmlhttp;
     };
 
     this.parseJSON = function(data) {
@@ -130,17 +141,13 @@ function QiniuJsSDK() {
 
         var getUpToken = function() {
             if (!op.uptoken) {
-                var ajax = new mOxie.XMLHttpRequest();
-                // console.log(ajax);
+                var ajax = that.createAjax();
                 ajax.open('GET', that.uptoken_url, true);
                 ajax.setRequestHeader("If-Modified-Since", "0");
                 ajax.onreadystatechange = function() {
-                    console.log(ajax);
                     if (ajax.readyState === 4 && ajax.status === 200) {
-                        console.log(ajax.responseText);
                         var res = that.parseJSON(ajax.responseText);
                         that.token = res.uptoken;
-                        console.log(res.uptoken);
                     }
                 };
                 ajax.send();
@@ -399,7 +406,7 @@ function QiniuJsSDK() {
 
                 var x_vars_url = getXVarsURL();
                 var url = up_host + '/mkfile/' + file.size + key + x_vars_url;
-                var ajax = new mOxie.XMLHttpRequest();
+                var ajax = that.createAjax();
                 ajax.open('POST', url, true);
                 ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
                 ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
@@ -450,7 +457,7 @@ function QiniuJsSDK() {
             };
 
             var getDownloadURL = function(that) {
-                var ajax_downtoken = new mOxie.XMLHttpRequest();
+                var ajax_downtoken = that.createAjax();
                 ajax_downtoken.open('POST', op.downtoken_url, true);
                 ajax_downtoken.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
                 ajax_downtoken.onreadystatechange = function() {
