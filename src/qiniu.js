@@ -156,12 +156,17 @@ function QiniuJsSDK() {
             }
         };
 
+        var getOption = function(up, option) {
+            var val = up.getOption && up.getOption(option);
+            val = val || (up.settings && up.settings[option]);
+            return val;
+        };
+
         var getFileKey = function(up, file, func) {
             var key = '',
                 unique_names = false;
             if (!op.save_key) {
-                unique_names = up.getOption && up.getOption('unique_names');
-                unique_names = unique_names || (up.settings && up.settings.unique_names);
+                unique_names = getOption(up, 'unique_names');
                 if (unique_names) {
                     var ext = mOxie.Mime.getFileExtension(file.name);
                     key = ext ? file.id + '.' + ext : file.id;
@@ -189,8 +194,8 @@ function QiniuJsSDK() {
         uploader.init();
 
         uploader.bind('FilesAdded', function(up, files) {
-            var auto_start = up.getOption && up.getOption('auto_start');
-            auto_start = auto_start || (up.settings && up.settings.auto_start);
+
+            var auto_start = getOption(up, 'auto_start');
             if (auto_start) {
                 $.each(files, function(i, file) {
                     up.start();
@@ -229,7 +234,7 @@ function QiniuJsSDK() {
                         }
                     }
                 }
-
+                //todo setXvars
 
                 up.setOption({
                     'url': up_host,
@@ -239,9 +244,7 @@ function QiniuJsSDK() {
                 });
             };
 
-
-            var chunk_size = up.getOption && up.getOption('chunk_size');
-            chunk_size = chunk_size || (up.settings && up.settings.chunk_size);
+            var chunk_size = getOption(up, 'chunk_size');
             if (uploader.runtime === 'html5' && chunk_size) {
                 if (file.size < chunk_size) {
                     directUpload(up, file, that.key_handler);
@@ -306,87 +309,84 @@ function QiniuJsSDK() {
             }));
         });
 
-        uploader.bind('Error', (function(_Error_Handler) {
-            return function(up, err) {
-                var errTip = '';
-                var file = err.file;
-                if (file) {
-                    switch (err.code) {
-                        case plupload.FAILED:
-                            errTip = '上传失败。请稍后再试。';
-                            break;
-                        case plupload.FILE_SIZE_ERROR:
-                            var max_file_size = up.getOption && up.getOption('max_file_size');
-                            max_file_size = max_file_size || (up.settings && up.settings.max_file_size);
-                            errTip = '浏览器最大可上传' + max_file_size + '。更大文件请使用命令行工具。';
-                            break;
-                        case plupload.FILE_EXTENSION_ERROR:
-                            errTip = '文件验证失败。请稍后重试。';
-                            break;
-                        case plupload.HTTP_ERROR:
-                            var errorObj = that.parseJSON(err.response);
-                            var errorText = errorObj.error;
-                            switch (err.status) {
-                                case 400:
-                                    errTip = "请求报文格式错误。";
-                                    break;
-                                case 401:
-                                    errTip = "客户端认证授权失败。请重试或提交反馈。";
-                                    break;
-                                case 405:
-                                    errTip = "客户端请求错误。请重试或提交反馈。";
-                                    break;
-                                case 579:
-                                    errTip = "资源上传成功，但回调失败。";
-                                    break;
-                                case 599:
-                                    errTip = "网络连接异常。请重试或提交反馈。";
-                                    break;
-                                case 614:
-                                    errTip = "文件已存在。";
-                                    try {
-                                        errorObj = that.parseJSON(errorObj.error);
-                                        errorText = errorObj.error || 'file exists';
-                                    } catch (e) {
-                                        errorText = errorObj.error || 'file exists';
-                                    }
-                                    break;
-                                case 631:
-                                    errTip = "指定空间不存在。";
-                                    break;
-                                case 701:
-                                    errTip = "上传数据块校验出错。请重试或提交反馈。";
-                                    break;
-                                default:
-                                    errTip = "未知错误。";
-                                    break;
-                            }
-                            errTip = errTip + '(' + err.status + '：' + errorText + ')';
-                            break;
-                        case plupload.SECURITY_ERROR:
-                            errTip = '安全配置错误。请联系网站管理员。';
-                            break;
-                        case plupload.GENERIC_ERROR:
-                            errTip = '上传失败。请稍后再试。';
-                            break;
-                        case plupload.IO_ERROR:
-                            errTip = '上传失败。请稍后再试。';
-                            break;
-                        case plupload.INIT_ERROR:
-                            errTip = '网站配置错误。请联系网站管理员。';
-                            uploader.destroy();
-                            break;
-                        default:
-                            errTip = err.message + err.details;
-                            break;
-                    }
-                    if (_Error_Handler) {
-                        _Error_Handler(up, err, errTip);
-                    }
+        uploader.bind('Error', function(up, err) {
+            var errTip = '';
+            var file = err.file;
+            if (file) {
+                switch (err.code) {
+                    case plupload.FAILED:
+                        errTip = '上传失败。请稍后再试。';
+                        break;
+                    case plupload.FILE_SIZE_ERROR:
+                        var max_file_size = getOption(up, 'max_file_size');
+                        errTip = '浏览器最大可上传' + max_file_size + '。更大文件请使用命令行工具。';
+                        break;
+                    case plupload.FILE_EXTENSION_ERROR:
+                        errTip = '文件验证失败。请稍后重试。';
+                        break;
+                    case plupload.HTTP_ERROR:
+                        var errorObj = that.parseJSON(err.response);
+                        var errorText = errorObj.error;
+                        switch (err.status) {
+                            case 400:
+                                errTip = "请求报文格式错误。";
+                                break;
+                            case 401:
+                                errTip = "客户端认证授权失败。请重试或提交反馈。";
+                                break;
+                            case 405:
+                                errTip = "客户端请求错误。请重试或提交反馈。";
+                                break;
+                            case 579:
+                                errTip = "资源上传成功，但回调失败。";
+                                break;
+                            case 599:
+                                errTip = "网络连接异常。请重试或提交反馈。";
+                                break;
+                            case 614:
+                                errTip = "文件已存在。";
+                                try {
+                                    errorObj = that.parseJSON(errorObj.error);
+                                    errorText = errorObj.error || 'file exists';
+                                } catch (e) {
+                                    errorText = errorObj.error || 'file exists';
+                                }
+                                break;
+                            case 631:
+                                errTip = "指定空间不存在。";
+                                break;
+                            case 701:
+                                errTip = "上传数据块校验出错。请重试或提交反馈。";
+                                break;
+                            default:
+                                errTip = "未知错误。";
+                                break;
+                        }
+                        errTip = errTip + '(' + err.status + '：' + errorText + ')';
+                        break;
+                    case plupload.SECURITY_ERROR:
+                        errTip = '安全配置错误。请联系网站管理员。';
+                        break;
+                    case plupload.GENERIC_ERROR:
+                        errTip = '上传失败。请稍后再试。';
+                        break;
+                    case plupload.IO_ERROR:
+                        errTip = '上传失败。请稍后再试。';
+                        break;
+                    case plupload.INIT_ERROR:
+                        errTip = '网站配置错误。请联系网站管理员。';
+                        uploader.destroy();
+                        break;
+                    default:
+                        errTip = err.message + err.details;
+                        break;
                 }
-                up.refresh(); // Reposition Flash/Silverlight
-            };
-        })(_Error_Handler));
+                if (_Error_Handler) {
+                    _Error_Handler(up, err, errTip);
+                }
+            }
+            up.refresh(); // Reposition Flash/Silverlight
+        });
 
         uploader.bind('FileUploaded', function(up, file, info) {
 
