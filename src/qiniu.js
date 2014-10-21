@@ -4,20 +4,6 @@
 
 function QiniuJsSDK() {
 
-
-    this.detectIEVersion = function() {
-        var v = 4,
-            div = document.createElement('div'),
-            all = div.getElementsByTagName('i');
-        while (
-            div.innerHTML = '<!--[if gt IE ' + v + ']><i></i><![endif]-->',
-            all[0]
-        ) {
-            v++;
-        }
-        return v > 4 ? v : false;
-    };
-
     this.isImage = function(url) {
         var res, suffix = "";
         var imageSuffixes = ["png", "jpg", "jpeg", "gif", "bmp"];
@@ -112,9 +98,9 @@ function QiniuJsSDK() {
         var up_host = 'http://up.qiniu.com';
 
         var reset_chunk_size = function() {
-            var ie = that.detectIEVersion();
             var BLOCK_BITS, MAX_CHUNK_SIZE, chunk_size;
-            if (ie && ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
+            var isOldIE = mOxie.Env.browser === "IE" && mOxie.Env.version <= 9;
+            if (isOldIE && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
                 //  link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
                 //  when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
                 op.chunk_size = 0;
