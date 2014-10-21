@@ -1,6 +1,6 @@
 /*global plupload ,mOxie*/
 /*global ActiveXObject */
-/*exported Qiniu */
+/*exported QiniuJsSDK */
 
 function QiniuJsSDK() {
 
@@ -515,5 +515,3 @@ function QiniuJsSDK() {
 
 
 }
-
-var Qiniu = new QiniuJsSDK();

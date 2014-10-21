@@ -1,10 +1,10 @@
-/*global Qiniu */
 /*global plupload */
 /*global FileProgress */
 /*global hljs */
 
 
 $(function() {
+    var Qiniu = new QiniuJsSDK();
     var uploader = Qiniu.uploader({
         runtimes: 'html5,flash,html4',
         browse_button: 'pickfiles',
@@ -56,6 +56,7 @@ $(function() {
             'FileUploaded': function(up, file, info) {
                 var progress = new FileProgress(file, 'fsUploadProgress');
                 progress.setComplete(up, info);
+                console.log('hello man,a file is uploaded 》》》》》》》》');
             },
             'Error': function(up, err, errTip) {
                 $('table').show();
@@ -75,6 +76,7 @@ $(function() {
     uploader.bind('FileUploaded', function() {
         console.log('hello man,a file is uploaded');
     });
+
     $('#container').on(
         'dragenter',
         function(e) {
