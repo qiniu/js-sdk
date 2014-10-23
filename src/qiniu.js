@@ -95,7 +95,7 @@ function QiniuJsSDK() {
         that.key_handler = typeof op.init.Key === 'function' ? op.init.Key : '';
         this.domain = op.domain;
         var ctx = '';
-        var up_host = 'http://up.qiniu.com';
+        var up_host = window.location.protocol + '//up.qbox.me';
 
         var reset_chunk_size = function() {
             var BLOCK_BITS, MAX_CHUNK_SIZE, chunk_size;
