@@ -221,6 +221,10 @@ function QiniuJsSDK() {
     };
 
     //Todo ie7 handler / this.parseJSON bug;
+    
+    var UPLOAD_URL = window.location.protocol + '//up.qbox.me';
+    var UPLOAD_URL_MKBLK = UPLOAD_URL + '/mkblk/';
+    var UPLOAD_URL_MKFILE = UPLOAD_URL + '/mkfile/';
 
     var that = this;
 
@@ -311,7 +315,7 @@ function QiniuJsSDK() {
         };
 
         plupload.extend(option, op, {
-            url: 'http://up.qiniu.com',
+            url: UPLOAD_URL,
             multipart_params: {
                 token: ''
             }
@@ -368,7 +372,7 @@ function QiniuJsSDK() {
 
 
                 up.setOption({
-                    'url': 'http://up.qiniu.com/',
+                    'url': UPLOAD_URL,
                     'multipart': true,
                     'chunk_size': undefined,
                     'multipart_params': multipart_params_obj
@@ -398,7 +402,7 @@ function QiniuJsSDK() {
                                     blockSize = file.size - localFileInfo.offset;
                                 }
                             } else {
-                                // 删除localStorage，避免 499 bug
+                                // 进度100%时，删除对应的localStorage，避免 499 bug
                                 localStorage.removeItem(file.name);
                             }
                         } else {
@@ -406,7 +410,7 @@ function QiniuJsSDK() {
                         }
                     }
                     up.setOption({
-                        'url': 'http://up.qiniu.com/mkblk/' + blockSize,
+                        'url': UPLOAD_URL_MKBLK + blockSize,
                         'multipart': false,
                         'chunk_size': chunk_size,
                         'required_features': "chunks",
@@ -430,7 +434,7 @@ function QiniuJsSDK() {
             chunk_size = chunk_size || (up.settings && up.settings.chunk_size);
             if (leftSize < chunk_size) {
                 up.setOption({
-                    'url': 'http://up.qiniu.com/mkblk/' + leftSize
+                    'url': UPLOAD_URL_MKBLK + leftSize
                 });
             }
             localStorage.setItem(file.name, JSON.stringify({
@@ -587,7 +591,7 @@ function QiniuJsSDK() {
                         }
                     }
 
-                    var url = 'http://up.qiniu.com/mkfile/' + file.size + key + x_vars_url;
+                    var url = UPLOAD_URL_MKFILE + file.size + key + x_vars_url;
                     var ajax = that.createAjax();
                     ajax.open('POST', url, true);
                     ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
