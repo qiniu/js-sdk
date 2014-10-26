@@ -84,11 +84,11 @@ function QiniuJsSDK() {
 
         var option = {};
 
-        var _Error_Handler = op.init && op.init.Error;
-        var _FileUploaded_Handler = op.init && op.init.FileUploaded;
+        // var _Error_Handler = op.init && op.init.Error;
+        // var _FileUploaded_Handler = op.init && op.init.FileUploaded;
 
-        op.init.Error = function() {};
-        op.init.FileUploaded = function() {};
+        // op.init.Error = function() {};
+        // op.init.FileUploaded = function() {};
 
         that.uptoken_url = op.uptoken_url;
         that.token = '';
@@ -299,6 +299,7 @@ function QiniuJsSDK() {
         uploader.bind('Error', function(up, err) {
             var errTip = '';
             var file = err.file;
+            console.log(this);
             if (file) {
                 switch (err.code) {
                     case plupload.FAILED:
@@ -368,9 +369,10 @@ function QiniuJsSDK() {
                         errTip = err.message + err.details;
                         break;
                 }
-                if (_Error_Handler) {
-                    _Error_Handler(up, err, errTip);
-                }
+                that.errTip = errTip;
+                // if (_Error_Handler) {
+                //     _Error_Handler(up, err, errTip);
+                // }
             }
             up.refresh(); // Reposition Flash/Silverlight
         });
@@ -431,9 +433,10 @@ function QiniuJsSDK() {
             var finish = function(up, file, info) {
                 if (op.downtoken_url) {
                     getDownloadURL(that);
-                } else if (_FileUploaded_Handler) {
-                    _FileUploaded_Handler(up, file, info);
                 }
+                // else if (_FileUploaded_Handler) {
+                //     // _FileUploaded_Handler(up, file, info);
+                // }
             };
 
             var getDownloadURL = function(that) {
@@ -449,11 +452,11 @@ function QiniuJsSDK() {
                             } catch (e) {
                                 throw ('invalid json format');
                             }
-                            var info_extended = {};
-                            plupload.extend(info_extended, that.parseJSON(info), res_downtoken);
-                            if (_FileUploaded_Handler) {
-                                _FileUploaded_Handler(up, file, JSON.stringify(info_extended));
-                            }
+                            // var info_extended = {};
+                            plupload.extend(info, that.parseJSON(info), res_downtoken);
+                            // if (_FileUploaded_Handler) {
+                            //     _FileUploaded_Handler(up, file, JSON.stringify(info_extended));
+                            // }
                         } else {
                             uploader.trigger('Error', {
                                 status: ajax_downtoken.status,

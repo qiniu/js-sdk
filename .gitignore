@@ -2,3 +2,4 @@
 Gruntfile.js
 demo/config.js
 node_modules
+src/qiniu.image.js

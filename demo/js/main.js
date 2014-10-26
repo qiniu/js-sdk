@@ -56,13 +56,15 @@ $(function() {
             'FileUploaded': function(up, file, info) {
                 var progress = new FileProgress(file, 'fsUploadProgress');
                 progress.setComplete(up, info);
-                console.log('hello man,a file is uploaded 》》》》》》》》');
+                console.log('hello man 2,a file is uploaded 》》》》》》》》');
             },
             'Error': function(up, err, errTip) {
                 $('table').show();
                 var progress = new FileProgress(err.file, 'fsUploadProgress');
                 progress.setError();
+                console.log(this.errTip);
                 progress.setStatus(errTip);
+                console.log('hello man ,a file is failed 》》》》》》》》');
             }
             // ,
             // 'Key': function(up, file) {
