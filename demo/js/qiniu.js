@@ -278,8 +278,7 @@ function QiniuJsSDK() {
         var getUpToken = function() {
             if (!op.uptoken) {
                 var ajax = that.createAjax();
-                ajax.open('GET', that.uptoken_url, true);
-                ajax.setRequestHeader("If-Modified-Since", "0");
+                ajax.open('POST', that.uptoken_url, true);
                 ajax.onreadystatechange = function() {
                     if (ajax.readyState === 4 && ajax.status === 200) {
                         var res = that.parseJSON(ajax.responseText);
