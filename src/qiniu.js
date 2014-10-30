@@ -84,11 +84,6 @@ function QiniuJsSDK() {
 
         var option = {};
 
-        // var _Error_Handler = op.init && op.init.Error;
-        // var _FileUploaded_Handler = op.init && op.init.FileUploaded;
-
-        // op.init.Error = function() {};
-        // op.init.FileUploaded = function() {};
 
         that.uptoken_url = op.uptoken_url;
         that.token = '';
@@ -370,9 +365,7 @@ function QiniuJsSDK() {
                         break;
                 }
                 that.errTip = errTip;
-                // if (_Error_Handler) {
-                //     _Error_Handler(up, err, errTip);
-                // }
+                // todo get errTip in outer func
             }
             up.refresh(); // Reposition Flash/Silverlight
         });
@@ -452,11 +445,10 @@ function QiniuJsSDK() {
                             } catch (e) {
                                 throw ('invalid json format');
                             }
-                            // var info_extended = {};
                             plupload.extend(info, that.parseJSON(info), res_downtoken);
-                            // if (_FileUploaded_Handler) {
-                            //     _FileUploaded_Handler(up, file, JSON.stringify(info_extended));
-                            // }
+                            // todo
+                            // get download info
+
                         } else {
                             uploader.trigger('Error', {
                                 status: ajax_downtoken.status,
@@ -494,7 +486,5 @@ function QiniuJsSDK() {
         }
         return domain + key;
     };
-
-
 
 }
