@@ -292,42 +292,41 @@ function QiniuJsSDK() {
         });
 
         uploader.bind('Error', function(up, err) {
-            var errTip = '';
+            var error = '';
             var file = err.file;
-            console.log(this);
             if (file) {
                 switch (err.code) {
                     case plupload.FAILED:
-                        errTip = '上传失败。请稍后再试。';
+                        error = '上传失败。请稍后再试。';
                         break;
                     case plupload.FILE_SIZE_ERROR:
                         var max_file_size = getOption(up, 'max_file_size');
-                        errTip = '浏览器最大可上传' + max_file_size + '。更大文件请使用命令行工具。';
+                        error = '浏览器最大可上传' + max_file_size + '。更大文件请使用命令行工具。';
                         break;
                     case plupload.FILE_EXTENSION_ERROR:
-                        errTip = '文件验证失败。请稍后重试。';
+                        error = '文件验证失败。请稍后重试。';
                         break;
                     case plupload.HTTP_ERROR:
                         var errorObj = that.parseJSON(err.response);
                         var errorText = errorObj.error;
                         switch (err.status) {
                             case 400:
-                                errTip = "请求报文格式错误。";
+                                error = "请求报文格式错误。";
                                 break;
                             case 401:
-                                errTip = "客户端认证授权失败。请重试或提交反馈。";
+                                error = "客户端认证授权失败。请重试或提交反馈。";
                                 break;
                             case 405:
-                                errTip = "客户端请求错误。请重试或提交反馈。";
+                                error = "客户端请求错误。请重试或提交反馈。";
                                 break;
                             case 579:
-                                errTip = "资源上传成功，但回调失败。";
+                                error = "资源上传成功，但回调失败。";
                                 break;
                             case 599:
-                                errTip = "网络连接异常。请重试或提交反馈。";
+                                error = "网络连接异常。请重试或提交反馈。";
                                 break;
                             case 614:
-                                errTip = "文件已存在。";
+                                error = "文件已存在。";
                                 try {
                                     errorObj = that.parseJSON(errorObj.error);
                                     errorText = errorObj.error || 'file exists';
@@ -336,36 +335,35 @@ function QiniuJsSDK() {
                                 }
                                 break;
                             case 631:
-                                errTip = "指定空间不存在。";
+                                error = "指定空间不存在。";
                                 break;
                             case 701:
-                                errTip = "上传数据块校验出错。请重试或提交反馈。";
+                                error = "上传数据块校验出错。请重试或提交反馈。";
                                 break;
                             default:
-                                errTip = "未知错误。";
+                                error = "未知错误。";
                                 break;
                         }
-                        errTip = errTip + '(' + err.status + '：' + errorText + ')';
+                        error = error + '(' + err.status + '：' + errorText + ')';
                         break;
                     case plupload.SECURITY_ERROR:
-                        errTip = '安全配置错误。请联系网站管理员。';
+                        error = '安全配置错误。请联系网站管理员。';
                         break;
                     case plupload.GENERIC_ERROR:
-                        errTip = '上传失败。请稍后再试。';
+                        error = '上传失败。请稍后再试。';
                         break;
                     case plupload.IO_ERROR:
-                        errTip = '上传失败。请稍后再试。';
+                        error = '上传失败。请稍后再试。';
                         break;
                     case plupload.INIT_ERROR:
-                        errTip = '网站配置错误。请联系网站管理员。';
+                        error = '网站配置错误。请联系网站管理员。';
                         uploader.destroy();
                         break;
                     default:
-                        errTip = err.message + err.details;
+                        error = err.message + err.details;
                         break;
                 }
-                that.errTip = errTip;
-                // todo get errTip in outer func
+                up.setOption('error', error);
             }
             up.refresh(); // Reposition Flash/Silverlight
         });

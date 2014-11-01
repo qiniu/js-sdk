@@ -58,20 +58,18 @@ $(function() {
                 progress.setComplete(up, info);
                 console.log('hello man 2,a file is uploaded 》》》》》》》》');
             },
-            'Error': function(up, err, errTip) {
+            'Error': function(up, err) {
                 $('table').show();
                 var progress = new FileProgress(err.file, 'fsUploadProgress');
                 progress.setError();
-                console.log(this.errTip);
-                progress.setStatus(errTip);
-                console.log('hello man ,a file is failed 》》》》》》》》');
+                var error = up.getOption('error')
+                progress.setStatus(error);
+            },
+            'Key': function(up, file) {
+                var key = "ts2";
+                // do something with key
+                return key
             }
-            // ,
-            // 'Key': function(up, file) {
-            //     var key = "";
-            //     // do something with key
-            //     return key
-            // }
         }
     });
 
