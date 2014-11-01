@@ -388,7 +388,7 @@ function QiniuJsSDK() {
                         localStorage.removeItem(file.name);
                         if (ajax.status === 200) {
                             var info = ajax.responseText;
-                            finish(up, file, info);
+                            getDownloadURL(that, info);
                         } else {
                             uploader.trigger('Error', {
                                 status: ajax.status,
@@ -421,43 +421,42 @@ function QiniuJsSDK() {
                 return x_vars_url;
             };
 
-            var finish = function(up, file, info) {
+
+            var getDownloadURL = function(that, info) {
                 if (op.downtoken_url) {
-                    getDownloadURL(that);
-                }
-                // else if (_FileUploaded_Handler) {
-                //     // _FileUploaded_Handler(up, file, info);
-                // }
-            };
 
-            var getDownloadURL = function(that) {
-                var ajax_downtoken = that.createAjax();
-                ajax_downtoken.open('POST', op.downtoken_url, true);
-                ajax_downtoken.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-                ajax_downtoken.onreadystatechange = function() {
-                    if (ajax_downtoken.readyState === 4) {
-                        if (ajax_downtoken.status === 200) {
-                            var res_downtoken;
-                            try {
-                                res_downtoken = that.parseJSON(ajax_downtoken.responseText);
-                            } catch (e) {
-                                throw ('invalid json format');
+                    var infoObj = that.parseJSON(info);
+                    var ajax_downtoken = that.createAjax();
+                    ajax_downtoken.open('POST', op.downtoken_url, false);
+                    ajax_downtoken.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                    ajax_downtoken.onreadystatechange = function() {
+                        if (ajax_downtoken.readyState === 4) {
+                            if (ajax_downtoken.status === 200) {
+                                var res_downtoken;
+                                try {
+                                    res_downtoken = that.parseJSON(ajax_downtoken.responseText);
+                                } catch (e) {
+                                    throw ('invalid json format');
+                                }
+
+                                var infoNEW = {};
+                                plupload.extend(infoNEW, infoObj, res_downtoken);
+
+                                info = JSON.stringify(infoNEW);
+                                console.log(info);
+
+                            } else {
+                                uploader.trigger('Error', {
+                                    status: ajax_downtoken.status,
+                                    response: ajax_downtoken.responseText,
+                                    file: file,
+                                    code: plupload.HTTP_ERROR
+                                });
                             }
-                            plupload.extend(info, that.parseJSON(info), res_downtoken);
-                            // todo
-                            // get download info
-
-                        } else {
-                            uploader.trigger('Error', {
-                                status: ajax_downtoken.status,
-                                response: ajax_downtoken.responseText,
-                                file: file,
-                                code: plupload.HTTP_ERROR
-                            });
                         }
-                    }
-                };
-                ajax_downtoken.send('key=' + that.parseJSON(info).key + '&domain=' + op.domain);
+                    };
+                    ajax_downtoken.send('key=' + infoObj.key + '&domain=' + op.domain);
+                }
             };
 
             var res = that.parseJSON(info.response);
@@ -465,7 +464,7 @@ function QiniuJsSDK() {
             if (ctx) {
                 makeFile(that);
             } else {
-                finish(up, file, info.response);
+                getDownloadURL(that, info.response);
             }
 
         });

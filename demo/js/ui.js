@@ -187,7 +187,7 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
 };
 
 FileProgress.prototype.setComplete = function(up, info) {
-    console.log(up, info);
+    // console.log(up, info);
     var td = this.fileProgressWrapper.find('td:eq(2) .progress');
 
     var res = $.parseJSON(info.response);
