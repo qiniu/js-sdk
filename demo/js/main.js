@@ -4,8 +4,7 @@
 
 
 $(function() {
-    var Qiniu = new QiniuJsSDK();
-    var uploader = Qiniu.uploader({
+    var Qiniu = new QiniuJsSDK({
         runtimes: 'html5,flash,html4',
         browse_button: 'pickfiles',
         container: 'container',
@@ -77,7 +76,7 @@ $(function() {
         }
     });
 
-    uploader.bind('FileUploaded', function() {
+    Qiniu.bind('FileUploaded', function() {
         console.log('hello man,a file is uploaded');
     });
 
@@ -235,20 +234,20 @@ $(function() {
 });
 
 
-    // this.isImage = function(url) {
-    //     var res, suffix = "";
-    //     var imageSuffixes = ["png", "jpg", "jpeg", "gif", "bmp"];
-    //     var suffixMatch = /\.([a-zA-Z0-9]+)(\?|\@|$)/;
+// this.isImage = function(url) {
+//     var res, suffix = "";
+//     var imageSuffixes = ["png", "jpg", "jpeg", "gif", "bmp"];
+//     var suffixMatch = /\.([a-zA-Z0-9]+)(\?|\@|$)/;
 
-    //     if (!url || !suffixMatch.test(url)) {
-    //         return false;
-    //     }
-    //     res = suffixMatch.exec(url);
-    //     suffix = res[1].toLowerCase();
-    //     for (var i = 0, l = imageSuffixes.length; i < l; i++) {
-    //         if (suffix === imageSuffixes[i]) {
-    //             return true;
-    //         }
-    //     }
-    //     return false;
-    // };
+//     if (!url || !suffixMatch.test(url)) {
+//         return false;
+//     }
+//     res = suffixMatch.exec(url);
+//     suffix = res[1].toLowerCase();
+//     for (var i = 0, l = imageSuffixes.length; i < l; i++) {
+//         if (suffix === imageSuffixes[i]) {
+//             return true;
+//         }
+//     }
+//     return false;
+// };
