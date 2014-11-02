@@ -3,53 +3,51 @@
 /*exported QiniuJsSDK */
 
 function QiniuJsSDK(op) {
+    var util = {
+        trim: function(text) {
+            return text === null ? "" : this.trim.call(text);
+            // todo have bug in trim
+        },
+        parseJSON: function(data) {
+            // Attempt to parse using the native JSON parser first
+            if (window.JSON && window.JSON.parse) {
+                return window.JSON.parse(data);
+            }
 
-    this.URLSafeBase64Encode = function(v) {
-        v = mOxie.btoa(v);
-        return v.replace(/\//g, '_').replace(/\+/g, '-');
-    };
+            if (data === null) {
+                return data;
+            }
+            if (typeof data === "string") {
 
-    this.createAjax = function(argument) {
-        var xmlhttp = {};
-        if (window.XMLHttpRequest) {
-            xmlhttp = new XMLHttpRequest();
-        } else {
-            xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-        }
-        return xmlhttp;
-    };
+                // Make sure leading/trailing whitespace is removed (IE can't handle it)
+                data = this.trim(data);
 
-    this.parseJSON = function(data) {
-        // Attempt to parse using the native JSON parser first
-        if (window.JSON && window.JSON.parse) {
-            return window.JSON.parse(data);
-        }
+                if (data) {
+                    // Make sure the incoming data is actual JSON
+                    // Logic borrowed from http://json.org/json2.js
+                    if (/^[\],:{}\s]*$/.test(data.replace(/\\(?:["\\\/bfnrt]|u[\da-fA-F]{4})/g, "@").replace(/"[^"\\\r\n]*"|true|false|null|-?(?:\d+\.|)\d+(?:[eE][+-]?\d+|)/g, "]").replace(/(?:^|:|,)(?:\s*\[)+/g, ""))) {
 
-        if (data === null) {
-            return data;
-        }
-        if (typeof data === "string") {
-
-            // Make sure leading/trailing whitespace is removed (IE can't handle it)
-            data = this.trim(data);
-
-            if (data) {
-                // Make sure the incoming data is actual JSON
-                // Logic borrowed from http://json.org/json2.js
-                if (/^[\],:{}\s]*$/.test(data.replace(/\\(?:["\\\/bfnrt]|u[\da-fA-F]{4})/g, "@").replace(/"[^"\\\r\n]*"|true|false|null|-?(?:\d+\.|)\d+(?:[eE][+-]?\d+|)/g, "]").replace(/(?:^|:|,)(?:\s*\[)+/g, ""))) {
-
-                    return (function() {
-                        return data;
-                    })();
+                        return (function() {
+                            return data;
+                        })();
+                    }
                 }
             }
+        },
+        createAjax: function(argument) {
+            var xmlhttp = {};
+            if (window.XMLHttpRequest) {
+                xmlhttp = new XMLHttpRequest();
+            } else {
+                xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            return xmlhttp;
+        },
+        URLSafeBase64Encode: function(v) {
+            v = mOxie.btoa(v);
+            return v.replace(/\//g, '_').replace(/\+/g, '-');
         }
     };
-
-    this.trim = function(text) {
-        return text === null ? "" : this.trim.call(text);
-    };
-
     //Todo ie7 handler / this.parseJSON bug;
 
     var that = this;
@@ -110,12 +108,12 @@ function QiniuJsSDK(op) {
 
     var getUpToken = function() {
         if (!op.uptoken) {
-            var ajax = that.createAjax();
+            var ajax = util.createAjax();
             ajax.open('GET', that.uptoken_url, true);
             ajax.setRequestHeader("If-Modified-Since", "0");
             ajax.onreadystatechange = function() {
                 if (ajax.readyState === 4 && ajax.status === 200) {
-                    var res = that.parseJSON(ajax.responseText);
+                    var res = util.parseJSON(ajax.responseText);
                     that.token = res.uptoken;
                 }
             };
@@ -272,7 +270,7 @@ function QiniuJsSDK(op) {
             }));
         };
 
-        var res = that.parseJSON(info.response);
+        var res = util.parseJSON(info.response);
 
         ctx = ctx ? ctx + ',' + res.ctx : res.ctx;
         var leftSize = info.total - info.offset;
@@ -301,7 +299,7 @@ function QiniuJsSDK(op) {
                     error = '文件验证失败。请稍后重试。';
                     break;
                 case plupload.HTTP_ERROR:
-                    var errorObj = that.parseJSON(err.response);
+                    var errorObj = util.parseJSON(err.response);
                     var errorText = errorObj.error;
                     switch (err.status) {
                         case 400:
@@ -322,7 +320,7 @@ function QiniuJsSDK(op) {
                         case 614:
                             error = "文件已存在。";
                             try {
-                                errorObj = that.parseJSON(errorObj.error);
+                                errorObj = util.parseJSON(errorObj.error);
                                 errorText = errorObj.error || 'file exists';
                             } catch (e) {
                                 errorText = errorObj.error || 'file exists';
@@ -368,12 +366,12 @@ function QiniuJsSDK(op) {
             var key = '';
             if (!op.save_key) {
                 key = getFileKey(up, file, that.key_handler);
-                key = key ? '/key/' + that.URLSafeBase64Encode(key) : '';
+                key = key ? '/key/' + util.URLSafeBase64Encode(key) : '';
             }
 
             var x_vars_url = getXVarsURL();
             var url = up_host + '/mkfile/' + file.size + key + x_vars_url;
-            var ajax = that.createAjax();
+            var ajax = util.createAjax();
             ajax.open('POST', url, true);
             ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
             ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
@@ -404,9 +402,9 @@ function QiniuJsSDK(op) {
                 for (var x_key in x_vars) {
                     if (x_vars.hasOwnProperty(x_key)) {
                         if (typeof x_vars[x_key] === 'function') {
-                            x_val = that.URLSafeBase64Encode(x_vars[x_key](up, file));
+                            x_val = util.URLSafeBase64Encode(x_vars[x_key](up, file));
                         } else if (typeof x_vars[x_key] !== 'object') {
-                            x_val = that.URLSafeBase64Encode(x_vars[x_key]);
+                            x_val = util.URLSafeBase64Encode(x_vars[x_key]);
                         }
                         x_vars_url += '/x:' + x_key + '/' + x_val;
                     }
@@ -417,10 +415,11 @@ function QiniuJsSDK(op) {
 
 
         var getDownloadURL = function(that, info) {
+            // Todo 在分块上传和私有空间下载的时候仍然会有后面绑定的事件先执行的情况
             if (op.downtoken_url) {
 
-                var infoObj = that.parseJSON(info);
-                var ajax_downtoken = that.createAjax();
+                var infoObj = util.parseJSON(info);
+                var ajax_downtoken = util.createAjax();
                 ajax_downtoken.open('POST', op.downtoken_url, false);
                 ajax_downtoken.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
                 ajax_downtoken.onreadystatechange = function() {
@@ -428,7 +427,7 @@ function QiniuJsSDK(op) {
                         if (ajax_downtoken.status === 200) {
                             var res_downtoken;
                             try {
-                                res_downtoken = that.parseJSON(ajax_downtoken.responseText);
+                                res_downtoken = util.parseJSON(ajax_downtoken.responseText);
                             } catch (e) {
                                 throw ('invalid json format');
                             }
@@ -452,7 +451,7 @@ function QiniuJsSDK(op) {
             }
         };
 
-        var res = that.parseJSON(info.response);
+        var res = util.parseJSON(info.response);
         ctx = ctx ? ctx : res.ctx;
         if (ctx) {
             makeFile(that);
