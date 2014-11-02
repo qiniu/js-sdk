@@ -4,25 +4,6 @@
 
 function QiniuJsSDK() {
 
-    this.isImage = function(url) {
-        var res, suffix = "";
-        var imageSuffixes = ["png", "jpg", "jpeg", "gif", "bmp"];
-        var suffixMatch = /\.([a-zA-Z0-9]+)(\?|\@|$)/;
-
-        if (!url || !suffixMatch.test(url)) {
-            return false;
-        }
-        res = suffixMatch.exec(url);
-        suffix = res[1].toLowerCase();
-        for (var i = 0, l = imageSuffixes.length; i < l; i++) {
-            if (suffix === imageSuffixes[i]) {
-                return true;
-            }
-        }
-        return false;
-    };
-
-
     this.URLSafeBase64Encode = function(v) {
         v = mOxie.btoa(v);
         return v.replace(/\//g, '_').replace(/\+/g, '-');
@@ -90,7 +71,21 @@ function QiniuJsSDK() {
         that.key_handler = typeof op.init.Key === 'function' ? op.init.Key : '';
         this.domain = op.domain;
         var ctx = '';
-        var up_host = 'http://up.qiniu.com';
+
+        var getUpHost = function() {
+            if (op.up_host) {
+                return op.up_host;
+            } else {
+                var protocol = window.location.protocol;
+                if (protocol === 'https') {
+                    return 'https://up.qbox.me';
+                } else {
+                    return 'http://up.qiniu.com';
+                }
+            }
+        };
+
+        var up_host = getUpHost();
 
         var reset_chunk_size = function() {
             var BLOCK_BITS, MAX_CHUNK_SIZE, chunk_size;
@@ -439,12 +434,11 @@ function QiniuJsSDK() {
                                     throw ('invalid json format');
                                 }
 
-                                var infoNEW = {};
-                                plupload.extend(infoNEW, infoObj, res_downtoken);
+                                plupload.extend(infoObj, res_downtoken);
 
-                                info = JSON.stringify(infoNEW);
+                                info = JSON.stringify(infoObj); // maybe have some bug in ie
                                 console.log(info);
-
+                                up.setOption('info', info);
                             } else {
                                 uploader.trigger('Error', {
                                     status: ajax_downtoken.status,
