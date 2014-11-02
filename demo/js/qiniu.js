@@ -48,6 +48,13 @@ function QiniuJsSDK(op) {
             return v.replace(/\//g, '_').replace(/\+/g, '-');
         }
     };
+
+    var constant = {
+        BLOCK_BITS: 20,
+        MAX_CHUNK_SIZE: 4 << this.BLOCK_BITS, //4m
+        HTTPS_UP_HOST: 'https://up.qbox.me',
+        HTTP_UP_HOST: 'http://up.qiniu.me'
+    };
     //Todo ie7 handler / this.parseJSON bug;
 
     var that = this;
@@ -75,9 +82,9 @@ function QiniuJsSDK(op) {
         } else {
             var protocol = window.location.protocol;
             if (protocol !== 'https') {
-                return 'http://up.qiniu.com';
+                return constant.HTTP_UP_HOST;
             } else {
-                return 'https://up.qbox.me';
+                return constant.HTTPS_UP_HOST;
             }
         }
     };
@@ -85,20 +92,17 @@ function QiniuJsSDK(op) {
     var up_host = getUpHost();
 
     var reset_chunk_size = function() {
-        var BLOCK_BITS, MAX_CHUNK_SIZE, chunk_size;
-        var isOldIE = mOxie.Env.browser === "IE" && mOxie.Env.version <= 9;
+        var chunk_size,
+            isOldIE = mOxie.Env.browser === "IE" && mOxie.Env.version <= 9;
         if (isOldIE && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
             //  link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
             //  when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
             op.chunk_size = 0;
 
         } else {
-            BLOCK_BITS = 20;
-            MAX_CHUNK_SIZE = 4 << BLOCK_BITS; //4M
-
             chunk_size = plupload.parseSize(op.chunk_size);
-            if (chunk_size > MAX_CHUNK_SIZE) {
-                op.chunk_size = MAX_CHUNK_SIZE;
+            if (chunk_size > constant.MAX_CHUNK_SIZE) {
+                op.chunk_size = constant.MAX_CHUNK_SIZE;
             }
             // qiniu service  max_chunk_size is 4m
             // reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
@@ -462,6 +466,7 @@ function QiniuJsSDK(op) {
     });
 
     this.getUrl = function(key) {
+        // todo ,may be should removed some day
         if (!key) {
             return false;
         }
