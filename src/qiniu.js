@@ -3,6 +3,14 @@
 /*exported QiniuJsSDK */
 
 function QiniuJsSDK(op) {
+    if (!op.domain) {
+        throw 'uptoken_url or domain is required!';
+    }
+
+    if (!op.browse_button) {
+        throw 'browse_button is required!';
+    }
+
     var util = {
         trim: function(text) {
             return text === null ? "" : this.trim.call(text);
@@ -58,23 +66,20 @@ function QiniuJsSDK(op) {
     //Todo ie7 handler / this.parseJSON bug;
 
     var that = this;
+    var option = {},
+        uptoken_url = op.uptoken_url,
+        uptoken = '',
+        domain = op.domain,
+        ctx = '',
+        up_host = '',
+        uploader = '';
 
-    if (!op.domain) {
-        throw 'uptoken_url or domain is required!';
-    }
-
-    if (!op.browse_button) {
-        throw 'browse_button is required!';
-    }
-
-    var option = {};
-
-
-    that.uptoken_url = op.uptoken_url;
-    that.token = '';
-    that.key_handler = typeof op.init.Key === 'function' ? op.init.Key : '';
-    this.domain = op.domain;
-    var ctx = '';
+    var key_handler = (function() {
+        if (typeof op.init === 'object') {
+            return typeof op.init.Key === 'function' ? op.init.Key : '';
+        }
+        return '';
+    })();
 
     var getUpHost = function() {
         if (op.up_host) {
@@ -88,8 +93,6 @@ function QiniuJsSDK(op) {
             }
         }
     };
-
-    var up_host = getUpHost();
 
     var reset_chunk_size = function() {
         var chunk_size,
@@ -108,22 +111,21 @@ function QiniuJsSDK(op) {
             // reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
         }
     };
-    reset_chunk_size();
 
     var getUpToken = function() {
         if (!op.uptoken) {
             var ajax = util.createAjax();
-            ajax.open('GET', that.uptoken_url, true);
+            ajax.open('GET', uptoken_url, true);
             ajax.setRequestHeader("If-Modified-Since", "0");
             ajax.onreadystatechange = function() {
                 if (ajax.readyState === 4 && ajax.status === 200) {
                     var res = util.parseJSON(ajax.responseText);
-                    that.token = res.uptoken;
+                    uptoken = res.uptoken;
                 }
             };
             ajax.send();
         } else {
-            that.token = op.uptoken;
+            uptoken = op.uptoken;
         }
     };
 
@@ -150,14 +152,32 @@ function QiniuJsSDK(op) {
         return key;
     };
 
-    plupload.extend(option, op, {
-        url: up_host,
-        multipart_params: {
-            token: ''
+    this.getUrl = function(key) {
+        // todo ,may be should removed some day
+        if (!key) {
+            return false;
         }
-    });
+        key = encodeURI(key);
+        if (domain.slice(domain.length - 1) !== '/') {
+            domain = domain + '/';
+        }
+        return domain + key;
+    };
 
-    var uploader = new plupload.Uploader(option);
+    var init = function() {
+        up_host = getUpHost();
+        reset_chunk_size();
+        plupload.extend(option, op, {
+            url: up_host,
+            multipart_params: {
+                token: ''
+            }
+        });
+    };
+
+    init();
+
+    uploader = new plupload.Uploader(option);
 
     uploader.bind('Init', function(up, params) {
         getUpToken();
@@ -184,12 +204,12 @@ function QiniuJsSDK(op) {
             var multipart_params_obj;
             if (op.save_key) {
                 multipart_params_obj = {
-                    'token': that.token
+                    'token': uptoken
                 };
             } else {
                 multipart_params_obj = {
                     'key': getFileKey(up, file, func),
-                    'token': that.token
+                    'token': uptoken
                 };
             }
 
@@ -245,7 +265,7 @@ function QiniuJsSDK(op) {
                 'chunk_size': chunk_size,
                 'required_features': "chunks",
                 'headers': {
-                    'Authorization': 'UpToken ' + that.token
+                    'Authorization': 'UpToken ' + uptoken
                 },
                 'multipart_params': {}
             });
@@ -254,12 +274,12 @@ function QiniuJsSDK(op) {
         var chunk_size = getOption(up, 'chunk_size');
         if (uploader.runtime === 'html5' && chunk_size) {
             if (file.size < chunk_size) {
-                directUpload(up, file, that.key_handler);
+                directUpload(up, file, key_handler);
             } else {
                 makeBlock(up, file);
             }
         } else {
-            directUpload(up, file, that.key_handler);
+            directUpload(up, file, key_handler);
         }
     });
 
@@ -369,7 +389,7 @@ function QiniuJsSDK(op) {
         var makeFile = function(that) {
             var key = '';
             if (!op.save_key) {
-                key = getFileKey(up, file, that.key_handler);
+                key = getFileKey(up, file, key_handler);
                 key = key ? '/key/' + util.URLSafeBase64Encode(key) : '';
             }
 
@@ -378,7 +398,7 @@ function QiniuJsSDK(op) {
             var ajax = util.createAjax();
             ajax.open('POST', url, true);
             ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
-            ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
+            ajax.setRequestHeader('Authorization', 'UpToken ' + uptoken);
             ajax.onreadystatechange = function() {
                 if (ajax.readyState === 4) {
                     localStorage.removeItem(file.name);
@@ -464,19 +484,6 @@ function QiniuJsSDK(op) {
         }
 
     });
-
-    this.getUrl = function(key) {
-        // todo ,may be should removed some day
-        if (!key) {
-            return false;
-        }
-        key = encodeURI(key);
-        var domain = this.domain;
-        if (domain.slice(domain.length - 1) !== '/') {
-            domain = domain + '/';
-        }
-        return domain + key;
-    };
 
     return uploader;
 
