@@ -187,9 +187,10 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
 };
 
 FileProgress.prototype.setComplete = function(up, info) {
+    // console.log(up, info);
     var td = this.fileProgressWrapper.find('td:eq(2) .progress');
 
-    var res = $.parseJSON(info);
+    var res = $.parseJSON(info.response);
     var url;
     if (res.url) {
         url = res.url;
@@ -320,24 +321,21 @@ FileProgress.prototype.setComplete = function(up, info) {
                 return false;
             });
 
-            var ie = Qiniu.detectIEVersion();
-            if (!(ie && ie <= 9)) {
-                var exif = Qiniu.exif(res.key);
-                if (exif) {
-                    var exifLink = $('<a href="" target="_blank">查看exif</a>');
-                    exifLink.attr('href', url + '?exif');
-                    infoWrapper.append(exifLink);
-                }
-
-                var imageInfo = Qiniu.imageInfo(res.key);
-                var infoArea = $('<div/>');
-                var infoInner = '<div>格式：<span class="origin-format">' + imageInfo.format + '</span></div>' +
-                    '<div>宽度：<span class="orgin-width">' + imageInfo.width + 'px</span></div>' +
-                    '<div>高度：<span class="origin-height">' + imageInfo.height + 'px</span></div>';
-                infoArea.html(infoInner);
-
-                infoWrapper.append(infoArea);
+            var exif = Qiniu.exif(res.key);
+            if (exif) {
+                var exifLink = $('<a href="" target="_blank">查看exif</a>');
+                exifLink.attr('href', url + '?exif');
+                infoWrapper.append(exifLink);
             }
+
+            var imageInfo = Qiniu.imageInfo(res.key);
+            var infoArea = $('<div/>');
+            var infoInner = '<div>格式：<span class="origin-format">' + imageInfo.format + '</span></div>' +
+                '<div>宽度：<span class="orgin-width">' + imageInfo.width + 'px</span></div>' +
+                '<div>高度：<span class="origin-height">' + imageInfo.height + 'px</span></div>';
+            infoArea.html(infoInner);
+
+            infoWrapper.append(infoArea);
 
             Wrapper.append(infoWrapper);
 

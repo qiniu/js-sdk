@@ -1,11 +1,10 @@
-/*global Qiniu */
 /*global plupload */
 /*global FileProgress */
 /*global hljs */
 
 
 $(function() {
-    var uploader = Qiniu.uploader({
+    var Qiniu = new QiniuJsSDK({
         runtimes: 'html5,flash,html4',
         browse_button: 'pickfiles',
         container: 'container',
@@ -16,7 +15,7 @@ $(function() {
         chunk_size: '4mb',
         uptoken_url: $('#uptoken_url').val(),
         domain: $('#domain').val(),
-        // downtoken_url: '/downtoken',
+        downtoken_url: '/downtoken',
         // unique_names: true,
         // save_key: true,
         // x_vars: {
@@ -55,26 +54,33 @@ $(function() {
             },
             'FileUploaded': function(up, file, info) {
                 var progress = new FileProgress(file, 'fsUploadProgress');
+                console.log(">>>", info.response);
                 progress.setComplete(up, info);
+                var x = up.getOption('info');
+                console.log(">>>>>22last info", x);
+                // console.log('hello man 2,a file is uploaded 》》》》》》》》');
             },
-            'Error': function(up, err, errTip) {
+            'Error': function(up, err) {
                 $('table').show();
                 var progress = new FileProgress(err.file, 'fsUploadProgress');
                 progress.setError();
-                progress.setStatus(errTip);
+                var error = up.getOption('error')
+                progress.setStatus(error);
             }
             // ,
             // 'Key': function(up, file) {
-            //     var key = "";
+            //     var key = "ts2";
             //     // do something with key
             //     return key
             // }
         }
     });
 
-    uploader.bind('FileUploaded', function() {
+    Qiniu.bind('FileUploaded', function() {
         console.log('hello man,a file is uploaded');
     });
+
+
     $('#container').on(
         'dragenter',
         function(e) {
@@ -226,3 +232,22 @@ $(function() {
     });
 
 });
+
+
+// this.isImage = function(url) {
+//     var res, suffix = "";
+//     var imageSuffixes = ["png", "jpg", "jpeg", "gif", "bmp"];
+//     var suffixMatch = /\.([a-zA-Z0-9]+)(\?|\@|$)/;
+
+//     if (!url || !suffixMatch.test(url)) {
+//         return false;
+//     }
+//     res = suffixMatch.exec(url);
+//     suffix = res[1].toLowerCase();
+//     for (var i = 0, l = imageSuffixes.length; i < l; i++) {
+//         if (suffix === imageSuffixes[i]) {
+//             return true;
+//         }
+//     }
+//     return false;
+// };
