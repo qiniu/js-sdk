@@ -4,7 +4,7 @@
 
 function QiniuJsSDK(op) {
     if (!op.domain) {
-        throw 'uptoken_url or domain is required!';
+        throw 'domain is required!';
     }
 
     if (!op.browse_button) {
@@ -65,8 +65,8 @@ function QiniuJsSDK(op) {
     };
     //Todo ie7 handler / this.parseJSON bug;
 
-    var that = this;
-    var option = {},
+    var that = this,
+        option = {},
         uptoken_url = op.uptoken_url,
         uptoken = '',
         domain = op.domain,
@@ -75,11 +75,17 @@ function QiniuJsSDK(op) {
         uploader = '';
 
     var key_handler = (function() {
-        if (typeof op.init === 'object') {
-            return typeof op.init.Key === 'function' ? op.init.Key : '';
-        }
-        return '';
-    })();
+            if (typeof op.init === 'object') {
+                return typeof op.init.Key === 'function' ? op.init.Key : '';
+            }
+            return '';
+        })(),
+        file_uploaded_hanlder = (function() {
+            if (typeof op.init === 'object') {
+                return typeof op.init.FileUploaded === 'function' ? op.init.FileUploaded : '';
+            }
+            return '';
+        })();
 
     var getUpHost = function() {
         if (op.up_host) {
@@ -110,6 +116,13 @@ function QiniuJsSDK(op) {
             // qiniu service  max_chunk_size is 4m
             // reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
         }
+    };
+
+    var reset_file_uploaded_handler = function() {
+        if (typeof op.init === 'object') {
+            op.init.FileUploaded = typeof op.init.FileUploaded === 'function' ? null : '';
+        }
+        return '';
     };
 
     var getUpToken = function() {
@@ -163,10 +176,12 @@ function QiniuJsSDK(op) {
         }
         return domain + key;
     };
+    //export getUrl func
 
     var init = function() {
         up_host = getUpHost();
         reset_chunk_size();
+        reset_file_uploaded_handler();
         plupload.extend(option, op, {
             url: up_host,
             multipart_params: {
@@ -459,8 +474,11 @@ function QiniuJsSDK(op) {
                             plupload.extend(infoObj, res_downtoken);
 
                             info = JSON.stringify(infoObj); // maybe have some bug in ie
-                            console.log(info);
-                            up.setOption('info', info);
+
+                            // console.log(info);
+                            // up.setOption('info', info);
+
+                            file_uploaded_hanlder(up, file, info);
                         } else {
                             uploader.trigger('Error', {
                                 status: ajax_downtoken.status,
@@ -472,6 +490,8 @@ function QiniuJsSDK(op) {
                     }
                 };
                 ajax_downtoken.send('key=' + infoObj.key + '&domain=' + op.domain);
+            } else {
+                file_uploaded_hanlder(up, file, info);
             }
         };
 
