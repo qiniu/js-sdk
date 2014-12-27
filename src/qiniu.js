@@ -28,6 +28,7 @@ function QiniuJsSDK(op) {
             if (typeof data === "string") {
 
                 // Make sure leading/trailing whitespace is removed (IE can't handle it)
+                console.log(this, 'this>>>>');
                 data = this.trim(data);
 
                 if (data) {
@@ -58,7 +59,6 @@ function QiniuJsSDK(op) {
     };
 
     var constant = {
-        // BLOCK_BITS: 20,
         MAX_CHUNK_SIZE: 4 << 20, //4m
         HTTPS_UP_HOST: 'https://up.qbox.me',
         HTTP_UP_HOST: 'http://up.qiniu.com'
@@ -75,16 +75,16 @@ function QiniuJsSDK(op) {
         uploader = '';
 
     var key_handler = (function() {
-            if (typeof op.init === 'object') {
-                return typeof op.init.Key === 'function' ? op.init.Key : '';
+            if (typeof op.init === 'object' && typeof op.init.Key === 'function') {
+                return op.init.Key;
             }
-            return '';
+            return function() {};
         })(),
         file_uploaded_hanlder = (function() {
-            if (typeof op.init === 'object') {
-                return typeof op.init.FileUploaded === 'function' ? op.init.FileUploaded : '';
+            if (typeof op.init === 'object' && typeof op.init.FileUploaded === 'function') {
+                return op.init.FileUploaded;
             }
-            return '';
+            return function() {};
         })();
 
     var getUpHost = function() {
@@ -120,9 +120,8 @@ function QiniuJsSDK(op) {
 
     var reset_file_uploaded_handler = function() {
         if (typeof op.init === 'object') {
-            op.init.FileUploaded = typeof op.init.FileUploaded === 'function' ? null : '';
+            op.init.FileUploaded = null;
         }
-        return '';
     };
 
     var getUpToken = function() {

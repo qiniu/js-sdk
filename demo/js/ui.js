@@ -320,21 +320,21 @@ FileProgress.prototype.setComplete = function(up, info) {
                 return false;
             });
 
-            var exif = Qiniu.exif(info.key);
-            if (exif) {
-                var exifLink = $('<a href="" target="_blank">查看exif</a>');
-                exifLink.attr('href', url + '?exif');
-                infoWrapper.append(exifLink);
-            }
+            // var exif = Qiniu.exif(info.key);
+            // if (exif) {
+            //     var exifLink = $('<a href="" target="_blank">查看exif</a>');
+            //     exifLink.attr('href', url + '?exif');
+            //     infoWrapper.append(exifLink);
+            // }
 
-            var imageInfo = Qiniu.imageInfo(info.key);
-            var infoArea = $('<div/>');
-            var infoInner = '<div>格式：<span class="origin-format">' + imageInfo.format + '</span></div>' +
-                '<div>宽度：<span class="orgin-width">' + imageInfo.width + 'px</span></div>' +
-                '<div>高度：<span class="origin-height">' + imageInfo.height + 'px</span></div>';
-            infoArea.html(infoInner);
+            // var imageInfo = Qiniu.imageInfo(info.key);
+            // var infoArea = $('<div/>');
+            // var infoInner = '<div>格式：<span class="origin-format">' + imageInfo.format + '</span></div>' +
+            //     '<div>宽度：<span class="orgin-width">' + imageInfo.width + 'px</span></div>' +
+            //     '<div>高度：<span class="origin-height">' + imageInfo.height + 'px</span></div>';
+            // infoArea.html(infoInner);
 
-            infoWrapper.append(infoArea);
+            // infoWrapper.append(infoArea);
 
             Wrapper.append(infoWrapper);
 
