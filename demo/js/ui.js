@@ -190,18 +190,17 @@ FileProgress.prototype.setComplete = function(up, info) {
     // console.log(up, info);
     var td = this.fileProgressWrapper.find('td:eq(2) .progress');
 
-    var res = $.parseJSON(info.response);
     var url;
-    if (res.url) {
-        url = res.url;
-        str = "<div><strong>Link:</strong><a href=" + res.url + " target='_blank' > " + res.url + "</a></div>" +
-            "<div class=hash><strong>Hash:</strong>" + res.hash + "</div>";
+    if (info.url) {
+        url = info.url;
+        str = "<div><strong>Link:</strong><a href=" + info.url + " target='_blank' > " + info.url + "</a></div>" +
+            "<div class=hash><strong>Hash:</strong>" + info.hash + "</div>";
     } else {
         var domain = up.getOption('domain');
-        url = domain + encodeURI(res.key);
-        var link = domain + res.key;
+        url = domain + encodeURI(info.key);
+        var link = domain + info.key;
         str = "<div><strong>Link:</strong><a href=" + url + " target='_blank' > " + link + "</a></div>" +
-            "<div class=hash><strong>Hash:</strong>" + res.hash + "</div>";
+            "<div class=hash><strong>Hash:</strong>" + info.hash + "</div>";
     }
 
     td.html(str).removeClass().next().next('.status').hide();
@@ -278,7 +277,7 @@ FileProgress.prototype.setComplete = function(up, info) {
 
 
             var fopLink = $('<a class="fopLink"/>');
-            fopLink.attr('data-key', res.key).text('查看处理效果');
+            fopLink.attr('data-key', info.key).text('查看处理效果');
             infoWrapper.append(fopLink);
             fopLink.on('click', function() {
                 var key = $(this).data('key');
@@ -321,14 +320,14 @@ FileProgress.prototype.setComplete = function(up, info) {
                 return false;
             });
 
-            var exif = Qiniu.exif(res.key);
+            var exif = Qiniu.exif(info.key);
             if (exif) {
                 var exifLink = $('<a href="" target="_blank">查看exif</a>');
                 exifLink.attr('href', url + '?exif');
                 infoWrapper.append(exifLink);
             }
 
-            var imageInfo = Qiniu.imageInfo(res.key);
+            var imageInfo = Qiniu.imageInfo(info.key);
             var infoArea = $('<div/>');
             var infoInner = '<div>格式：<span class="origin-format">' + imageInfo.format + '</span></div>' +
                 '<div>宽度：<span class="orgin-width">' + imageInfo.width + 'px</span></div>' +
