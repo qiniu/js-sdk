@@ -205,7 +205,7 @@
             option = {},
             uptoken_url = op.uptoken_url,
             uptoken = '',
-            domain = op.bucket_domain,
+            bucket_domain = op.bucket_domain,
             ctx = '',
             up_host = '',
             uploader = '';
@@ -624,7 +624,7 @@
                             }
                         }
                     };
-                    ajax_downtoken.send('key=' + infoObj.key + '&domain=' + op.domain);
+                    ajax_downtoken.send('key=' + infoObj.key + '&bucket_domain=' + bucket_domain);
                 } else {
                     info = util.parseJSON(info);
                     file_uploaded_hanlder(up, file, info);
