@@ -9,12 +9,12 @@
         throw '七牛 JS-SDK 依赖 Plupload 插件,请引入! 抄送门： http://plupload.com/download';
     }
 
-    function Qiniu(op) {
-        if (!op.bucket_domain) {
+    function Qiniu(option) {
+        if (!option.bucket_domain) {
             throw '必须指定 bucket_domain!';
         }
 
-        if (!op.browse_button) {
+        if (!option.browse_button) {
             throw '必须指定 browse_button!';
         }
 
@@ -58,10 +58,6 @@
                 }
                 return xmlhttp;
             },
-            // url_safe_base64_encode: function(v) {
-            //     v = mOxie.btoa(v);
-            //     return v.replace(/\//g, '_').replace(/\+/g, '-');
-            // },
             utf8_encode: function(argString) {
                 // http://kevin.vanzonneveld.net
                 // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
@@ -202,30 +198,30 @@
         //Todo ie7 handler / this.parseJSON bug;
 
         var that = this,
-            option = {},
-            uptoken_url = op.uptoken_url,
+            plupload_option = {},
+            uptoken_url = option.uptoken_url,
             uptoken = '',
-            domain = op.bucket_domain,
+            bucket_domain = option.bucket_domain,
             ctx = '',
             up_host = '',
             uploader = '';
 
         var key_handler = (function() {
-                if (typeof op.init === 'object' && typeof op.init.Key === 'function') {
-                    return op.init.Key;
+                if (typeof option.init === 'object' && typeof option.init.Key === 'function') {
+                    return option.init.Key;
                 }
                 return null;
             })(),
             file_uploaded_hanlder = (function() {
-                if (typeof op.init === 'object' && typeof op.init.FileUploaded === 'function') {
-                    return op.init.FileUploaded;
+                if (typeof option.init === 'object' && typeof option.init.FileUploaded === 'function') {
+                    return option.init.FileUploaded;
                 }
                 return function() {};
             })();
 
-        var getUpHost = function() {
-            if (op.up_host) {
-                return op.up_host;
+        var get_up_host = function() {
+            if (option.up_host) {
+                return option.up_host;
             } else {
                 var protocol = window.location.protocol;
                 if (protocol !== 'https') {
@@ -239,15 +235,15 @@
         var reset_chunk_size = function() {
             var chunk_size,
                 isOldIE = mOxie.Env.browser === "IE" && mOxie.Env.version <= 9;
-            if (isOldIE && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
+            if (isOldIE && option.chunk_size && option.runtimes.indexOf('flash') >= 0) {
                 //  link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
                 //  when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
-                op.chunk_size = 0;
+                option.chunk_size = 0;
 
             } else {
-                chunk_size = plupload.parseSize(op.chunk_size);
+                chunk_size = plupload.parseSize(option.chunk_size);
                 if (chunk_size > constant.MAX_CHUNK_SIZE) {
-                    op.chunk_size = constant.MAX_CHUNK_SIZE;
+                    option.chunk_size = constant.MAX_CHUNK_SIZE;
                 }
                 // qiniu service  max_chunk_size is 4m
                 // reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
@@ -255,13 +251,13 @@
         };
 
         var reset_file_uploaded_handler = function() {
-            if (typeof op.init === 'object') {
-                op.init.FileUploaded = null;
+            if (typeof option.init === 'object') {
+                option.init.FileUploaded = null;
             }
         };
 
-        var getUpToken = function() {
-            if (!op.uptoken) {
+        var get_up_token = function() {
+            if (!option.uptoken) {
                 var ajax = util.createAjax();
                 ajax.open('GET', uptoken_url, true);
                 ajax.setRequestHeader("If-Modified-Since", "0");
@@ -273,21 +269,21 @@
                 };
                 ajax.send();
             } else {
-                uptoken = op.uptoken;
+                uptoken = option.uptoken;
             }
         };
 
-        var getOption = function(up, option) {
+        var get_option = function(up, option) {
             var val = up.getOption && up.getOption(option);
             val = val || (up.settings && up.settings[option]);
             return val;
         };
 
-        var getFileKey = function(up, file, func) {
+        var get_file_key = function(up, file, func) {
             var key = '',
                 unique_names = false;
-            if (!op.save_key) {
-                unique_names = getOption(up, 'unique_names');
+            if (!option.save_key) {
+                unique_names = get_option(up, 'unique_names');
                 if (unique_names) {
                     var ext = mOxie.Mime.getFileExtension(file.name);
                     key = ext ? file.id + '.' + ext : file.id;
@@ -314,10 +310,10 @@
         //export getUrl func
 
         var init = function() {
-            up_host = getUpHost();
+            up_host = get_up_host();
             reset_chunk_size();
             reset_file_uploaded_handler();
-            plupload.extend(option, op, {
+            plupload.extend(plupload_option, option, {
                 url: up_host,
                 multipart_params: {
                     token: ''
@@ -327,16 +323,16 @@
 
         init();
 
-        uploader = new plupload.Uploader(option);
+        uploader = new plupload.Uploader(plupload_option);
 
         uploader.bind('Init', function(up, params) {
-            getUpToken();
+            get_up_token();
         });
         uploader.init();
 
         uploader.bind('FilesAdded', function(up, files) {
 
-            var auto_start = getOption(up, 'auto_start');
+            var auto_start = get_option(up, 'auto_start');
             if (auto_start) {
                 $.each(files, function(i, file) {
                     up.start();
@@ -352,18 +348,18 @@
             var directUpload = function(up, file, func) {
 
                 var multipart_params_obj;
-                if (op.save_key) {
+                if (option.save_key) {
                     multipart_params_obj = {
                         'token': uptoken
                     };
                 } else {
                     multipart_params_obj = {
-                        'key': getFileKey(up, file, func),
+                        'key': get_file_key(up, file, func),
                         'token': uptoken
                     };
                 }
 
-                var x_vars = op.x_vars;
+                var x_vars = option.x_vars;
                 if (x_vars !== undefined && typeof x_vars === 'object') {
                     for (var x_key in x_vars) {
                         if (x_vars.hasOwnProperty(x_key)) {
@@ -421,7 +417,7 @@
                 });
             };
 
-            var chunk_size = getOption(up, 'chunk_size');
+            var chunk_size = get_option(up, 'chunk_size');
             if (uploader.runtime === 'html5' && chunk_size) {
                 if (file.size < chunk_size) {
                     directUpload(up, file, key_handler);
@@ -448,7 +444,7 @@
 
             ctx = ctx ? ctx + ',' + res.ctx : res.ctx;
             var leftSize = info.total - info.offset;
-            var chunk_size = getOption(up, 'chunk_size');
+            var chunk_size = get_option(up, 'chunk_size');
             if (leftSize < chunk_size) {
                 up.setOption({
                     'url': up_host + '/mkblk/' + leftSize
@@ -466,7 +462,7 @@
                         error = '上传失败。请稍后再试。';
                         break;
                     case plupload.FILE_SIZE_ERROR:
-                        var max_file_size = getOption(up, 'max_file_size');
+                        var max_file_size = get_option(up, 'max_file_size');
                         error = '浏览器最大可上传' + max_file_size + '。更大文件请使用命令行工具。';
                         break;
                     case plupload.FILE_EXTENSION_ERROR:
@@ -538,8 +534,8 @@
 
             var makeFile = function(that) {
                 var key = '';
-                if (!op.save_key) {
-                    key = getFileKey(up, file, key_handler);
+                if (!option.save_key) {
+                    key = get_file_key(up, file, key_handler);
                     key = key ? '/key/' + util.url_safe_base64_encode(key) : '';
                 }
 
@@ -569,7 +565,7 @@
             };
 
             var getXVarsURL = function() {
-                var x_vars = op.x_vars,
+                var x_vars = option.x_vars,
                     x_val = '',
                     x_vars_url = '';
                 if (x_vars !== undefined && typeof x_vars === 'object') {
@@ -590,11 +586,11 @@
 
             var getDownloadURL = function(that, info) {
                 // Todo 在分块上传和私有空间下载的时候仍然会有后面绑定的事件先执行的情况
-                if (op.downtoken_url) {
+                if (option.downtoken_url) {
 
                     var infoObj = util.parseJSON(info);
                     var ajax_downtoken = util.createAjax();
-                    ajax_downtoken.open('POST', op.downtoken_url, false);
+                    ajax_downtoken.open('POST', option.downtoken_url, false);
                     ajax_downtoken.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
                     ajax_downtoken.onreadystatechange = function() {
                         if (ajax_downtoken.readyState === 4) {
@@ -624,7 +620,7 @@
                             }
                         }
                     };
-                    ajax_downtoken.send('key=' + infoObj.key + '&domain=' + op.domain);
+                    ajax_downtoken.send('key=' + infoObj.key + '&bucket_domain=' + option.bucket_domain);
                 } else {
                     info = util.parseJSON(info);
                     file_uploaded_hanlder(up, file, info);
