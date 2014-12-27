@@ -4,7 +4,7 @@
 
 
 $(function() {
-    var Qiniu = new QiniuJsSDK({
+    var Q = new Qiniu({
         runtimes: 'html5,flash,html4',
         browse_button: 'pickfiles',
         container: 'container',
@@ -14,7 +14,7 @@ $(function() {
         dragdrop: true,
         chunk_size: '4mb',
         uptoken_url: $('#uptoken_url').val(),
-        domain: $('#domain').val(),
+        bucket_domain: $('#domain').val(),
         // downtoken_url: '/downtoken',
         // unique_names: true,
         // save_key: true,
@@ -73,7 +73,7 @@ $(function() {
         }
     });
 
-    Qiniu.bind('FileUploaded', function() {
+    Q.bind('FileUploaded', function() {
         console.log('hello man,a file is uploaded');
     });
 
@@ -216,7 +216,7 @@ $(function() {
             }
         });
 
-        var newUrl = Qiniu.pipeline(fopArr, key);
+        var newUrl = Q.pipeline(fopArr, key);
 
         var newImg = new Image();
         img.attr('src', 'loading.gif');
