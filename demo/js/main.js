@@ -15,7 +15,7 @@ $(function() {
         chunk_size: '4mb',
         uptoken_url: $('#uptoken_url').val(),
         domain: $('#domain').val(),
-        downtoken_url: '/downtoken',
+        // downtoken_url: '/downtoken',
         // unique_names: true,
         // save_key: true,
         // x_vars: {
@@ -54,25 +54,25 @@ $(function() {
             },
             'FileUploaded': function(up, file, info) {
                 var progress = new FileProgress(file, 'fsUploadProgress');
-                console.log(">>>", info.response);
+                // console.log(">>>", info.response);
                 progress.setComplete(up, info);
                 var x = up.getOption('info');
                 console.log(">>>>>22last info", x);
                 // console.log('hello man 2,a file is uploaded 》》》》》》》》');
             },
             'Error': function(up, err) {
-                $('table').show();
-                var progress = new FileProgress(err.file, 'fsUploadProgress');
-                progress.setError();
-                var error = up.getOption('error')
-                progress.setStatus(error);
-            }
-            // ,
-            // 'Key': function(up, file) {
-            //     var key = "ts2";
-            //     // do something with key
-            //     return key
-            // }
+                    $('table').show();
+                    var progress = new FileProgress(err.file, 'fsUploadProgress');
+                    progress.setError();
+                    var error = up.getOption('error')
+                    progress.setStatus(error);
+                }
+                // ,
+                // 'Key': function(up, file) {
+                //     var key = "ts2";
+                //     // do something with key
+                //     return key
+                // }
         }
     });
 

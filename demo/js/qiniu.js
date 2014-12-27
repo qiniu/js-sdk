@@ -58,10 +58,10 @@ function QiniuJsSDK(op) {
     };
 
     var constant = {
-        BLOCK_BITS: 20,
-        MAX_CHUNK_SIZE: 4 << this.BLOCK_BITS, //4m
+        // BLOCK_BITS: 20,
+        MAX_CHUNK_SIZE: 4 << 20, //4m
         HTTPS_UP_HOST: 'https://up.qbox.me',
-        HTTP_UP_HOST: 'http://up.qiniu.me'
+        HTTP_UP_HOST: 'http://up.qiniu.com'
     };
     //Todo ie7 handler / this.parseJSON bug;
 
@@ -491,6 +491,7 @@ function QiniuJsSDK(op) {
                 };
                 ajax_downtoken.send('key=' + infoObj.key + '&domain=' + op.domain);
             } else {
+                info = util.parseJSON(info);
                 file_uploaded_hanlder(up, file, info);
             }
         };
