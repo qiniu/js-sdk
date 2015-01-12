@@ -1,10 +1,10 @@
-/*global plupload*/
+/*global plupload,mOxie*/
 /*global ActiveXObject */
 /*exported Qiniu */
 
 
 
-(function(exports, dependencies) {
+(function(exports, plupload, mOxie) {
     if (typeof dependencies !== 'object') {
         throw '七牛 JS-SDK 依赖 Plupload 插件,请引入! 抄送门： http://plupload.com/download';
     }
@@ -23,7 +23,7 @@
                 return text === null ? "" : this.trim.call(text);
                 // todo have bug in trim
             },
-            parseJSON: function(data) {
+            parse_json: function(data) {
                 // Attempt to parse using the native JSON parser first
                 if (window.JSON && window.JSON.parse) {
                     return window.JSON.parse(data);
@@ -49,7 +49,7 @@
                     }
                 }
             },
-            createAjax: function(argument) {
+            create_ajax: function(argument) {
                 var xmlhttp = {};
                 if (window.XMLHttpRequest) {
                     xmlhttp = new XMLHttpRequest();
@@ -195,7 +195,7 @@
             HTTPS_UP_HOST: 'https://up.qbox.me',
             HTTP_UP_HOST: 'http://up.qiniu.com'
         };
-        //Todo ie7 handler / this.parseJSON bug;
+        //Todo ie7 handler / this.parse_json bug;
 
         var that = this,
             plupload_option = {},
@@ -220,83 +220,78 @@
             })();
 
         var get_up_host = function() {
-            if (option.up_host) {
-                return option.up_host;
-            } else {
-                var protocol = window.location.protocol;
-                if (protocol !== 'https') {
-                    return constant.HTTP_UP_HOST;
+                if (option.up_host) {
+                    return option.up_host;
                 } else {
-                    return constant.HTTPS_UP_HOST;
-                }
-            }
-        };
-
-        var reset_chunk_size = function() {
-            var chunk_size,
-                isOldIE = mOxie.Env.browser === "IE" && mOxie.Env.version <= 9;
-            if (isOldIE && option.chunk_size && option.runtimes.indexOf('flash') >= 0) {
-                //  link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
-                //  when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
-                option.chunk_size = 0;
-
-            } else {
-                chunk_size = plupload.parseSize(option.chunk_size);
-                if (chunk_size > constant.MAX_CHUNK_SIZE) {
-                    option.chunk_size = constant.MAX_CHUNK_SIZE;
-                }
-                // qiniu service  max_chunk_size is 4m
-                // reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
-            }
-        };
-
-        var reset_file_uploaded_handler = function() {
-            if (typeof option.init === 'object') {
-                option.init.FileUploaded = null;
-            }
-        };
-
-        var get_up_token = function() {
-            if (!option.uptoken) {
-                var ajax = util.createAjax();
-                ajax.open('GET', uptoken_url, true);
-                ajax.setRequestHeader("If-Modified-Since", "0");
-                ajax.onreadystatechange = function() {
-                    if (ajax.readyState === 4 && ajax.status === 200) {
-                        var res = util.parseJSON(ajax.responseText);
-                        uptoken = res.uptoken;
+                    var protocol = window.location.protocol;
+                    if (protocol !== 'https') {
+                        return constant.HTTP_UP_HOST;
+                    } else {
+                        return constant.HTTPS_UP_HOST;
                     }
-                };
-                ajax.send();
-            } else {
-                uptoken = option.uptoken;
-            }
-        };
-
-        var get_option = function(up, option) {
-            var val = up.getOption && up.getOption(option);
-            val = val || (up.settings && up.settings[option]);
-            return val;
-        };
-
-        var get_file_key = function(up, file, func) {
-            var key = '',
-                unique_names = false;
-            if (!option.save_key) {
-                unique_names = get_option(up, 'unique_names');
-                if (unique_names) {
-                    var ext = mOxie.Mime.getFileExtension(file.name);
-                    key = ext ? file.id + '.' + ext : file.id;
-                } else if (typeof func === 'function') {
-                    key = func(up, file);
-                } else {
-                    key = file.name;
                 }
-            }
-            return key;
-        };
+            },
+            reset_chunk_size = function() {
+                var chunk_size,
+                    isOldIE = mOxie.Env.browser === "IE" && mOxie.Env.version <= 9;
+                if (isOldIE && option.chunk_size && option.runtimes.indexOf('flash') >= 0) {
+                    //  link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
+                    //  when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
+                    option.chunk_size = 0;
 
-        this.getUrl = function(key) {
+                } else {
+                    chunk_size = plupload.parseSize(option.chunk_size);
+                    if (chunk_size > constant.MAX_CHUNK_SIZE) {
+                        option.chunk_size = constant.MAX_CHUNK_SIZE;
+                    }
+                    // qiniu service  max_chunk_size is 4m
+                    // reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
+                }
+            },
+            reset_file_uploaded_handler = function() {
+                if (typeof option.init === 'object') {
+                    option.init.FileUploaded = null;
+                }
+            },
+            get_up_token = function() {
+                if (!option.uptoken) {
+                    var ajax = util.create_ajax();
+                    ajax.open('GET', uptoken_url, true);
+                    ajax.setRequestHeader("If-Modified-Since", "0");
+                    ajax.onreadystatechange = function() {
+                        if (ajax.readyState === 4 && ajax.status === 200) {
+                            var res = util.parse_json(ajax.responseText);
+                            uptoken = res.uptoken;
+                        }
+                    };
+                    ajax.send();
+                } else {
+                    uptoken = option.uptoken;
+                }
+            },
+            get_option = function(up, option) {
+                var val = up.getOption && up.getOption(option);
+                val = val || (up.settings && up.settings[option]);
+                return val;
+            },
+            get_file_key = function(up, file, func) {
+                var key = '',
+                    unique_names = false;
+                if (!option.save_key) {
+                    unique_names = get_option(up, 'unique_names');
+                    if (unique_names) {
+                        var ext = mOxie.Mime.getFileExtension(file.name);
+                        key = ext ? file.id + '.' + ext : file.id;
+                    } else if (typeof func === 'function') {
+                        key = func(up, file);
+                    } else {
+                        key = file.name;
+                    }
+                }
+                return key;
+            };
+
+        this.get_url = function(key) {
             // todo ,may be should removed some day
             if (!key) {
                 return false;
@@ -307,7 +302,8 @@
             }
             return bucket_domain + key;
         };
-        //export getUrl func
+        this.version = '2.0.0-beta';
+        //export get_url/version
 
         var init = function() {
             up_host = get_up_host();
@@ -430,7 +426,7 @@
         });
 
         uploader.bind('ChunkUploaded', function(up, file, info) {
-            var saveUploadInfo = function(file) {
+            var save_upload_info = function(file) {
                 localStorage.setItem(file.name, JSON.stringify({
                     ctx: ctx,
                     percent: file.percent,
@@ -440,7 +436,7 @@
                 }));
             };
 
-            var res = util.parseJSON(info.response);
+            var res = util.parse_json(info.response);
 
             ctx = ctx ? ctx + ',' + res.ctx : res.ctx;
             var leftSize = info.total - info.offset;
@@ -450,7 +446,7 @@
                     'url': up_host + '/mkblk/' + leftSize
                 });
             }
-            saveUploadInfo(file);
+            save_upload_info(file);
         });
 
         uploader.bind('Error', function(up, err) {
@@ -469,7 +465,7 @@
                         error = '文件验证失败。请稍后重试。';
                         break;
                     case plupload.HTTP_ERROR:
-                        var errorObj = util.parseJSON(err.response);
+                        var errorObj = util.parse_json(err.response);
                         var errorText = errorObj.error;
                         switch (err.status) {
                             case 400:
@@ -490,7 +486,7 @@
                             case 614:
                                 error = "文件已存在。";
                                 try {
-                                    errorObj = util.parseJSON(errorObj.error);
+                                    errorObj = util.parse_json(errorObj.error);
                                     errorText = errorObj.error || 'file exists';
                                 } catch (e) {
                                     errorText = errorObj.error || 'file exists';
@@ -532,16 +528,16 @@
 
         uploader.bind('FileUploaded', function(up, file, info) {
 
-            var makeFile = function(that) {
+            var make_file = function(that) {
                 var key = '';
                 if (!option.save_key) {
                     key = get_file_key(up, file, key_handler);
                     key = key ? '/key/' + util.url_safe_base64_encode(key) : '';
                 }
 
-                var x_vars_url = getXVarsURL();
+                var x_vars_url = get_x_vals_url();
                 var url = up_host + '/mkfile/' + file.size + key + x_vars_url;
-                var ajax = util.createAjax();
+                var ajax = util.create_ajax();
                 ajax.open('POST', url, true);
                 ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
                 ajax.setRequestHeader('Authorization', 'UpToken ' + uptoken);
@@ -550,7 +546,7 @@
                         localStorage.removeItem(file.name);
                         if (ajax.status === 200) {
                             var info = ajax.responseText;
-                            getDownloadURL(that, info);
+                            get_download_url(that, info);
                         } else {
                             uploader.trigger('Error', {
                                 status: ajax.status,
@@ -564,7 +560,7 @@
                 ajax.send(ctx);
             };
 
-            var getXVarsURL = function() {
+            var get_x_vals_url = function() {
                 var x_vars = option.x_vars,
                     x_val = '',
                     x_vars_url = '';
@@ -584,12 +580,12 @@
             };
 
 
-            var getDownloadURL = function(that, info) {
+            var get_download_url = function(that, info) {
                 // Todo 在分块上传和私有空间下载的时候仍然会有后面绑定的事件先执行的情况
                 if (option.downtoken_url) {
 
-                    var infoObj = util.parseJSON(info);
-                    var ajax_downtoken = util.createAjax();
+                    var infoObj = util.parse_json(info);
+                    var ajax_downtoken = util.create_ajax();
                     ajax_downtoken.open('POST', option.downtoken_url, false);
                     ajax_downtoken.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
                     ajax_downtoken.onreadystatechange = function() {
@@ -597,7 +593,7 @@
                             if (ajax_downtoken.status === 200) {
                                 var res_downtoken;
                                 try {
-                                    res_downtoken = util.parseJSON(ajax_downtoken.responseText);
+                                    res_downtoken = util.parse_json(ajax_downtoken.responseText);
                                 } catch (e) {
                                     throw '服务端返回了无效 JSON';
                                 }
@@ -622,17 +618,17 @@
                     };
                     ajax_downtoken.send('key=' + infoObj.key + '&bucket_domain=' + option.bucket_domain);
                 } else {
-                    info = util.parseJSON(info);
+                    info = util.parse_json(info);
                     file_uploaded_hanlder(up, file, info);
                 }
             };
 
-            var res = util.parseJSON(info.response);
+            var res = util.parse_json(info.response);
             ctx = ctx ? ctx : res.ctx;
             if (ctx) {
-                makeFile(that);
+                make_file(that);
             } else {
-                getDownloadURL(that, info.response);
+                get_download_url(that, info.response);
             }
 
         });
@@ -641,4 +637,4 @@
     }
 
     exports.Qiniu = Qiniu;
-})(this, plupload);
+})(window, plupload, mOxie);
