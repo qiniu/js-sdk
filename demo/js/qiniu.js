@@ -330,7 +330,7 @@
 
             var auto_start = get_option(up, 'auto_start');
             if (auto_start) {
-                $.each(files, function(i, file) {
+                plupload.each(files, function(i, file) {
                     up.start();
                 });
             }
