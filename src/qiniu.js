@@ -328,7 +328,7 @@ function QiniuJsSDK() {
             var auto_start = up.getOption && up.getOption('auto_start');
             auto_start = auto_start || (up.settings && up.settings.auto_start);
             if (auto_start) {
-                $.each(files, function(i, file) {
+                plupload.each(files, function(i, file) {
                     up.start();
                 });
             }

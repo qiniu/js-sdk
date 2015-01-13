@@ -328,7 +328,7 @@ function QiniuJsSDK() {
             var auto_start = up.getOption && up.getOption('auto_start');
             auto_start = auto_start || (up.settings && up.settings.auto_start);
             if (auto_start) {
-                $.each(files, function(i, file) {
+                plupload.each(files, function(i, file) {
                     up.start();
                 });
             }
@@ -398,7 +398,7 @@ function QiniuJsSDK() {
                                     blockSize = file.size - localFileInfo.offset;
                                 }
                             } else {
-                                // 删除localStorage，避免 499 bug
+                                // 进度100%时，删除对应的localStorage，避免 499 bug
                                 localStorage.removeItem(file.name);
                             }
                         } else {
