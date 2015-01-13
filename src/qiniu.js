@@ -5,7 +5,7 @@
 
 
 (function(exports, plupload, mOxie) {
-    if (typeof dependencies !== 'object') {
+    if (typeof plupload !== 'object' || typeof mOxie !== 'object') {
         throw '七牛 JS-SDK 依赖 Plupload 插件,请引入! 抄送门： http://plupload.com/download';
     }
 
@@ -250,7 +250,7 @@
             },
             reset_file_uploaded_handler = function() {
                 if (typeof option.init === 'object') {
-                    option.init.FileUploaded = null;
+                    option.init.FileUploaded = function() {};
                 }
             },
             get_up_token = function() {

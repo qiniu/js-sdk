@@ -271,17 +271,17 @@ FileProgress.prototype.setComplete = function(up, info) {
     var td = this.fileProgressWrapper.find('td:eq(2) .progress');
 
     var url;
-    if (info.url) {
-        url = info.url;
-        str = "<div><strong>Link:</strong><a href=" + info.url + " target='_blank' > " + info.url + "</a></div>" +
-            "<div class=hash><strong>Hash:</strong>" + info.hash + "</div>";
-    } else {
-        var domain = up.getOption('domain');
-        url = domain + encodeURI(info.key);
-        var link = domain + info.key;
-        str = "<div><strong>Link:</strong><a href=" + url + " target='_blank' > " + link + "</a></div>" +
-            "<div class=hash><strong>Hash:</strong>" + info.hash + "</div>";
-    }
+    // if (info.url) {
+    //     url = info.url;
+    //     str = "<div><strong>Link:</strong><a href=" + info.url + " target='_blank' > " + info.url + "</a></div>" +
+    //         "<div class=hash><strong>Hash:</strong>" + info.hash + "</div>";
+    // } else {
+    var domain = up.getOption('bucket_domain');
+    url = domain + encodeURI(info.key);
+    var link = domain + info.key;
+    str = "<div><strong>Link:</strong><a href=" + url + " target='_blank' > " + link + "</a></div>" +
+        "<div class=hash><strong>Hash:</strong>" + info.hash + "</div>";
+    // }
 
     td.html(str).removeClass().next().next('.status').hide();
 

@@ -54,6 +54,7 @@ $(function() {
             },
             'FileUploaded': function(up, file, info) {
                 var progress = new FileProgress(file, 'fsUploadProgress');
+                console.log('>>>>', info)
                 progress.setComplete(up, info);
                 // console.log('hello man 2,a file is uploaded 》》》》》》》》');
             },
