@@ -197,8 +197,7 @@
         };
         //Todo ie7 handler / this.parse_json bug;
 
-        var that = this,
-            plupload_option = {},
+        var plupload_option = {},
             uptoken_url = option.uptoken_url,
             uptoken = '',
             bucket_domain = option.bucket_domain,
@@ -290,6 +289,9 @@
                 }
                 return key;
             };
+
+
+        console.log('>>>>>>>>>你好，世界', util.url_safe_base64_encode('你好，世界'));
 
         this.get_url = function(key) {
             // todo ,may be should removed some day
@@ -528,7 +530,7 @@
 
         uploader.bind('FileUploaded', function(up, file, info) {
 
-            var make_file = function(that) {
+            var make_file = function() {
                 var key = '';
                 if (!option.save_key) {
                     key = get_file_key(up, file, key_handler);
@@ -546,7 +548,7 @@
                         localStorage.removeItem(file.name);
                         if (ajax.status === 200) {
                             var info = ajax.responseText;
-                            get_download_url(that, info);
+                            success(info);
                         } else {
                             uploader.trigger('Error', {
                                 status: ajax.status,
@@ -580,55 +582,17 @@
             };
 
 
-            var get_download_url = function(that, info) {
-                // Todo 在分块上传和私有空间下载的时候仍然会有后面绑定的事件先执行的情况
-                if (option.downtoken_url) {
-
-                    var infoObj = util.parse_json(info);
-                    var ajax_downtoken = util.create_ajax();
-                    ajax_downtoken.open('POST', option.downtoken_url, false);
-                    ajax_downtoken.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-                    ajax_downtoken.onreadystatechange = function() {
-                        if (ajax_downtoken.readyState === 4) {
-                            if (ajax_downtoken.status === 200) {
-                                var res_downtoken;
-                                try {
-                                    res_downtoken = util.parse_json(ajax_downtoken.responseText);
-                                } catch (e) {
-                                    throw '服务端返回了无效 JSON';
-                                }
-
-                                plupload.extend(infoObj, res_downtoken);
-
-                                info = JSON.stringify(infoObj); // maybe have some bug in ie
-
-                                // console.log(info);
-                                // up.setOption('info', info);
-
-                                file_uploaded_hanlder(up, file, info);
-                            } else {
-                                uploader.trigger('Error', {
-                                    status: ajax_downtoken.status,
-                                    response: ajax_downtoken.responseText,
-                                    file: file,
-                                    code: plupload.HTTP_ERROR
-                                });
-                            }
-                        }
-                    };
-                    ajax_downtoken.send('key=' + infoObj.key + '&bucket_domain=' + option.bucket_domain);
-                } else {
-                    info = util.parse_json(info);
-                    file_uploaded_hanlder(up, file, info);
-                }
+            var success = function(info) {
+                info = util.parse_json(info);
+                file_uploaded_hanlder(up, file, info);
             };
 
             var res = util.parse_json(info.response);
             ctx = ctx ? ctx : res.ctx;
             if (ctx) {
-                make_file(that);
+                make_file();
             } else {
-                get_download_url(that, info.response);
+                success(info.response);
             }
 
         });
