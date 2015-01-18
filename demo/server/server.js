@@ -26,6 +26,18 @@ app.get('/uptoken', function(req, res, next) {
     }
 });
 
+app.get('/private_uptoken', function(req, res, next) {
+    var token = privateUptoken.token();
+    res.header("Cache-Control", "max-age=0, private, must-revalidate");
+    res.header("Pragma", "no-cache");
+    res.header("Expires", 0);
+    if (token) {
+        res.json({
+            uptoken: token
+        });
+    }
+});
+
 app.post('/downtoken', function(req, res) {
 
     var key = req.body.key,
@@ -62,37 +74,45 @@ app.post('/downtoken', function(req, res) {
 
 app.get('/', function(req, res) {
     res.render('index.html', {
-        domain: config.Domain,
-        uptoken_url: config.Uptoken_Url
+        domain: config.Public_Bucket_Domain,
+        uptoken_url: config.Public_Uptoken_Url
     });
 });
 
 
 app.get('/unique_name', function(req, res) {
     res.render('unique_name.html', {
-        domain: config.Domain,
-        uptoken_url: config.Uptoken_Url
+        domain: config.Public_Bucket_Domain,
+        uptoken_url: config.Public_Uptoken_Url
     });
 });
 
 app.get('/x_vals', function(req, res) {
     res.render('x_vals.html', {
-        domain: config.Domain,
-        uptoken_url: config.Uptoken_Url
+        domain: config.Public_Bucket_Domain,
+        uptoken_url: config.Public_Uptoken_Url
     });
 });
 
 app.get('/not_auto_start', function(req, res) {
     res.render('not_auto_start.html', {
-        domain: config.Domain,
-        uptoken_url: config.Uptoken_Url
+        domain: config.Public_Bucket_Domain,
+        uptoken_url: config.Public_Uptoken_Url
+    });
+});
+
+app.get('/private_bucket', function(req, res) {
+    res.render('private_bucket.html', {
+        domain: config.Private_Bucket_Domain,
+        uptoken_url: config.Private_Uptoken_Url
     });
 });
 
 qiniu.conf.ACCESS_KEY = config.ACCESS_KEY;
 qiniu.conf.SECRET_KEY = config.SECRET_KEY;
 
-var uptoken = new qiniu.rs.PutPolicy(config.Bucket_Name);
+var uptoken = new qiniu.rs.PutPolicy(config.Public_Bucket_Name);
+var privateUptoken = new qiniu.rs.PutPolicy(config.Private_Bucket_Name);
 
 
 app.listen(config.Port, function() {

@@ -15,7 +15,7 @@ $(function() {
         chunk_size: '4mb',
         uptoken_url: $('#uptoken_url').val(),
         bucket_domain: $('#domain').val(),
-        auto_start: false,
+        auto_start: true,
         init: {
             'FilesAdded': function(up, files) {
                 $('table').show();
@@ -43,8 +43,16 @@ $(function() {
             },
             'FileUploaded': function(up, file, info) {
                 var progress = new FileProgress(file, 'fsUploadProgress');
-                progress.setComplete(up, info);
-                // console.log('hello man 2,a file is uploaded 》》》》》》》》');
+                $.post('downtoken', {
+                    key: info.key,
+                    domain: $('#domain').val()
+                }).done(function(res) {
+                    // console.log(res)
+                    $.extend(info, res);
+                    progress.setComplete(up, info);
+                }).error(function() {
+                    console.log('获取下载token失败')
+                });
             },
             'Error': function(up, err) {
                 $('table').show();
@@ -53,7 +61,6 @@ $(function() {
                 var error = up.getOption('error')
                 progress.setStatus(error);
             }
-
         }
     });
 
@@ -61,10 +68,6 @@ $(function() {
         console.log('hello man,a file is uploaded');
     });
 
-    $('#start').on('click', function() {
-        Q.start();
-        return false;
-    });
 
     $('#container').on(
         'dragenter',
