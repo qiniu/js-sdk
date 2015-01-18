@@ -15,17 +15,16 @@ $(function() {
         chunk_size: '4mb',
         uptoken_url: $('#uptoken_url').val(),
         bucket_domain: $('#domain').val(),
-        // downtoken_url: '/downtoken',
         // unique_name: true,
         // save_key: true,
-        // x_vars: {
-        //     'id': '1234',
-        //     'time': function(up, file) {
-        //         var time = (new Date()).getTime();
-        //         // do something with 'time'
-        //         return time;
-        //     },
-        // },
+        x_vars: {
+            'id': '1234',
+            'time': function(up, file) {
+                var time = (new Date()).getTime();
+                // do something with 'time'
+                return time;
+            },
+        },
         auto_start: true,
         init: {
             'FilesAdded': function(up, files) {

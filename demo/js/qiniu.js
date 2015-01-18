@@ -310,10 +310,10 @@
             },
             get_file_key = function(up, file, func) {
                 var key = '',
-                    unique_names = false;
+                    unique_name = false;
                 if (!option.save_key) {
-                    unique_names = get_option(up, 'unique_names');
-                    if (unique_names) {
+                    unique_name = get_option(up, 'unique_name');
+                    if (unique_name) {
                         var ext = mOxie.Mime.getFileExtension(file.name);
                         key = ext ? file.id + '.' + ext : file.id;
                     } else if (typeof func === 'function') {

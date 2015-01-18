@@ -4,11 +4,12 @@ var config = require('./config.js');
 var app = express();
 
 app.configure(function() {
-    app.use(express.static(__dirname + '/'));
+    app.use(express.static(__dirname + '/../'));
 });
 
 
-app.set('views', __dirname + '/views');
+app.set('views', __dirname + '/../views');
+
 app.engine('html', require('ejs').renderFile);
 
 app.use(express.urlencoded());
@@ -61,6 +62,28 @@ app.post('/downtoken', function(req, res) {
 
 app.get('/', function(req, res) {
     res.render('index.html', {
+        domain: config.Domain,
+        uptoken_url: config.Uptoken_Url
+    });
+});
+
+
+app.get('/unique_name', function(req, res) {
+    res.render('unique_name.html', {
+        domain: config.Domain,
+        uptoken_url: config.Uptoken_Url
+    });
+});
+
+app.get('/x_vals', function(req, res) {
+    res.render('x_vals.html', {
+        domain: config.Domain,
+        uptoken_url: config.Uptoken_Url
+    });
+});
+
+app.get('/not_auto_start', function(req, res) {
+    res.render('not_auto_start.html', {
         domain: config.Domain,
         uptoken_url: config.Uptoken_Url
     });

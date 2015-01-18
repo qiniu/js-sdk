@@ -15,8 +15,8 @@ $(function() {
         chunk_size: '4mb',
         uptoken_url: $('#uptoken_url').val(),
         bucket_domain: $('#domain').val(),
+        unique_name: true,
         // downtoken_url: '/downtoken',
-        // unique_name: true,
         // save_key: true,
         // x_vars: {
         //     'id': '1234',
