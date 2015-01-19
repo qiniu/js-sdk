@@ -15,17 +15,6 @@ $(function() {
         chunk_size: '4mb',
         uptoken_url: $('#uptoken_url').val(),
         bucket_domain: $('#domain').val(),
-        // downtoken_url: '/downtoken',
-        // unique_name: true,
-        // save_key: true,
-        // x_vars: {
-        //     'id': '1234',
-        //     'time': function(up, file) {
-        //         var time = (new Date()).getTime();
-        //         // do something with 'time'
-        //         return time;
-        //     },
-        // },
         auto_start: true,
         init: {
             'FilesAdded': function(up, files) {
@@ -229,22 +218,3 @@ $(function() {
     });
 
 });
-
-
-// this.isImage = function(url) {
-//     var res, suffix = "";
-//     var imageSuffixes = ["png", "jpg", "jpeg", "gif", "bmp"];
-//     var suffixMatch = /\.([a-zA-Z0-9]+)(\?|\@|$)/;
-
-//     if (!url || !suffixMatch.test(url)) {
-//         return false;
-//     }
-//     res = suffixMatch.exec(url);
-//     suffix = res[1].toLowerCase();
-//     for (var i = 0, l = imageSuffixes.length; i < l; i++) {
-//         if (suffix === imageSuffixes[i]) {
-//             return true;
-//         }
-//     }
-//     return false;
-// };
