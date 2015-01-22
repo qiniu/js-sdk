@@ -2,8 +2,6 @@
 /*global ActiveXObject */
 /*exported Qiniu */
 
-
-
 (function(exports, plupload, mOxie) {
     if (typeof plupload !== 'object' || typeof mOxie !== 'object') {
         throw '七牛 JS-SDK 依赖 Plupload 插件,请引入! 抄送门： http://plupload.com/download';
@@ -285,8 +283,13 @@
             }
         };
 
-
-        var get_uptoken = function(file, func) {
+        var qiniu = {
+            get_option: function(up, option) {
+                var val = up.getOption && up.getOption(option);
+                val = val || (up.settings && up.settings[option]);
+                return val;
+            },
+            get_uptoken: function(file, func) {
                 if (!option.uptoken) {
                     var ajax = that.util.create_ajax();
                     ajax.open('GET', uptoken_url, true);
@@ -303,16 +306,11 @@
                     uptoken_obj[file.id] = option.uptoken;
                 }
             },
-            get_option = function(up, option) {
-                var val = up.getOption && up.getOption(option);
-                val = val || (up.settings && up.settings[option]);
-                return val;
-            },
-            get_file_key = function(up, file, func) {
+            get_file_key: function(up, file, func) {
                 var key = '',
                     unique_name = false;
                 if (!option.save_key) {
-                    unique_name = get_option(up, 'unique_name');
+                    unique_name = this.get_option(up, 'unique_name');
                     if (unique_name) {
                         var ext = mOxie.Mime.getFileExtension(file.name);
                         key = ext ? file.id + '.' + ext : file.id;
@@ -323,43 +321,8 @@
                     }
                 }
                 return key;
-            };
-
-
-        var plupload_option = {},
-            ctx = '';
-
-        plupload.extend(plupload_option, option, {
-            url: up_host,
-            multipart_params: {
-                token: ''
-            }
-        });
-
-        var uploader = new plupload.Uploader(plupload_option);
-
-        uploader.bind('Init', function(up, params) {});
-        uploader.init();
-
-        uploader.bind('FilesAdded', function(up, files) {
-
-            var auto_start = get_option(up, 'auto_start');
-
-            plupload.each(files, function(file, i) {
-                get_uptoken(file, function() {
-                    if (auto_start) {
-                        up.start();
-                    }
-                });
-            });
-            up.refresh(); // Reposition Flash/Silverlight
-        });
-
-        uploader.bind('BeforeUpload', function(up, file) {
-
-            ctx = '';
-
-            var directUpload = function(up, file, func) {
+            },
+            direct_upload: function(up, file, func) {
 
                 var multipart_params_obj;
                 if (option.save_key) {
@@ -368,11 +331,12 @@
                     };
                 } else {
                     multipart_params_obj = {
-                        'key': get_file_key(up, file, func),
+                        'key': this.get_file_key(up, file, func),
                         'token': uptoken_obj[file.id]
                     };
                 }
 
+                //setXvars
                 var x_vars = option.x_vars;
                 if (x_vars !== undefined && typeof x_vars === 'object') {
                     for (var x_key in x_vars) {
@@ -385,7 +349,6 @@
                         }
                     }
                 }
-                //todo setXvars
 
                 up.setOption({
                     'url': up_host,
@@ -393,11 +356,11 @@
                     'chunk_size': undefined,
                     'multipart_params': multipart_params_obj
                 });
-            };
-
-            var makeBlock = function(up, file) {
-                var localFileInfo = localStorage.getItem(file.name);
-                var blockSize = chunk_size;
+            },
+            make_block: function(up, file, key_func) {
+                var localFileInfo = localStorage.getItem(file.name),
+                    chunk_size = this.get_option(up, 'chunk_size'),
+                    blockSize = chunk_size;
                 if (localFileInfo) {
                     localFileInfo = JSON.parse(localFileInfo);
                     var now = (new Date()).getTime();
@@ -420,13 +383,15 @@
                             }
 
                         } else {
-                            // 进度100%时，删除对应的localStorage，避免 499 bug
+                            // 进度100%时，删除本地信息，避免 499bug
+                            // 为什么不直接 makefile 的原因是会有很多bug，囧
                             localStorage.removeItem(file.name);
                         }
                     } else {
                         localStorage.removeItem(file.name);
                     }
                 }
+
                 up.setOption({
                     'url': up_host + '/mkblk/' + blockSize,
                     'multipart': false,
@@ -437,22 +402,42 @@
                     },
                     'multipart_params': {}
                 });
-            };
+            },
+            make_file: function(up, file, key_func) {
+                var self = this;
 
-            var chunk_size = get_option(up, 'chunk_size');
-            if (uploader.runtime === 'html5' && chunk_size) {
-                if (file.size < chunk_size) {
-                    directUpload(up, file, key_func);
-                } else {
-                    makeBlock(up, file);
+                var key = '';
+                if (!option.save_key) {
+                    key = self.get_file_key(up, file, key_func);
+                    key = key ? '/key/' + that.util.url_safe_base64_encode(key) : '';
                 }
-            } else {
-                directUpload(up, file, key_func);
-            }
-        });
 
-        uploader.bind('ChunkUploaded', function(up, file, info) {
-            var save_upload_info = function(file) {
+                var x_vars_url = self.get_x_vals_url();
+                var url = up_host + '/mkfile/' + file.size + key + x_vars_url;
+                var ajax = that.util.create_ajax();
+                ajax.open('POST', url, true);
+                ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+                ajax.setRequestHeader('Authorization', 'UpToken ' + uptoken_obj[file.id]);
+                ajax.onreadystatechange = function() {
+                    if (ajax.readyState === 4) {
+                        if (ajax.status === 200) {
+                            // 文件上传成功后删除 localStorage
+                            localStorage.removeItem(file.name);
+
+                            self.success(up, file, ajax.responseText);
+                        } else {
+                            uploader.trigger('Error', {
+                                status: ajax.status,
+                                response: ajax.responseText,
+                                file: file,
+                                code: -200
+                            });
+                        }
+                    }
+                };
+                ajax.send(ctx);
+            },
+            save_upload_info: function(file, ctx, info) {
                 localStorage.setItem(file.name, JSON.stringify({
                     ctx: ctx,
                     percent: file.percent,
@@ -460,19 +445,90 @@
                     offset: info.offset,
                     time: (new Date()).getTime()
                 }));
-            };
+            },
+            get_x_vals_url: function(up, file) {
+                var x_vars = option.x_vars,
+                    x_val = '',
+                    x_vars_url = '';
+                var url_safe_base64_encode = that.util.url_safe_base64_encode;
 
+                if (x_vars !== undefined && typeof x_vars === 'object') {
+                    for (var x_key in x_vars) {
+                        if (x_vars.hasOwnProperty(x_key)) {
+                            if (typeof x_vars[x_key] === 'function') {
+                                x_val = url_safe_base64_encode(x_vars[x_key](up, file));
+                            } else if (typeof x_vars[x_key] !== 'object') {
+                                x_val = url_safe_base64_encode(x_vars[x_key]);
+                            }
+                            x_vars_url += '/x:' + x_key + '/' + x_val;
+                        }
+                    }
+                }
+                return x_vars_url;
+            },
+            success: function(up, file, info) {
+                info = that.util.parse_json(info);
+                file_uploaded_func(up, file, info);
+            }
+        };
+
+
+
+        var plupload_option = {},
+            ctx = '';
+
+        plupload.extend(plupload_option, option, {
+            url: up_host,
+            multipart_params: {
+                token: ''
+            }
+        });
+
+        var uploader = new plupload.Uploader(plupload_option);
+
+        uploader.bind('Init', function(up, params) {});
+        uploader.init();
+
+        uploader.bind('FilesAdded', function(up, files) {
+
+            var auto_start = qiniu.get_option(up, 'auto_start');
+
+            plupload.each(files, function(file, i) {
+                qiniu.get_uptoken(file, function() {
+                    if (auto_start) {
+                        up.start();
+                    }
+                });
+            });
+            up.refresh(); // Reposition Flash/Silverlight
+        });
+
+        uploader.bind('BeforeUpload', function(up, file) {
+            ctx = '';
+            var chunk_size = qiniu.get_option(up, 'chunk_size');
+            if (uploader.runtime === 'html5' && chunk_size) {
+                if (file.size < chunk_size) {
+                    qiniu.direct_upload(up, file, key_func);
+                } else {
+                    qiniu.make_block(up, file, key_func);
+                }
+            } else {
+                qiniu.direct_upload(up, file, key_func);
+            }
+        });
+
+        uploader.bind('ChunkUploaded', function(up, file, info) {
             var res = that.util.parse_json(info.response);
-
             ctx = ctx ? ctx + ',' + res.ctx : res.ctx;
             var leftSize = info.total - info.offset;
-            var chunk_size = get_option(up, 'chunk_size');
+            var chunk_size = qiniu.get_option(up, 'chunk_size');
+
             if (leftSize < chunk_size) {
                 up.setOption({
                     'url': up_host + '/mkblk/' + leftSize
                 });
             }
-            save_upload_info(file);
+            qiniu.save_upload_info(file, ctx, info);
         });
 
         uploader.bind('Error', function(up, err) {
@@ -484,7 +540,7 @@
                         error = '上传失败。请稍后再试。';
                         break;
                     case plupload.FILE_SIZE_ERROR:
-                        var max_file_size = get_option(up, 'max_file_size');
+                        var max_file_size = qiniu.get_option(up, 'max_file_size');
                         error = '浏览器最大可上传' + max_file_size + '。更大文件请使用命令行工具。';
                         break;
                     case plupload.FILE_EXTENSION_ERROR:
@@ -553,72 +609,13 @@
         });
 
         uploader.bind('FileUploaded', function(up, file, info) {
-
-            var make_file = function() {
-                var key = '';
-                if (!option.save_key) {
-                    key = get_file_key(up, file, key_func);
-                    key = key ? '/key/' + that.util.url_safe_base64_encode(key) : '';
-                }
-
-                var x_vars_url = get_x_vals_url();
-                var url = up_host + '/mkfile/' + file.size + key + x_vars_url;
-                var ajax = that.util.create_ajax();
-                ajax.open('POST', url, true);
-                ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
-                ajax.setRequestHeader('Authorization', 'UpToken ' + uptoken_obj[file.id]);
-                ajax.onreadystatechange = function() {
-                    if (ajax.readyState === 4) {
-                        localStorage.removeItem(file.name);
-                        if (ajax.status === 200) {
-                            var info = ajax.responseText;
-                            success(info);
-                        } else {
-                            uploader.trigger('Error', {
-                                status: ajax.status,
-                                response: ajax.responseText,
-                                file: file,
-                                code: -200
-                            });
-                        }
-                    }
-                };
-                ajax.send(ctx);
-            };
-
-            var get_x_vals_url = function() {
-                var x_vars = option.x_vars,
-                    x_val = '',
-                    x_vars_url = '';
-                if (x_vars !== undefined && typeof x_vars === 'object') {
-                    for (var x_key in x_vars) {
-                        if (x_vars.hasOwnProperty(x_key)) {
-                            if (typeof x_vars[x_key] === 'function') {
-                                x_val = that.util.url_safe_base64_encode(x_vars[x_key](up, file));
-                            } else if (typeof x_vars[x_key] !== 'object') {
-                                x_val = that.util.url_safe_base64_encode(x_vars[x_key]);
-                            }
-                            x_vars_url += '/x:' + x_key + '/' + x_val;
-                        }
-                    }
-                }
-                return x_vars_url;
-            };
-
-
-            var success = function(info) {
-                info = that.util.parse_json(info);
-                file_uploaded_func(up, file, info);
-            };
-
             var res = that.util.parse_json(info.response);
             ctx = ctx ? ctx : res.ctx;
             if (ctx) {
-                make_file();
+                qiniu.make_file(up, file, key_func);
             } else {
-                success(info.response);
+                qiniu.success(up, file, info.response);
             }
-
         });
 
         return uploader;
