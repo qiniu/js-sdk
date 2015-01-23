@@ -16,94 +16,7 @@
             uptoken_obj = {};
         var that = this;
 
-        var def = {
-            MAX_CHUNK_SIZE: 4 << 20, //4m
-            HTTPS_UP_HOST: 'https://up.qbox.me',
-            HTTP_UP_HOST: 'http://up.qiniu.com'
-        };
-
         this.version = '2.0.0-beta';
-
-        var verify = function() {
-            if (!option.bucket_domain) {
-                throw '必须指定 bucket_domain!';
-            }
-
-            if (!option.browse_button) {
-                throw '必须指定 browse_button!';
-            }
-
-            if (!option.uptoken_url) {
-                throw '必须指定 uptoken_url';
-            }
-        };
-
-        var get = function() {
-            var get_up_host = function() {
-                if (option.up_host) {
-                    return option.up_host;
-                } else {
-                    var protocol = window.location.protocol;
-                    if (protocol !== 'https') {
-                        return def.HTTP_UP_HOST;
-                    } else {
-                        return def.HTTPS_UP_HOST;
-                    }
-                }
-            };
-            var get_key_func = function() {
-                if (typeof option.init === 'object' && typeof option.init.Key === 'function') {
-                    return option.init.Key;
-                }
-                return null;
-            };
-            var get_file_uploaded_func = function() {
-                if (typeof option.init === 'object' && typeof option.init.FileUploaded === 'function') {
-                    return option.init.FileUploaded;
-                }
-                return function() {};
-            };
-
-            up_host = get_up_host();
-            uptoken_url = option.uptoken_url;
-            bucket_domain = option.bucket_domain;
-
-            key_func = get_key_func();
-            file_uploaded_func = get_file_uploaded_func();
-        };
-
-        var reset = function() {
-            var reset_chunk_size = function() {
-                var chunk_size,
-                    isOldIE = mOxie.Env.browser === "IE" && mOxie.Env.version <= 9;
-                if (isOldIE && option.chunk_size && option.runtimes.indexOf('flash') >= 0) {
-                    //  link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
-                    //  when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
-                    option.chunk_size = 0;
-
-                } else {
-                    chunk_size = plupload.parseSize(option.chunk_size);
-                    if (chunk_size > def.MAX_CHUNK_SIZE) {
-                        option.chunk_size = def.MAX_CHUNK_SIZE;
-                    }
-                    // qiniu service  max_chunk_size is 4m
-                    // reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
-                }
-            };
-            var reset_file_uploaded_func = function() {
-                if (typeof option.init === 'object') {
-                    option.init.FileUploaded = function() {};
-                }
-            };
-            reset_chunk_size();
-            reset_file_uploaded_func();
-        };
-
-        verify();
-        get();
-        reset();
-
-
         this.util = {
             parse_json: function(data) {
                 // Attempt to parse using the native JSON parser first
@@ -284,6 +197,77 @@
         };
 
         var qiniu = {
+            Default_Chunk_Size: 4 << 20, //4m
+            Https_Up_Host: 'https://up.qbox.me',
+            Http_Up_Host: 'http://up.qiniu.com',
+            verify: function() {
+                if (!option.bucket_domain) {
+                    throw '必须指定 bucket_domain!';
+                }
+
+                if (!option.browse_button) {
+                    throw '必须指定 browse_button!';
+                }
+
+                if (!option.uptoken_url) {
+                    throw '必须指定 uptoken_url';
+                }
+            },
+            set_qiniu: function() {
+                // set up_host、uptoken_url、bucket_domain
+                if (option.up_host) {
+                    up_host = option.up_host;
+                } else {
+                    var protocol = window.location.protocol;
+                    if (protocol !== 'https') {
+                        up_host = qiniu.Http_Up_Host;
+                    } else {
+                        up_host = qiniu.Https_Up_Host;
+                    }
+                }
+                uptoken_url = option.uptoken_url;
+                bucket_domain = option.bucket_domain;
+
+                // set key_func 、file_uploaded_func
+                var get_key_func = function() {
+                    if (typeof option.init === 'object' && typeof option.init.Key === 'function') {
+                        return option.init.Key;
+                    }
+                    return null;
+                };
+                var get_file_uploaded_func = function() {
+                    if (typeof option.init === 'object' && typeof option.init.FileUploaded === 'function') {
+                        return option.init.FileUploaded;
+                    }
+                    return function() {};
+                };
+
+                key_func = get_key_func();
+                file_uploaded_func = get_file_uploaded_func();
+            },
+            reset_option: function() {
+                // reset chunk_size 避免bug
+                var chunk_size,
+                    isOldIE = mOxie.Env.browser === "IE" && mOxie.Env.version <= 9;
+                if (isOldIE && option.chunk_size && option.runtimes.indexOf('flash') >= 0) {
+                    //  link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
+                    //  when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
+                    option.chunk_size = 0;
+
+                } else {
+                    chunk_size = plupload.parseSize(option.chunk_size);
+                    if (chunk_size !== this.Default_Chunk_Size && chunk_size !== 0) {
+                        option.chunk_size = this.Default_Chunk_Size;
+                    }
+                    // qiniu default_chunk_size is 4m
+                    // reset chunk_size to default_chunk_size(4m) when chunk_size isn't 4m
+                }
+
+                // reset option.init.FileUploaded 避免调用两次
+                if (typeof option.init === 'object') {
+                    option.init.FileUploaded = function() {};
+                }
+            },
             get_option: function(up, option) {
                 var val = up.getOption && up.getOption(option);
                 val = val || (up.settings && up.settings[option]);
@@ -472,7 +456,9 @@
             }
         };
 
-
+        qiniu.verify();
+        qiniu.set_qiniu();
+        qiniu.reset_option();
 
         var plupload_option = {},
             ctx = '';
