@@ -12,7 +12,7 @@ $(function() {
         max_file_size: '100mb',
         flash_swf_url: 'js/plupload/Moxie.swf',
         dragdrop: true,
-        chunk_size: '4mb',
+        chunk_size: '3mb',
         uptoken_url: $('#uptoken_url').val(),
         bucket_domain: $('#domain').val(),
         auto_start: true,
