@@ -14,6 +14,26 @@ app.engine('html', require('ejs').renderFile);
 
 app.use(express.urlencoded());
 
+
+app.get('/', function(req, res) {
+    res.render('index.html');
+});
+
+
+app.get('/docs', function(req, res) {
+    res.render('docs.html');
+});
+
+app.get('/demo', function(req, res) {
+    res.render('demo.html');
+});
+
+
+app.get('/faq', function(req, res) {
+    res.render('faq.html');
+});
+
+
 app.post('/uptoken', function(req, res, next) {
     var name = req.body.name,
         size = req.body.size,
@@ -76,37 +96,29 @@ app.post('/downtoken', function(req, res) {
     }
 });
 
-app.get('/', function(req, res) {
-    res.render('index.html', {
+app.get('/demo/unique_name', function(req, res) {
+    res.render('demo/unique_name.html', {
         domain: config.Public_Bucket_Domain,
         uptoken_url: config.Public_Uptoken_Url
     });
 });
 
-
-app.get('/unique_name', function(req, res) {
-    res.render('unique_name.html', {
+app.get('/demo/x_vals', function(req, res) {
+    res.render('demo/x_vals.html', {
         domain: config.Public_Bucket_Domain,
         uptoken_url: config.Public_Uptoken_Url
     });
 });
 
-app.get('/x_vals', function(req, res) {
-    res.render('x_vals.html', {
+app.get('/demo/not_auto_start', function(req, res) {
+    res.render('demo/not_auto_start.html', {
         domain: config.Public_Bucket_Domain,
         uptoken_url: config.Public_Uptoken_Url
     });
 });
 
-app.get('/not_auto_start', function(req, res) {
-    res.render('not_auto_start.html', {
-        domain: config.Public_Bucket_Domain,
-        uptoken_url: config.Public_Uptoken_Url
-    });
-});
-
-app.get('/private_bucket', function(req, res) {
-    res.render('private_bucket.html', {
+app.get('/demo/private_bucket', function(req, res) {
+    res.render('demo/private_bucket.html', {
         domain: config.Private_Bucket_Domain,
         uptoken_url: config.Private_Uptoken_Url
     });

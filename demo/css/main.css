@@ -14,6 +14,10 @@ body {
   color: #d2d2d2;
   font-family: '微软雅黑',"Helvetica Neue", Helvetica, Arial, sans-serif;
 }*/
+
+.lead {
+  margin-top: 40px;
+}
 h1 .view_github {
   display: block;
   font-size:  14px;
@@ -224,7 +228,7 @@ a {
     text-align: center;
     color: rgba(255,255,255,.8);
     background-color: #8193F2;
-    background-image: url(../image/bg.png);
+    /*background-image: url(../image/bg.png);*/
     margin-bottom: 40px;
     font-size: 20px
 }
@@ -245,7 +249,7 @@ a {
 
 @media (min-width: 768px) {
     .sb-page-header {
-        padding-top:60px;
+        padding-top:120px;
         padding-bottom: 60px;
         text-align: left;
         font-size: 24px

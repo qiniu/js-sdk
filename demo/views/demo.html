@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>七牛云存储 - JavaScript SDK</title>
+    <link href="image/favicon.ico" rel="shortcut icon">
+    <link rel="stylesheet" href="add-on/bootstrap-3.3.2/css/bootstrap.css">
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="add-on/highlight/highlight.css">
+
+    <!--[if lt IE 9]>
+      <script src="add-on/Respond-1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+<div class="container-fulid">
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/" class="navbar-brand">JS-SDK</a>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse">
+          <ul class="nav navbar-nav"  id="js-navbar-nav">
+            <li>
+              <a href="/">开始</a>
+            </li>
+            <li>
+              <a href="/docs">文档</a>
+            </li>
+            <li>
+              <a href="/demo">Demo</a>
+            </li>
+            <li>
+              <a href="/faq">FAQ</a>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="http://expo.getbootstrap.com" onclick="ga('send', 'event', 'Navbar', 'Community links', 'Expo');">Expo</a></li>
+            <li><a href="http://blog.getbootstrap.com" onclick="ga('send', 'event', 'Navbar', 'Community links', 'Blog');">Blog</a></li>
+          </ul>
+        </nav>
+      </div>
+    </nav>
+
+  <header class="sb-page-header">
+      <div class="container">
+          <h1>七牛云存储 JS-SDK</h1>
+          <p>简单、快捷上传至七牛云存储的网页端解决方案</p>
+          <div id="carbonads-container">
+            <div class="carbonad">
+                <div id="azcarbon"></div>
+            </div>
+        </div>
+      </div>
+  </header>
+  <div class="container">
+  <h1 class="page-header">Demo 列表</h1>
+  <h4></h4>
+  <ul>
+    <li>
+      <dl>
+        <dt><a href="/demo/" class="" target="_blank">手动上传</a></dt>
+        <dd>通过其他元素的事件，触发上传</dd>
+      </dl>
+    </li>
+    <li>
+      <dl>
+        <dt><a href="/demo/" class="" target="_blank">自定义变量 x_vals</a></dt>
+        <dd>x_vals 的详细定义参考七牛文档-</dd>
+      </dl>
+    </li>
+    <li>
+      <dl>
+        <dt><a href="/demo/" class="" target="_blank">自定义 key 函数</a></dt>
+        <dd>通过 key 函数，自定义文件名</dd>
+      </dl>
+    </li>
+    <li>
+      <dl>
+        <dt><a href="/demo/" class="" target="_blank">私有空间支持</a></dt>
+        <dd>通过 `FileUploaded` 事件，可以向服务器请求获得 downtoken，进而支持私有空间</dd>
+      </dl>
+    </li>
+    <li>
+      <dl>
+        <dt><a href="/demo/" class="" target="_blank">分块上传，断点续上传</a></dt>
+        <dd> chunk_size 变量可以支持分块上传，分块上传开启时，相应的支持断点续上传</dd>
+      </dl>
+    </li>
+    <li>
+      <dl>
+        <dt><a href="/demo/" class="" target="_blank">自定义上传通道</a></dt>
+        <dd>特殊情况下，如果需要自定义七牛的上传域名，可以通过此配置实现</dd>
+      </dl>
+    </li>
+  </ul>
+
+  </div>
+</div>
+
+
+
+
+<script src="add-on/jquery-1.9.1.min.js"></script>
+<script src="add-on/bootstrap-3.3.2/js/bootstrap.min.js"></script>
+<!-- <script src="add-on/plupload-2.1.2/js/plupload.full.min.js"></script> -->
+<script src="add-on/plupload-2.1.2/js/moxie.js"></script>
+<script src="add-on/plupload-2.1.2/js/plupload.dev.js"></script>
+<script src="add-on/plupload-2.1.2/js/i18n/zh_CN.js"></script>
+<script src="add-on/highlight/highlight.js"></script>
+
+<script src="/js/ui.js"></script>
+<script src="/js/qiniu.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>
