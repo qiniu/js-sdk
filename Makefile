@@ -3,4 +3,4 @@ install : all
 all :
 	npm install
 	grunt
-	node demo/server.js
+	node demo/server/server.js

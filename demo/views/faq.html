@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>七牛云存储 - JavaScript SDK</title>
+	<link href="image/favicon.ico" rel="shortcut icon">
+	<link rel="stylesheet" href="add-on/bootstrap-3.3.2/css/bootstrap.css">
+	<link rel="stylesheet" href="css/main.css">
+	<link rel="stylesheet" href="add-on/highlight/highlight.css">
+
+	<!--[if lt IE 9]>
+      <script src="add-on/Respond-1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+<div class="container-fulid">
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="/" class="navbar-brand">JS-SDK</a>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse">
+          <ul class="nav navbar-nav"  id="js-navbar-nav">
+            <li>
+              <a href="/">开始</a>
+            </li>
+            <li>
+              <a href="/docs">文档</a>
+            </li>
+            <li>
+              <a href="/demo">Demo</a>
+            </li>
+            <li>
+              <a href="/faq">FAQ</a>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="http://expo.getbootstrap.com" onclick="ga('send', 'event', 'Navbar', 'Community links', 'Expo');">Expo</a></li>
+            <li><a href="http://blog.getbootstrap.com" onclick="ga('send', 'event', 'Navbar', 'Community links', 'Blog');">Blog</a></li>
+          </ul>
+        </nav>
+      </div>
+    </nav>
+
+  <header class="sb-page-header">
+      <div class="container">
+          <h1>七牛云存储 JS-SDK</h1>
+          <p>简单、快捷上传至七牛云存储的网页端解决方案</p>
+          <div id="carbonads-container">
+            <div class="carbonad">
+                <div id="azcarbon"></div>
+            </div>
+        </div>
+      </div>
+  </header>
+  <div class="container">
+    <h1 class="page-header">常见问题</h1>
+        <p class="lead">JS-SDK 为什么需要服务端支持？</p>
+        <p>因为七牛上传需要上传 token 支持，而它的生成依赖于七牛提供的AK/SK，如果AK/SK放在客户端将会导致泄密，所以JS-SDK 通过Ajax向后端请求获取上传 token。</p>
+        <p class="lead">JS-SDK  是否支持每个文件对应一个单独的上传 token？</p>
+        <p>支持的。每个文件上传前都会向服务器发一个POST请求，POST的参数包含文件名、文件大小、文件类型（若有）、bucket_domain。服务端可以根据这些传入的参数和其他后端自定义的参数生成所需要的 token。</p>
+        <p class="lead">JS-SDK 是否可以自定义上传域名？</p>
+        <p>可以的。初始化的时候传人 up_host 参数即可。比如海外上传通道 up_host : http://up.qiniug.com 。</p>
+        <p class="lead">JS-SDK 是否支持私有空间？</p>
+        <p>JS-SDK本身并没有对私有空间的支持，但可以在'FileUploaded'事件中轻易的实现对私有空间的支持。如：</p>
+        <p class="lead">JS-SDK 是否支持https网站？</p>
+        <p>支持的，SDK会根据网站协议自动切换上传通道。若是https网站，会自动切换到https上传通道。http相同。</p>
+  </div>
+</div>
+
+
+
+
+<script src="add-on/jquery-1.9.1.min.js"></script>
+<script src="add-on/bootstrap-3.3.2/js/bootstrap.min.js"></script>
+<!-- <script src="add-on/plupload-2.1.2/js/plupload.full.min.js"></script> -->
+<script src="add-on/plupload-2.1.2/js/moxie.js"></script>
+<script src="add-on/plupload-2.1.2/js/plupload.dev.js"></script>
+<script src="add-on/plupload-2.1.2/js/i18n/zh_CN.js"></script>
+<script src="add-on/highlight/highlight.js"></script>
+
+<script src="/js/ui.js"></script>
+<script src="/js/qiniu.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>
