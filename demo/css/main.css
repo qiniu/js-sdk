@@ -2,18 +2,18 @@ body {
   font-family: '微软雅黑';
     overflow: scroll;
 }
-h1 {
+/*h1 {
   border-bottom: 1px solid #d2d2d2;
   padding-bottom: 15px;
   position: relative;
   font-weight: bold;
   margin-bottom: 15px;
   font-family: '微软雅黑';
-}
-h3,h4 {
+}*/*/
+/*h3,h4 {
   color: #d2d2d2;
   font-family: '微软雅黑',"Helvetica Neue", Helvetica, Arial, sans-serif;
-}
+}*/
 h1 .view_github {
   display: block;
   font-size:  14px;
@@ -213,4 +213,52 @@ pre  {
 
 a {
     cursor: pointer;
+}
+
+
+
+
+.sb-page-header {
+    position: relative;
+    padding: 30px 15px;
+    text-align: center;
+    color: rgba(255,255,255,.8);
+    background-color: #8193F2;
+    background-image: url(../image/bg.png);
+    margin-bottom: 40px;
+    font-size: 20px
+}
+
+.sb-page-header h1 {
+    margin-top: 0;
+    color: #fff
+}
+
+.sb-page-header p {
+    margin-bottom: 0;
+    line-height: 1.4
+}
+
+.sb-page-header .container {
+    position: relative
+}
+
+@media (min-width: 768px) {
+    .sb-page-header {
+        padding-top:60px;
+        padding-bottom: 60px;
+        text-align: left;
+        font-size: 24px
+    }
+
+    .sb-page-header h1 {
+        font-size: 60px;
+        line-height: 1
+    }
+}
+
+@media (min-width: 992px) {
+    .sb-page-header h1,.sb-page-header p {
+        margin-right:380px
+    }
 }

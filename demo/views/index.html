@@ -13,238 +13,209 @@
     <![endif]-->
 </head>
 <body>
-<div class="container">
-	<div class="text-left col-md-12 wrapper">
-		<h1 class="text-left col-md-12 ">
-			七牛云存储 - JavaScript SDK
-            <a class="btn btn-default view_code" id="show_code">
-                查看初始化代码
-            </a>
-            <a class="btn btn-default view_github" href="https://github.com/qiniu/js-sdk" target="_blank">
-				<img src="http://qtestbucket.qiniudn.com/GitHub-Mark-32px.png">
-				View Source on Github
-			</a>
-		</h1>
-        <input type="hidden" id="domain" value="<%= domain %>">
-        <input type="hidden" id="uptoken_url" value="<%= uptoken_url %>">
-		<ul class="tip col-md-12 text-mute">
-			<li>
-				<small>
-					JavaScript SDK 基于 Plupload 开发，可以通过 Html5 或 Flash 等模式上传文件至七牛云存储。
-				</small>
-			</li>
-			<li>
-				<small>临时上传的空间不定时清空，请勿保存重要文件。</small>
-			</li>
-            <li>
-                <small>Html5模式大于4M文件采用分块上传。</small>
+<div class="container-fulid">
+    <nav class="navbar navbar-static-top bs-docs-nav" id="top" role="banner">
+      <div class="container">
+        <div class="navbar-header">
+          <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a href="../" class="navbar-brand">JS-SDK</a>
+        </div>
+        <nav class="collapse navbar-collapse bs-navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active">
+              <a href="../getting-started/">开始</a>
             </li>
             <li>
-                <small>上传图片可查看处理效果。</small>
+              <a href="../css/">文档</a>
             </li>
-			<li>
-				<small>本示例限制最大上传文件100M。</small>
-			</li>
-		</ul>
-    </div>
-    <div class="body">
-        <div class="col-md-12">
-            <div id="container">
-                <a class="btn btn-default btn-lg " id="pickfiles" href="#" >
-                    <i class="glyphicon glyphicon-plus"></i>
-                    <sapn>选择文件</sapn>
-                </a>
+            <li>
+              <a href="../components/">DEMO</a>
+            </li>
+            <li>
+              <a href="../customize/">FAQ</a>
+            </li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="http://expo.getbootstrap.com" onclick="ga('send', 'event', 'Navbar', 'Community links', 'Expo');">Expo</a></li>
+            <li><a href="http://blog.getbootstrap.com" onclick="ga('send', 'event', 'Navbar', 'Community links', 'Blog');">Blog</a></li>
+          </ul>
+        </nav>
+      </div>
+    </nav>
+
+  <header class="sb-page-header">
+      <div class="container">
+          <h1>七牛云存储 JS-SDK</h1>
+          <p>简单、快捷，上传至七牛云存储的网页端解决方案</p>
+          <!-- <p>Our complete collection of Bootstrap themes and templates. Use our themes for any project, personal or commercial.</p> -->
+          <div id="carbonads-container">
+            <div class="carbonad">
+                <div id="azcarbon"></div>
             </div>
-        </div>
-
-        <div style="display:none" id="success" class="col-md-12">
-            <div class="alert-success">
-                队列全部文件处理完毕
-            </div>
-        </div>
-        <div class="col-md-12 ">
-            <table class="table table-striped table-hover text-left"   style="margin-top:40px;display:none">
-                <thead>
-                  <tr>
-                    <th class="col-md-4">Filename</th>
-                    <th class="col-md-2">Size</th>
-                    <th class="col-md-6">Detail</th>
-                  </tr>
-                </thead>
-                <tbody id="fsUploadProgress">
-                </tbody>
-            </table>
-        </div>
-    </div>
-    <div class="modal fade body" id="myModal-code" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title" id="myModalLabel">查看初始化代码</h4>
-          </div>
-          <div class="modal-body">
-            <pre><code>
-            //引入Plupload 、qiniu.js后
-
-            var uploader = Qiniu.uploader({
-                runtimes: 'html5,flash,html4',    //上传模式,依次退化
-                browse_button: 'pickfiles',       //上传选择的点选按钮，**必需**
-                uptoken_url: '/token',            //Ajax请求upToken的Url，**强烈建议设置**（服务端提供）
-                // uptoken : '<Your upload token>', //若未指定uptoken_url,则必须指定 uptoken ,uptoken由其他程序生成
-                // unique_names: true, // 默认 false，key为文件名。若开启该选项，SDK为自动生成上传成功后的key（文件名）。
-                // save_key: true,   // 默认 false。若在服务端生成uptoken的上传策略中指定了 `sava_key`，则开启，SDK会忽略对key的处理
-                domain: 'http://qiniu-plupload.qiniudn.com/',   //bucket 域名，下载资源时用到，**必需**
-                container: 'container',           //上传区域DOM ID，默认是browser_button的父元素，
-                max_file_size: '100mb',           //最大文件体积限制
-                flash_swf_url: 'js/plupload/Moxie.swf',  //引入flash,相对路径
-                max_retries: 3,                   //上传失败最大重试次数
-                dragdrop: true,                   //开启可拖曳上传
-                drop_element: 'container',        //拖曳上传区域元素的ID，拖曳文件或文件夹后可触发上传
-                chunk_size: '4mb',                //分块上传时，每片的体积
-                auto_start: true,                 //选择文件后自动上传，若关闭需要自己绑定事件触发上传
-                init: {
-                    'FilesAdded': function(up, files) {
-                        plupload.each(files, function(file) {
-                            // 文件添加进队列后,处理相关的事情
-                        });
-                    },
-                    'BeforeUpload': function(up, file) {
-                           // 每个文件上传前,处理相关的事情
-                    },
-                    'UploadProgress': function(up, file) {
-                           // 每个文件上传时,处理相关的事情
-                    },
-                    'FileUploaded': function(up, file, info) {
-                           // 每个文件上传成功后,处理相关的事情
-                           // 其中 info 是文件上传成功后，服务端返回的json，形式如
-                           // {
-                           //    "hash": "Fh8xVqod2MQ1mocfI4S4KpRL6D98",
-                           //    "key": "gogopher.jpg"
-                           //  }
-                           // 参考http://developer.qiniu.com/docs/v6/api/overview/up/response/simple-response.html
-
-                           // var domain = up.getOption('domain');
-                           // var res = parseJSON(info);
-                           // var sourceLink = domain + res.key; 获取上传成功后的文件的Url
-                    },
-                    'Error': function(up, err, errTip) {
-                           //上传出错时,处理相关的事情
-                    },
-                    'UploadComplete': function() {
-                           //队列文件处理完毕后,处理相关的事情
-                    },
-                    'Key': function(up, file) {
-                        // 若想在前端对每个文件的key进行个性化处理，可以配置该函数
-                        // 该配置必须要在 unique_names: false , save_key: false 时才生效
-
-                        var key = "";
-                        // do something with key here
-                        return key
-                    }
-                }
-            });
-
-            // domain 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取
-
-            // uploader 为一个plupload对象，继承了所有plupload的方法，参考http://plupload.com/docs
-            </code></pre>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" data-dismiss="modal">关闭</button>
-          </div>
         </div>
       </div>
-    </div>
-    <div class="modal fade body" id="myModal-img" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-            <h4 class="modal-title" id="myModalLabel">图片效果查看</h4>
-          </div>
-          <div class="modal-body">
-            <div class="modal-body-wrapper text-center">
-                <a href="" target="_blank" >
-                    <img src="" alt="" data-key="" data-h="">
-                </a>
-            </div>
-            <div class="modal-body-footer">
-                <div class="watermark">
-                    <span>水印控制：</span>
-                    <a href="#" data-watermark="NorthWest" class="btn btn-default">
-                        左上角
-                    </a>
-                    <a href="#" data-watermark="SouthWest" class="btn btn-default">
-                        左下角
-                    </a>
-                    <a href="#" data-watermark="NorthEast" class="btn btn-default">
-                        右上角
-                    </a>
-                    <a href="#" data-watermark="SouthEast" class="btn btn-default disabled">
-                        右下角
-                    </a>
-                    <a href="#" data-watermark="false" class="btn btn-default">
-                        无水印
-                    </a>
-                </div>
-                 <div class="imageView2">
-                    <span>缩略控制：</span>
-                    <a href="#" data-imageview="large" class="btn btn-default disabled">
-                        大缩略图
-                    </a>
-                    <a href="#" data-imageview="middle" class="btn btn-default">
-                        中缩略图
-                    </a>
-                    <a href="#" data-imageview="small" class="btn btn-default">
-                        小缩略图
-                    </a>
-                </div>
-                <div class="imageMogr2">
-                    <span>高级控制：</span>
-                    <a href="#" data-imagemogr="left" class="btn btn-default no-disable-click" >
-                        逆时针
-                    </a>
-                    <a href="#" data-imagemogr="right" class="btn btn-default no-disable-click">
-                        顺时针
-                    </a>
-                    <a href="#" data-imagemogr="no-rotate" class="btn btn-default">
-                        无旋转
-                    </a>
-                </div>
-                <div class="text-warning">
-                    备注：小图片水印效果不明显，建议使用大图片预览水印效果
-                </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <span class="pull-left">本示例仅演示了简单的图片处理效果，了解更多请点击</span>
+  </header>
+  <div class="container">
+    <h1 class="page-header">概述</h1>
+    <h3>功能</h3>
+    <ul class="">
+      <li>浏览器端直接上传文件至七牛云存储，并提供下载链接</li>
+      <li>支持为每个文件配置单独的上传 token</li>
+      <li>支持自定义上传域名，自动匹配合适的上传域名(https 或 http)</li>
+      <li>在 HTML5 模式下，大于 4M 的文件支持分块上传、断点续上传</li>
+      <li>支持 HTML5、Flash、HTML4 依次退化上传</li>
+      <li>继承了所有 Plupload 插件的功能</li>
+    </ul>
+    <h3>依赖</h3>
+    <ul>
+      <li>JS-SDK 依赖于 Plupload 插件，必须先引入 Plupload</li>
+      <li>JS-SDK 依赖服务端提供上传 token</li>
+    </ul>
+    <h3>不推荐场景</h3>
+    <ul>
+      <li>低版本的IE（IE6/7）。虽然理论上 JS-SDK 支持低版本IE，但并未充分测试，所以可能出现兼容性问题</li>
+      <li>专门面向移动端的网站。Plupload 插件太重，推荐选择更轻量的上传插件或者自行开发</li>
+    </ul>
+    <h1 class="page-header">开发</h1>
+    <h3>1、引入 Plupload 及 JS-SDK</h3>
+    <p>Plupload 可以从其项目官网<a href="http://plupload.com/download" target="_blank">下载</a>，也可以直接利用本项目 <a href="https://github.com/qiniu/js-sdk" class=""  target="_blank">JS-SDK</a>下的目录(demo/add-on/plupload-2.1.2）的文件。</p>
+    <p>JS-SDK 直接从 <a href="https://github.com/qiniu/js-sdk" class=""  target="_blank">JS-SDK</a>下载。</p>
+    <p>开发环境：</p>
+    <pre>
+      <code>
+        <script src="<项目路径>/moxie.js"></script>
+        <script src="<项目路径>/plupload.dev.js"></script>
 
-            <a href="https://github.com/SunLn/qiniu-js-sdk" target="_blank" class="pull-left">本SDK文档</a>
-            <span class="pull-left">或</span>
+        <script src="<项目路径>/qiniu.js"></script>
+      </code>
+    </pre>
+    <p>产品环境：</p>
+    <pre>
+      <code>
+        <script src="<项目路径>/plupload.full.min.js"></script>
 
-            <a href="http://developer.qiniu.com/docs/v6/api/reference/fop/image/" target="_blank" class="pull-left">七牛官方文档</a>
+        <script src="<项目路径>/qiniu.min.js"></script>
+      </code>
+    </pre>
+    <h3>2、服务端准备</h3>
+    <p>服务端需要基于七牛云存储提供的 ACCESS_KEY / SECRET_KEY（即AK/SK，<a href="https://portal.qiniu.com/setting/key" target="_blank">点击获取</a>）生成用于上传的 token 。</p>
+    <p>开发者可以依赖七牛官方提供的各种<a href="http://developer.qiniu.com/docs/v6/sdk/" target="_blank">服务端 SDK</a>生成，也可以自己基于七牛文档-<a href="http://developer.qiniu.com/docs/v6/api/reference/security/upload-token.html" target="_blank">上传策略</a>开发。</p>
+    <p>以下是用七牛 node-js 生成 token 的简单示例代码：</p>
+    <pre><code>
+      var qiniu = require('qiniu');
+      var express = require('express');
+      var app = express();
 
-            <button type="button" class="btn btn-primary" data-dismiss="modal">关闭</button>
-          </div>
-        </div>
-      </div>
-    </div>
+      qiniu.conf.ACCESS_KEY = 七牛 ACCESS_KEY ;
+      qiniu.conf.SECRET_KEY = 七牛 SECRET_KEY ;
+
+      var bucket_name = 七牛空间名字 ;
+      var uptoken = new qiniu.rs.PutPolicy(bucket_name);
+
+      app.get('/uptoken', function(req, res, next) {
+          var token = uptoken.token();
+          if (token) {
+              res.json({
+                  uptoken: token
+              });
+          }
+      });
+    </code></pre>
+    <p>
+      <strong>注意：</strong>
+      上例中的 '/uptoken' 是客户端请求的 URL，用于赋值给 JS-SDK 的初始化参数 'uptoken_url'
+    </p>
+    <p>服务端提供的 token 通过 JSON 格式返回给浏览器端，格式约定如下：</p>
+    <pre><code>
+      {
+        你的上传token
+      }
+    </code></pre>
+    或
+    <pre><code>
+      {
+        'uptoken': 你的上传token
+      }
+    </code></pre>
+    <h3>3、JS-SDK 使用</h3>
+    一个简单的示例代码如下，具体参数含义参见<a href="/docs">文档</a>，更多演示参见 <a href="/demo" class="href">Demo</a>：
+    <pre><code></code></pre>
+    <h1 class="page-header">运行示例</h1>
+    <ul>
+      <li><p>安装 <a href="http://nodejs.org/download/">Nodejs</a></p></li>
+
+      <li><p>获取源代码：
+      <code>git clone git@github.com:qiniupd/qiniu-js-sdk.git</code></p></li>
+
+      <li><p>在根目录运行<code>npm install</code>，安装七牛 Node.js SDK、Express</p></li>
+
+      <li><p>进入<code>demo</code>目录,修改<code>config.js</code>，<code>Access Key</code>和<code>Secret Key</code> 按如下方式获取</p>
+
+      <ul>
+      <li><a href="https://portal.qiniu.com/signup">开通七牛开发者帐号</a></li>
+
+      <li><p><a href="https://portal.qiniu.com/setting/key">登录七牛开发者自助平台，查看 AccessKey 和 SecretKey</a> 。</p>
+
+      <pre>
+      <code class="javascript">
+        module.exports = {
+            'ACCESS_KEY': '',
+            'SECRET_KEY': '',
+            'Public_Bucket_Name': 'qiniu-plupload',
+            'Public_Bucket_Domain': '',
+            'Public_Uptoken_Url': '/uptoken',
+            'Port': 19110,
+            'Private_Bucket_Name': 'plupload-private',
+            'Private_Bucket_Domain': '',
+            'Private_Uptoken_Url': '/private_uptoken'
+        };
+      </code></pre>
+      </li>
+      </ul></li>
+
+      <li><p>在<code>demo</code>目录运行<code>node server.js</code> 或者 在根目录运行<code>make</code>启动</p></li>
+
+      <li><p>访问<code>http://127.0.0.1:18080/</code>或<code>http://localhost:18080/</code></p></li>
+    </ul>
+    <h1 class="page-header">贡献代码</h1>
+    <ol>
+      <li><p>登录 <a href="https://github.com">https://github.com</a></p></li>
+      <li><p>Fork git@github.com:qiniu/js-sdk.git</p></li>
+      <li><p>git clone git@github.com:Your-Github-Id/js-sdk.git</p></li>
+      <li><p>创建您的特性分支 (git checkout -b new-feature)</p></li>
+      <li><p>提交您的改动 (git commit -am ‘Added some features or fixed a bug’)</p></li>
+      <li><p>将您的改动记录提交到远程 git 仓库 (git push origin new-feature)</p></li>
+      <li><p>然后到 github 网站的该 git 远程仓库的 new-feature 分支下发起 Pull Request</p></li>
+    </ol>
+    <h1 class="page-header">版权及协议</h1>
+    <blockquote>
+    <p>Copyright © 2015 qiniu.com</p>
+    </blockquote>
+    <h3>基于 GPL V2 协议发布:</h3>
+    <blockquote>
+    <p><a href="http://www.gnu.org/licenses/gpl-2.0.html">www.gnu.org/licenses/gpl-2.0.html</a></p>
+    </blockquote>
+  </div>
 </div>
 
 
 
 
-<script type="text/javascript" src="add-on/jquery-1.9.1.min.js"></script>
-<script type="text/javascript" src="add-on/bootstrap-3.3.2/js/bootstrap.min.js"></script>
-<!-- <script type="text/javascript" src="add-on/plupload-2.1.2/js/plupload.full.min.js"></script> -->
-<script type="text/javascript" src="add-on/plupload-2.1.2/js/moxie.js"></script>
-<script type="text/javascript" src="add-on/plupload-2.1.2/js/plupload.dev.js"></script>
-<script type="text/javascript" src="add-on/plupload-2.1.2/js/i18n/zh_CN.js"></script>
-<script type="text/javascript" src="add-on/highlight/highlight.js"></script>
+<script src="add-on/jquery-1.9.1.min.js"></script>
+<script src="add-on/bootstrap-3.3.2/js/bootstrap.min.js"></script>
+<!-- <script src="add-on/plupload-2.1.2/js/plupload.full.min.js"></script> -->
+<script src="add-on/plupload-2.1.2/js/moxie.js"></script>
+<script src="add-on/plupload-2.1.2/js/plupload.dev.js"></script>
+<script src="add-on/plupload-2.1.2/js/i18n/zh_CN.js"></script>
+<script src="add-on/highlight/highlight.js"></script>
 
-<script type="text/javascript" src="/js/ui.js"></script>
-<script type="text/javascript" src="/js/qiniu.js"></script>
-<script type="text/javascript" src="/js/main.js"></script>
+<script src="/js/ui.js"></script>
+<script src="/js/qiniu.js"></script>
+<script src="/js/main.js"></script>
 </body>
 </html>

@@ -14,7 +14,11 @@ app.engine('html', require('ejs').renderFile);
 
 app.use(express.urlencoded());
 
-app.get('/uptoken', function(req, res, next) {
+app.post('/uptoken', function(req, res, next) {
+    var name = req.body.name,
+        size = req.body.size,
+        domain = req.body.bucket_domain,
+        type = req.body.type;
     var token = uptoken.token();
     res.header("Cache-Control", "max-age=0, private, must-revalidate");
     res.header("Pragma", "no-cache");

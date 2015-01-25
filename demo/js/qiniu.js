@@ -274,10 +274,12 @@
                 return val;
             },
             get_uptoken: function(file, func) {
+                console.log(file);
                 if (!option.uptoken) {
                     var ajax = that.util.create_ajax();
-                    ajax.open('GET', uptoken_url, true);
+                    ajax.open('POST', uptoken_url, true);
                     ajax.setRequestHeader("If-Modified-Since", "0");
+                    ajax.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
                     ajax.onreadystatechange = function() {
                         if (ajax.readyState === 4 && ajax.status === 200) {
                             var res = that.util.parse_json(ajax.responseText);
@@ -285,7 +287,7 @@
                             func();
                         }
                     };
-                    ajax.send();
+                    ajax.send("name=" + file.name + "&size=" + file.size + "&bucket_domain=" + bucket_domain + "&type=" + file.type);
                 } else {
                     uptoken_obj[file.id] = option.uptoken;
                 }

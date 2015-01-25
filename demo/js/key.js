@@ -15,14 +15,6 @@ $(function() {
         chunk_size: '4mb',
         uptoken_url: $('#uptoken_url').val(),
         bucket_domain: $('#domain').val(),
-        x_vars: {
-            'id': Math.random(),
-            'time': function(up, file) {
-                var time = (new Date()).getTime();
-                // do something with 'time'
-                return time;
-            },
-        },
         auto_start: true,
         init: {
             'FilesAdded': function(up, files) {
@@ -60,6 +52,11 @@ $(function() {
                 progress.setError();
                 var error = up.getOption('error')
                 progress.setStatus(error);
+            },
+            'Key': function(up, file) {
+                var key = "ts2";
+                // do something with key
+                return key
             }
         }
     });
@@ -90,9 +87,15 @@ $(function() {
         e.stopPropagation();
     });
 
-    $('pre code').each(function(i, e) {
-        hljs.highlightBlock(e);
+
+
+    $('#show_code').on('click', function() {
+        $('#myModal-code').modal();
+        $('pre code').each(function(i, e) {
+            hljs.highlightBlock(e);
+        });
     });
+
 
     $('body').on('click', 'table button.btn', function() {
         $(this).parents('tr').next().toggle();
