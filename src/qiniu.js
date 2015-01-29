@@ -391,7 +391,7 @@ function QiniuJsSDK() {
                         var aDay = 24 * 60 * 60 * 1000; //  milliseconds
                         if (now - before < aDay) {
                             if (localFileInfo.percent !== 100) {
-                                if (file.size === localStorage.total) {
+                                if (file.size === localFileInfo.total) {
                                     file.percent = localFileInfo.percent;
                                     file.loaded = localFileInfo.offset;
                                     ctx = localFileInfo.ctx;
