@@ -308,6 +308,9 @@
                 }
                 return key;
             },
+            get_file_md5: function(file) {
+
+            },
             direct_upload: function(up, file, func) {
 
                 var multipart_params_obj;
@@ -358,12 +361,29 @@
                             // 通过检测文件大小，判断是否是同一个文件，如果是恢复上传信息
                             // 在同名且同大小但不同内容的文件，仍有bug，正确的做法是前端获取文件的md5
                             if (file.size === localFileInfo.total) {
-                                file.percent = localFileInfo.percent;
-                                file.loaded = localFileInfo.offset;
-                                ctx = localFileInfo.ctx;
-                                if (localFileInfo.offset + blockSize > file.size) {
-                                    blockSize = file.size - localFileInfo.offset;
+                                // 读取文件，获取前 4M 的 md5，若是md5 和本地存储的md5相同才续上传
+                                // check_md5
+                                var check_md5 = this.getOption(up, 'check_md5');
+                                if (check_md5) {
+                                    var md5 = this.get_file_md5(file);
+                                    if (md5 === file.md5) {
+                                        file.percent = localFileInfo.percent;
+                                        file.loaded = localFileInfo.offset;
+                                        ctx = localFileInfo.ctx;
+                                        if (localFileInfo.offset + blockSize > file.size) {
+                                            blockSize = file.size - localFileInfo.offset;
+                                        }
+                                    }
+                                } else {
+                                    file.percent = localFileInfo.percent;
+                                    file.loaded = localFileInfo.offset;
+                                    ctx = localFileInfo.ctx;
+                                    if (localFileInfo.offset + blockSize > file.size) {
+                                        blockSize = file.size - localFileInfo.offset;
+                                    }
                                 }
+
+
                             } else {
                                 localStorage.removeItem(file.name);
                             }
@@ -516,6 +536,7 @@
                     'url': up_host + '/mkblk/' + leftSize
                 });
             }
+            console.log(file);
             qiniu.save_upload_info(file, ctx, info);
         });
 
