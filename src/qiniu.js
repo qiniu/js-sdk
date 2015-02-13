@@ -1,5 +1,6 @@
 /*global plupload,mOxie*/
 /*global ActiveXObject */
+/*global SparkMD5 */
 /*exported Qiniu */
 
 (function(exports, plupload, mOxie) {
@@ -180,7 +181,8 @@
                 return enc;
             },
             url_safe_base64_encode: function(v) {
-                v = this.base64_encode(v);
+                console.log(this);
+                v = that.util.base64_encode(v);
                 return v.replace(/\//g, '_').replace(/\+/g, '-');
             },
             get_url: function(key) {
@@ -274,7 +276,6 @@
                 return val;
             },
             get_uptoken: function(file, func) {
-                console.log(file);
                 if (!option.uptoken) {
                     var ajax = that.util.create_ajax();
                     ajax.open('POST', uptoken_url, true);
@@ -307,6 +308,32 @@
                     }
                 }
                 return key;
+            },
+            get_file_md5: function(file, func) {
+                console.log(file.md5);
+                if (file.md5) {
+                    return file.md5;
+                }
+                var content = file.getNative().slice(0, this.Default_Chunk_Size);
+                var fileReader = new FileReader();
+                fileReader.readAsBinaryString(content);
+                fileReader.onloadend = function() {
+                    var spark = new SparkMD5();
+                    spark.appendBinary(fileReader.result);
+                    file.md5 = spark.end();
+                    qiniu.get_file_md5(file);
+                    // if (typeof func === 'function') {
+                    //     func()
+                    // }
+                };
+                // var count = 1;
+
+                // while (!file.md5) {
+                //     console.log(count++);
+                //     continue;
+                // }
+                // 通过 hack 方法，使得其变成一个同步的方法
+                // return file.md5;
             },
             direct_upload: function(up, file, func) {
 
@@ -358,12 +385,31 @@
                             // 通过检测文件大小，判断是否是同一个文件，如果是恢复上传信息
                             // 在同名且同大小但不同内容的文件，仍有bug，正确的做法是前端获取文件的md5
                             if (file.size === localFileInfo.total) {
-                                file.percent = localFileInfo.percent;
-                                file.loaded = localFileInfo.offset;
-                                ctx = localFileInfo.ctx;
-                                if (localFileInfo.offset + blockSize > file.size) {
-                                    blockSize = file.size - localFileInfo.offset;
+                                // 读取文件，获取前 4M 的 md5，若是md5 和本地存储的md5相同才续上传
+                                // check_md5
+                                var check_md5 = this.get_option(up, 'check_md5');
+                                if (check_md5) {
+                                    var md5 = this.get_file_md5(file);
+                                    if (md5 === localFileInfo.md5) {
+                                        file.percent = localFileInfo.percent;
+                                        file.loaded = localFileInfo.offset;
+                                        md5 = localFileInfo.md5;
+                                        ctx = localFileInfo.ctx;
+                                        if (localFileInfo.offset + blockSize > file.size) {
+                                            blockSize = file.size - localFileInfo.offset;
+                                        }
+                                    }
+                                } else {
+                                    file.percent = localFileInfo.percent;
+                                    file.loaded = localFileInfo.offset;
+                                    ctx = localFileInfo.ctx;
+
+                                    if (localFileInfo.offset + blockSize > file.size) {
+                                        blockSize = file.size - localFileInfo.offset;
+                                    }
                                 }
+
+
                             } else {
                                 localStorage.removeItem(file.name);
                             }
@@ -423,14 +469,26 @@
                 };
                 ajax.send(ctx);
             },
-            save_upload_info: function(file, ctx, info) {
-                localStorage.setItem(file.name, JSON.stringify({
-                    ctx: ctx,
-                    percent: file.percent,
-                    total: info.total,
-                    offset: info.offset,
-                    time: (new Date()).getTime()
-                }));
+            save_upload_info: function(file, ctx, info, md5) {
+                if (md5) {
+                    localStorage.setItem(file.name, JSON.stringify({
+                        ctx: ctx,
+                        percent: file.percent,
+                        total: info.total,
+                        offset: info.offset,
+                        md5: md5,
+                        time: (new Date()).getTime()
+                    }));
+                } else {
+                    localStorage.setItem(file.name, JSON.stringify({
+                        ctx: ctx,
+                        percent: file.percent,
+                        total: info.total,
+                        offset: info.offset,
+                        time: (new Date()).getTime()
+                    }));
+                }
+
             },
             get_x_vals_url: function(up, file) {
                 var x_vars = option.x_vars,
@@ -516,7 +574,17 @@
                     'url': up_host + '/mkblk/' + leftSize
                 });
             }
-            qiniu.save_upload_info(file, ctx, info);
+            // console.log(file);
+            // console.log(file.getNative());
+            // console.log(file.getSource());
+
+            var check_md5 = qiniu.get_option(up, 'check_md5');
+            if (check_md5) {
+                var md5 = qiniu.get_file_md5(file);
+                qiniu.save_upload_info(file, ctx, info, md5);
+            } else {
+                qiniu.save_upload_info(file, ctx, info);
+            }
         });
 
         uploader.bind('Error', function(up, err) {

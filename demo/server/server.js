@@ -117,6 +117,14 @@ app.get('/demo/not_auto_start', function(req, res) {
     });
 });
 
+app.get('/demo/check_md5', function(req, res) {
+    res.render('demo/check_md5.html', {
+        domain: config.Public_Bucket_Domain,
+        uptoken_url: config.Public_Uptoken_Url
+    });
+});
+
+
 app.get('/demo/private_bucket', function(req, res) {
     res.render('demo/private_bucket.html', {
         domain: config.Private_Bucket_Domain,
