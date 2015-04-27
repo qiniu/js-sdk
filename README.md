@@ -338,7 +338,9 @@ qiniu-js-sdk
 
 4. 如果您想了解更多七牛的图片处理，建议您仔细阅读 [七牛官方文档-图片处理](http://developer.qiniu.com/docs/v6/api/reference/fop/image/)
 
-5. 本SDK示例生成upToken时，指定的`Bucket Name`为公开空间，所以可以公开访问上传成功后的资源。若您生成upToken时，指定的`Bucket Name`为私有空间，那您还需要在服务端进行额外的处理才能访问您上传的资源。具体参见[下载凭证](http://developer.qiniu.com/docs/v6/api/reference/security/download-token.html)。本SDK数据处理部分功能不适用于私有空间。
+5. 如果是 https 网站，可以将js里面的 http://up.qiniu.com 替换为 https://up.qbox.me
+
+6. 本SDK示例生成upToken时，指定的`Bucket Name`为公开空间，所以可以公开访问上传成功后的资源。若您生成upToken时，指定的`Bucket Name`为私有空间，那您还需要在服务端进行额外的处理才能访问您上传的资源。具体参见[下载凭证](http://developer.qiniu.com/docs/v6/api/reference/security/download-token.html)。本SDK数据处理部分功能不适用于私有空间。
 
 ## 贡献代码
 
