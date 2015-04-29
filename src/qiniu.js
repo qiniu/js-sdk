@@ -309,11 +309,12 @@
                 }
                 return key;
             },
-            get_file_md5: function(file, func) {
+            get_file_md5: function(file, up, localFileInfo, func) {
                 console.log(file.md5);
                 if (file.md5) {
                     return file.md5;
                 }
+                // var isFinish = false;
                 var content = file.getNative().slice(0, this.Default_Chunk_Size);
                 var fileReader = new FileReader();
                 fileReader.readAsBinaryString(content);
@@ -321,18 +322,22 @@
                     var spark = new SparkMD5();
                     spark.appendBinary(fileReader.result);
                     file.md5 = spark.end();
-                    qiniu.get_file_md5(file);
-                    // if (typeof func === 'function') {
-                    //     func()
-                    // }
+                    // isFinish = true;
+                    // qiniu.get_file_md5(file);
+                    if (typeof func === 'function') {
+                        func(file, up, localFileInfo);
+                    }
                 };
+                // while (!isFinish) {
+                // 通过 hack 方法，使得其变成一个同步的方法
+                // }
                 // var count = 1;
 
                 // while (!file.md5) {
                 //     console.log(count++);
                 //     continue;
                 // }
-                // 通过 hack 方法，使得其变成一个同步的方法
+
                 // return file.md5;
             },
             direct_upload: function(up, file, func) {
@@ -389,16 +394,32 @@
                                 // check_md5
                                 var check_md5 = this.get_option(up, 'check_md5');
                                 if (check_md5) {
-                                    var md5 = this.get_file_md5(file);
-                                    if (md5 === localFileInfo.md5) {
-                                        file.percent = localFileInfo.percent;
-                                        file.loaded = localFileInfo.offset;
-                                        md5 = localFileInfo.md5;
-                                        ctx = localFileInfo.ctx;
-                                        if (localFileInfo.offset + blockSize > file.size) {
-                                            blockSize = file.size - localFileInfo.offset;
+                                    // while (!this.get_file_md5(file)) {
+                                    //     // 将读取md5的异步操作，通过此hack方法变成同步
+                                    // }
+                                    this.get_file_md5(file, up, localFileInfo, function(file, up, localFileInfo) {
+                                        if (file.md5 === localFileInfo.md5) {
+                                            file.percent = localFileInfo.percent;
+                                            file.loaded = localFileInfo.offset;
+                                            ctx = localFileInfo.ctx;
+                                            if (localFileInfo.offset + blockSize > file.size) {
+                                                blockSize = file.size - localFileInfo.offset;
+                                            }
+                                            up.setOption({
+                                                'url': up_host + '/mkblk/' + blockSize,
+                                                'multipart': false,
+                                                'chunk_size': chunk_size,
+                                                'required_features': "chunks",
+                                                'headers': {
+                                                    'Authorization': 'UpToken ' + uptoken_obj[file.id]
+                                                },
+                                                'multipart_params': {}
+                                            });
                                         }
-                                    }
+                                        up.start();
+                                    });
+                                    // up.stop();
+                                    return;
                                 } else {
                                     file.percent = localFileInfo.percent;
                                     file.loaded = localFileInfo.offset;
