@@ -640,7 +640,7 @@ function QiniuJsSDK() {
         var mode = op.mode || '',
             w = op.w || '',
             h = op.h || '',
-            q = op.quality || '',
+            q = op.q || '',
             format = op.format || '';
         if (!mode) {
             return false;
