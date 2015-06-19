@@ -311,7 +311,7 @@ function QiniuJsSDK() {
         };
 
         plupload.extend(option, op, {
-            url: 'http://up.qiniu.com',
+            url: 'http://upload.qiniu.com',
             multipart_params: {
                 token: ''
             }
@@ -640,7 +640,7 @@ function QiniuJsSDK() {
         var mode = op.mode || '',
             w = op.w || '',
             h = op.h || '',
-            q = op.quality || '',
+            q = op.q || '',
             format = op.format || '';
         if (!mode) {
             return false;
