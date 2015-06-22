@@ -246,6 +246,12 @@ function QiniuJsSDK() {
         that.key_handler = typeof op.init.Key === 'function' ? op.init.Key : '';
         this.domain = op.domain;
         var ctx = '';
+        var speedCalInfo = {
+            isResumeUpload: false,
+            resumeFilesize: 0,
+            startTime: '',
+            currentTime: ''
+        };
 
         var reset_chunk_size = function() {
             var ie = that.detectIEVersion();
@@ -336,11 +342,11 @@ function QiniuJsSDK() {
         });
 
         uploader.bind('BeforeUpload', function(up, file) {
-
+            file.speed = file.speed || 0; // add a key named speed for file obj
             ctx = '';
 
             var directUpload = function(up, file, func) {
-
+                speedCalInfo.startTime = new Date().getTime();
                 var multipart_params_obj;
                 if (op.save_key) {
                     multipart_params_obj = {
@@ -392,9 +398,14 @@ function QiniuJsSDK() {
                         if (now - before < aDay) {
                             if (localFileInfo.percent !== 100) {
                                 if (file.size === localFileInfo.total) {
+                                    // 通过文件名和文件大小匹配，找到对应的 localstorage 信息，恢复进度
                                     file.percent = localFileInfo.percent;
                                     file.loaded = localFileInfo.offset;
                                     ctx = localFileInfo.ctx;
+
+                                    //  计算速度时，会用到
+                                    speedCalInfo.isResumeUpload = true;
+                                    speedCalInfo.resumeFilesize = localFileInfo.offset;
                                     if (localFileInfo.offset + blockSize > file.size) {
                                         blockSize = file.size - localFileInfo.offset;
                                     }
@@ -410,6 +421,7 @@ function QiniuJsSDK() {
                             localStorage.removeItem(file.name);
                         }
                     }
+                    speedCalInfo.startTime = new Date().getTime();
                     up.setOption({
                         'url': 'http://upload.qiniu.com/mkblk/' + blockSize,
                         'multipart': false,
@@ -424,6 +436,18 @@ function QiniuJsSDK() {
             } else {
                 directUpload(up, file, that.key_handler);
             }
+        });
+
+        uploader.bind('UploadProgress', function(up, file) {
+            // 计算速度
+
+            speedCalInfo.currentTime = new Date().getTime();
+            var timeUsed = speedCalInfo.currentTime - speedCalInfo.startTime; // ms
+            var fileUploaded = file.loaded || 0;
+            if (speedCalInfo.isResumeUpload) {
+                fileUploaded = file.loaded - speedCalInfo.resumeFilesize;
+            }
+            file.speed = (fileUploaded / timeUsed * 1000).toFixed(0) || 0; // unit: byte/s
         });
 
         uploader.bind('ChunkUploaded', function(up, file, info) {
