@@ -66,6 +66,13 @@ app.get('/', function(req, res) {
     });
 });
 
+app.get('/multiple', function(req, res) {
+    res.render('multiple.html', {
+        domain: config.Domain,
+        uptoken_url: config.Uptoken_Url
+    });
+});
+
 qiniu.conf.ACCESS_KEY = config.ACCESS_KEY;
 qiniu.conf.SECRET_KEY = config.SECRET_KEY;
 
