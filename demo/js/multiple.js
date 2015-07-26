@@ -5,7 +5,6 @@
 
 
 $(function() {
-    var Qiniu = new QiniuJsSDK();
     var uploader = Qiniu.uploader({
         runtimes: 'html5,flash,html4',
         browse_button: 'pickfiles',
@@ -60,8 +59,8 @@ $(function() {
         console.log('hello man,a file is uploaded');
     });
 
-    var Qiniu2 = new QiniuJsSDK();
-    var uploader2 = Qiniu2.uploader({
+    var Q2 = new QiniuJsSDK();
+    var uploader2 = Q2.uploader({
         runtimes: 'html5,flash,html4',
         browse_button: 'pickfiles2',
         container: 'container2',
