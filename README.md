@@ -55,7 +55,6 @@ qiniu-js-sdk
 * 初始化上传
 
     ```javascript
-    var Qiniu = new QiniuJsSDK();
     var uploader = Qiniu.uploader({
         runtimes: 'html5,flash,html4',    //上传模式,依次退化
         browse_button: 'pickfiles',       //上传选择的点选按钮，**必需**
@@ -137,19 +136,18 @@ qiniu-js-sdk
 
     如果一个页面中有多个上传实例，可以如下操作
     ```javascript
-    var Qiniu = new QiniuJsSDK();
-    var op1 = {
+    var option1 = {
         key : val ,
         ……
     };
-    var uploader = Qiniu.uploader(op1);
+    var uploader = Qiniu.uploader(option1);
 
     var Qiniu2 = new QiniuJsSDK();
-    var op2 = {
+    var option2 = {
         key : val ,
         ……
     };
-    var uploader2 = Qiniu2.uploader(op2);
+    var uploader2 = Qiniu2.uploader(option2);
 
     ```
 
