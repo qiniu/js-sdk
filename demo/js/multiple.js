@@ -17,17 +17,6 @@ $(function() {
         chunk_size: '4mb',
         uptoken_url: $('#uptoken_url').val(),
         domain: $('#domain').val(),
-        // downtoken_url: '/downtoken',
-        // unique_names: true,
-        // save_key: true,
-        // x_vars: {
-        //     'id': '1234',
-        //     'time': function(up, file) {
-        //         var time = (new Date()).getTime();
-        //         // do something with 'time'
-        //         return time;
-        //     },
-        // },
         auto_start: true,
         init: {
             'FilesAdded': function(up, files) {
@@ -59,17 +48,11 @@ $(function() {
                 progress.setComplete(up, info);
             },
             'Error': function(up, err, errTip) {
-                    $('table').show();
-                    var progress = new FileProgress(err.file, 'fsUploadProgress');
-                    progress.setError();
-                    progress.setStatus(errTip);
-                }
-                // ,
-                // 'Key': function(up, file) {
-                //     var key = "";
-                //     // do something with key
-                //     return key
-                // }
+                $('table').show();
+                var progress = new FileProgress(err.file, 'fsUploadProgress');
+                progress.setError();
+                progress.setStatus(errTip);
+            }
         }
     });
 
@@ -89,17 +72,6 @@ $(function() {
         chunk_size: '4mb',
         uptoken_url: $('#uptoken_url').val(),
         domain: $('#domain').val(),
-        // downtoken_url: '/downtoken',
-        // unique_names: true,
-        // save_key: true,
-        // x_vars: {
-        //     'id': '1234',
-        //     'time': function(up, file) {
-        //         var time = (new Date()).getTime();
-        //         // do something with 'time'
-        //         return time;
-        //     },
-        // },
         auto_start: true,
         init: {
             'FilesAdded': function(up, files) {
@@ -131,22 +103,16 @@ $(function() {
                 progress.setComplete(up, info);
             },
             'Error': function(up, err, errTip) {
-                    $('table').show();
-                    var progress = new FileProgress(err.file, 'fsUploadProgress');
-                    progress.setError();
-                    progress.setStatus(errTip);
-                }
-                // ,
-                // 'Key': function(up, file) {
-                //     var key = "";
-                //     // do something with key
-                //     return key
-                // }
+                $('table').show();
+                var progress = new FileProgress(err.file, 'fsUploadProgress');
+                progress.setError();
+                progress.setStatus(errTip);
+            }
         }
     });
 
     uploader2.bind('FileUploaded', function() {
-        console.log('hello man,a file is uploaded');
+        console.log('hello man 2,a file is uploaded');
     });
 
     $('#container').on(
