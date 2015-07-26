@@ -11,7 +11,7 @@ $(function() {
         browse_button: 'pickfiles',
         container: 'container',
         drop_element: 'container',
-        max_file_size: '500mb',
+        max_file_size: '100mb',
         flash_swf_url: 'js/plupload/Moxie.swf',
         dragdrop: true,
         chunk_size: '4mb',
