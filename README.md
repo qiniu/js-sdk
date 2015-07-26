@@ -145,7 +145,7 @@ qiniu-js-sdk
     var uploader = Qiniu.uploader(op1);
 
     var Qiniu2 = new QiniuJsSDK();
-    var op1 = {
+    var op2 = {
         key : val ,
         ……
     };
