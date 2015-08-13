@@ -32,7 +32,6 @@ function FileProgress(file, targetID) {
         var progressBarWrapper = $("<div/>");
         progressBarWrapper.addClass("progress progress-striped");
 
-
         var progressBar = $("<div/>");
         progressBar.addClass("progress-bar progress-bar-info")
             .attr('role', 'progressbar')
@@ -44,21 +43,17 @@ function FileProgress(file, targetID) {
         var progressBarPercent = $('<span class=sr-only />');
         progressBarPercent.text(fileSize);
 
-
-        var progressCancel = $('<a href=# />');
-        progressCancel.hide().addClass('progressCancel').text('');
-
+        var progressCancel = $('<a href=javascript:; />');
+        progressCancel.show().addClass('progressCancel').text('×');
 
         progressBar.append(progressBarPercent);
         progressBarWrapper.append(progressBar);
         progressBarBox.append(progressBarWrapper);
         progressBarBox.append(progressCancel);
 
-
         var progressBarStatus = $('<div class="status text-center"/>');
         progressBarBox.append(progressBarStatus);
         progressBarTd.append(progressBarBox);
-
 
         Wrappeer.append(progressText);
         Wrappeer.append(progressSize);
@@ -141,6 +136,7 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
     if (file.status !== plupload.DONE && percentage === 100) {
         percentage = 99;
     }
+
     progressbar.attr('aria-valuenow', percentage).css('width', percentage + '%');
 
     if (chunk_size) {
@@ -187,7 +183,8 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
 };
 
 FileProgress.prototype.setComplete = function(up, info) {
-    var td = this.fileProgressWrapper.find('td:eq(2) .progress');
+    var td = this.fileProgressWrapper.find('td:eq(2)'),
+        tdProgress = td.find('.progress');
 
     var res = $.parseJSON(info);
     var url;
@@ -203,7 +200,8 @@ FileProgress.prototype.setComplete = function(up, info) {
             "<div class=hash><strong>Hash:</strong>" + res.hash + "</div>";
     }
 
-    td.html(str).removeClass().next().next('.status').hide();
+    tdProgress.html(str).removeClass().next().next('.status').hide();
+    td.find('.progressCancel').hide();
 
     var progressNameTd = this.fileProgressWrapper.find('.progressName');
     var imageView = '?imageView2/1/w/100/h/100';
@@ -361,6 +359,7 @@ FileProgress.prototype.setCancelled = function(manual) {
     }
     this.fileProgressWrapper.attr('class', progressContainer);
     this.fileProgressWrapper.find('td .progress .progress-bar-info').css('width', 0);
+    this.fileProgressWrapper.find('td:eq(2) .btn-default').hide();
 };
 
 FileProgress.prototype.setStatus = function(status, isUploading) {
@@ -369,6 +368,21 @@ FileProgress.prototype.setStatus = function(status, isUploading) {
     }
 };
 
+FileProgress.prototype.uploadCancel = function(up) {
+    var self = this;
+    if (up) {
+
+        self.fileProgressWrapper.find('td:eq(2) .progressCancel').on('click', function(){
+            self.setCancelled(false);
+            self.setStatus("取消上传");
+            // var status_before = self.file.status;
+            up.removeFile(self.file);
+            up.stop();
+            return true;
+        });
+    }
+
+};
 
 FileProgress.prototype.appear = function() {
     if (this.getTimer() !== null) {

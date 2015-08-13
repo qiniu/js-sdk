@@ -440,6 +440,7 @@ function QiniuJsSDK() {
         });
 
         uploader.bind('UploadProgress', function(up, file) {
+
             // 计算速度
 
             speedCalInfo.currentTime = new Date().getTime();
