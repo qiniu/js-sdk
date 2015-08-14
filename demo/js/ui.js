@@ -115,11 +115,13 @@ FileProgress.prototype.setChunkProgess = function(chunk_size) {
         col.append(progressBarWrapper);
         progressBarChunk.append(col);
     }
-    this.fileProgressWrapper.find('td>div').append(viewProgess);
 
+    if(!this.fileProgressWrapper.find('td:eq(2) .btn-default').length){
+        this.fileProgressWrapper.find('td>div').append(viewProgess);
+    }
     progressBarChunkTr.hide().find('td').append(progressBarChunk);
-
     progressBarChunkTr.insertAfter(this.fileProgressWrapper);
+
 };
 
 FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
@@ -131,6 +133,9 @@ FileProgress.prototype.setProgress = function(percentage, speed, chunk_size) {
     var size = plupload.formatSize(uploaded).toUpperCase();
     var formatSpeed = plupload.formatSize(speed).toUpperCase();
     var progressbar = this.fileProgressWrapper.find('td .progress').find('.progress-bar-info');
+    if (this.fileProgressWrapper.find('.status').text() === '取消上传'){
+        return;
+    }
     this.fileProgressWrapper.find('.status').text("已上传: " + size + " 上传速度： " + formatSpeed + "/s");
     percentage = parseInt(percentage, 10);
     if (file.status !== plupload.DONE && percentage === 100) {
@@ -373,13 +378,11 @@ FileProgress.prototype.setStatus = function(status, isUploading) {
 FileProgress.prototype.bindUploadCancel = function(up) {
     var self = this;
     if (up) {
-
         self.fileProgressWrapper.find('td:eq(2) .progressCancel').on('click', function(){
             self.setCancelled(false);
             self.setStatus("取消上传");
             self.fileProgressWrapper.find('.status').css('left', '0');
             up.removeFile(self.file);
-            return true;
         });
     }
 
