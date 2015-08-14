@@ -358,8 +358,9 @@ FileProgress.prototype.setCancelled = function(manual) {
         progressContainer += ' red';
     }
     this.fileProgressWrapper.attr('class', progressContainer);
-    this.fileProgressWrapper.find('td .progress .progress-bar-info').css('width', 0);
+    this.fileProgressWrapper.find('td .progress').remove();
     this.fileProgressWrapper.find('td:eq(2) .btn-default').hide();
+    this.fileProgressWrapper.find('td:eq(2) .progressCancel').hide();
 };
 
 FileProgress.prototype.setStatus = function(status, isUploading) {
@@ -375,9 +376,8 @@ FileProgress.prototype.uploadCancel = function(up) {
         self.fileProgressWrapper.find('td:eq(2) .progressCancel').on('click', function(){
             self.setCancelled(false);
             self.setStatus("取消上传");
-            // var status_before = self.file.status;
+            self.fileProgressWrapper.find('.status').css('left', '0');
             up.removeFile(self.file);
-            up.stop();
             return true;
         });
     }
