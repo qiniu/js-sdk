@@ -72,6 +72,8 @@ tr .progressCancel{
   float: right;
   position: relative;
   z-index: 100;
+  color: #333;
+  text-decoration: none;
 }
 .status {
   position: absolute;

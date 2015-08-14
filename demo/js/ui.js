@@ -369,7 +369,8 @@ FileProgress.prototype.setStatus = function(status, isUploading) {
     }
 };
 
-FileProgress.prototype.uploadCancel = function(up) {
+// 绑定取消上传事件
+FileProgress.prototype.bindUploadCancel = function(up) {
     var self = this;
     if (up) {
 

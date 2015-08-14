@@ -35,7 +35,7 @@ $(function() {
                 plupload.each(files, function(file) {
                     var progress = new FileProgress(file, 'fsUploadProgress');
                     progress.setStatus("等待...");
-                    progress.uploadCancel(up);
+                    progress.bindUploadCancel(up);
                 });
             },
             'BeforeUpload': function(up, file) {
@@ -44,15 +44,13 @@ $(function() {
                 if (up.runtime === 'html5' && chunk_size) {
                     progress.setChunkProgess(chunk_size);
                 }
-                progress.uploadCancel(up);
+                progress.bindUploadCancel(up);
             },
             'UploadProgress': function(up, file) {
                 var progress = new FileProgress(file, 'fsUploadProgress');
-
                 var chunk_size = plupload.parseSize(this.getOption('chunk_size'));
-
                 progress.setProgress(file.percent + "%", file.speed, chunk_size);
-                progress.uploadCancel(up);
+                progress.bindUploadCancel(up);
 
             },
             'UploadComplete': function() {
