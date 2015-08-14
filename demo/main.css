@@ -50,6 +50,10 @@ h1 .view_code {
   position: relative;
     height: 100%;
 }
+tr .progress{
+  width: 96%;
+  display: inline-block;
+}
 tr .progress-bar {
     min-height: 20px;
     float: none;
@@ -62,6 +66,14 @@ tr .progress .chunk-status {
     position: absolute;
     left: 24px;
     top: 0;
+}
+tr .progressCancel{
+  display: inline-block;
+  float: right;
+  position: relative;
+  z-index: 100;
+  color: #333;
+  text-decoration: none;
 }
 .status {
   position: absolute;
