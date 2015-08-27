@@ -55,7 +55,16 @@ $(function() {
             },
             'FileUploaded': function(up, file, info) {
                 var progress = new FileProgress(file, 'fsUploadProgress');
-                progress.setComplete(up, info);
+
+                $.ajax('./uptoken',{
+                    async: false
+                }).done(function(data){
+                    $.extend(info, data);
+                    progress.setComplete(up, info);
+                }).error(function(){
+                    console.log('获取下载token失败');
+                });
+
             },
             'Error': function(up, err, errTip) {
                 $('table').show();
