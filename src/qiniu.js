@@ -491,6 +491,11 @@ function QiniuJsSDK() {
                             errTip = '文件验证失败。请稍后重试。';
                             break;
                         case plupload.HTTP_ERROR:
+                            if (err.response === '') {
+                                // Fix parseJSON error ,when http error is like net::ERR_ADDRESS_UNREACHABLE
+                                errTip = err.message || '未知网络错误。';
+                                break;
+                            }
                             var errorObj = that.parseJSON(err.response);
                             var errorText = errorObj.error;
                             switch (err.status) {
