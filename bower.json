@@ -1,7 +1,7 @@
 {
-  "name": "qiniu-bower",
+  "name": "qiniu",
   "version": "1.0.9-beta",
-  "homepage": "https://github.com/chenweiyj/js-sdk.git",
+  "homepage": "https://github.com/qiniu/js-sdk.git",
   "description": "基于七牛API开发的前端JavaScript SDK",
   "main": "src/qiniu.js",
   "moduleType": [
