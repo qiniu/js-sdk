@@ -346,8 +346,6 @@ function QiniuJsSDK() {
             file.speed = file.speed || 0; // add a key named speed for file obj
             ctx = '';
 
-            getUpToken();
-
             var directUpload = function(up, file, func) {
                 speedCalInfo.startTime = new Date().getTime();
                 var multipart_params_obj;
@@ -442,7 +440,6 @@ function QiniuJsSDK() {
         });
 
         uploader.bind('UploadProgress', function(up, file) {
-
             // 计算速度
 
             speedCalInfo.currentTime = new Date().getTime();
@@ -609,6 +606,11 @@ function QiniuJsSDK() {
                         key = key ? '/key/' + that.URLSafeBase64Encode(key) : '';
                     }
 
+                    var fname = '';
+                    if(file.name){
+                        fname = '/fname/' + that.URLSafeBase64Encode(file.name);
+                    }
+
                     var x_vars = op.x_vars,
                         x_val = '',
                         x_vars_url = '';
@@ -625,7 +627,7 @@ function QiniuJsSDK() {
                         }
                     }
 
-                    var url = 'http://upload.qiniu.com/mkfile/' + file.size + key + x_vars_url;
+                    var url = 'http://upload.qiniu.com/mkfile/' + file.size + key + fname + x_vars_url;
                     var ajax = that.createAjax();
                     ajax.open('POST', url, true);
                     ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
