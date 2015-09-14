@@ -4,7 +4,12 @@
 /*exported QiniuJsSDK */
 
 function QiniuJsSDK() {
-
+    var qiniuUploadUrl;
+    if (window.location.protocol === 'https:') {
+        qiniuUploadUrl  = 'http://upload.qiniu.com';
+    } else {
+        qiniuUploadUrl = 'https://up.qbox.me';
+    }
 
     this.detectIEVersion = function() {
         var v = 4,
