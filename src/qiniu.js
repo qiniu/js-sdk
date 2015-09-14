@@ -601,6 +601,11 @@ function QiniuJsSDK() {
                         key = key ? '/key/' + that.URLSafeBase64Encode(key) : '';
                     }
 
+                    var fname = '';
+                    if(file.name){
+                        fname = '/fname/' + that.URLSafeBase64Encode(file.name);
+                    }
+
                     var x_vars = op.x_vars,
                         x_val = '',
                         x_vars_url = '';
@@ -617,7 +622,7 @@ function QiniuJsSDK() {
                         }
                     }
 
-                    var url = 'http://upload.qiniu.com/mkfile/' + file.size + key + x_vars_url;
+                    var url = 'http://upload.qiniu.com/mkfile/' + file.size + key + fname + x_vars_url;
                     var ajax = that.createAjax();
                     ajax.open('POST', url, true);
                     ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
