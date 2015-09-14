@@ -610,10 +610,7 @@ function QiniuJsSDK() {
                         key = key ? '/key/' + that.URLSafeBase64Encode(key) : '';
                     }
 
-                    var fname = '';
-                    if(file.name){
-                        fname = '/fname/' + that.URLSafeBase64Encode(file.name);
-                    }
+                    var fname = '/fname/' + that.URLSafeBase64Encode(file.name);
 
                     var x_vars = op.x_vars,
                         x_val = '',
