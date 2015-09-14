@@ -16,6 +16,7 @@ $(function() {
         chunk_size: '4mb',
         uptoken_url: $('#uptoken_url').val(),
         domain: $('#domain').val(),
+        get_new_uptoken: false,
         // downtoken_url: '/downtoken',
         // unique_names: true,
         // save_key: true,
@@ -55,16 +56,7 @@ $(function() {
             },
             'FileUploaded': function(up, file, info) {
                 var progress = new FileProgress(file, 'fsUploadProgress');
-
-                $.ajax('./uptoken',{
-                    async: false
-                }).done(function(data){
-                    $.extend(info, data);
-                    progress.setComplete(up, info);
-                }).error(function(){
-                    console.log('获取下载token失败');
-                });
-
+                progress.setComplete(up, info);
             },
             'Error': function(up, err, errTip) {
                 $('table').show();
