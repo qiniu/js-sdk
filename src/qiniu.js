@@ -346,6 +346,10 @@ function QiniuJsSDK() {
             file.speed = file.speed || 0; // add a key named speed for file obj
             ctx = '';
 
+            if(op.get_new_uptoken){
+                getUpToken();
+            }
+
             var directUpload = function(up, file, func) {
                 speedCalInfo.startTime = new Date().getTime();
                 var multipart_params_obj;

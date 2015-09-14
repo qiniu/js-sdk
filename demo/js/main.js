@@ -16,6 +16,7 @@ $(function() {
         chunk_size: '4mb',
         uptoken_url: $('#uptoken_url').val(),
         domain: $('#domain').val(),
+        get_new_uptoken: false,
         // downtoken_url: '/downtoken',
         // unique_names: true,
         // save_key: true,
