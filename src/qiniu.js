@@ -323,7 +323,7 @@ function QiniuJsSDK() {
         };
 
         plupload.extend(option, op, {
-            url: 'http://upload.qiniu.com',
+            url: qiniuUploadUrl,
             multipart_params: {
                 token: ''
             }
@@ -384,7 +384,7 @@ function QiniuJsSDK() {
 
 
                 up.setOption({
-                    'url': 'http://upload.qiniu.com/',
+                    'url': qiniuUploadUrl,
                     'multipart': true,
                     'chunk_size': undefined,
                     'multipart_params': multipart_params_obj
@@ -433,7 +433,7 @@ function QiniuJsSDK() {
                     }
                     speedCalInfo.startTime = new Date().getTime();
                     up.setOption({
-                        'url': 'http://upload.qiniu.com/mkblk/' + blockSize,
+                        'url': qiniuUploadUrl + '/mkblk/' + blockSize,
                         'multipart': false,
                         'chunk_size': chunk_size,
                         'required_features': "chunks",
@@ -469,7 +469,7 @@ function QiniuJsSDK() {
             chunk_size = chunk_size || (up.settings && up.settings.chunk_size);
             if (leftSize < chunk_size) {
                 up.setOption({
-                    'url': 'http://upload.qiniu.com/mkblk/' + leftSize
+                    'url': qiniuUploadUrl + '/mkblk/' + leftSize
                 });
             }
             localStorage.setItem(file.name, JSON.stringify({
@@ -633,7 +633,7 @@ function QiniuJsSDK() {
                         }
                     }
 
-                    var url = 'http://upload.qiniu.com/mkfile/' + file.size + key + fname + x_vars_url;
+                    var url = qiniuUploadUrl + '/mkfile/' + file.size + key + fname + x_vars_url;
                     var ajax = that.createAjax();
                     ajax.open('POST', url, true);
                     ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
