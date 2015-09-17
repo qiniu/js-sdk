@@ -223,7 +223,7 @@ function QiniuJsSDK() {
     };
 
     this.trim = function(text) {
-        return text === null ? "" : this.trim.call(text);
+        return text === null ? "" : $.trim(text);
     };
 
     //Todo ie7 handler / this.parseJSON bug;
