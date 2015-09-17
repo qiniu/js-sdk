@@ -223,7 +223,7 @@ function QiniuJsSDK() {
     };
 
     this.trim = function(text) {
-        return text === null ? "" : $.trim(text);
+        return text === null ? "" : text.replace(/^\s+|\s+$/g, '');
     };
 
     //Todo ie7 handler / this.parseJSON bug;
