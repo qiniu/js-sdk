@@ -24,7 +24,7 @@ qiniu-js-sdk
  * pipeline  （管道，可对imageView2、imageMogr2、watermark进行链式处理）
 
 ### SDK构成介绍
-* Plupload ，建议 2.1.1 及以上版本
+* Plupload ，建议 2.1.8 及以上版本
 * qiniu.js，SDK主体文件，上传功能\数据处理实现
 
 
@@ -45,7 +45,7 @@ qiniu-js-sdk
     ```
 * 引入Plupload
 
-    *   [Plupload下载](http://plupload.com/download)，建议 2.1.1 及以上版本
+    *   [Plupload下载](http://plupload.com/download)，建议 2.1.8 及以上版本
 
     *   引入`plupload.full.min.js`（产品环境）或 引入`plupload.dev.js`和`moxie.js`（开发调试）
 
