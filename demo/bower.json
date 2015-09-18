@@ -1,0 +1,14 @@
+{
+    "name": "plupload",
+    "version": "2.1.8",
+    "description": "plupload",
+    "license": "MIT",
+    "private": true,
+    "ignore": [
+        "**/.*",
+        "bower_components"
+    ],
+    "devDependencies": {
+        "plupload": "~2.1.8"
+    }
+}
