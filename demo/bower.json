@@ -1,7 +1,7 @@
 {
     "name": "plupload",
     "version": "2.1.8",
-    "description": "plupload",
+    "description": "qiniu-jssdk for upload files",
     "license": "MIT",
     "private": true,
     "ignore": [
