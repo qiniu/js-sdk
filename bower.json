@@ -1,0 +1,21 @@
+{
+  "name": "qiniu",
+  "version": "1.0.9-beta",
+  "homepage": "https://github.com/qiniu/js-sdk.git",
+  "description": "基于七牛API开发的前端JavaScript SDK",
+  "main": "src/qiniu.js",
+  "moduleType": [
+    "globals"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "plupload": "~2.1.8"
+  }
+}
