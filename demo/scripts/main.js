@@ -217,7 +217,7 @@ $(function() {
         var newUrl = Qiniu.pipeline(fopArr, key);
 
         var newImg = new Image();
-        img.attr('src', 'loading.gif');
+        img.attr('src', '/images/loading.gif');
         newImg.onload = function() {
             img.attr('src', newUrl);
             img.parent('a').attr('href', newUrl);
