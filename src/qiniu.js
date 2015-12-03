@@ -28,7 +28,7 @@ function QiniuJsSDK() {
      *     it will return false
      * else
      *     it will return version of current IE browser
-     * @return {[Number]|[Boolean]} IE version or false
+     * @return {Number|Boolean} IE version or false
      */
     this.detectIEVersion = function() {
         var v = 4,
@@ -45,7 +45,7 @@ function QiniuJsSDK() {
 
     /**
      * is image
-     * @param  {string}  url of a file
+     * @param  {String}  url of a file
      * @return {Boolean} file is a image or not
      */
     this.isImage = function(url) {
@@ -68,8 +68,8 @@ function QiniuJsSDK() {
 
     /**
      * get file extension
-     * @param  {string} filename
-     * @return {string} file extension
+     * @param  {String} filename
+     * @return {String} file extension
      * @example
      *     input: test.txt
      *     output: txt
@@ -87,8 +87,8 @@ function QiniuJsSDK() {
 
     /**
      * encode string by utf8
-     * @param  {string} string to encode
-     * @return {string} encoded string
+     * @param  {String} string to encode
+     * @return {String} encoded string
      */
     this.utf8_encode = function(argString) {
         // http://kevin.vanzonneveld.net
@@ -161,8 +161,8 @@ function QiniuJsSDK() {
 
     /**
      * encode data by base64
-     * @param  {string} data to encode
-     * @return {string} encoded data
+     * @param  {String} data to encode
+     * @return {String} encoded data
      */
     this.base64_encode = function(data) {
         // http://kevin.vanzonneveld.net
@@ -292,9 +292,9 @@ function QiniuJsSDK() {
     var that = this;
 
     /**
-     * init a uploader
-     * @param  {object} options to set a new uploader
-     * @return {object} inited uploader
+     * create a uploader by QiniuJsSDK
+     * @param  {object} options to create a new uploader
+     * @return {object} uploader
      */
     this.uploader = function(op) {
         if (!op.domain) {
@@ -338,7 +338,8 @@ function QiniuJsSDK() {
             var BLOCK_BITS, MAX_CHUNK_SIZE, chunk_size;
             // case Safari 5、Windows 7、iOS 7 set isSpecialSafari to true
             var isSpecialSafari = (mOxie.Env.browser === "Safari" && mOxie.Env.version <= 5 && mOxie.Env.os === "Windows" && mOxie.Env.osVersion === "7") || (mOxie.Env.browser === "Safari" && mOxie.Env.os === "iOS" && mOxie.Env.osVersion === "7");
-            // case IE 9 or below，has set chunk_size and flash is included in runtimes
+            // case IE 9-，chunk_size is not empty and flash is included in runtimes
+            // set op.chunk_size to zero
             if (ie && ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
                 //  link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
                 //  when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
@@ -364,8 +365,10 @@ function QiniuJsSDK() {
 
         reset_chunk_size();
 
-        // if op.uptoken has no value get token from 'uptoken_url'
-        // else return the op.uptoken
+        // if op.uptoken has no value
+        //      get token from 'uptoken_url'
+        // else
+        //      set token to be op.uptoken
         var getUpToken = function() {
             if (!op.uptoken) {
                 // TODO: use m0xie
@@ -439,11 +442,12 @@ function QiniuJsSDK() {
 
         // bind 'BeforeUpload' event
         // intercept the process of upload
-        // - prepare up token
+        // - prepare uptoken
         // - according the chunk size to make differnt upload strategy
-        // - resume the upload with the last breakpoint of file
+        // - resume upload with the last breakpoint of file
         uploader.bind('BeforeUpload', function(up, file) {
-            file.speed = file.speed || 0; // add a key named speed for file obj
+            // add a key named speed for file object
+            file.speed = file.speed || 0;
             ctx = '';
 
             if(op.get_new_uptoken){
@@ -689,7 +693,9 @@ function QiniuJsSDK() {
         })(_Error_Handler));
 
         // bind 'FileUploaded' event
-        // 
+        // intercept the complete of upload
+        // - get downtoken from downtoken_url if bucket is private
+        // - invoke mkfile api to compose chunks if upload strategy is chunk upload
         uploader.bind('FileUploaded', (function(_FileUploaded_Handler) {
             return function(up, file, info) {
 
