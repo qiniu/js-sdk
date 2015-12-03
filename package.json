@@ -1,19 +1,22 @@
 {
-    "name": "qiniu-js-sdk",
-    "version": "1.0.7-beta",
-    "private": false,
-    "scripts": {
-        "start": "node demo/server.js"
-    },
-    "dependencies": {
-        "express": "~3.4.7",
-        "qiniu": "~6.1.1",
-        "ejs": "~1.0.0",
-        "grunt": "~0.4.2",
-        "grunt-cli": "~0.1.13",
-        "grunt-contrib-jshint": "~0.7.2",
-        "grunt-contrib-watch": "~0.5.3",
-        "grunt-contrib-uglify": "~0.2.2",
-        "grunt-contrib-copy": "~0.5.0"
-    }
+  "name": "qiniu-js-sdk",
+  "jsName": "qiniu",
+  "version": "1.0.9-beta",
+  "private": false,
+  "scripts": {
+    "start": "node demo/server.js"
+  },
+  "dependencies": {
+    "bower": "^1.6.8",
+    "ejs": "~1.0.0",
+    "express": "~3.4.7",
+    "grunt": "~0.4.2",
+    "grunt-cli": "~0.1.13",
+    "grunt-contrib-concat": "^0.5.1",
+    "grunt-contrib-copy": "~0.5.0",
+    "grunt-contrib-jshint": "~0.7.2",
+    "grunt-contrib-uglify": "~0.2.2",
+    "grunt-contrib-watch": "~0.5.3",
+    "qiniu": "~6.1.1"
+  }
 }

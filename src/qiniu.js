@@ -1,3 +1,14 @@
+/*!
+ * qiniu-js-sdk v@VERSION
+ *
+ * Copyright 2015 by Qiniu
+ * Released under GPL V2 License.
+ *
+ * GitHub: http://github.com/qiniu/js-sdk
+ *
+ * Date: @DATE
+*/
+
 /*global plupload ,mOxie*/
 /*global ActiveXObject */
 /*exported Qiniu */

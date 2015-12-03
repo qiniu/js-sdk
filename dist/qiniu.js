@@ -1,3 +1,14 @@
+/*!
+ * qiniu-js-sdk v1.0.9-beta
+ *
+ * Copyright 2015 by Qiniu
+ * Released under GPL V2 License.
+ *
+ * GitHub: http://github.com/qiniu/js-sdk
+ *
+ * Date: 2015-12-2
+*/
+
 /*global plupload ,mOxie*/
 /*global ActiveXObject */
 /*exported Qiniu */
