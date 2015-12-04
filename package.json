@@ -1,7 +1,7 @@
 {
   "name": "qiniu-js-sdk",
   "jsName": "qiniu",
-  "version": "1.0.9-beta",
+  "version": "1.0.10-beta",
   "private": false,
   "scripts": {
     "start": "node demo/server.js"
