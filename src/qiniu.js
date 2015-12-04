@@ -14,7 +14,10 @@
 /*exported Qiniu */
 /*exported QiniuJsSDK */
 
+;(function( global ){
+
 function QiniuJsSDK() {
+
     var qiniuUploadUrl;
     if (window.location.protocol === 'https:') {
         qiniuUploadUrl = 'https://up.qbox.me';
@@ -490,7 +493,6 @@ function QiniuJsSDK() {
                 });
             };
 
-
             var chunk_size = up.getOption && up.getOption('chunk_size');
             chunk_size = chunk_size || (up.settings && up.settings.chunk_size);
             // TODO: flash support chunk upload
@@ -891,7 +893,6 @@ function QiniuJsSDK() {
      * @return {String} url of processed image
      */
     this.watermark = function(op, key) {
-
         var mode = op.mode;
         if (!mode) {
             return false;
@@ -936,7 +937,6 @@ function QiniuJsSDK() {
             imageUrl = this.getUrl(key) + '?' + imageUrl;
         }
         return imageUrl;
-
     };
 
     /**
@@ -1013,7 +1013,6 @@ function QiniuJsSDK() {
      * @return {String|Boolean} url of processed image
      */
     this.pipeline = function(arr, key) {
-
         var isArray = Object.prototype.toString.call(arr) === '[object Array]';
         var option, errOp, imageUrl = '';
         if (isArray) {
@@ -1051,7 +1050,12 @@ function QiniuJsSDK() {
         }
         return false;
     };
-
 }
 
 var Qiniu = new QiniuJsSDK();
+
+global.Qiniu = Qiniu;
+
+global.QiniuJsSDK = QiniuJsSDK;
+
+})( window );
