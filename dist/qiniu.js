@@ -1,12 +1,12 @@
 /*!
- * qiniu-js-sdk v1.0.9-beta
+ * qiniu-js-sdk v1.0.10-beta
  *
  * Copyright 2015 by Qiniu
  * Released under GPL V2 License.
  *
  * GitHub: http://github.com/qiniu/js-sdk
  *
- * Date: 2015-12-4
+ * Date: 2015-12-8
 */
 
 /*global plupload ,mOxie*/
@@ -374,7 +374,7 @@ function QiniuJsSDK() {
         //      set token to be op.uptoken
         var getUpToken = function() {
             if (!op.uptoken) {
-                // TODO: use m0xie
+                // TODO: use mOxie
                 var ajax = that.createAjax();
                 ajax.open('GET', that.uptoken_url, true);
                 ajax.setRequestHeader("If-Modified-Since", "0");
@@ -488,16 +488,26 @@ function QiniuJsSDK() {
                 up.setOption({
                     'url': qiniuUploadUrl,
                     'multipart': true,
-                    'chunk_size': undefined,
+                    'chunk_size': is_android_weixin_or_qq() ? op.max_file_size : undefined,
                     'multipart_params': multipart_params_obj
                 });
+            };
+
+            // detect is weixin or qq inner browser
+            var is_android_weixin_or_qq = function (){
+                var ua = navigator.userAgent.toLowerCase();
+                if((ua.match(/MicroMessenger/i) || mOxie.Env.browser === "QQBrowser") && mOxie.Env.OS.toLowerCase()==="android") {
+                    return true;
+                } else {
+                    return false;
+                }
             };
 
             var chunk_size = up.getOption && up.getOption('chunk_size');
             chunk_size = chunk_size || (up.settings && up.settings.chunk_size);
             // TODO: flash support chunk upload
             if (uploader.runtime === 'html5' && chunk_size) {
-                if (file.size < chunk_size) {
+                if (file.size < chunk_size || is_android_weixin_or_qq()) {
                     // direct upload if file size is less then the chunk size
                     directUpload(up, file, that.key_handler);
                 } else {
