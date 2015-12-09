@@ -10,7 +10,7 @@ $(function() {
         browse_button: 'pickfiles',
         container: 'container',
         drop_element: 'container',
-        max_file_size: '100mb',
+        max_file_size: '1000mb',
         flash_swf_url: 'bower_components/plupload/js/Moxie.swf',
         dragdrop: true,
         chunk_size: '4mb',
@@ -29,7 +29,7 @@ $(function() {
         //     },
         // },
         auto_start: true,
-        log_level: 6,
+        log_level: 5,
         init: {
             'FilesAdded': function(up, files) {
                 $('table').show();
