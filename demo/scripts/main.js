@@ -10,8 +10,8 @@ $(function() {
         browse_button: 'pickfiles',
         container: 'container',
         drop_element: 'container',
-        max_file_size: '100mb',
-        flash_swf_url: 'js/plupload/Moxie.swf',
+        max_file_size: '1000mb',
+        flash_swf_url: 'bower_components/plupload/js/Moxie.swf',
         dragdrop: true,
         chunk_size: '4mb',
         uptoken_url: $('#uptoken_url').val(),
@@ -29,6 +29,7 @@ $(function() {
         //     },
         // },
         auto_start: true,
+        log_level: 5,
         init: {
             'FilesAdded': function(up, files) {
                 $('table').show();
@@ -217,7 +218,7 @@ $(function() {
         var newUrl = Qiniu.pipeline(fopArr, key);
 
         var newImg = new Image();
-        img.attr('src', '/images/loading.gif');
+        img.attr('src', 'images/loading.gif');
         newImg.onload = function() {
             img.attr('src', newUrl);
             img.parent('a').attr('href', newUrl);

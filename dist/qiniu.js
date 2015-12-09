@@ -6,7 +6,7 @@
  *
  * GitHub: http://github.com/qiniu/js-sdk
  *
- * Date: 2015-12-8
+ * Date: 2015-12-9
 */
 
 /*global plupload ,mOxie*/
@@ -17,6 +17,8 @@
 ;(function( global ){
 
 function QiniuJsSDK() {
+
+    var that = this;
 
     var qiniuUploadUrl;
     if (window.location.protocol === 'https:') {
@@ -45,6 +47,53 @@ function QiniuJsSDK() {
         }
         return v > 4 ? v : false;
     };
+
+    var logger = {
+        MUTE: 0,
+        FATA: 1,
+        ERROR: 2,
+        WARN: 3,
+        INFO: 4,
+        DEBUG: 5,
+        TRACE: 6,
+        level: 0
+    };
+
+    function log(type, args){
+        var header = "[qiniu-js-sdk]["+type+"]";
+        if (that.detectIEVersion()) {
+            // http://stackoverflow.com/questions/5538972/console-log-apply-not-working-in-ie9
+            //var log = Function.prototype.bind.call(console.log, console);
+            //log.apply(console, args);
+            var msg = header;
+            for (var i = 0; i < args.length; i++) {
+                msg+=that.stringifyJSON(args[i]);
+            }
+            console.log(msg);
+        }else{
+            args.unshift(header);
+            console.log.apply(console, args);
+        }
+    }
+
+    function makeLogFunc(code){
+        var func = code.toLowerCase();
+        logger[func] = function(){
+            // logger[func].history = logger[func].history || [];
+            // logger[func].history.push(arguments);
+            if(window.console && window.console.log && logger.level>=logger[code]){
+                var args = Array.prototype.slice.call(arguments);
+                log(func,args);
+            }
+        };
+    }
+
+    for (var property in logger){
+        if (logger.hasOwnProperty(property) && (typeof logger[property]) === "number" && !logger.hasOwnProperty(property.toLowerCase())) {
+            makeLogFunc(property);
+        }
+    }
+
 
     /**
      * is image
@@ -240,7 +289,7 @@ function QiniuJsSDK() {
      * craete object used to AJAX
      * @return {Object}
      */
-    this.createAjax = function() {
+    this.createAjax = function(argument) {
         var xmlhttp = {};
         if (window.XMLHttpRequest) {
             xmlhttp = new XMLHttpRequest();
@@ -262,24 +311,78 @@ function QiniuJsSDK() {
             return window.JSON.parse(data);
         }
 
-        if (data === null) {
-            return data;
+        //var rx_one = /^[\],:{}\s]*$/,
+        //    rx_two = /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,
+        //    rx_three = /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,
+        //    rx_four = /(?:^|:|,)(?:\s*\[)+/g,
+        var    rx_dangerous = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
+
+        //var json;
+
+        var text = String(data);
+        rx_dangerous.lastIndex = 0;
+        if(rx_dangerous.test(text)){
+            text = text.replace(rx_dangerous, function(a){
+               return '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+            });
         }
-        if (typeof data === "string") {
 
-            // Make sure leading/trailing whitespace is removed (IE can't handle it)
-            data = this.trim(data);
+        // todo 使用一下判断,增加安全性
+        //if (
+        //    rx_one.test(
+        //        text
+        //            .replace(rx_two, '@')
+        //            .replace(rx_three, ']')
+        //            .replace(rx_four, '')
+        //    )
+        //) {
+        //    return eval('(' + text + ')');
+        //}
 
-            if (data) {
-                // Make sure the incoming data is actual JSON
-                // Logic borrowed from http://json.org/json2.js
-                if (/^[\],:{}\s]*$/.test(data.replace(/\\(?:["\\\/bfnrt]|u[\da-fA-F]{4})/g, "@").replace(/"[^"\\\r\n]*"|true|false|null|-?(?:\d+\.|)\d+(?:[eE][+-]?\d+|)/g, "]").replace(/(?:^|:|,)(?:\s*\[)+/g, ""))) {
+        return eval('('+text+')');
+    };
 
-                    return (function() {
-                        return data;
-                    })();
+    /**
+     * parse javascript object to json string
+     * @param  {Object} object
+     * @return {String} json string
+     */
+    this.stringifyJSON = function(obj) {
+        // Attempt to parse using the native JSON parser first
+        if (window.JSON && window.JSON.stringify) {
+            return window.JSON.stringify(obj);
+        }
+        switch (typeof (obj)) {
+            case 'string':
+                return '"' + obj.replace(/(["\\])/g, '\\$1') + '"';
+            case 'array':
+                return '[' + obj.map(that.stringifyJSON).join(',') + ']';
+            case 'object':
+                if (obj instanceof Array) {
+                    var strArr = [];
+                    var len = obj.length;
+                    for (var i = 0; i < len; i++) {
+                        strArr.push(that.stringifyJSON(obj[i]));
+                    }
+                    return '[' + strArr.join(',') + ']';
+                } else if (obj === null) {
+                    return 'null';
+                } else {
+                    var string = [];
+                    for (var property in obj) {
+                        if (obj.hasOwnProperty(property)) {
+                            string.push(that.stringifyJSON(property) + ':' + that.stringifyJSON(obj[property]));
+                        }
+                    }
+                    return '{' + string.join(',') + '}';
                 }
-            }
+                break;
+            case 'number':
+                return obj;
+            case false:
+                return obj;
+            case 'boolean':
+                return obj;
         }
     };
 
@@ -292,14 +395,17 @@ function QiniuJsSDK() {
         return text === null ? "" : text.replace(/^\s+|\s+$/g, '');
     };
 
-    var that = this;
-
     /**
      * create a uploader by QiniuJsSDK
      * @param  {object} options to create a new uploader
      * @return {object} uploader
      */
     this.uploader = function(op) {
+
+        if (op.log_level) {
+            logger.level = op.log_level;
+        }
+
         if (!op.domain) {
             throw 'domain setting in options is required!';
         }
@@ -307,6 +413,12 @@ function QiniuJsSDK() {
         if (!op.browse_button) {
             throw 'browse_button setting in options is required!';
         }
+
+        logger.debug("init uploader start");
+
+        logger.debug("environment: ", mOxie.Env);
+
+        logger.debug("userAgent: ", navigator.userAgent);
 
         var option = {};
 
@@ -367,6 +479,8 @@ function QiniuJsSDK() {
         };
 
         reset_chunk_size();
+        logger.debug("invoke reset_chunk_size()");
+        logger.debug("op.chunk_size: ", op.chunk_size);
 
         // if op.uptoken has no value
         //      get token from 'uptoken_url'
@@ -418,30 +532,46 @@ function QiniuJsSDK() {
             }
         });
 
+        logger.debug("option: ", option);
+
         // create a new uploader with composed options
         var uploader = new plupload.Uploader(option);
 
+        logger.debug("new plupload.Uploader(option)");
+
         // bind getUpToken to 'Init' event
         uploader.bind('Init', function(up, params) {
+            logger.debug("Init event activated");
             getUpToken();
         });
 
-        // init uploader
-        uploader.init();
+        logger.debug("bind Init event");
 
         // bind 'FilesAdded' event
         // when file be added and auto_start has set value
         // uploader will auto start upload the file
         uploader.bind('FilesAdded', function(up, files) {
+            logger.debug("FilesAdded event activated");
             var auto_start = up.getOption && up.getOption('auto_start');
             auto_start = auto_start || (up.settings && up.settings.auto_start);
+            logger.debug("auto_start: ", auto_start);
+            logger.debug("files: ", files);
             if (auto_start) {
-                plupload.each(files, function(i, file) {
+                setTimeout(function(){
                     up.start();
-                });
+                    logger.debug("invoke up.start()");
+                }, 0);
+                // up.start();
+                // plupload.each(files, function(i, file) {
+                //     up.start();
+                //     logger.debug("invoke up.start()")
+                //     logger.debug("file: ", file);
+                // });
             }
             up.refresh(); // Reposition Flash/Silverlight
         });
+
+        logger.debug("bind FilesAdded event");
 
         // bind 'BeforeUpload' event
         // intercept the process of upload
@@ -449,6 +579,7 @@ function QiniuJsSDK() {
         // - according the chunk size to make differnt upload strategy
         // - resume upload with the last breakpoint of file
         uploader.bind('BeforeUpload', function(up, file) {
+            logger.debug("BeforeUpload event activated");
             // add a key named speed for file object
             file.speed = file.speed || 0;
             ctx = '';
@@ -470,6 +601,8 @@ function QiniuJsSDK() {
                         'token': that.token
                     };
                 }
+
+                logger.debug("directUpload multipart_params_obj: ", multipart_params_obj);
 
                 var x_vars = op.x_vars;
                 if (x_vars !== undefined && typeof x_vars === 'object') {
@@ -496,7 +629,7 @@ function QiniuJsSDK() {
             // detect is weixin or qq inner browser
             var is_android_weixin_or_qq = function (){
                 var ua = navigator.userAgent.toLowerCase();
-                if((ua.match(/MicroMessenger/i) || mOxie.Env.browser === "QQBrowser") && mOxie.Env.OS.toLowerCase()==="android") {
+                if((ua.match(/MicroMessenger/i) || mOxie.Env.browser === "QQBrowser" || ua.match(/V1_AND_SQ/i)) && mOxie.Env.OS.toLowerCase()==="android") {
                     return true;
                 } else {
                     return false;
@@ -505,9 +638,14 @@ function QiniuJsSDK() {
 
             var chunk_size = up.getOption && up.getOption('chunk_size');
             chunk_size = chunk_size || (up.settings && up.settings.chunk_size);
+
+            logger.debug("uploader.runtime: ",uploader.runtime);
+            logger.debug("chunk_size: ",chunk_size);
+
             // TODO: flash support chunk upload
-            if (uploader.runtime === 'html5' && chunk_size) {
+            if ((uploader.runtime === 'html5' || uploader.runtime === 'flash') && chunk_size) {
                 if (file.size < chunk_size || is_android_weixin_or_qq()) {
+                    logger.debug("directUpload because file.size < chunk_size || is_android_weixin_or_qq()");
                     // direct upload if file size is less then the chunk size
                     directUpload(up, file, that.key_handler);
                 } else {
@@ -575,14 +713,18 @@ function QiniuJsSDK() {
                     });
                 }
             } else {
+                logger.debug("directUpload because uploader.runtime !== 'html5' || !chunk_size");
                 // direct upload if runtime is not html5
                 directUpload(up, file, that.key_handler);
             }
         });
 
+        logger.debug("bind BeforeUpload event");
+
         // bind 'UploadProgress' event
         // calculate upload speed
         uploader.bind('UploadProgress', function(up, file) {
+            logger.trace("UploadProgress event activated");
             speedCalInfo.currentTime = new Date().getTime();
             var timeUsed = speedCalInfo.currentTime - speedCalInfo.startTime; // ms
             var fileUploaded = file.loaded || 0;
@@ -592,9 +734,12 @@ function QiniuJsSDK() {
             file.speed = (fileUploaded / timeUsed * 1000).toFixed(0) || 0; // unit: byte/s
         });
 
+        logger.debug("bind UploadProgress event");
+
         // bind 'ChunkUploaded' event
         // store the chunk upload info and set next chunk upload url
         uploader.bind('ChunkUploaded', function(up, file, info) {
+            logger.debug("ChunkUploaded event activated");
             var res = that.parseJSON(info.response);
             // ctx should look like '[chunk01_ctx],[chunk02_ctx],[chunk03_ctx],...'
             ctx = ctx ? ctx + ',' + res.ctx : res.ctx;
@@ -615,10 +760,14 @@ function QiniuJsSDK() {
             }));
         });
 
+        logger.debug("bind ChunkUploaded event");
+
         // bind 'Error' event
         // check the err.code and return the errTip
         uploader.bind('Error', (function(_Error_Handler) {
             return function(up, err) {
+                logger.error("Error event activated");
+                logger.error("err: ", err);
                 var errTip = '';
                 var file = err.file;
                 if (file) {
@@ -704,12 +853,15 @@ function QiniuJsSDK() {
             };
         })(_Error_Handler));
 
+        logger.debug("bind Error event");
+
         // bind 'FileUploaded' event
         // intercept the complete of upload
         // - get downtoken from downtoken_url if bucket is private
         // - invoke mkfile api to compose chunks if upload strategy is chunk upload
         uploader.bind('FileUploaded', (function(_FileUploaded_Handler) {
             return function(up, file, info) {
+                logger.debug("FileUploaded event activated");
 
                 var last_step = function(up, file, info) {
                     if (op.downtoken_url) {
@@ -809,6 +961,15 @@ function QiniuJsSDK() {
 
             };
         })(_FileUploaded_Handler));
+
+        logger.debug("bind FileUploaded event");
+
+        // init uploader
+        uploader.init();
+
+        logger.debug("invoke uploader.init()");
+
+        logger.debug("init uploader end");
 
         return uploader;
     };
