@@ -1,51 +1,51 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>七牛云存储 - JavaScript SDK</title>
-	<link href="/images/favicon.ico" rel="shortcut icon">
-	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.css">
+    <meta charset="UTF-8">
+    <title>七牛云存储 - JavaScript SDK</title>
+    <link href="images/favicon.ico" rel="shortcut icon">
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="styles/main.css">
     <link rel="stylesheet" href="styles/highlight.css">
-	<link rel="stylesheet" href="styles/main.css">
 
-	<!--[if lt IE 9]>
-      <script src="/bower_components/js/Respond-1.4.2/respond.min.js"></script>
+    <!--[if lt IE 9]>
+      <script src="bower_components/respond/dest/respond.min.js"></script>
     <![endif]-->
 </head>
 <body>
 <div class="container">
-	<div class="text-left col-md-12 wrapper">
-		<h1 class="text-left col-md-12 ">
-			七牛云存储 - JavaScript SDK
+    <div class="text-left col-md-12 wrapper">
+        <h1 class="text-left col-md-12 ">
+            七牛云存储 - JavaScript SDK
             <a class="btn btn-default view_code" id="show_code">
                 查看初始化代码
             </a>
             <a class="btn btn-default view_github" href="https://github.com/qiniupd/qiniu-js-sdk" target="_blank">
-				<img src="http://qtestbucket.qiniudn.com/GitHub-Mark-32px.png">
-				View Source on Github
-			</a>
-		</h1>
+                <img src="http://qtestbucket.qiniudn.com/GitHub-Mark-32px.png">
+                View Source on Github
+            </a>
+        </h1>
         <input type="hidden" id="domain" value="<%= domain %>">
         <input type="hidden" id="uptoken_url" value="<%= uptoken_url %>">
-		<ul class="tip col-md-12 text-mute">
-			<li>
-				<small>
-					JavaScript SDK 基于 Plupload 开发，可以通过 Html5 或 Flash 等模式上传文件至七牛云存储。
-				</small>
-			</li>
-			<li>
-				<small>临时上传的空间不定时清空，请勿保存重要文件。</small>
-			</li>
+        <ul class="tip col-md-12 text-mute">
+            <li>
+                <small>
+                    JavaScript SDK 基于 Plupload 开发，可以通过 Html5 或 Flash 等模式上传文件至七牛云存储。
+                </small>
+            </li>
+            <li>
+                <small>临时上传的空间不定时清空，请勿保存重要文件。</small>
+            </li>
             <li>
                 <small>Html5模式大于4M文件采用分块上传。</small>
             </li>
             <li>
                 <small>上传图片可查看处理效果。</small>
             </li>
-			<li>
-				<small>本示例限制最大上传文件100M。</small>
-			</li>
-		</ul>
+            <li>
+                <small>本示例限制最大上传文件100M。</small>
+            </li>
+        </ul>
     </div>
     <div class="body">
         <div class="col-md-12">
@@ -235,13 +235,13 @@
 
 
 
-<script type="text/javascript" src="/bower_components/jquery/jquery.min.js"></script>
-<script type="text/javascript" src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="/bower_components/plupload/js/plupload.full.min.js"></script>
-<script type="text/javascript" src="/bower_components/plupload/js/i18n/zh_CN.js"></script>
-<script type="text/javascript" src="/src/qiniu.js"></script>
-<script type="text/javascript" src="/scripts/ui.js"></script>
-<script type="text/javascript" src="/scripts/highlight.js"></script>
-<script type="text/javascript" src="/scripts/main.js"></script>
+<script type="text/javascript" src="bower_components/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="bower_components/plupload/js/plupload.full.min.js"></script>
+<script type="text/javascript" src="bower_components/plupload/js/i18n/zh_CN.js"></script>
+<script type="text/javascript" src="scripts/ui.js"></script>
+<script type="text/javascript" src="src/qiniu.js"></script>
+<script type="text/javascript" src="scripts/highlight.js"></script>
+<script type="text/javascript" src="scripts/main.js"></script>
 </body>
 </html>

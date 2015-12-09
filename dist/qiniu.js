@@ -6,7 +6,7 @@
  *
  * GitHub: http://github.com/qiniu/js-sdk
  *
- * Date: 2015-12-8
+ * Date: 2015-12-9
 */
 
 /*global plupload ,mOxie*/
@@ -45,6 +45,38 @@ function QiniuJsSDK() {
         }
         return v > 4 ? v : false;
     };
+
+    var logger = {
+        MUTE: 0,
+        FATA: 1,
+        ERROR: 2,
+        WARN: 3,
+        INFO: 4,
+        Debug: 5,
+        TRACE: 6,
+        level: 0,
+        log: function(){
+            logger.log.history = logger.log.history || [];
+            logger.log.history.push(arguments);
+            if(window.console && window.console.log && logger.level>=logger.TRACE){
+                var args = Array.prototype.slice.call(arguments);
+                if (that.detectIEVersion()) {
+                    // http://stackoverflow.com/questions/5538972/console-log-apply-not-working-in-ie9
+                    //var log = Function.prototype.bind.call(console.log, console);
+                    //log.apply(console, args);
+                    var msg = "[qiniu-js-sdk]";
+                    for (var i = 0; i < args.length; i++) {
+                        msg+=that.stringifyJSON(args[i]);
+                    }
+                    console.log(msg);
+                }else{
+                    args.unshift("[qiniu-js-sdk]");
+                    console.log.apply(console, args);
+                }
+            }
+        }
+    };
+
 
     /**
      * is image
@@ -240,7 +272,7 @@ function QiniuJsSDK() {
      * craete object used to AJAX
      * @return {Object}
      */
-    this.createAjax = function() {
+    this.createAjax = function(argument) {
         var xmlhttp = {};
         if (window.XMLHttpRequest) {
             xmlhttp = new XMLHttpRequest();
@@ -262,24 +294,41 @@ function QiniuJsSDK() {
             return window.JSON.parse(data);
         }
 
-        if (data === null) {
-            return data;
+        //var rx_one = /^[\],:{}\s]*$/,
+        //    rx_two = /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,
+        //    rx_three = /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,
+        //    rx_four = /(?:^|:|,)(?:\s*\[)+/g,
+        var    rx_dangerous = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
+
+        //var json;
+
+        var text = String(data);
+        rx_dangerous.lastIndex = 0;
+        if(rx_dangerous.test(text)){
+            text = text.replace(rx_dangerous, function(a){
+               return '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+            });
         }
-        if (typeof data === "string") {
 
-            // Make sure leading/trailing whitespace is removed (IE can't handle it)
-            data = this.trim(data);
+        // todo 使用一下判断,增加安全性
+        //if (
+        //    rx_one.test(
+        //        text
+        //            .replace(rx_two, '@')
+        //            .replace(rx_three, ']')
+        //            .replace(rx_four, '')
+        //    )
+        //) {
+        //    return eval('(' + text + ')');
+        //}
 
-            if (data) {
-                // Make sure the incoming data is actual JSON
-                // Logic borrowed from http://json.org/json2.js
-                if (/^[\],:{}\s]*$/.test(data.replace(/\\(?:["\\\/bfnrt]|u[\da-fA-F]{4})/g, "@").replace(/"[^"\\\r\n]*"|true|false|null|-?(?:\d+\.|)\d+(?:[eE][+-]?\d+|)/g, "]").replace(/(?:^|:|,)(?:\s*\[)+/g, ""))) {
+        return eval('('+text+')');
+    };
 
-                    return (function() {
-                        return data;
-                    })();
-                }
-            }
+    this.stringifyJSON = function(json) {
+        // Attempt to parse using the native JSON parser first
+        if (window.JSON && window.JSON.stringify) {
+            return window.JSON.stringify(json);
         }
     };
 
@@ -300,6 +349,11 @@ function QiniuJsSDK() {
      * @return {object} uploader
      */
     this.uploader = function(op) {
+
+        if (op.log_level) {
+            logger.level = op.log_level;
+        }
+
         if (!op.domain) {
             throw 'domain setting in options is required!';
         }
@@ -307,6 +361,12 @@ function QiniuJsSDK() {
         if (!op.browse_button) {
             throw 'browse_button setting in options is required!';
         }
+
+        logger.log("init uploader");
+
+        logger.log("environment: ", mOxie.Env);
+
+        logger.log("userAgent: ", navigator.userAgent);
 
         var option = {};
 
@@ -364,6 +424,7 @@ function QiniuJsSDK() {
                 // reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
             }
             // if op.chunk_size set 0 will be cause to direct upload
+            logger.log("reset chunk size:", op.chunk_size);
         };
 
         reset_chunk_size();
@@ -418,21 +479,31 @@ function QiniuJsSDK() {
             }
         });
 
+        logger.log("option: ", option);
+
         // create a new uploader with composed options
         var uploader = new plupload.Uploader(option);
 
+        logger.log("create plupload.Uploader");
+
         // bind getUpToken to 'Init' event
         uploader.bind('Init', function(up, params) {
+            logger.log("uploader Init");
             getUpToken();
         });
 
+        logger.log("bind Init event");
+
         // init uploader
         uploader.init();
+
+        logger.log("uploader init");
 
         // bind 'FilesAdded' event
         // when file be added and auto_start has set value
         // uploader will auto start upload the file
         uploader.bind('FilesAdded', function(up, files) {
+            logger.log("uploader FilesAdded");
             var auto_start = up.getOption && up.getOption('auto_start');
             auto_start = auto_start || (up.settings && up.settings.auto_start);
             if (auto_start) {
@@ -443,12 +514,15 @@ function QiniuJsSDK() {
             up.refresh(); // Reposition Flash/Silverlight
         });
 
+        logger.log("bind FilesAdded event");
+
         // bind 'BeforeUpload' event
         // intercept the process of upload
         // - prepare uptoken
         // - according the chunk size to make differnt upload strategy
         // - resume upload with the last breakpoint of file
         uploader.bind('BeforeUpload', function(up, file) {
+            logger.log("uploader BeforeUpload");
             // add a key named speed for file object
             file.speed = file.speed || 0;
             ctx = '';
@@ -470,6 +544,8 @@ function QiniuJsSDK() {
                         'token': that.token
                     };
                 }
+
+                logger.log("directUpload multipart_params_obj: ", multipart_params_obj);
 
                 var x_vars = op.x_vars;
                 if (x_vars !== undefined && typeof x_vars === 'object') {
@@ -496,7 +572,7 @@ function QiniuJsSDK() {
             // detect is weixin or qq inner browser
             var is_android_weixin_or_qq = function (){
                 var ua = navigator.userAgent.toLowerCase();
-                if((ua.match(/MicroMessenger/i) || mOxie.Env.browser === "QQBrowser") && mOxie.Env.OS.toLowerCase()==="android") {
+                if((ua.match(/MicroMessenger/i) || mOxie.Env.browser === "QQBrowser" || ua.match(/V1_AND_SQ/i)) && mOxie.Env.OS.toLowerCase()==="android") {
                     return true;
                 } else {
                     return false;
@@ -508,6 +584,7 @@ function QiniuJsSDK() {
             // TODO: flash support chunk upload
             if (uploader.runtime === 'html5' && chunk_size) {
                 if (file.size < chunk_size || is_android_weixin_or_qq()) {
+                    logger.log("directUpload because file.size < chunk_size || is_android_weixin_or_qq()");
                     // direct upload if file size is less then the chunk size
                     directUpload(up, file, that.key_handler);
                 } else {
@@ -575,14 +652,18 @@ function QiniuJsSDK() {
                     });
                 }
             } else {
+                logger.log("directUpload because uploader.runtime !== 'html5' || !chunk_size");
                 // direct upload if runtime is not html5
                 directUpload(up, file, that.key_handler);
             }
         });
 
+        logger.log("bind BeforeUpload event");
+
         // bind 'UploadProgress' event
         // calculate upload speed
         uploader.bind('UploadProgress', function(up, file) {
+            logger.log("uploader UploadProgress");
             speedCalInfo.currentTime = new Date().getTime();
             var timeUsed = speedCalInfo.currentTime - speedCalInfo.startTime; // ms
             var fileUploaded = file.loaded || 0;
@@ -592,9 +673,12 @@ function QiniuJsSDK() {
             file.speed = (fileUploaded / timeUsed * 1000).toFixed(0) || 0; // unit: byte/s
         });
 
+        logger.log("bind UploadProgress event");
+
         // bind 'ChunkUploaded' event
         // store the chunk upload info and set next chunk upload url
         uploader.bind('ChunkUploaded', function(up, file, info) {
+            logger.log("uploader ChunkUploaded");
             var res = that.parseJSON(info.response);
             // ctx should look like '[chunk01_ctx],[chunk02_ctx],[chunk03_ctx],...'
             ctx = ctx ? ctx + ',' + res.ctx : res.ctx;
@@ -615,10 +699,13 @@ function QiniuJsSDK() {
             }));
         });
 
+        logger.log("bind ChunkUploaded event");
+
         // bind 'Error' event
         // check the err.code and return the errTip
         uploader.bind('Error', (function(_Error_Handler) {
             return function(up, err) {
+                logger.log("uploader Error");
                 var errTip = '';
                 var file = err.file;
                 if (file) {
@@ -704,12 +791,15 @@ function QiniuJsSDK() {
             };
         })(_Error_Handler));
 
+        logger.log("bind Error event");
+
         // bind 'FileUploaded' event
         // intercept the complete of upload
         // - get downtoken from downtoken_url if bucket is private
         // - invoke mkfile api to compose chunks if upload strategy is chunk upload
         uploader.bind('FileUploaded', (function(_FileUploaded_Handler) {
             return function(up, file, info) {
+                logger.log("uploader Error");
 
                 var last_step = function(up, file, info) {
                     if (op.downtoken_url) {
@@ -809,6 +899,8 @@ function QiniuJsSDK() {
 
             };
         })(_FileUploaded_Handler));
+
+        logger.log("bind FileUploaded event");
 
         return uploader;
     };

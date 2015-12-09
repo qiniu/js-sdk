@@ -14,7 +14,7 @@
     "tests"
   ],
   "dependencies": {
-    "plupload": "~2.1.8"
+    "plupload": "=2.1.1"
   },
   "devDependencies": {
     "bootstrap": "~3.3.6",
