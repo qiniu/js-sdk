@@ -16,6 +16,110 @@
 
 ;(function( global ){
 
+// var store = function store(key, value) {
+//     var lsSupport = false,
+//         data = null;
+    
+//     // Check for native support
+//     if (localStorage) {
+//         lsSupport = true;
+//     }
+    
+//     // If value is detected, set new or modify store
+//     if (typeof value !== "undefined" && value !== null) {
+//         // Convert object values to JSON
+//         if ( typeof value === 'object' ) {
+//             value = JSON.stringify(value);
+//         }
+//         // Set the store
+//         if (lsSupport) { // Native support
+//             localStorage.setItem(key, value);
+//         } else { // Use Cookie
+//             createCookie(key, value, 30);
+//         }
+//     }
+    
+//     // No value supplied, return value
+//     if (typeof value === "undefined") {
+//         // Get value
+//         if (lsSupport) { // Native support
+//             data = localStorage.getItem(key);
+//         } else { // Use cookie 
+//             data = readCookie(key);
+//         }
+        
+//         // Try to parse JSON...
+//         try {
+//            data = JSON.parse(data);
+//         }
+//         catch(e) {
+//            data = data;
+//         }
+        
+//         return data;
+        
+//     }
+    
+//     // Null specified, remove store
+//     if (value === null) {
+//         if (lsSupport) { // Native support
+//             localStorage.removeItem(key);
+//         } else { // Use cookie
+//             createCookie(key, '', -1);
+//         }
+//     }
+    
+//     /**
+//      * Creates new cookie or removes cookie with negative expiration
+//      * @param  key       The key or identifier for the store
+//      * @param  value     Contents of the store
+//      * @param  exp       Expiration - creation defaults to 30 days
+//      */
+    
+//     function createCookie(key, value, exp) {
+//         var date = new Date();
+//         date.setTime(date.getTime() + (exp * 24 * 60 * 60 * 1000));
+//         var expires = "; expires=" + date.toGMTString();
+//         document.cookie = key + "=" + value + expires + "; path=/";
+//     }
+    
+//     /**
+//      * Returns contents of cookie
+//      * @param  key       The key or identifier for the store
+//      */
+    
+//     function readCookie(key) {
+//         var nameEQ = key + "=";
+//         var ca = document.cookie.split(';');
+//         for (var i = 0, max = ca.length; i < max; i++) {
+//             var c = ca[i];
+//             while (c.charAt(0) === ' ') {
+//                 c = c.substring(1, c.length);
+//             }
+//             if (c.indexOf(nameEQ) === 0) {
+//                 return c.substring(nameEQ.length, c.length);
+//             }
+//         }
+//         return null;
+//     }
+    
+// };
+
+if ( !window.localStorage ) {
+    window.localStorage = {
+        data: {},
+        setItem: function (key, value) {
+            localStorage.data[key] = value;
+        },
+        getItem: function (key) {
+            return localStorage.data[key] || null ;
+        },
+        removeItem: function (key) {
+            localStorage.data[key] = null;
+        }
+    };
+}
+
 function QiniuJsSDK() {
 
     var that = this;
@@ -402,47 +506,7 @@ function QiniuJsSDK() {
      */
     this.uploader = function(op) {
 
-        if (op.log_level) {
-            logger.level = op.log_level;
-        }
-
-        if (!op.domain) {
-            throw 'domain setting in options is required!';
-        }
-
-        if (!op.browse_button) {
-            throw 'browse_button setting in options is required!';
-        }
-
-        logger.debug("init uploader start");
-
-        logger.debug("environment: ", mOxie.Env);
-
-        logger.debug("userAgent: ", navigator.userAgent);
-
-        var option = {};
-
-        // hold the handler from user passed options
-        var _Error_Handler = op.init && op.init.Error;
-        var _FileUploaded_Handler = op.init && op.init.FileUploaded;
-
-        // replace the handler for intercept
-        op.init.Error = function() {};
-        op.init.FileUploaded = function() {};
-
-        that.uptoken_url = op.uptoken_url;
-        that.token = '';
-        that.key_handler = typeof op.init.Key === 'function' ? op.init.Key : '';
-        this.domain = op.domain;
-        // TODO: ctx is global in scope of a uploader instance
-        // this maybe cause error
-        var ctx = '';
-        var speedCalInfo = {
-            isResumeUpload: false,
-            resumeFilesize: 0,
-            startTime: '',
-            currentTime: ''
-        };
+        /********** inner function define start **********/
 
         // according the different condition to reset chunk size
         // and the upload strategy according with the chunk size
@@ -455,7 +519,8 @@ function QiniuJsSDK() {
             var isSpecialSafari = (mOxie.Env.browser === "Safari" && mOxie.Env.version <= 5 && mOxie.Env.os === "Windows" && mOxie.Env.osVersion === "7") || (mOxie.Env.browser === "Safari" && mOxie.Env.os === "iOS" && mOxie.Env.osVersion === "7");
             // case IE 9-，chunk_size is not empty and flash is included in runtimes
             // set op.chunk_size to zero
-            if (ie && ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
+            //if (ie && ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
+            if (ie && ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') < 0) {
                 //  link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
                 //  when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
                 op.chunk_size = 0;
@@ -477,10 +542,6 @@ function QiniuJsSDK() {
             }
             // if op.chunk_size set 0 will be cause to direct upload
         };
-
-        reset_chunk_size();
-        logger.debug("invoke reset_chunk_size()");
-        logger.debug("op.chunk_size: ", op.chunk_size);
 
         // if op.uptoken has no value
         //      get token from 'uptoken_url'
@@ -523,6 +584,54 @@ function QiniuJsSDK() {
             }
             return key;
         };
+
+        /********** inner function define end **********/
+
+        if (op.log_level) {
+            logger.level = op.log_level;
+        }
+
+        if (!op.domain) {
+            throw 'domain setting in options is required!';
+        }
+
+        if (!op.browse_button) {
+            throw 'browse_button setting in options is required!';
+        }
+
+        logger.debug("init uploader start");
+
+        logger.debug("environment: ", mOxie.Env);
+
+        logger.debug("userAgent: ", navigator.userAgent);
+
+        var option = {};
+
+        // hold the handler from user passed options
+        var _Error_Handler = op.init && op.init.Error;
+        var _FileUploaded_Handler = op.init && op.init.FileUploaded;
+
+        // replace the handler for intercept
+        op.init.Error = function() {};
+        op.init.FileUploaded = function() {};
+
+        that.uptoken_url = op.uptoken_url;
+        that.token = '';
+        that.key_handler = typeof op.init.Key === 'function' ? op.init.Key : '';
+        this.domain = op.domain;
+        // TODO: ctx is global in scope of a uploader instance
+        // this maybe cause error
+        var ctx = '';
+        var speedCalInfo = {
+            isResumeUpload: false,
+            resumeFilesize: 0,
+            startTime: '',
+            currentTime: ''
+        };
+
+        reset_chunk_size();
+        logger.debug("invoke reset_chunk_size()");
+        logger.debug("op.chunk_size: ", op.chunk_size);
 
         // compose options with user passed options and default setting
         plupload.extend(option, op, {
@@ -657,7 +766,7 @@ function QiniuJsSDK() {
                     if (localFileInfo) {
                         // TODO: although only the html5 runtime will enter this statement
                         // but need uniform way to make convertion between string and json
-                        localFileInfo = JSON.parse(localFileInfo);
+                        localFileInfo = that.parseJSON(localFileInfo);
                         var now = (new Date()).getTime();
                         var before = localFileInfo.time || 0;
                         var aDay = 24 * 60 * 60 * 1000; //  milliseconds of one day
@@ -713,7 +822,7 @@ function QiniuJsSDK() {
                     });
                 }
             } else {
-                logger.debug("directUpload because uploader.runtime !== 'html5' || !chunk_size");
+                logger.debug("directUpload because uploader.runtime !== 'html5' || uploader.runtime !== 'flash' || !chunk_size");
                 // direct upload if runtime is not html5
                 directUpload(up, file, that.key_handler);
             }
@@ -740,7 +849,10 @@ function QiniuJsSDK() {
         // store the chunk upload info and set next chunk upload url
         uploader.bind('ChunkUploaded', function(up, file, info) {
             logger.debug("ChunkUploaded event activated");
+            logger.debug("file: ", file);
+            logger.debug("info: ", info);
             var res = that.parseJSON(info.response);
+            logger.debug("res: ", res);
             // ctx should look like '[chunk01_ctx],[chunk02_ctx],[chunk03_ctx],...'
             ctx = ctx ? ctx + ',' + res.ctx : res.ctx;
             var leftSize = info.total - info.offset;
@@ -750,8 +862,9 @@ function QiniuJsSDK() {
                 up.setOption({
                     'url': qiniuUploadUrl + '/mkblk/' + leftSize
                 });
+                logger.debug("up.setOption url: ", qiniuUploadUrl + '/mkblk/' + leftSize);
             }
-            localStorage.setItem(file.name, JSON.stringify({
+            localStorage.setItem(file.name, that.stringifyJSON({
                 ctx: ctx,
                 percent: file.percent,
                 total: info.total,
@@ -862,7 +975,8 @@ function QiniuJsSDK() {
         uploader.bind('FileUploaded', (function(_FileUploaded_Handler) {
             return function(up, file, info) {
                 logger.debug("FileUploaded event activated");
-
+                logger.debug("file: ", file);
+                logger.debug("info: ", info);
                 var last_step = function(up, file, info) {
                     if (op.downtoken_url) {
                         // if op.dowontoken_url is not empty
@@ -882,7 +996,7 @@ function QiniuJsSDK() {
                                     var info_extended = {};
                                     plupload.extend(info_extended, that.parseJSON(info), res_downtoken);
                                     if (_FileUploaded_Handler) {
-                                        _FileUploaded_Handler(up, file, JSON.stringify(info_extended));
+                                        _FileUploaded_Handler(up, file, that.stringifyJSON(info_extended));
                                     }
                                 } else {
                                     uploader.trigger('Error', {
@@ -908,8 +1022,10 @@ function QiniuJsSDK() {
                 //      we need request the mkfile to compose all uploaded chunks
                 // else
                 //      invalke the last_step
+                logger.debug("ctx: ", ctx);
                 if (ctx) {
                     var key = '';
+                    logger.debug("save_key: ", op.save_key);
                     if (!op.save_key) {
                         key = getFileKey(up, file, that.key_handler);
                         key = key ? '/key/' + that.URLSafeBase64Encode(key) : '';
@@ -917,6 +1033,7 @@ function QiniuJsSDK() {
 
                     var fname = '/fname/' + that.URLSafeBase64Encode(file.name);
 
+                    logger.debug("op.x_vars: ", op.x_vars);
                     var x_vars = op.x_vars,
                         x_val = '',
                         x_vars_url = '';
@@ -934,27 +1051,46 @@ function QiniuJsSDK() {
                     }
 
                     var url = qiniuUploadUrl + '/mkfile/' + file.size + key + fname + x_vars_url;
-                    var ajax = that.createAjax();
+
+                    var ie = that.detectIEVersion();
+                    var ajax;
+                    if (ie && ie <= 9) {
+                        ajax = new mOxie.XMLHttpRequest();
+                        mOxie.Env.swf_url = op.flash_swf_url;
+                    }else{
+                        ajax = that.createAjax();
+                    }
                     ajax.open('POST', url, true);
                     ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
                     ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
-                    ajax.onreadystatechange = function() {
+                    var onreadystatechange = function(){
+                        logger.debug("ajax.readyState: ", ajax.readyState);
                         if (ajax.readyState === 4) {
                             localStorage.removeItem(file.name);
+                            var info;
                             if (ajax.status === 200) {
-                                var info = ajax.responseText;
+                                info = ajax.responseText;
+                                logger.debug("mkfile is success: ", info);
                                 last_step(up, file, info);
                             } else {
-                                uploader.trigger('Error', {
+                                info = {
                                     status: ajax.status,
                                     response: ajax.responseText,
                                     file: file,
                                     code: -200
-                                });
+                                };
+                                logger.debug("mkfile is error: ", info);
+                                uploader.trigger('Error', info);
                             }
                         }
                     };
+                    if (ie && ie <= 9) {
+                        ajax.bind('readystatechange', onreadystatechange);
+                    }else{
+                        ajax.onreadystatechange = onreadystatechange;
+                    }
                     ajax.send(ctx);
+                    logger.debug("mkfile: ", url);
                 } else {
                     last_step(up, file, info.response);
                 }
