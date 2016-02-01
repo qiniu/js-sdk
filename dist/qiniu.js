@@ -6,7 +6,7 @@
  *
  * GitHub: http://github.com/qiniu/js-sdk
  *
- * Date: 2015-12-28
+ * Date: 2016-1-26
 */
 
 /*global plupload ,mOxie*/
@@ -48,7 +48,8 @@ function readCookie(key) {
     return null;
 }
 
-
+// if current browser is not support localStorage
+// use cookie to make a polyfill
 if ( !window.localStorage ) {
     window.localStorage = {
         setItem: function (key, value) {
@@ -66,13 +67,6 @@ if ( !window.localStorage ) {
 function QiniuJsSDK() {
 
     var that = this;
-
-    var qiniuUploadUrl;
-    if (window.location.protocol === 'https:') {
-        qiniuUploadUrl = 'https://up.qbox.me';
-    } else {
-        qiniuUploadUrl = 'http://upload.qiniu.com';
-    }
 
     /**
      * detect IE version
@@ -140,6 +134,46 @@ function QiniuJsSDK() {
             makeLogFunc(property);
         }
     }
+
+
+    var qiniuUploadUrl;
+    if (window.location.protocol === 'https:') {
+        qiniuUploadUrl = 'https://up.qbox.me';
+    } else {
+        qiniuUploadUrl = 'http://upload.qiniu.com';
+    }
+
+    /**
+     * qiniu upload urls
+     * 'qiniuUploadUrls' is used to change target when current url is not avaliable
+     * @type {Array}
+     */
+    var qiniuUploadUrls = [
+        "http://upload.qiniu.com",
+        "http://up.qiniu.com",
+    ];
+
+    var changeUrlTimes = 0;
+
+    /**
+     * reset upload url
+     * if current page protocal is https
+     *     it will always return 'https://up.qbox.me'
+     * else
+     *     it will set 'qiniuUploadUrl' value with 'qiniuUploadUrls' looply
+     */
+    this.resetUploadUrl = function(){
+        if (window.location.protocol === 'https:') {
+            qiniuUploadUrl = 'https://up.qbox.me';
+        } else {
+            var i = changeUrlTimes % qiniuUploadUrls.length;
+            qiniuUploadUrl = qiniuUploadUrls[i];
+            changeUrlTimes++;
+        }
+        logger.debug('resetUploadUrl: '+qiniuUploadUrl);
+    };
+
+    this.resetUploadUrl();
 
 
     /**
@@ -825,6 +859,24 @@ function QiniuJsSDK() {
 
         logger.debug("bind ChunkUploaded event");
 
+        var retries = qiniuUploadUrls.length;
+
+        // if error is unkown switch upload url and retry
+        var unknow_error_retry = function(file){
+            if (retries-- > 0) {
+                setTimeout(function(){
+                    that.resetUploadUrl();
+                    file.status = plupload.QUEUED;
+                    uploader.stop();
+                    uploader.start();
+                }, 0);
+                return true;
+            }else{
+                retries = qiniuUploadUrls.length;
+                return false;
+            }
+        };
+
         // bind 'Error' event
         // check the err.code and return the errTip
         uploader.bind('Error', (function(_Error_Handler) {
@@ -850,6 +902,9 @@ function QiniuJsSDK() {
                             if (err.response === '') {
                                 // Fix parseJSON error ,when http error is like net::ERR_ADDRESS_UNREACHABLE
                                 errTip = err.message || '未知网络错误。';
+                                if (!unknow_error_retry(file)) {
+                                    return;
+                                }
                                 break;
                             }
                             var errorObj = that.parseJSON(err.response);
@@ -869,6 +924,9 @@ function QiniuJsSDK() {
                                     break;
                                 case 599:
                                     errTip = "网络连接异常。请重试或提交反馈。";
+                                    if (!unknow_error_retry(file)) {
+                                        return;
+                                    }
                                     break;
                                 case 614:
                                     errTip = "文件已存在。";
@@ -887,6 +945,9 @@ function QiniuJsSDK() {
                                     break;
                                 default:
                                     errTip = "未知错误。";
+                                    if (!unknow_error_retry(file)) {
+                                        return;
+                                    }
                                     break;
                             }
                             errTip = errTip + '(' + err.status + '：' + errorText + ')';
@@ -906,6 +967,9 @@ function QiniuJsSDK() {
                             break;
                         default:
                             errTip = err.message + err.details;
+                            if (!unknow_error_retry(file)) {
+                                return;
+                            }
                             break;
                     }
                     if (_Error_Handler) {
