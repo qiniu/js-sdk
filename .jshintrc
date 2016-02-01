@@ -36,5 +36,8 @@
     // Enviroments
     "browser": true,        // globals exposed by modern browsers, like document, window, etc.
     "devel": true,          // globals that are usually used for logging poor-man's debugging: console, alert, etc.
-    "jquery": true          // jquery library
+    "jquery": true,          // jquery library
+
+    "node": true,
+    "evil": true
 }

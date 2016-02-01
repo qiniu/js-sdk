@@ -1,5 +1,12 @@
 language: node_js
 node_js:
   - "0.12"
-  - "iojs"
-  - "iojs-v1.0.4"
+cache:
+  directories:
+    - node_modules
+    - bower_components
+install:
+  - npm install
+  - bower install
+script:
+  - grunt

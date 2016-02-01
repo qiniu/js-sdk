@@ -234,12 +234,12 @@ FileProgress.prototype.setComplete = function(up, info) {
     var Wrapper = $('<div class="Wrapper"/>');
     var imgWrapper = $('<div class="imgWrapper col-md-3"/>');
     var linkWrapper = $('<a class="linkWrapper" target="_blank"/>');
-    var showImg = $('<img src="loading.gif"/>');
+    var showImg = $('<img src="images/loading.gif"/>');
 
     progressNameTd.append(Wrapper);
 
     if (!isImg) {
-        showImg.attr('src', 'default.png');
+        showImg.attr('src', 'images/default.png');
         Wrapper.addClass('default');
 
         imgWrapper.append(showImg);
@@ -268,7 +268,7 @@ FileProgress.prototype.setComplete = function(up, info) {
                     $('#myModal-img').find('.text-warning').show();
                 }
                 var newImg = new Image();
-                modalBody.find('img').attr('src', 'loading.gif');
+                modalBody.find('img').attr('src', 'images/loading.gif');
                 newImg.onload = function() {
                     modalBody.find('img').attr('src', url).data('key', key).data('h', height);
                     modalBody.find('.modal-body-wrapper').find('a').attr('href', url);

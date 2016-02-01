@@ -1,0 +1,25 @@
+{
+  "name": "qiniu-js-sdk",
+  "description": "基于七牛API及Plupload开发的前端JavaScript SDK",
+  "main": "dist/qiniu.js",
+  "license": "GPL V2",
+  "homepage": "https://github.com/qiniu/js-sdk",
+  "moduleType": [],
+  "private": false,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "plupload": "=2.1.1"
+  },
+  "devDependencies": {
+    "bootstrap": "~3.3.6",
+    "highlight": "~8.9.1",
+    "jquery": "~1.9.1",
+    "respond": "~1.4.2"
+  }
+}

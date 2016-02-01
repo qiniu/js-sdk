@@ -27,6 +27,98 @@ qiniu-js-sdk
 * Plupload ，建议 2.1.1 及以上版本
 * qiniu.js，SDK主体文件，上传功能\数据处理实现
 
+### 常见问题
+
+七牛提供基于plupload插件封装上传的demo `http://jssdk.demo.qiniu.io/`，如果不需要plupload插件可以参考`https://github.com/iwillwen/qiniu.js/tree/develop`,这里主要针对基于plupload插件的方式讲解遇到的一些问题，通过参考plupload文档资料，可以对七牛的demo进行修改，以满足自己的业务需求，plupload插件的使用文档可以参考`http://www.cnblogs.com/2050/p/3913184.html`
+
+**1.关于上传文件命名问题，可以参考：**
+在main.js里面，unique_names是plupload插件下面的一个参数，当值为true时会为每个上传的文件生成一个唯一的文件名，这个是plupload插件自动生成的，如果设置成false，七牛这边是会以上传的原始名进行命名的。
+1).上传的socpe为bucket的形式，unique_names参数设置为false，上传后文件的key是本地的文件名abc.txt
+2).上传的scope为bucket的形式，unique_names参数设置为true，plupload插件会忽略本地文件名，而且这个命名也是没有规律的，上传后文件的key是plupload插件生成的，比如Yc7DZRS1m73o.txt。
+3).上传的scope为bucket:key的形式，上传文件本地的名字需要和scope中的key是一致的，不然会报错key doesn‘t match with scope, 注意，这种形式是不能设置unique_names为true的，因为即使上传文件本地名字为abc.txt,但是plupload会给这个文件赋值另外一个文件名。
+4).上传的scope为bucket，但是token中有设定saveKey，这种形式save_key是应该设置为true，并且上传的本地文件名也是需要和这个savekey文件名一致的。
+5).通过JS前端设置上传的key，在main.js文件里面设置如下：
+```
+ 'Key': function(up, file) {
+             var key = "";
+            // do something with key
+            return key
+            }
+```
+这个默认是注销的，若想在前端对每个文件的key进行个性化处理，可以配置该函数
+该配置必须要在 unique_names: false , save_key: false 时才生效
+取消注销后，其优先级要高于：qiniu.js文件中getFileKey。
+
+**2.设置自定义预览样式**
+```
+该设置在ui.js 文件里，默认为
+var imageView =‘?imageView2/1/w/100/h/100’
+可修改成 
+var imageView = ‘样式符+样式名’
+```
+
+**3.关于设置取消上传可以参考：**
+http://stackoverflow.com/questions/11014384/cancel-file-upload-listener
+(文件plupload.dev.js  1950行  removeFile : function(file) 方法)
+
+**4.限制上传文件的类型：**
+ 这里又分为两种方法：
+ 1).通过在token中设定mimeLimit字段限定上传文件的类型，示例
+“image/*“表示只允许上传图片类型；
+“image/jpeg;image/png”表示只允许上传jpg和png类型的图片；
+“!application/json;text/plain”表示禁止上传json文本和纯文本。（注意最前面的感叹号）
+ 2).通过plupload中设定filter参数直接在JS前端限定，如下
+```
+//可以使用该参数来限制上传文件的类型，大小等，该参数以对象的形式传入，它包括三个属性：
+        filters : {
+            max_file_size : '100mb',
+            prevent_duplicates: true,
+            //Specify what files to browse for
+             mime_types: [
+            {title : "flv files", extensions : "flv"} //限定flv后缀上传格式上传
+            {title : "Video files", extensions : "flv,mpg,mpeg,avi,wmv,mov,asf,rm,rmvb,mkv,m4v,mp4"}, //限定flv,mpg,mpeg,avi,wmv,mov,asf,rm,rmvb,mkv,m4v,mp4后缀格式上传
+            {title : "Image files", extensions : "jpg,gif,png"}, //限定jpg,gif,png后缀上传
+            {title : "Zip files", extensions : "zip"} //限定zip后缀上传
+             ]
+        },
+
+```
+
+**5.设置每次只能选择一个文件**
+通过plupload插件中的multi_selection参数控制，如下
+```
+//设置一次只能选择一个文件
+  multi_selection: false,
+```
+
+**6.设置取消上传，暂停上传**
+在index.html中加入者两个控制按钮：
+```
+<a class="btn btn-default btn-lg " id="up_load"  href="#" >
+     <span>确认上传</span>
+</a>  
+<a class="btn btn-default btn-lg " id="stop_load"  href="#" >
+     <span>暂停上传</span>
+</a> 
+```
+然后在main.js文件里面绑定这两个按钮，添加代码如下：
+```
+$('#up_load').on('click', function(){
+   uploader.start();
+});
+$('#stop_load').on('click', function(){
+   uploader.stop();
+});
+```
+
+**7.取消分片上传**
+ 将main.js 里面 chunk_size: '4mb'设置chunk_size: '0mb' ，注意分片上传默认也只能是4M，如果设置一个别的分片的大小会出现上传失败。
+
+**8.取消自动上传**
+将main.js文件auto_start参数改成auto_start: false
+
+**9.关于请求token出现跨域**
+因为都是建议用户从后端SDK获取token，然后在main.js设置参数uptoken_url: '获取uptoken的url',   这里就有可能出现跨域的现象，此时在服务端添加 response.setHeader("Access-Control-Allow-Origin","*"); 相应头字段即可。
 
 ## 安装和运行程序
 * 服务端准备
@@ -382,3 +474,5 @@ qiniu-js-sdk
 ## 基于 GPL V2 协议发布:
 
 > [www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)
+
+

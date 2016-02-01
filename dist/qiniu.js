@@ -1,16 +1,81 @@
+/*!
+ * qiniu-js-sdk v1.0.13-beta
+ *
+ * Copyright 2015 by Qiniu
+ * Released under GPL V2 License.
+ *
+ * GitHub: http://github.com/qiniu/js-sdk
+ *
+ * Date: 2016-1-26
+*/
+
 /*global plupload ,mOxie*/
 /*global ActiveXObject */
 /*exported Qiniu */
 /*exported QiniuJsSDK */
 
-function QiniuJsSDK() {
-    var qiniuUploadUrl;
-    if (window.location.protocol === 'https:') {
-        qiniuUploadUrl = 'https://up.qbox.me';
-    } else {
-        qiniuUploadUrl = 'http://upload.qiniu.com';
-    }
+;(function( global ){
 
+/**
+ * Creates new cookie or removes cookie with negative expiration
+ * @param  key       The key or identifier for the store
+ * @param  value     Contents of the store
+ * @param  exp       Expiration - creation defaults to 30 days
+ */
+function createCookie(key, value, exp) {
+    var date = new Date();
+    date.setTime(date.getTime() + (exp * 24 * 60 * 60 * 1000));
+    var expires = "; expires=" + date.toGMTString();
+    document.cookie = key + "=" + value + expires + "; path=/";
+}
+
+/**
+ * Returns contents of cookie
+ * @param  key       The key or identifier for the store
+ */
+function readCookie(key) {
+    var nameEQ = key + "=";
+    var ca = document.cookie.split(';');
+    for (var i = 0, max = ca.length; i < max; i++) {
+        var c = ca[i];
+        while (c.charAt(0) === ' ') {
+            c = c.substring(1, c.length);
+        }
+        if (c.indexOf(nameEQ) === 0) {
+            return c.substring(nameEQ.length, c.length);
+        }
+    }
+    return null;
+}
+
+// if current browser is not support localStorage
+// use cookie to make a polyfill
+if ( !window.localStorage ) {
+    window.localStorage = {
+        setItem: function (key, value) {
+            createCookie(key, value, 30);
+        },
+        getItem: function (key) {
+            return readCookie(key);
+        },
+        removeItem: function (key) {
+            createCookie(key, '', -1);
+        }
+    };
+}
+
+function QiniuJsSDK() {
+
+    var that = this;
+
+    /**
+     * detect IE version
+     * if current browser is not IE
+     *     it will return false
+     * else
+     *     it will return version of current IE browser
+     * @return {Number|Boolean} IE version or false
+     */
     this.detectIEVersion = function() {
         var v = 4,
             div = document.createElement('div'),
@@ -24,6 +89,98 @@ function QiniuJsSDK() {
         return v > 4 ? v : false;
     };
 
+    var logger = {
+        MUTE: 0,
+        FATA: 1,
+        ERROR: 2,
+        WARN: 3,
+        INFO: 4,
+        DEBUG: 5,
+        TRACE: 6,
+        level: 0
+    };
+
+    function log(type, args){
+        var header = "[qiniu-js-sdk]["+type+"]";
+        if (that.detectIEVersion()) {
+            // http://stackoverflow.com/questions/5538972/console-log-apply-not-working-in-ie9
+            //var log = Function.prototype.bind.call(console.log, console);
+            //log.apply(console, args);
+            var msg = header;
+            for (var i = 0; i < args.length; i++) {
+                msg+=that.stringifyJSON(args[i]);
+            }
+            console.log(msg);
+        }else{
+            args.unshift(header);
+            console.log.apply(console, args);
+        }
+    }
+
+    function makeLogFunc(code){
+        var func = code.toLowerCase();
+        logger[func] = function(){
+            // logger[func].history = logger[func].history || [];
+            // logger[func].history.push(arguments);
+            if(window.console && window.console.log && logger.level>=logger[code]){
+                var args = Array.prototype.slice.call(arguments);
+                log(func,args);
+            }
+        };
+    }
+
+    for (var property in logger){
+        if (logger.hasOwnProperty(property) && (typeof logger[property]) === "number" && !logger.hasOwnProperty(property.toLowerCase())) {
+            makeLogFunc(property);
+        }
+    }
+
+
+    var qiniuUploadUrl;
+    if (window.location.protocol === 'https:') {
+        qiniuUploadUrl = 'https://up.qbox.me';
+    } else {
+        qiniuUploadUrl = 'http://upload.qiniu.com';
+    }
+
+    /**
+     * qiniu upload urls
+     * 'qiniuUploadUrls' is used to change target when current url is not avaliable
+     * @type {Array}
+     */
+    var qiniuUploadUrls = [
+        "http://upload.qiniu.com",
+        "http://up.qiniu.com",
+    ];
+
+    var changeUrlTimes = 0;
+
+    /**
+     * reset upload url
+     * if current page protocal is https
+     *     it will always return 'https://up.qbox.me'
+     * else
+     *     it will set 'qiniuUploadUrl' value with 'qiniuUploadUrls' looply
+     */
+    this.resetUploadUrl = function(){
+        if (window.location.protocol === 'https:') {
+            qiniuUploadUrl = 'https://up.qbox.me';
+        } else {
+            var i = changeUrlTimes % qiniuUploadUrls.length;
+            qiniuUploadUrl = qiniuUploadUrls[i];
+            changeUrlTimes++;
+        }
+        logger.debug('resetUploadUrl: '+qiniuUploadUrl);
+    };
+
+    this.resetUploadUrl();
+
+
+    /**
+     * is image
+     * @param  {String}  url of a file
+     * @return {Boolean} file is a image or not
+     */
     this.isImage = function(url) {
         var res, suffix = "";
         var imageSuffixes = ["png", "jpg", "jpeg", "gif", "bmp"];
@@ -42,6 +199,14 @@ function QiniuJsSDK() {
         return false;
     };
 
+    /**
+     * get file extension
+     * @param  {String} filename
+     * @return {String} file extension
+     * @example
+     *     input: test.txt
+     *     output: txt
+     */
     this.getFileExtension = function(filename) {
         var tempArr = filename.split(".");
         var ext;
@@ -53,6 +218,11 @@ function QiniuJsSDK() {
         return ext;
     };
 
+    /**
+     * encode string by utf8
+     * @param  {String} string to encode
+     * @return {String} encoded string
+     */
     this.utf8_encode = function(argString) {
         // http://kevin.vanzonneveld.net
         // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
@@ -122,6 +292,11 @@ function QiniuJsSDK() {
         return utftext;
     };
 
+    /**
+     * encode data by base64
+     * @param  {String} data to encode
+     * @return {String} encoded data
+     */
     this.base64_encode = function(data) {
         // http://kevin.vanzonneveld.net
         // +   original by: Tyler Akins (http://rumkin.com)
@@ -180,11 +355,21 @@ function QiniuJsSDK() {
         return enc;
     };
 
+    /**
+     * encode string in url by base64
+     * @param {String} string in url
+     * @return {String} encoded string
+     */
     this.URLSafeBase64Encode = function(v) {
         v = this.base64_encode(v);
         return v.replace(/\//g, '_').replace(/\+/g, '-');
     };
 
+    // TODO: use mOxie
+    /**
+     * craete object used to AJAX
+     * @return {Object}
+     */
     this.createAjax = function(argument) {
         var xmlhttp = {};
         if (window.XMLHttpRequest) {
@@ -195,79 +380,127 @@ function QiniuJsSDK() {
         return xmlhttp;
     };
 
+    // TODO: enhance IE compatibility
+    /**
+     * parse json string to javascript object
+     * @param  {String} json string
+     * @return {Object} object
+     */
     this.parseJSON = function(data) {
         // Attempt to parse using the native JSON parser first
         if (window.JSON && window.JSON.parse) {
             return window.JSON.parse(data);
         }
 
-        if (data === null) {
-            return data;
+        //var rx_one = /^[\],:{}\s]*$/,
+        //    rx_two = /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,
+        //    rx_three = /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,
+        //    rx_four = /(?:^|:|,)(?:\s*\[)+/g,
+        var    rx_dangerous = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g;
+
+        //var json;
+
+        var text = String(data);
+        rx_dangerous.lastIndex = 0;
+        if(rx_dangerous.test(text)){
+            text = text.replace(rx_dangerous, function(a){
+               return '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+            });
         }
-        if (typeof data === "string") {
 
-            // Make sure leading/trailing whitespace is removed (IE can't handle it)
-            data = this.trim(data);
+        // todo 使用一下判断,增加安全性
+        //if (
+        //    rx_one.test(
+        //        text
+        //            .replace(rx_two, '@')
+        //            .replace(rx_three, ']')
+        //            .replace(rx_four, '')
+        //    )
+        //) {
+        //    return eval('(' + text + ')');
+        //}
 
-            if (data) {
-                // Make sure the incoming data is actual JSON
-                // Logic borrowed from http://json.org/json2.js
-                if (/^[\],:{}\s]*$/.test(data.replace(/\\(?:["\\\/bfnrt]|u[\da-fA-F]{4})/g, "@").replace(/"[^"\\\r\n]*"|true|false|null|-?(?:\d+\.|)\d+(?:[eE][+-]?\d+|)/g, "]").replace(/(?:^|:|,)(?:\s*\[)+/g, ""))) {
+        return eval('('+text+')');
+    };
 
-                    return (function() {
-                        return data;
-                    })();
+    /**
+     * parse javascript object to json string
+     * @param  {Object} object
+     * @return {String} json string
+     */
+    this.stringifyJSON = function(obj) {
+        // Attempt to parse using the native JSON parser first
+        if (window.JSON && window.JSON.stringify) {
+            return window.JSON.stringify(obj);
+        }
+        switch (typeof (obj)) {
+            case 'string':
+                return '"' + obj.replace(/(["\\])/g, '\\$1') + '"';
+            case 'array':
+                return '[' + obj.map(that.stringifyJSON).join(',') + ']';
+            case 'object':
+                if (obj instanceof Array) {
+                    var strArr = [];
+                    var len = obj.length;
+                    for (var i = 0; i < len; i++) {
+                        strArr.push(that.stringifyJSON(obj[i]));
+                    }
+                    return '[' + strArr.join(',') + ']';
+                } else if (obj === null) {
+                    return 'null';
+                } else {
+                    var string = [];
+                    for (var property in obj) {
+                        if (obj.hasOwnProperty(property)) {
+                            string.push(that.stringifyJSON(property) + ':' + that.stringifyJSON(obj[property]));
+                        }
+                    }
+                    return '{' + string.join(',') + '}';
                 }
-            }
+                break;
+            case 'number':
+                return obj;
+            case false:
+                return obj;
+            case 'boolean':
+                return obj;
         }
     };
 
+    /**
+     * trim space beside text
+     * @param  {String} untrimed string
+     * @return {String} trimed string
+     */
     this.trim = function(text) {
         return text === null ? "" : text.replace(/^\s+|\s+$/g, '');
     };
 
-    //Todo ie7 handler / this.parseJSON bug;
-
-    var that = this;
-
+    /**
+     * create a uploader by QiniuJsSDK
+     * @param  {object} options to create a new uploader
+     * @return {object} uploader
+     */
     this.uploader = function(op) {
-        if (!op.domain) {
-            throw 'uptoken_url or domain is required!';
-        }
 
-        if (!op.browse_button) {
-            throw 'browse_button is required!';
-        }
+        /********** inner function define start **********/
 
-        var option = {};
-
-        var _Error_Handler = op.init && op.init.Error;
-        var _FileUploaded_Handler = op.init && op.init.FileUploaded;
-
-        op.init.Error = function() {};
-        op.init.FileUploaded = function() {};
-
-        that.uptoken_url = op.uptoken_url;
-        that.token = '';
-        that.key_handler = typeof op.init.Key === 'function' ? op.init.Key : '';
-        this.domain = op.domain;
-        var ctx = '';
-        var speedCalInfo = {
-            isResumeUpload: false,
-            resumeFilesize: 0,
-            startTime: '',
-            currentTime: ''
-        };
-
+        // according the different condition to reset chunk size
+        // and the upload strategy according with the chunk size
+        // when chunk size is zero will cause to direct upload
+        // see the statement binded on 'BeforeUpload' event
         var reset_chunk_size = function() {
             var ie = that.detectIEVersion();
             var BLOCK_BITS, MAX_CHUNK_SIZE, chunk_size;
+            // case Safari 5、Windows 7、iOS 7 set isSpecialSafari to true
             var isSpecialSafari = (mOxie.Env.browser === "Safari" && mOxie.Env.version <= 5 && mOxie.Env.os === "Windows" && mOxie.Env.osVersion === "7") || (mOxie.Env.browser === "Safari" && mOxie.Env.os === "iOS" && mOxie.Env.osVersion === "7");
-            if (ie && ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
+            // case IE 9-，chunk_size is not empty and flash is included in runtimes
+            // set op.chunk_size to zero
+            //if (ie && ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
+            if (ie && ie <= 9 && op.chunk_size && op.runtimes.indexOf('flash') < 0) {
                 //  link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
                 //  when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
                 op.chunk_size = 0;
-
             } else if (isSpecialSafari) {
                 // win7 safari / iOS7 safari have bug when in chunk upload mode
                 // reset chunk_size to 0
@@ -284,11 +517,16 @@ function QiniuJsSDK() {
                 // qiniu service  max_chunk_size is 4m
                 // reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
             }
+            // if op.chunk_size set 0 will be cause to direct upload
         };
-        reset_chunk_size();
 
+        // if op.uptoken has no value
+        //      get token from 'uptoken_url'
+        // else
+        //      set token to be op.uptoken
         var getUpToken = function() {
             if (!op.uptoken) {
+                // TODO: use mOxie
                 var ajax = that.createAjax();
                 ajax.open('GET', that.uptoken_url, true);
                 ajax.setRequestHeader("If-Modified-Since", "0");
@@ -304,7 +542,9 @@ function QiniuJsSDK() {
             }
         };
 
+        // get file key according with the user passed options
         var getFileKey = function(up, file, func) {
+            // TODO: save_key can read from scope of token
             var key = '',
                 unique_names = false;
             if (!op.save_key) {
@@ -322,6 +562,55 @@ function QiniuJsSDK() {
             return key;
         };
 
+        /********** inner function define end **********/
+
+        if (op.log_level) {
+            logger.level = op.log_level;
+        }
+
+        if (!op.domain) {
+            throw 'domain setting in options is required!';
+        }
+
+        if (!op.browse_button) {
+            throw 'browse_button setting in options is required!';
+        }
+
+        logger.debug("init uploader start");
+
+        logger.debug("environment: ", mOxie.Env);
+
+        logger.debug("userAgent: ", navigator.userAgent);
+
+        var option = {};
+
+        // hold the handler from user passed options
+        var _Error_Handler = op.init && op.init.Error;
+        var _FileUploaded_Handler = op.init && op.init.FileUploaded;
+
+        // replace the handler for intercept
+        op.init.Error = function() {};
+        op.init.FileUploaded = function() {};
+
+        that.uptoken_url = op.uptoken_url;
+        that.token = '';
+        that.key_handler = typeof op.init.Key === 'function' ? op.init.Key : '';
+        this.domain = op.domain;
+        // TODO: ctx is global in scope of a uploader instance
+        // this maybe cause error
+        var ctx = '';
+        var speedCalInfo = {
+            isResumeUpload: false,
+            resumeFilesize: 0,
+            startTime: '',
+            currentTime: ''
+        };
+
+        reset_chunk_size();
+        logger.debug("invoke reset_chunk_size()");
+        logger.debug("op.chunk_size: ", op.chunk_size);
+
+        // compose options with user passed options and default setting
         plupload.extend(option, op, {
             url: qiniuUploadUrl,
             multipart_params: {
@@ -329,26 +618,63 @@ function QiniuJsSDK() {
             }
         });
 
+        logger.debug("option: ", option);
+
+        // create a new uploader with composed options
         var uploader = new plupload.Uploader(option);
 
+        logger.debug("new plupload.Uploader(option)");
+
+        // bind getUpToken to 'Init' event
         uploader.bind('Init', function(up, params) {
+            logger.debug("Init event activated");
+            // if op.get_new_uptoken is not true
+            //      invoke getUptoken when uploader init
+            // else 
+            //      getUptoken everytime before a new file upload
+            if(!op.get_new_uptoken){
+                getUpToken();
+            }
             getUpToken();
         });
-        uploader.init();
 
+        logger.debug("bind Init event");
+
+        // bind 'FilesAdded' event
+        // when file be added and auto_start has set value
+        // uploader will auto start upload the file
         uploader.bind('FilesAdded', function(up, files) {
+            logger.debug("FilesAdded event activated");
             var auto_start = up.getOption && up.getOption('auto_start');
             auto_start = auto_start || (up.settings && up.settings.auto_start);
+            logger.debug("auto_start: ", auto_start);
+            logger.debug("files: ", files);
             if (auto_start) {
-                plupload.each(files, function(i, file) {
+                setTimeout(function(){
                     up.start();
-                });
+                    logger.debug("invoke up.start()");
+                }, 0);
+                // up.start();
+                // plupload.each(files, function(i, file) {
+                //     up.start();
+                //     logger.debug("invoke up.start()")
+                //     logger.debug("file: ", file);
+                // });
             }
             up.refresh(); // Reposition Flash/Silverlight
         });
 
+        logger.debug("bind FilesAdded event");
+
+        // bind 'BeforeUpload' event
+        // intercept the process of upload
+        // - prepare uptoken
+        // - according the chunk size to make differnt upload strategy
+        // - resume upload with the last breakpoint of file
         uploader.bind('BeforeUpload', function(up, file) {
-            file.speed = file.speed || 0; // add a key named speed for file obj
+            logger.debug("BeforeUpload event activated");
+            // add a key named speed for file object
+            file.speed = file.speed || 0;
             ctx = '';
 
             if(op.get_new_uptoken){
@@ -369,6 +695,8 @@ function QiniuJsSDK() {
                     };
                 }
 
+                logger.debug("directUpload multipart_params_obj: ", multipart_params_obj);
+
                 var x_vars = op.x_vars;
                 if (x_vars !== undefined && typeof x_vars === 'object') {
                     for (var x_key in x_vars) {
@@ -386,52 +714,86 @@ function QiniuJsSDK() {
                 up.setOption({
                     'url': qiniuUploadUrl,
                     'multipart': true,
-                    'chunk_size': undefined,
+                    'chunk_size': is_android_weixin_or_qq() ? op.max_file_size : undefined,
                     'multipart_params': multipart_params_obj
                 });
             };
 
+            // detect is weixin or qq inner browser
+            var is_android_weixin_or_qq = function (){
+                var ua = navigator.userAgent.toLowerCase();
+                if((ua.match(/MicroMessenger/i) || mOxie.Env.browser === "QQBrowser" || ua.match(/V1_AND_SQ/i)) && mOxie.Env.OS.toLowerCase()==="android") {
+                    return true;
+                } else {
+                    return false;
+                }
+            };
 
             var chunk_size = up.getOption && up.getOption('chunk_size');
             chunk_size = chunk_size || (up.settings && up.settings.chunk_size);
-            if (uploader.runtime === 'html5' && chunk_size) {
-                if (file.size < chunk_size) {
+
+            logger.debug("uploader.runtime: ",uploader.runtime);
+            logger.debug("chunk_size: ",chunk_size);
+
+            // TODO: flash support chunk upload
+            if ((uploader.runtime === 'html5' || uploader.runtime === 'flash') && chunk_size) {
+                if (file.size < chunk_size || is_android_weixin_or_qq()) {
+                    logger.debug("directUpload because file.size < chunk_size || is_android_weixin_or_qq()");
+                    // direct upload if file size is less then the chunk size
                     directUpload(up, file, that.key_handler);
                 } else {
+                    // TODO: need a polifill to make it work in IE 9-
+                    // ISSUE: if file.name is existed in localStorage 
+                    // but not the same file maybe cause error
                     var localFileInfo = localStorage.getItem(file.name);
                     var blockSize = chunk_size;
                     if (localFileInfo) {
-                        localFileInfo = JSON.parse(localFileInfo);
+                        // TODO: although only the html5 runtime will enter this statement
+                        // but need uniform way to make convertion between string and json
+                        localFileInfo = that.parseJSON(localFileInfo);
                         var now = (new Date()).getTime();
                         var before = localFileInfo.time || 0;
-                        var aDay = 24 * 60 * 60 * 1000; //  milliseconds
+                        var aDay = 24 * 60 * 60 * 1000; //  milliseconds of one day
+                        // if the last upload time is within one day
+                        //      will upload continuously follow the last breakpoint
+                        // else
+                        //      will reupload entire file
                         if (now - before < aDay) {
+
                             if (localFileInfo.percent !== 100) {
                                 if (file.size === localFileInfo.total) {
-                                    // 通过文件名和文件大小匹配，找到对应的 localstorage 信息，恢复进度
+                                    // TODO: if file.name and file.size is the same 
+                                    // but not the same file will cause error
                                     file.percent = localFileInfo.percent;
                                     file.loaded = localFileInfo.offset;
                                     ctx = localFileInfo.ctx;
 
-                                    //  计算速度时，会用到
+                                    // set speed info
                                     speedCalInfo.isResumeUpload = true;
                                     speedCalInfo.resumeFilesize = localFileInfo.offset;
+
+                                    // set block size
                                     if (localFileInfo.offset + blockSize > file.size) {
                                         blockSize = file.size - localFileInfo.offset;
                                     }
                                 } else {
+                                    // remove file info when file.size is conflict with file info
                                     localStorage.removeItem(file.name);
                                 }
 
                             } else {
-                                // 进度100%时，删除对应的localStorage，避免 499 bug
+                                // remove file info when upload percent is 100%
+                                // avoid 499 bug
                                 localStorage.removeItem(file.name);
                             }
                         } else {
+                            // remove file info when last upload time is over one day
                             localStorage.removeItem(file.name);
                         }
                     }
                     speedCalInfo.startTime = new Date().getTime();
+                    // TODO: to support bput
+                    // http://developer.qiniu.com/docs/v6/api/reference/up/bput.html
                     up.setOption({
                         'url': qiniuUploadUrl + '/mkblk/' + blockSize,
                         'multipart': false,
@@ -444,13 +806,18 @@ function QiniuJsSDK() {
                     });
                 }
             } else {
+                logger.debug("directUpload because uploader.runtime !== 'html5' || uploader.runtime !== 'flash' || !chunk_size");
+                // direct upload if runtime is not html5
                 directUpload(up, file, that.key_handler);
             }
         });
 
-        uploader.bind('UploadProgress', function(up, file) {
-            // 计算速度
+        logger.debug("bind BeforeUpload event");
 
+        // bind 'UploadProgress' event
+        // calculate upload speed
+        uploader.bind('UploadProgress', function(up, file) {
+            logger.trace("UploadProgress event activated");
             speedCalInfo.currentTime = new Date().getTime();
             var timeUsed = speedCalInfo.currentTime - speedCalInfo.startTime; // ms
             var fileUploaded = file.loaded || 0;
@@ -460,9 +827,17 @@ function QiniuJsSDK() {
             file.speed = (fileUploaded / timeUsed * 1000).toFixed(0) || 0; // unit: byte/s
         });
 
-        uploader.bind('ChunkUploaded', function(up, file, info) {
-            var res = that.parseJSON(info.response);
+        logger.debug("bind UploadProgress event");
 
+        // bind 'ChunkUploaded' event
+        // store the chunk upload info and set next chunk upload url
+        uploader.bind('ChunkUploaded', function(up, file, info) {
+            logger.debug("ChunkUploaded event activated");
+            logger.debug("file: ", file);
+            logger.debug("info: ", info);
+            var res = that.parseJSON(info.response);
+            logger.debug("res: ", res);
+            // ctx should look like '[chunk01_ctx],[chunk02_ctx],[chunk03_ctx],...'
             ctx = ctx ? ctx + ',' + res.ctx : res.ctx;
             var leftSize = info.total - info.offset;
             var chunk_size = up.getOption && up.getOption('chunk_size');
@@ -471,8 +846,9 @@ function QiniuJsSDK() {
                 up.setOption({
                     'url': qiniuUploadUrl + '/mkblk/' + leftSize
                 });
+                logger.debug("up.setOption url: ", qiniuUploadUrl + '/mkblk/' + leftSize);
             }
-            localStorage.setItem(file.name, JSON.stringify({
+            localStorage.setItem(file.name, that.stringifyJSON({
                 ctx: ctx,
                 percent: file.percent,
                 total: info.total,
@@ -481,8 +857,32 @@ function QiniuJsSDK() {
             }));
         });
 
+        logger.debug("bind ChunkUploaded event");
+
+        var retries = qiniuUploadUrls.length;
+
+        // if error is unkown switch upload url and retry
+        var unknow_error_retry = function(file){
+            if (retries-- > 0) {
+                setTimeout(function(){
+                    that.resetUploadUrl();
+                    file.status = plupload.QUEUED;
+                    uploader.stop();
+                    uploader.start();
+                }, 0);
+                return true;
+            }else{
+                retries = qiniuUploadUrls.length;
+                return false;
+            }
+        };
+
+        // bind 'Error' event
+        // check the err.code and return the errTip
         uploader.bind('Error', (function(_Error_Handler) {
             return function(up, err) {
+                logger.error("Error event activated");
+                logger.error("err: ", err);
                 var errTip = '';
                 var file = err.file;
                 if (file) {
@@ -502,6 +902,9 @@ function QiniuJsSDK() {
                             if (err.response === '') {
                                 // Fix parseJSON error ,when http error is like net::ERR_ADDRESS_UNREACHABLE
                                 errTip = err.message || '未知网络错误。';
+                                if (!unknow_error_retry(file)) {
+                                    return;
+                                }
                                 break;
                             }
                             var errorObj = that.parseJSON(err.response);
@@ -521,6 +924,9 @@ function QiniuJsSDK() {
                                     break;
                                 case 599:
                                     errTip = "网络连接异常。请重试或提交反馈。";
+                                    if (!unknow_error_retry(file)) {
+                                        return;
+                                    }
                                     break;
                                 case 614:
                                     errTip = "文件已存在。";
@@ -539,6 +945,9 @@ function QiniuJsSDK() {
                                     break;
                                 default:
                                     errTip = "未知错误。";
+                                    if (!unknow_error_retry(file)) {
+                                        return;
+                                    }
                                     break;
                             }
                             errTip = errTip + '(' + err.status + '：' + errorText + ')';
@@ -558,6 +967,9 @@ function QiniuJsSDK() {
                             break;
                         default:
                             errTip = err.message + err.details;
+                            if (!unknow_error_retry(file)) {
+                                return;
+                            }
                             break;
                     }
                     if (_Error_Handler) {
@@ -568,11 +980,21 @@ function QiniuJsSDK() {
             };
         })(_Error_Handler));
 
+        logger.debug("bind Error event");
+
+        // bind 'FileUploaded' event
+        // intercept the complete of upload
+        // - get downtoken from downtoken_url if bucket is private
+        // - invoke mkfile api to compose chunks if upload strategy is chunk upload
         uploader.bind('FileUploaded', (function(_FileUploaded_Handler) {
             return function(up, file, info) {
-
+                logger.debug("FileUploaded event activated");
+                logger.debug("file: ", file);
+                logger.debug("info: ", info);
                 var last_step = function(up, file, info) {
                     if (op.downtoken_url) {
+                        // if op.dowontoken_url is not empty
+                        // need get downtoken before invoke the _FileUploaded_Handler
                         var ajax_downtoken = that.createAjax();
                         ajax_downtoken.open('POST', op.downtoken_url, true);
                         ajax_downtoken.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
@@ -588,7 +1010,7 @@ function QiniuJsSDK() {
                                     var info_extended = {};
                                     plupload.extend(info_extended, that.parseJSON(info), res_downtoken);
                                     if (_FileUploaded_Handler) {
-                                        _FileUploaded_Handler(up, file, JSON.stringify(info_extended));
+                                        _FileUploaded_Handler(up, file, that.stringifyJSON(info_extended));
                                     }
                                 } else {
                                     uploader.trigger('Error', {
@@ -608,8 +1030,16 @@ function QiniuJsSDK() {
 
                 var res = that.parseJSON(info.response);
                 ctx = ctx ? ctx : res.ctx;
+                // if ctx is not empty 
+                //      that means the upload strategy is chunk upload
+                //      befroe the invoke the last_step
+                //      we need request the mkfile to compose all uploaded chunks
+                // else
+                //      invalke the last_step
+                logger.debug("ctx: ", ctx);
                 if (ctx) {
                     var key = '';
+                    logger.debug("save_key: ", op.save_key);
                     if (!op.save_key) {
                         key = getFileKey(up, file, that.key_handler);
                         key = key ? '/key/' + that.URLSafeBase64Encode(key) : '';
@@ -617,6 +1047,7 @@ function QiniuJsSDK() {
 
                     var fname = '/fname/' + that.URLSafeBase64Encode(file.name);
 
+                    logger.debug("op.x_vars: ", op.x_vars);
                     var x_vars = op.x_vars,
                         x_val = '',
                         x_vars_url = '';
@@ -634,27 +1065,46 @@ function QiniuJsSDK() {
                     }
 
                     var url = qiniuUploadUrl + '/mkfile/' + file.size + key + fname + x_vars_url;
-                    var ajax = that.createAjax();
+
+                    var ie = that.detectIEVersion();
+                    var ajax;
+                    if (ie && ie <= 9) {
+                        ajax = new mOxie.XMLHttpRequest();
+                        mOxie.Env.swf_url = op.flash_swf_url;
+                    }else{
+                        ajax = that.createAjax();
+                    }
                     ajax.open('POST', url, true);
                     ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
                     ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
-                    ajax.onreadystatechange = function() {
+                    var onreadystatechange = function(){
+                        logger.debug("ajax.readyState: ", ajax.readyState);
                         if (ajax.readyState === 4) {
                             localStorage.removeItem(file.name);
+                            var info;
                             if (ajax.status === 200) {
-                                var info = ajax.responseText;
+                                info = ajax.responseText;
+                                logger.debug("mkfile is success: ", info);
                                 last_step(up, file, info);
                             } else {
-                                uploader.trigger('Error', {
+                                info = {
                                     status: ajax.status,
                                     response: ajax.responseText,
                                     file: file,
                                     code: -200
-                                });
+                                };
+                                logger.debug("mkfile is error: ", info);
+                                uploader.trigger('Error', info);
                             }
                         }
                     };
+                    if (ie && ie <= 9) {
+                        ajax.bind('readystatechange', onreadystatechange);
+                    }else{
+                        ajax.onreadystatechange = onreadystatechange;
+                    }
                     ajax.send(ctx);
+                    logger.debug("mkfile: ", url);
                 } else {
                     last_step(up, file, info.response);
                 }
@@ -662,9 +1112,23 @@ function QiniuJsSDK() {
             };
         })(_FileUploaded_Handler));
 
+        logger.debug("bind FileUploaded event");
+
+        // init uploader
+        uploader.init();
+
+        logger.debug("invoke uploader.init()");
+
+        logger.debug("init uploader end");
+
         return uploader;
     };
 
+    /**
+     * get url by key
+     * @param  {String} key of file
+     * @return {String} url of file
+     */
     this.getUrl = function(key) {
         if (!key) {
             return false;
@@ -677,6 +1141,12 @@ function QiniuJsSDK() {
         return domain + key;
     };
 
+    /**
+     * invoke the imageView2 api of Qiniu
+     * @param  {Object} api params
+     * @param  {String} key of file
+     * @return {String} url of processed image
+     */
     this.imageView2 = function(op, key) {
         var mode = op.mode || '',
             w = op.w || '',
@@ -701,7 +1171,12 @@ function QiniuJsSDK() {
         return imageUrl;
     };
 
-
+    /**
+     * invoke the imageMogr2 api of Qiniu
+     * @param  {Object} api params
+     * @param  {String} key of file
+     * @return {String} url of processed image
+     */
     this.imageMogr2 = function(op, key) {
         var auto_orient = op['auto-orient'] || '',
             thumbnail = op.thumbnail || '',
@@ -732,8 +1207,13 @@ function QiniuJsSDK() {
         return imageUrl;
     };
 
+    /**
+     * invoke the watermark api of Qiniu
+     * @param  {Object} api params
+     * @param  {String} key of file
+     * @return {String} url of processed image
+     */
     this.watermark = function(op, key) {
-
         var mode = op.mode;
         if (!mode) {
             return false;
@@ -778,9 +1258,13 @@ function QiniuJsSDK() {
             imageUrl = this.getUrl(key) + '?' + imageUrl;
         }
         return imageUrl;
-
     };
 
+    /**
+     * invoke the imageInfo api of Qiniu
+     * @param  {String} key of file
+     * @return {Object} image info
+     */
     this.imageInfo = function(key) {
         if (!key) {
             return false;
@@ -799,7 +1283,11 @@ function QiniuJsSDK() {
         return info;
     };
 
-
+    /**
+     * invoke the exif api of Qiniu
+     * @param  {String} key of file
+     * @return {Object} image exif
+     */
     this.exif = function(key) {
         if (!key) {
             return false;
@@ -818,6 +1306,13 @@ function QiniuJsSDK() {
         return info;
     };
 
+    /**
+     * invoke the exif or imageInfo api of Qiniu
+     * according with type param
+     * @param  {String} ['exif'|'imageInfo']type of info
+     * @param  {String} key of file
+     * @return {Object} image exif or info
+     */
     this.get = function(type, key) {
         if (!key || !type) {
             return false;
@@ -830,9 +1325,15 @@ function QiniuJsSDK() {
         return false;
     };
 
-
+    /**
+     * invoke api of Qiniu like a pipeline
+     * @param  {Array of Object} params of a series api call
+     * each object in array is options of api which name is set as 'fop' property
+     * each api's output will be next api's input
+     * @param  {String} key of file
+     * @return {String|Boolean} url of processed image
+     */
     this.pipeline = function(arr, key) {
-
         var isArray = Object.prototype.toString.call(arr) === '[object Array]';
         var option, errOp, imageUrl = '';
         if (isArray) {
@@ -870,7 +1371,12 @@ function QiniuJsSDK() {
         }
         return false;
     };
-
 }
 
 var Qiniu = new QiniuJsSDK();
+
+global.Qiniu = Qiniu;
+
+global.QiniuJsSDK = QiniuJsSDK;
+
+})( window );
