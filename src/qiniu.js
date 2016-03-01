@@ -182,7 +182,7 @@ function QiniuJsSDK() {
      * @return {Boolean} file is a image or not
      */
     this.isImage = function(url) {
-        return /\.(png|jpg|jpeg|gif|bmp)$/i.test(url);
+        return (/\.(png|jpg|jpeg|gif|bmp)$/i).test(url);
     };
 
     /**
