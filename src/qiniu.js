@@ -515,17 +515,18 @@ function QiniuJsSDK() {
             if (!op.uptoken) {
                 // TODO: use mOxie
                 var ajax = that.createAjax();
-                ajax.open('GET', that.uptoken_url, true);
+                ajax.op = op;
+                ajax.open('GET', ajax.op.uptoken_url, true);
                 ajax.setRequestHeader("If-Modified-Since", "0");
                 ajax.onreadystatechange = function() {
                     if (ajax.readyState === 4 && ajax.status === 200) {
                         var res = that.parseJSON(ajax.responseText);
-                        that.token = res.uptoken;
+                        ajax.op.token = res.uptoken;
                     }
                 };
                 ajax.send();
             } else {
-                that.token = op.uptoken;
+                op.token = op.uptoken;
             }
         };
 
@@ -579,9 +580,9 @@ function QiniuJsSDK() {
         op.init.Error = function() {};
         op.init.FileUploaded = function() {};
 
-        that.uptoken_url = op.uptoken_url;
-        that.token = '';
-        that.key_handler = typeof op.init.Key === 'function' ? op.init.Key : '';
+        op.uptoken_url = op.uptoken_url;
+        op.token = '';
+        op.key_handler = typeof op.init.Key === 'function' ? op.init.Key : '';
         this.domain = op.domain;
         // TODO: ctx is global in scope of a uploader instance
         // this maybe cause error
@@ -617,7 +618,7 @@ function QiniuJsSDK() {
             logger.debug("Init event activated");
             // if op.get_new_uptoken is not true
             //      invoke getUptoken when uploader init
-            // else 
+            // else
             //      getUptoken everytime before a new file upload
             if(!op.get_new_uptoken){
                 getUpToken();
@@ -673,12 +674,12 @@ function QiniuJsSDK() {
                 var multipart_params_obj;
                 if (op.save_key) {
                     multipart_params_obj = {
-                        'token': that.token
+                        'token': op.token
                     };
                 } else {
                     multipart_params_obj = {
                         'key': getFileKey(up, file, func),
-                        'token': that.token
+                        'token': op.token
                     };
                 }
 
@@ -727,10 +728,10 @@ function QiniuJsSDK() {
                 if (file.size < chunk_size || is_android_weixin_or_qq()) {
                     logger.debug("directUpload because file.size < chunk_size || is_android_weixin_or_qq()");
                     // direct upload if file size is less then the chunk size
-                    directUpload(up, file, that.key_handler);
+                    directUpload(up, file, op.key_handler);
                 } else {
                     // TODO: need a polifill to make it work in IE 9-
-                    // ISSUE: if file.name is existed in localStorage 
+                    // ISSUE: if file.name is existed in localStorage
                     // but not the same file maybe cause error
                     var localFileInfo = localStorage.getItem(file.name);
                     var blockSize = chunk_size;
@@ -749,7 +750,7 @@ function QiniuJsSDK() {
 
                             if (localFileInfo.percent !== 100) {
                                 if (file.size === localFileInfo.total) {
-                                    // TODO: if file.name and file.size is the same 
+                                    // TODO: if file.name and file.size is the same
                                     // but not the same file will cause error
                                     file.percent = localFileInfo.percent;
                                     file.loaded = localFileInfo.offset;
@@ -787,7 +788,7 @@ function QiniuJsSDK() {
                         'chunk_size': chunk_size,
                         'required_features': "chunks",
                         'headers': {
-                            'Authorization': 'UpToken ' + that.token
+                            'Authorization': 'UpToken ' + op.token
                         },
                         'multipart_params': {}
                     });
@@ -795,7 +796,7 @@ function QiniuJsSDK() {
             } else {
                 logger.debug("directUpload because uploader.runtime !== 'html5' || uploader.runtime !== 'flash' || !chunk_size");
                 // direct upload if runtime is not html5
-                directUpload(up, file, that.key_handler);
+                directUpload(up, file, op.key_handler);
             }
         });
 
@@ -1017,7 +1018,7 @@ function QiniuJsSDK() {
 
                 var res = that.parseJSON(info.response);
                 ctx = ctx ? ctx : res.ctx;
-                // if ctx is not empty 
+                // if ctx is not empty
                 //      that means the upload strategy is chunk upload
                 //      befroe the invoke the last_step
                 //      we need request the mkfile to compose all uploaded chunks
@@ -1028,7 +1029,7 @@ function QiniuJsSDK() {
                     var key = '';
                     logger.debug("save_key: ", op.save_key);
                     if (!op.save_key) {
-                        key = getFileKey(up, file, that.key_handler);
+                        key = getFileKey(up, file, op.key_handler);
                         key = key ? '/key/' + that.URLSafeBase64Encode(key) : '';
                     }
 
@@ -1063,7 +1064,7 @@ function QiniuJsSDK() {
                     }
                     ajax.open('POST', url, true);
                     ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
-                    ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
+                    ajax.setRequestHeader('Authorization', 'UpToken ' + op.token);
                     var onreadystatechange = function(){
                         logger.debug("ajax.readyState: ", ajax.readyState);
                         if (ajax.readyState === 4) {
