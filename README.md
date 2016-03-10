@@ -33,7 +33,7 @@ qiniu-js-sdk
 
 **1.关于上传文件命名问题，可以参考：**
 在main.js里面，unique_names是plupload插件下面的一个参数，当值为true时会为每个上传的文件生成一个唯一的文件名，这个是plupload插件自动生成的，如果设置成false，七牛这边是会以上传的原始名进行命名的。
-1).上传的socpe为bucket的形式，unique_names参数设置为false，上传后文件的key是本地的文件名abc.txt
+1).上传的scope为bucket的形式，unique_names参数设置为false，上传后文件的key是本地的文件名abc.txt
 2).上传的scope为bucket的形式，unique_names参数设置为true，plupload插件会忽略本地文件名，而且这个命名也是没有规律的，上传后文件的key是plupload插件生成的，比如Yc7DZRS1m73o.txt。
 3).上传的scope为bucket:key的形式，上传文件本地的名字需要和scope中的key是一致的，不然会报错key doesn‘t match with scope, 注意，这种形式是不能设置unique_names为true的，因为即使上传文件本地名字为abc.txt,但是plupload会给这个文件赋值另外一个文件名。
 4).上传的scope为bucket，但是token中有设定saveKey，这种形式save_key是应该设置为true，并且上传的本地文件名也是需要和这个savekey文件名一致的。
