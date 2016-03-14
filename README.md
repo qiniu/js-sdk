@@ -1,6 +1,6 @@
 qiniu-js-sdk
 ============
-
+iiii
 基于七牛API及Plupload开发的前端JavaScript SDK
 
 示例网站：[七牛JavaScript SDK 示例网站 - 配合七牛nodejs SDK ](http://jssdk.demo.qiniu.io/)
