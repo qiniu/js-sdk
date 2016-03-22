@@ -115,6 +115,13 @@ function QiniuJsSDK() {
             args.unshift(header);
             console.log.apply(console, args);
         }
+        if (document.getElementById('qiniu-js-sdk-log')) {
+            var msg1 = header;
+            for (var j = 0; j < args.length; j++) {
+                msg1+=that.stringifyJSON(args[j]);
+            }
+            document.getElementById('qiniu-js-sdk-log').innerHTML += '<p>'+msg1+'</p>';
+        }
     }
 
     function makeLogFunc(code){
@@ -507,25 +514,43 @@ function QiniuJsSDK() {
             // if op.chunk_size set 0 will be cause to direct upload
         };
 
-        // if op.uptoken has no value
-        //      get token from 'uptoken_url'
-        // else
-        //      set token to be op.uptoken
-        var getUpToken = function() {
-            if (!op.uptoken) {
+        // getUptoken maybe called at Init Event or BeforeUpload Event
+        // case Init Event, the file param of getUptken will be set null value
+        // if op.uptoken has value, set uptoken with op.uptoken
+        // else if op.uptoken_url has value, set uptoken from op.uptoken_url
+        // else if op.uptoken_func has value, set uptoken by result of op.uptoken_func
+        var getUpToken = function(file) {
+            if (op.uptoken) {
+                that.token = op.uptoken;
+                return;
+            } else if (op.uptoken_url) {
+                logger.debug("get uptoken from: ", that.uptoken_url);
                 // TODO: use mOxie
                 var ajax = that.createAjax();
-                ajax.open('GET', that.uptoken_url, true);
+                ajax.open('GET', that.uptoken_url, false);
                 ajax.setRequestHeader("If-Modified-Since", "0");
-                ajax.onreadystatechange = function() {
-                    if (ajax.readyState === 4 && ajax.status === 200) {
-                        var res = that.parseJSON(ajax.responseText);
-                        that.token = res.uptoken;
-                    }
-                };
+                // ajax.onreadystatechange = function() {
+                //     if (ajax.readyState === 4 && ajax.status === 200) {
+                //         var res = that.parseJSON(ajax.responseText);
+                //         that.token = res.uptoken;
+                //     }
+                // };
                 ajax.send();
+                if (ajax.status === 200) {
+                    var res = that.parseJSON(ajax.responseText);
+                    that.token = res.uptoken;
+                    logger.debug("get new uptoken: ", res.uptoken);
+                } else {
+                    logger.error("get uptoken error: ", ajax.responseText);
+                }
+                return;
+            } else if (op.uptoken_func) {
+                logger.debug("get uptoken from uptoken_func");
+                that.token = op.uptoken_func(file);
+                logger.debug("get new uptoken: ", that.token);
+                return;
             } else {
-                that.token = op.uptoken;
+                logger.error("one of [uptoken, uptoken_url, uptoken_func] settings in options is required!");
             }
         };
 
@@ -561,6 +586,10 @@ function QiniuJsSDK() {
 
         if (!op.browse_button) {
             throw 'browse_button setting in options is required!';
+        }
+
+        if (!op.uptoken && !op.uptoken_url && !op.uptoken_func) {
+            throw 'one of [uptoken, uptoken_url, uptoken_func] settings in options is required!';
         }
 
         logger.debug("init uploader start");
@@ -617,12 +646,12 @@ function QiniuJsSDK() {
             logger.debug("Init event activated");
             // if op.get_new_uptoken is not true
             //      invoke getUptoken when uploader init
-            // else 
+            // else
             //      getUptoken everytime before a new file upload
             if(!op.get_new_uptoken){
-                getUpToken();
+                getUpToken(null);
             }
-            getUpToken();
+            //getUpToken(null);
         });
 
         logger.debug("bind Init event");
@@ -665,7 +694,7 @@ function QiniuJsSDK() {
             ctx = '';
 
             if(op.get_new_uptoken){
-                getUpToken();
+                getUpToken(file);
             }
 
             var directUpload = function(up, file, func) {
