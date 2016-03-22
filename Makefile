@@ -1,7 +1,11 @@
-install : all
+all : install build demo
 
-all :
+install :
 	npm install
 	bower install
+
+build :
 	grunt
+
+demo :
 	node demo/server.js
