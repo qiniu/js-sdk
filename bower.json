@@ -1,11 +1,10 @@
 {
   "name": "qiniu-js-sdk",
-  "description": "基于七牛API及Plupload开发的前端JavaScript SDK",
+  "description": "Javascript SDK for Qiniu Resource (Cloud) Storage API",
+  "version": "v1.0.14-beta",
   "main": "dist/qiniu.js",
+  "moduleType": ["globals"],
   "license": "GPL V2",
-  "homepage": "https://github.com/qiniu/js-sdk",
-  "moduleType": [],
-  "private": false,
   "ignore": [
     "**/.*",
     "node_modules",
@@ -13,6 +12,29 @@
     "test",
     "tests"
   ],
+  "keywords": [
+    "cloud",
+    "storage",
+    "s3",
+    "qiniu",
+    "upload"
+  ],
+  "authors": "sdk@qiniu.com",
+  "contributors": [
+    {
+      "name": "codedogfish",
+      "email": "jackyu@qiniu.com"
+    },
+    {
+      "name": "dengchenhua",
+      "email": "dengchenhua@qiniu.com"
+    }
+  ],
+  "homepage": "https://github.com/qiniu/js-sdk",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/qiniu/js-sdk.git"
+  },
   "dependencies": {
     "plupload": "=2.1.1"
   },
@@ -21,5 +43,6 @@
     "highlight": "~8.9.1",
     "jquery": "~1.9.1",
     "respond": "~1.4.2"
-  }
+  },
+  "private": false
 }
