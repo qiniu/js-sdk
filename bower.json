@@ -1,5 +1,5 @@
 {
-  "name": "qiniu-js-sdk",
+  "name": "qiniu",
   "description": "Javascript SDK for Qiniu Resource (Cloud) Storage API",
   "version": "v1.0.14-beta",
   "main": "dist/qiniu.js",
