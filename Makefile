@@ -7,5 +7,6 @@ install :
 build :
 	grunt
 
-demo :
+dev :
 	node demo/server.js
+
