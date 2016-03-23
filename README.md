@@ -7,7 +7,7 @@ Qiniu-JavaScript-SDK
 
 - [示例网站](http://jssdk.demo.qiniu.io/)
 - [安装与使用](#usage)
-- [运行实例](#demo)
+- [运行示例](#demo)
 - [常见问题](#faq)
 
 ### 概述
