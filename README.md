@@ -74,13 +74,14 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 └── package.json
 ```
 
+<a id="usage"></a>
 ### 准备
 
 - JS-SDK 的上传功能基于 [Plupload](http://www.plupload.com/) 插件封装的，所以需要[下载 Plupload](http://plupload.com/download)，建议使用 2.1.1 版本。
     您也可以访问[ 开放静态文件 CDN ](http://staticfile.org/)，搜索 plupload，使用 CDN 加速的静态文件地址。
-<br>
+
 - 在使用 JS-SDK 之前，您必须先注册一个七牛帐号，并登录控制台获取一对有效的 AccessKey 和 SecretKey，您可以阅读[ 如何接入七牛 ](http://developer.qiniu.com/article/kodo/kodo-first/quickstart.html)和[ 安全机制 ](http://developer.qiniu.com/article/kodo/kodo-developer/index.html#security) 以进一步了解如何正确使用和管理密钥 。
-<br>
+
 - JS-SDK 依赖服务端颁发 uptoken，可以通过以下二种方式实现：
     - 利用[七牛服务端 SDK ](http://developer.qiniu.com/resource/official.html#sdk)构建后端服务   
     - 利用七牛底层 API 构建服务，详见七牛[上传策略](http://developer.qiniu.com/article/developer/security/put-policy.html)和[上传凭证](http://developer.qiniu.com/article/developer/security/upload-token.html)
@@ -445,6 +446,28 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
     
     具体管道操作解释见[管道操作](http://developer.qiniu.com/docs/v6/api/overview/fop/pipeline.html)
 
+<a id="demo"></a>
+### 运行示例
+
+1. 进入项目根目录，执行 `make install` 安装依赖第三方库
+2. 进入 `demo` 目录，按照目录下的 `config.example` 示例，创建 `config.js` 文件，其中，`Access Key` 和 `Secret Key` 按如下方式获取
+   
+    * [开通七牛开发者帐号](https://portal.qiniu.com/signup)
+    * [登录七牛开发者自助平台，查看 AccessKey 和 SecretKey](https://portal.qiniu.com/setting/key) 。
+    
+    ```javascript
+    
+    module.exports = {
+        'ACCESS_KEY': '<Your Access Key>',
+        'SECRET_KEY': '<Your Secret Key>',
+        'Bucket_Name': '<Your Bucket Name>',
+        'Port': 19110,
+        'Uptoken_Url': '<Your Uptoken_Url>',
+        'Domain': '<Your Bucket Domain>'
+    }
+    
+    ```
+3. 进入项目根目录，执行 `make demo` 访问 `http://127.0.0.1:19110/` 或 `http://localhost:19110/`
 
 ### 说明
 
