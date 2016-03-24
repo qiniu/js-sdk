@@ -467,7 +467,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
     }
     
     ```
-3. 进入项目根目录，执行 `make demo` 访问 `http://127.0.0.1:19110/` 或 `http://localhost:19110/`
+3. 进入项目根目录，执行 `make dev` 访问 `http://127.0.0.1:19110/` 或 `http://localhost:19110/`
 
 ### 说明
 
