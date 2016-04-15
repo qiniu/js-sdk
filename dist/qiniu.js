@@ -6,7 +6,7 @@
  *
  * GitHub: http://github.com/qiniu/js-sdk
  *
- * Date: 2016-3-22
+ * Date: 2016-4-15
 */
 
 /*global plupload ,mOxie*/
@@ -102,25 +102,25 @@ function QiniuJsSDK() {
 
     function log(type, args){
         var header = "[qiniu-js-sdk]["+type+"]";
+        var msg = header;
+        for (var i = 0; i < args.length; i++) {
+            if (typeof args[i] === "string") {
+                msg += " " + args[i];
+            } else {
+                msg += " " + that.stringifyJSON(args[i]);
+            }
+        }
         if (that.detectIEVersion()) {
             // http://stackoverflow.com/questions/5538972/console-log-apply-not-working-in-ie9
             //var log = Function.prototype.bind.call(console.log, console);
             //log.apply(console, args);
-            var msg = header;
-            for (var i = 0; i < args.length; i++) {
-                msg+=that.stringifyJSON(args[i]);
-            }
             console.log(msg);
         }else{
             args.unshift(header);
             console.log.apply(console, args);
         }
         if (document.getElementById('qiniu-js-sdk-log')) {
-            var msg1 = header;
-            for (var j = 0; j < args.length; j++) {
-                msg1+=that.stringifyJSON(args[j]);
-            }
-            document.getElementById('qiniu-js-sdk-log').innerHTML += '<p>'+msg1+'</p>';
+            document.getElementById('qiniu-js-sdk-log').innerHTML += '<p>'+msg+'</p>';
         }
     }
 
@@ -515,7 +515,7 @@ function QiniuJsSDK() {
         };
 
         // getUptoken maybe called at Init Event or BeforeUpload Event
-        // case Init Event, the file param of getUptken will be set null value
+        // case Init Event, the file param of getUptken will be set a null value
         // if op.uptoken has value, set uptoken with op.uptoken
         // else if op.uptoken_url has value, set uptoken from op.uptoken_url
         // else if op.uptoken_func has value, set uptoken by result of op.uptoken_func
@@ -665,6 +665,25 @@ function QiniuJsSDK() {
             auto_start = auto_start || (up.settings && up.settings.auto_start);
             logger.debug("auto_start: ", auto_start);
             logger.debug("files: ", files);
+
+            // detect is iOS
+            var is_ios = function (){
+                if(mOxie.Env.OS.toLowerCase()==="ios") {
+                    return true;
+                } else {
+                    return false;
+                }
+            };
+
+            // if current env os is iOS change file name to [time].[ext]
+            if (is_ios()) {
+                for (var i = 0; i < files.length; i++) {
+                    var file = files[i];
+                    var ext = that.getFileExtension(file.name);
+                    file.name = file.id + "." + ext;
+                }
+            }
+
             if (auto_start) {
                 setTimeout(function(){
                     up.start();

@@ -14,7 +14,22 @@ $(function() {
         flash_swf_url: 'bower_components/plupload/js/Moxie.swf',
         dragdrop: true,
         chunk_size: '4mb',
+        multi_selection: !(mOxie.Env.OS.toLowerCase()==="ios"),
         uptoken_url: $('#uptoken_url').val(),
+        // uptoken_func: function(){
+        //     var ajax = new XMLHttpRequest();
+        //     ajax.open('GET', $('#uptoken_url').val(), false);
+        //     ajax.setRequestHeader("If-Modified-Since", "0");
+        //     ajax.send();
+        //     if (ajax.status === 200) {
+        //         var res = JSON.parse(ajax.responseText);
+        //         console.log('custom uptoken_func:' + res.uptoken);
+        //         return res.uptoken;
+        //     } else {
+        //         console.log('custom uptoken_func err');
+        //         return '';
+        //     }
+        // },
         domain: $('#domain').val(),
         get_new_uptoken: false,
         // downtoken_url: '/downtoken',

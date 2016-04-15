@@ -1,4 +1,4 @@
-all : install build demo
+all : install build dev
 
 install :
 	npm install
