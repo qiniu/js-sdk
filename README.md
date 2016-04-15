@@ -469,6 +469,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
     ```
 3. 进入项目根目录，执行 `make dev` 访问 `http://127.0.0.1:19110/` 或 `http://localhost:19110/`
 
+<a id="note"></a>
 ### 说明
 
 1. JS-SDK 依赖 Plupload，初始化之前请引入 Plupload。
@@ -599,6 +600,7 @@ $('#stop_load').on('click', function(){
 
 推荐一个关于 [CORS](http://enable-cors.org/) 的网站
 
+<a id="contribute-code"></a>
 ### 贡献代码
 
 1. 登录 https://github.com
@@ -613,7 +615,7 @@ $('#stop_load').on('click', function(){
 
 6. 然后到 github 网站的该 git 远程仓库的 new-feature 分支下发起 Pull Request
 
-
+<a id="license"></a>
 ### 许可证
 
 > Copyright (c) 2014 qiniu.com
