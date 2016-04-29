@@ -601,6 +601,211 @@ $('#stop_load').on('click', function(){
 推荐一个关于 [CORS](http://enable-cors.org/) 的网站
 
 <a id="contribute-code"></a>
+
+**10.Android自带的Webview对JS SDK不支持 **
+在Android自带的Webview里面引用JS SDK的demo(http://jssdk.demo.qiniu.io/) :
+```
+public class MainActivity extends Activity {
+    private WebView webview;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        webview = (WebView) findViewById(R.id.wv);
+        webview.getSettings().setJavaScriptEnabled(true);
+        webview.setWebViewClient(new WebViewClient(){
+            public boolean shouldOverrideUrlLoading(WebView view, String url){
+                view.loadUrl(url); 
+                return true;
+            }
+        });
+        webview.loadUrl("http://demos.qiniu.com/demo/simpleuploader/");
+    }
+
+}
+```
+但是点击选择文件按钮没有反应，这个是Webview对JS不是很支持造成的，解决方法可以引入这个Webview,jar包地址如下: 
+https://github.com/delight-im/Android-AdvancedWebView/blob/master/JARs/Android-AdvancedWebView.jar 
+使用的方法文档上都有写，比较简单：
+```
+private AdvancedWebView mWebView;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        mWebView = (AdvancedWebView) findViewById(R.id.webview);
+        mWebView.setListener(this, this);
+        mWebView.loadUrl("http://jssdk.demo.qiniu.io/");
+    }
+```
+
+**11.关于多个按钮选择文件的Demo **
+
+很多用户都在问JSSDK多文件选择的Demo，其实比较简单，只需要在main.js文件里面多new几个Uploader对象就可以了，然后在主页面上里面写好对应的上传的按钮就可以了
+这里直接给出main.js和indxe.html里面需要改动的地方: 
+main.js里面多new几个uploader对象
+```
+$(function() {
+    var uploader = Qiniu.uploader({
+        runtimes: 'html5,flash,html4',
+        browse_button: 'pickfiles',
+        container: 'container',
+        drop_element: 'container',
+        max_file_size: '100mb',
+        flash_swf_url: 'js/plupload/Moxie.swf',
+        dragdrop: true,
+        chunk_size: '4mb',
+        uptoken:'um6IEH7mtwnwkGpjImD08JdxlvViuELhI4mFfoeL:79ApUIePTtKIdVGDHJ9D9BfBnhE=:eyJzY29wZSI6ImphdmFkZW1vIiwiZGVhZGxpbmUiOjE0NTk4ODMyMzV9Cg==',
+        // uptoken_url: $('#uptoken_url').val(),  //当然建议这种通过url的方式获取token
+        domain: $('#domain').val(),
+        auto_start: false,
+        init: {
+            'FilesAdded': function(up, files) {
+                $('table').show();
+                $('#success').hide();
+                plupload.each(files, function(file) {
+                    var progress = new FileProgress(file, 'fsUploadProgress');
+                    progress.setStatus("等待...");
+                });
+            },
+            'BeforeUpload': function(up, file) {
+                var progress = new FileProgress(file, 'fsUploadProgress');
+                var chunk_size = plupload.parseSize(this.getOption('chunk_size'));
+                if (up.runtime === 'html5' && chunk_size) {
+                    progress.setChunkProgess(chunk_size);
+                }
+            },
+            'UploadProgress': function(up, file) {
+                var progress = new FileProgress(file, 'fsUploadProgress');
+                var chunk_size = plupload.parseSize(this.getOption('chunk_size'));
+
+                progress.setProgress(file.percent + "%", file.speed, chunk_size);
+            },
+            'UploadComplete': function() {
+                $('#success').show();
+            },
+            'FileUploaded': function(up, file, info) {
+                var progress = new FileProgress(file, 'fsUploadProgress');
+                progress.setComplete(up, info);
+            },
+            'Error': function(up, err, errTip) {
+                $('table').show();
+                var progress = new FileProgress(err.file, 'fsUploadProgress');
+                progress.setError();
+                progress.setStatus(errTip);
+            }
+        }
+    });
+
+    uploader.bind('FileUploaded', function() {
+        console.log('hello man,a file is uploaded');
+    });
+
+    $('#up_load').on('click', function(){
+        uploader.start();
+    });
+    $('#stop_load').on('click', function(){
+        uploader.stop();
+    });
+
+    var Q2 = new QiniuJsSDK();
+    var uploader2 = Q2.uploader({
+        runtimes: 'html5,flash,html4',
+        browse_button: 'pickfiles2',
+        container: 'container2',
+        drop_element: 'container2',
+        max_file_size: '100mb',
+        flash_swf_url: 'js/plupload/Moxie.swf',
+        dragdrop: true,
+        chunk_size: '4mb',
+        uptoken:'um6IEH7mtwnwkGpjImD08JdxlvViuELhI4mFfoeL:79ApUIePTtKIdVGDHJ9D9BfBnhE=:eyJzY29wZSI6ImphdmFkZW1vIiwiZGVhZGxpbmUiOjE0NTk4ODMyMzV9Cg==',
+        // uptoken_url: $('#uptoken_url').val(),  //当然建议这种通过url的方式获取token
+        domain: $('#domain').val(),
+        auto_start: false,
+        init: {
+            'FilesAdded': function(up, files) {
+                $('table').show();
+                $('#success').hide();
+                plupload.each(files, function(file) {
+                    var progress = new FileProgress(file, 'fsUploadProgress');
+                    progress.setStatus("等待...");
+                });
+            },
+            'BeforeUpload': function(up, file) {
+                var progress = new FileProgress(file, 'fsUploadProgress');
+                var chunk_size = plupload.parseSize(this.getOption('chunk_size'));
+                if (up.runtime === 'html5' && chunk_size) {
+                    progress.setChunkProgess(chunk_size);
+                }
+            },
+            'UploadProgress': function(up, file) {
+                var progress = new FileProgress(file, 'fsUploadProgress');
+                var chunk_size = plupload.parseSize(this.getOption('chunk_size'));
+
+                progress.setProgress(file.percent + "%", file.speed, chunk_size);
+            },
+            'UploadComplete': function() {
+                $('#success').show();
+            },
+            'FileUploaded': function(up, file, info) {
+                var progress = new FileProgress(file, 'fsUploadProgress');
+                progress.setComplete(up, info);
+            },
+            'Error': function(up, err, errTip) {
+                $('table').show();
+                var progress = new FileProgress(err.file, 'fsUploadProgress');
+                progress.setError();
+                progress.setStatus(errTip);
+            }
+        }
+    });
+
+    uploader2.bind('FileUploaded', function() {
+        console.log('hello man 2,a file is uploaded');
+    });
+    $('#up_load2').on('click', function(){
+        uploader2.start();
+    });
+    $('#stop_load2').on('click', function(){
+        uploader2.stop();
+    });
+```
+相应的index.html文件加入相关按钮:
+```
+<div id="container">
+        <a class="btn btn-default btn-lg " id="pickfiles" style="width:160px" href="#" >
+            <i class="glyphicon glyphicon-plus"></i>
+            <span>选择文件</span>
+        </a>
+
+        <a class="btn btn-default btn-lg " id="up_load" style="width:160px" href="#" >
+            <span>确认上传</span>
+        </a>  
+
+        <a class="btn btn-default btn-lg " id="stop_load" style="width:160px" href="#" >
+            <span>暂停上传</span>
+        </a> 
+    </div>
+
+<div id="container2">
+        <a class="btn btn-default btn-lg " id="pickfiles2" style="width:160px" href="#" >
+            <i class="glyphicon glyphicon-plus"></i>
+            <span>选择文件</span>
+        </a>
+
+        <a class="btn btn-default btn-lg " id="up_load2" style="width:160px" href="#" >
+            <span>确认上传</span>
+        </a>  
+
+        <a class="btn btn-default btn-lg " id="stop_load2" style="width:160px" href="#" >
+            <span>暂停上传</span>
+        </a> 
+    </div>
+</div>
+```
+
+
 ### 贡献代码
 
 1. 登录 https://github.com
