@@ -626,6 +626,9 @@ function QiniuJsSDK() {
         logger.debug("invoke reset_chunk_size()");
         logger.debug("op.chunk_size: ", op.chunk_size);
 
+        // read upload url by options
+        qiniuUploadUrl = op.url || qiniuUploadUrl;
+        
         // compose options with user passed options and default setting
         plupload.extend(option, op, {
             url: qiniuUploadUrl,
