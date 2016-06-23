@@ -11,7 +11,6 @@
 
 /*global plupload ,mOxie*/
 /*global ActiveXObject */
-/*global ActiveXObject */
 /*global define */
 /*exported Qiniu */
 /*exported QiniuJsSDK */
