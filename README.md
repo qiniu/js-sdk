@@ -21,7 +21,7 @@ Qiniu-JavaScript-SDK  为客户端 SDK，没有包含 token 生成实现，为�
 - [Python](http://developer.qiniu.com/code/v7/sdk/python.html)
 - [Ruby](http://developer.qiniu.com/code/v6/sdk/ruby.html)
 - [Go](http://developer.qiniu.com/code/v7/sdk/go.html)
-- [Node.js](http://developer.qiniu.com/code/v6/sdk/nodejs.html) 
+- [Node.js](http://developer.qiniu.com/code/v6/sdk/nodejs.html)
 - [C#](http://developer.qiniu.com/code/v6/sdk/csharp.html)
 - [C/C++](http://developer.qiniu.com/code/v6/sdk/cpp.html)
 
@@ -108,7 +108,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 - 使用 Bower 安装
 
     Bower 是一个客户端技术的软件包管理器，它可用于搜索、安装和卸载如 JavaScript、HTML、CSS 之类的网络资源。如果需要更详细的关于 Bower 的使用说明，您可以访问[ Bower 官方网站](http://bower.io/)。
-    
+
     通过 Bower 安装会将 JS-SDK 依赖的 plupload 也一起安装在 `bower_components` 中：
 
     ```
@@ -136,7 +136,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 - 使用 NPM 安装
 
     NPM 的全称是 Node Package Manager，是一个[ NodeJS ](https://nodejs.org)包管理和分发工具，已经成为了非官方的发布 Node 模块（包）的标准。如果需要更详细的关于 NPM 的使用说明，您可以访问[ NPM 官方网站](https://www.npmjs.com)，或对应的[中文网站](http://www.npmjs.com.cn/)
-    
+
     ```
     npm install qiniu-js
     ```
@@ -261,7 +261,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
     ```
 
 - 如果一个页面中有多个上传实例，可以如下操作
-    
+
     ```JavaScript
     var option1 = {
         key : val ,
@@ -321,9 +321,9 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
      }, key);
 
     ```
-    
+
     具体水印参数解释见[水印（watermark）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/watermark.html)
-    
+
 - imageView2
 
     ```JavaScript
@@ -338,7 +338,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 
     ```
     具体缩略参数解释见[图片处理（imageView2）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/imageview2.html)
-    
+
 - imageMogr2
 
     ```JavaScript
@@ -358,7 +358,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
     ```
 
     具体高级图像处理参数解释见[高级图像处理（imageMogr2）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/imagemogr2.html)
-    
+
 - imageInfo
 
     ```JavaScript
@@ -377,7 +377,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
     具体 exif 解释见[图片EXIF信息（exif）](http://developer.qiniu.com/docs/v6/api/reference/fop/image/exif.html)
 
     Ajax跨域限制，IE系列此函数只支持IE10+
-    
+
 - pipeline(管道操作）
 
     ```JavaScript
@@ -443,7 +443,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
     var imgLink = Qiniu.pipeline(fopArr, key));
 
     ```
-    
+
     具体管道操作解释见[管道操作](http://developer.qiniu.com/docs/v6/api/overview/fop/pipeline.html)
 
 <a id="demo"></a>
@@ -451,12 +451,12 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 
 1. 进入项目根目录，执行 `make install` 安装依赖第三方库
 2. 进入 `demo` 目录，按照目录下的 `config.example` 示例，创建 `config.js` 文件，其中，`Access Key` 和 `Secret Key` 按如下方式获取
-   
+
     * [开通七牛开发者帐号](https://portal.qiniu.com/signup)
     * [登录七牛开发者自助平台，查看 AccessKey 和 SecretKey](https://portal.qiniu.com/setting/key) 。
-    
+
     ```javascript
-    
+
     module.exports = {
         'ACCESS_KEY': '<Your Access Key>',
         'SECRET_KEY': '<Your Secret Key>',
@@ -465,7 +465,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
         'Uptoken_Url': '<Your Uptoken_Url>',
         'Domain': '<Your Bucket Domain>'
     }
-    
+
     ```
 3. 进入项目根目录，执行 `make dev` 访问 `http://127.0.0.1:19110/` 或 `http://localhost:19110/`
 
@@ -615,7 +615,7 @@ public class MainActivity extends Activity {
         webview.getSettings().setJavaScriptEnabled(true);
         webview.setWebViewClient(new WebViewClient(){
             public boolean shouldOverrideUrlLoading(WebView view, String url){
-                view.loadUrl(url); 
+                view.loadUrl(url);
                 return true;
             }
         });
@@ -624,8 +624,8 @@ public class MainActivity extends Activity {
 
 }
 ```
-但是点击选择文件按钮没有反应，这个是Webview对JS不是很支持造成的，解决方法可以引入这个Webview,jar包地址如下: 
-https://github.com/delight-im/Android-AdvancedWebView/blob/master/JARs/Android-AdvancedWebView.jar 
+但是点击选择文件按钮没有反应，这个是Webview对JS不是很支持造成的，解决方法可以引入这个Webview,jar包地址如下:
+https://github.com/delight-im/Android-AdvancedWebView/blob/master/JARs/Android-AdvancedWebView.jar
 使用的方法文档上都有写，比较简单：
 ```
 private AdvancedWebView mWebView;
@@ -643,7 +643,7 @@ private AdvancedWebView mWebView;
 **11.关于多个按钮选择文件的Demo **
 
 很多用户都在问JSSDK多文件选择的Demo，其实比较简单，只需要在main.js文件里面多new几个Uploader对象就可以了，然后在主页面上里面写好对应的上传的按钮就可以了
-这里直接给出main.js和indxe.html里面需要改动的地方: 
+这里直接给出main.js和indxe.html里面需要改动的地方:
 main.js里面多new几个uploader对象
 ```
 $(function() {
@@ -773,7 +773,7 @@ $(function() {
 ```
 相应的index.html文件加入相关按钮:
 ```
-<div id="container">
+  <div id="container">
         <a class="btn btn-default btn-lg " id="pickfiles" style="width:160px" href="#" >
             <i class="glyphicon glyphicon-plus"></i>
             <span>选择文件</span>
@@ -785,10 +785,10 @@ $(function() {
 
         <a class="btn btn-default btn-lg " id="stop_load" style="width:160px" href="#" >
             <span>暂停上传</span>
-        </a> 
-    </div>
+        </a>
+  </div>
 
-<div id="container2">
+  <div id="container2">
         <a class="btn btn-default btn-lg " id="pickfiles2" style="width:160px" href="#" >
             <i class="glyphicon glyphicon-plus"></i>
             <span>选择文件</span>
@@ -800,9 +800,8 @@ $(function() {
 
         <a class="btn btn-default btn-lg " id="stop_load2" style="width:160px" href="#" >
             <span>暂停上传</span>
-        </a> 
-    </div>
-</div>
+        </a>
+  </div>
 ```
 
 
@@ -828,5 +827,3 @@ $(function() {
 ### 基于 GPL V2 协议发布:
 
 > [www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)
-
-
