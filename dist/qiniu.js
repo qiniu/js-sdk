@@ -1,12 +1,12 @@
 /*!
- * qiniu-js-sdk v1.0.16.1-beta
+ * qiniu-js-sdk v1.0.17-beta
  *
  * Copyright 2015 by Qiniu
  * Released under GPL V2 License.
  *
  * GitHub: http://github.com/qiniu/js-sdk
  *
- * Date: 2016-7-12
+ * Date: 2016-9-12
 */
 
 /*global plupload ,mOxie*/
@@ -160,6 +160,16 @@ function QiniuJsSDK() {
         "http://up.qiniu.com"
     ];
 
+    var qiniuUpHosts = {
+       "http": [
+           "http://upload.qiniu.com",
+           "http://up.qiniu.com"
+       ],
+       "https": [
+           "https://up.qbox.me"
+       ]
+    };
+
     var changeUrlTimes = 0;
 
     /**
@@ -170,17 +180,14 @@ function QiniuJsSDK() {
      *     it will set 'qiniuUploadUrl' value with 'qiniuUploadUrls' looply
      */
     this.resetUploadUrl = function(){
-        if (window.location.protocol === 'https:') {
-            qiniuUploadUrl = 'https://up.qbox.me';
-        } else {
-            var i = changeUrlTimes % qiniuUploadUrls.length;
-            qiniuUploadUrl = qiniuUploadUrls[i];
-            changeUrlTimes++;
-        }
-        logger.debug('resetUploadUrl: '+qiniuUploadUrl);
+	var hosts = window.location.protocol === 'https:' ? qiniuUpHosts.https : qiniuUpHosts.http;
+	var i = changeUrlTimes % hosts.length;
+	qiniuUploadUrl = hosts[i];
+	changeUrlTimes++;
+	logger.debug('resetUploadUrl: '+qiniuUploadUrl);
     };
 
-    this.resetUploadUrl();
+    // this.resetUploadUrl();
 
 
     /**
@@ -286,6 +293,62 @@ function QiniuJsSDK() {
         return utftext;
     };
 
+    this.base64_decode = function (data) {
+        // http://kevin.vanzonneveld.net
+        // +   original by: Tyler Akins (http://rumkin.com)
+        // +   improved by: Thunder.m
+        // +      input by: Aman Gupta
+        // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+        // +   bugfixed by: Onno Marsman
+        // +   bugfixed by: Pellentesque Malesuada
+        // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+        // +      input by: Brett Zamir (http://brett-zamir.me)
+        // +   bugfixed by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
+        // *     example 1: base64_decode('S2V2aW4gdmFuIFpvbm5ldmVsZA==');
+        // *     returns 1: 'Kevin van Zonneveld'
+        // mozilla has this native
+        // - but breaks in 2.0.0.12!
+        //if (typeof this.window['atob'] == 'function') {
+        //    return atob(data);
+        //}
+        var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+        var o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
+        ac = 0,
+        dec = "",
+        tmp_arr = [];
+
+        if (!data) {
+            return data;
+        }
+
+        data += '';
+
+        do { // unpack four hexets into three octets using index points in b64
+            h1 = b64.indexOf(data.charAt(i++));
+            h2 = b64.indexOf(data.charAt(i++));
+            h3 = b64.indexOf(data.charAt(i++));
+            h4 = b64.indexOf(data.charAt(i++));
+
+            bits = h1 << 18 | h2 << 12 | h3 << 6 | h4;
+
+            o1 = bits >> 16 & 0xff;
+            o2 = bits >> 8 & 0xff;
+            o3 = bits & 0xff;
+
+            if (h3 === 64) {
+                tmp_arr[ac++] = String.fromCharCode(o1);
+            } else if (h4 === 64) {
+                tmp_arr[ac++] = String.fromCharCode(o1, o2);
+            } else {
+                tmp_arr[ac++] = String.fromCharCode(o1, o2, o3);
+            }
+        } while (i < data.length);
+
+        dec = tmp_arr.join('');
+
+        return dec;
+    };
+
     /**
      * encode data by base64
      * @param  {String} data to encode
@@ -357,6 +420,11 @@ function QiniuJsSDK() {
     this.URLSafeBase64Encode = function(v) {
         v = this.base64_encode(v);
         return v.replace(/\//g, '_').replace(/\+/g, '-');
+    };
+
+    this.URLSafeBase64Decode = function(v) {
+        v = v.replace(/_/g, '/').replace(/-/g, '+');
+        return this.base64_decode(v);
     };
 
     // TODO: use mOxie
@@ -514,15 +582,58 @@ function QiniuJsSDK() {
             // if op.chunk_size set 0 will be cause to direct upload
         };
 
-        // getUptoken maybe called at Init Event or BeforeUpload Event
+        var getHosts = function(hosts) {
+            var result = [];
+            for (var i = 0; i < hosts.length; i++) {
+                var host = hosts[i];
+                if (host.indexOf('-H') === 0) {
+                    result.push(host.split(' ')[2]);
+                } else {
+                    result.push(host);
+                }
+            }
+            return result;
+        };
+
+        var getUpHosts = function(uptoken) {
+            var segments = uptoken.split(":");
+            var ak = segments[0];
+            var putPolicy = that.parseJSON(that.URLSafeBase64Decode(segments[2]));
+            var uphosts_url = "https://uc.qbox.me/v1/query?ak="+ak+"&bucket="+putPolicy.scope;
+            logger.debug("ak: ", ak);
+            logger.debug("putPolicy: ", putPolicy);
+            logger.debug("get uphosts from: ", uphosts_url);
+            var ajax = that.createAjax();
+            ajax.open('GET', uphosts_url, false);
+            ajax.send();
+            if (ajax.status === 200) {
+                var res = that.parseJSON(ajax.responseText);
+                qiniuUpHosts.http = getHosts(res.http.up);
+                qiniuUpHosts.https = getHosts(res.https.up);
+                logger.debug("get new uphosts: ", qiniuUpHosts);
+                that.resetUploadUrl();
+            } else {
+                logger.error("get uphosts error: ", ajax.responseText);
+            }
+            return;
+        };
+
+        var getUptoken = function(file) {
+            if (!that.token || that.tokenInfo.isExpired()) {
+                return getNewUpToken(file);
+            } else {
+                return that.token;
+            }
+        };
+
+        // getNewUptoken maybe called at Init Event or BeforeUpload Event
         // case Init Event, the file param of getUptken will be set a null value
         // if op.uptoken has value, set uptoken with op.uptoken
         // else if op.uptoken_url has value, set uptoken from op.uptoken_url
         // else if op.uptoken_func has value, set uptoken by result of op.uptoken_func
-        var getUpToken = function(file) {
+        var getNewUpToken = function(file) {
             if (op.uptoken) {
                 that.token = op.uptoken;
-                return;
             } else if (op.uptoken_url) {
                 logger.debug("get uptoken from: ", that.uptoken_url);
                 // TODO: use mOxie
@@ -539,19 +650,40 @@ function QiniuJsSDK() {
                 if (ajax.status === 200) {
                     var res = that.parseJSON(ajax.responseText);
                     that.token = res.uptoken;
-                    logger.debug("get new uptoken: ", res.uptoken);
+                    var segments = that.token.split(":");
+                    var putPolicy = that.parseJSON(that.URLSafeBase64Decode(segments[2]));
+                    if (!that.tokenMap) {
+                        that.tokenMap = {};
+                    }
+                    var getTimestamp = function(time) {
+                        return Math.ceil(time.getTime()/1000);
+                    };
+                    var serverTime = getTimestamp(new Date(ajax.getResponseHeader("date")));
+                    var clientTime = getTimestamp(new Date());
+                    that.tokenInfo = {
+                        serverDelay: clientTime - serverTime,
+                        deadline: putPolicy.deadline,
+                        isExpired: function() {
+                            var leftTime = this.deadline - getTimestamp(new Date()) + this.serverDelay;
+                            return leftTime < 600;
+                        }
+                    };
+                    logger.debug("get new uptoken: ", that.token);
+                    logger.debug("get token info: ", that.tokenInfo);
                 } else {
                     logger.error("get uptoken error: ", ajax.responseText);
                 }
-                return;
             } else if (op.uptoken_func) {
                 logger.debug("get uptoken from uptoken_func");
                 that.token = op.uptoken_func(file);
                 logger.debug("get new uptoken: ", that.token);
-                return;
             } else {
                 logger.error("one of [uptoken, uptoken_url, uptoken_func] settings in options is required!");
             }
+            if (that.token) {
+                getUpHosts(that.token);
+            }
+            return that.token;
         };
 
         // get file key according with the user passed options
@@ -650,17 +782,17 @@ function QiniuJsSDK() {
 
         logger.debug("new plupload.Uploader(option)");
 
-        // bind getUpToken to 'Init' event
+        // bind getNewUpToken to 'Init' event
         uploader.bind('Init', function(up, params) {
             logger.debug("Init event activated");
             // if op.get_new_uptoken is not true
-            //      invoke getUptoken when uploader init
+            //      invoke getNewUptoken when uploader init
             // else
-            //      getUptoken everytime before a new file upload
+            //      getNewUptoken everytime before a new file upload
             if(!op.get_new_uptoken){
-                getUpToken(null);
+                getNewUpToken(null);
             }
-            //getUpToken(null);
+            //getNewUpToken(null);
         });
 
         logger.debug("bind Init event");
@@ -722,7 +854,7 @@ function QiniuJsSDK() {
             ctx = '';
 
             if(op.get_new_uptoken){
-                getUpToken(file);
+                getNewUpToken(file);
             }
 
             var directUpload = function(up, file, func) {
@@ -859,7 +991,7 @@ function QiniuJsSDK() {
                         'chunk_size': chunk_size,
                         'required_features': "chunks",
                         'headers': {
-                            'Authorization': 'UpToken ' + that.token
+                            'Authorization': 'UpToken ' + getUptoken(file)
                         },
                         'multipart_params': multipart_params_obj
                     });
@@ -907,6 +1039,11 @@ function QiniuJsSDK() {
                 });
                 logger.debug("up.setOption url: ", qiniuUploadUrl + '/mkblk/' + leftSize);
             }
+            up.setOption({
+                'headers': {
+                    'Authorization': 'UpToken ' + getUptoken(file)
+                }
+            });
             localStorage.setItem(file.name, that.stringifyJSON({
                 ctx: ctx,
                 percent: file.percent,
