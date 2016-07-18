@@ -251,7 +251,12 @@ FileProgress.prototype.setComplete = function(up, info) {
 
         var img = new Image();
         if (!/imageView/.test(url)) {
-            url += imageView
+            if (typeof Qiniu.downtoken_url != "undefined") {
+                info = Qiniu.downloadToken(res.key + imageView);
+                url = info.url;
+            } else {
+                url += imageView;
+            }
         }
         $(img).attr('src', url);
 
@@ -327,8 +332,15 @@ FileProgress.prototype.setComplete = function(up, info) {
             if (!(ie && ie <= 9)) {
                 var exif = Qiniu.exif(res.key);
                 if (exif) {
+                    var exif_url = "";
                     var exifLink = $('<a href="" target="_blank">查看exif</a>');
-                    exifLink.attr('href', url + '?exif');
+                    if (typeof Qiniu.downtoken_url != "undefined") {
+                        info = Qiniu.downloadToken(res.key + "?exif");
+                        exif_url = info.url;
+                    } else {
+                        exif_url = url + "?exif";
+                    }
+                    exifLink.attr('href',exif_url);
                     infoWrapper.append(exifLink);
                 }
 
