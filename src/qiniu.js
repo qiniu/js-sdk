@@ -626,13 +626,22 @@ function QiniuJsSDK() {
         logger.debug("invoke reset_chunk_size()");
         logger.debug("op.chunk_size: ", op.chunk_size);
 
-        // compose options with user passed options and default setting
-        plupload.extend(option, op, {
+        var defaultSetting = {
             url: qiniuUploadUrl,
             multipart_params: {
                 token: ''
             }
-        });
+        };
+        var ie = that.detectIEVersion();
+        // case IE 9-
+        // add accept in multipart params
+        if (ie && ie <= 9) {
+            defaultSetting.multipart_params.accept = 'text/plain; charset=utf-8';
+            logger.debug("add accept text/plain in multipart params");
+        }
+
+        // compose options with user passed options and default setting
+        plupload.extend(option, op, defaultSetting);
 
         logger.debug("option: ", option);
 
@@ -728,6 +737,13 @@ function QiniuJsSDK() {
                         'key': getFileKey(up, file, func),
                         'token': that.token
                     };
+                }
+                var ie = that.detectIEVersion();
+                // case IE 9-
+                // add accept in multipart params
+                if (ie && ie <= 9) {
+                    multipart_params_obj.accept = 'text/plain; charset=utf-8';
+                    logger.debug("add accept text/plain in multipart params");
                 }
 
                 logger.debug("directUpload multipart_params_obj: ", multipart_params_obj);
@@ -827,6 +843,14 @@ function QiniuJsSDK() {
                         }
                     }
                     speedCalInfo.startTime = new Date().getTime();
+                    var multipart_params_obj = {};
+                    var ie = that.detectIEVersion();
+                    // case IE 9-
+                    // add accept in multipart params
+                    if (ie && ie <= 9) {
+                        multipart_params_obj.accept = 'text/plain; charset=utf-8';
+                        logger.debug("add accept text/plain in multipart params");
+                    }
                     // TODO: to support bput
                     // http://developer.qiniu.com/docs/v6/api/reference/up/bput.html
                     up.setOption({
@@ -837,7 +861,7 @@ function QiniuJsSDK() {
                         'headers': {
                             'Authorization': 'UpToken ' + that.token
                         },
-                        'multipart_params': {}
+                        'multipart_params': multipart_params_obj
                     });
                 }
             } else {
