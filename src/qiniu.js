@@ -599,22 +599,52 @@ function QiniuJsSDK() {
             var segments = uptoken.split(":");
             var ak = segments[0];
             var putPolicy = that.parseJSON(that.URLSafeBase64Decode(segments[2]));
-            var uphosts_url = "https://uc.qbox.me/v1/query?ak="+ak+"&bucket="+putPolicy.scope;
+            // var uphosts_url = "//uc.qbox.me/v1/query?ak="+ak+"&bucket="+putPolicy.scope;
+            // IE 9- is not support protocal relative url
+            var uphosts_url = window.location.protocol + "//uc.qbox.me/v1/query?ak="+ak+"&bucket="+putPolicy.scope;
             logger.debug("ak: ", ak);
             logger.debug("putPolicy: ", putPolicy);
             logger.debug("get uphosts from: ", uphosts_url);
-            var ajax = that.createAjax();
-            ajax.open('GET', uphosts_url, false);
-            ajax.send();
-            if (ajax.status === 200) {
-                var res = that.parseJSON(ajax.responseText);
-                qiniuUpHosts.http = getHosts(res.http.up);
-                qiniuUpHosts.https = getHosts(res.https.up);
-                logger.debug("get new uphosts: ", qiniuUpHosts);
-                that.resetUploadUrl();
-            } else {
-                logger.error("get uphosts error: ", ajax.responseText);
+            var ie = that.detectIEVersion();
+            var ajax;
+            if (ie && ie <= 9) {
+                ajax = new mOxie.XMLHttpRequest();
+                mOxie.Env.swf_url = op.flash_swf_url;
+            }else{
+                ajax = that.createAjax();
             }
+            ajax.open('GET', uphosts_url, true);
+            var onreadystatechange = function(){
+                logger.debug("ajax.readyState: ", ajax.readyState);
+                if (ajax.readyState === 4) {
+                    logger.debug("ajax.status: ", ajax.status);
+                    if (ajax.status < 400) {
+                        var res = that.parseJSON(ajax.responseText);
+                        qiniuUpHosts.http = getHosts(res.http.up);
+                        qiniuUpHosts.https = getHosts(res.https.up);
+                        logger.debug("get new uphosts: ", qiniuUpHosts);
+                        that.resetUploadUrl();
+                    } else {
+                        logger.error("get uphosts error: ", ajax.responseText);
+                    }
+                }
+            };
+            if (ie && ie <= 9) {
+                ajax.bind('readystatechange', onreadystatechange);
+            }else{
+                ajax.onreadystatechange = onreadystatechange;
+            }
+            ajax.send();
+            // ajax.send();
+            // if (ajax.status < 400) {
+            //     var res = that.parseJSON(ajax.responseText);
+            //     qiniuUpHosts.http = getHosts(res.http.up);
+            //     qiniuUpHosts.https = getHosts(res.https.up);
+            //     logger.debug("get new uphosts: ", qiniuUpHosts);
+            //     that.resetUploadUrl();
+            // } else {
+            //     logger.error("get uphosts error: ", ajax.responseText);
+            // }
             return;
         };
 
@@ -926,7 +956,7 @@ function QiniuJsSDK() {
                     directUpload(up, file, that.key_handler);
                 } else {
                     // TODO: need a polifill to make it work in IE 9-
-                    // ISSUE: if file.name is existed in localStorage 
+                    // ISSUE: if file.name is existed in localStorage
                     // but not the same file maybe cause error
                     var localFileInfo = localStorage.getItem(file.name);
                     var blockSize = chunk_size;
@@ -945,7 +975,7 @@ function QiniuJsSDK() {
 
                             if (localFileInfo.percent !== 100) {
                                 if (file.size === localFileInfo.total) {
-                                    // TODO: if file.name and file.size is the same 
+                                    // TODO: if file.name and file.size is the same
                                     // but not the same file will cause error
                                     file.percent = localFileInfo.percent;
                                     file.loaded = localFileInfo.offset;
@@ -1226,7 +1256,7 @@ function QiniuJsSDK() {
 
                 var res = that.parseJSON(info.response);
                 ctx = ctx ? ctx : res.ctx;
-                // if ctx is not empty 
+                // if ctx is not empty
                 //      that means the upload strategy is chunk upload
                 //      befroe the invoke the last_step
                 //      we need request the mkfile to compose all uploaded chunks
