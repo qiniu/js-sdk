@@ -595,14 +595,25 @@ function QiniuJsSDK() {
             return result;
         };
 
-        var getUpHosts = function(uptoken) {
+        var getPutPolicy = function (uptoken) {
             var segments = uptoken.split(":");
             var ak = segments[0];
             var putPolicy = that.parseJSON(that.URLSafeBase64Decode(segments[2]));
+            putPolicy.ak = ak;
+            if (putPolicy.scope.indexOf(":") >= 0) {
+                putPolicy.bucket = putPolicy.scope.split(":")[0];
+                putPolicy.key = putPolicy.scope.split(":")[1];
+            } else {
+                putPolicy.bucket = putPolicy.scope;
+            }
+            return putPolicy;
+        };
+
+        var getUpHosts = function(uptoken) {
+            var putPolicy = getPutPolicy(uptoken);
             // var uphosts_url = "//uc.qbox.me/v1/query?ak="+ak+"&bucket="+putPolicy.scope;
             // IE 9- is not support protocal relative url
-            var uphosts_url = window.location.protocol + "//uc.qbox.me/v1/query?ak="+ak+"&bucket="+putPolicy.scope;
-            logger.debug("ak: ", ak);
+            var uphosts_url = window.location.protocol + "//uc.qbox.me/v1/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket;
             logger.debug("putPolicy: ", putPolicy);
             logger.debug("get uphosts from: ", uphosts_url);
             var ie = that.detectIEVersion();
@@ -718,7 +729,15 @@ function QiniuJsSDK() {
 
         // get file key according with the user passed options
         var getFileKey = function(up, file, func) {
-            // TODO: save_key can read from scope of token
+            // WARNING
+            // When you set the key in putPolicy by "scope": "bucket:key"
+            // You should understand the risk of override a file in the bucket
+            // So the code below that automatically get key from uptoken has been commented
+            // var putPolicy = getPutPolicy(that.token)
+            // if (putPolicy.key) {
+            //     logger.debug("key is defined in putPolicy.scope: ", putPolicy.key)
+            //     return putPolicy.key
+            // }
             var key = '',
                 unique_names = false;
             if (!op.save_key) {
@@ -922,7 +941,6 @@ function QiniuJsSDK() {
                         }
                     }
                 }
-
 
                 up.setOption({
                     'url': qiniuUploadUrl,
