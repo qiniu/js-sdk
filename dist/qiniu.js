@@ -6,7 +6,7 @@
  *
  * GitHub: http://github.com/qiniu/js-sdk
  *
- * Date: 2016-10-11
+ * Date: 2016-10-13
 */
 
 /*global plupload ,mOxie*/
@@ -660,7 +660,7 @@ function QiniuJsSDK() {
         };
 
         var getUptoken = function(file) {
-            if (op.get_new_uptoken || !that.token || that.tokenInfo.isExpired()) {
+            if (!that.token || (op.uptoken_url && that.tokenInfo.isExpired())) {
                 return getNewUpToken(file);
             } else {
                 return that.token;
