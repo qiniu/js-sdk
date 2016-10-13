@@ -660,7 +660,7 @@ function QiniuJsSDK() {
         };
 
         var getUptoken = function(file) {
-            if (!that.token || that.tokenInfo.isExpired()) {
+            if (op.get_new_uptoken || !that.token || that.tokenInfo.isExpired()) {
                 return getNewUpToken(file);
             } else {
                 return that.token;
