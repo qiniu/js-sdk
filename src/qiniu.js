@@ -1335,7 +1335,8 @@ function QiniuJsSDK() {
                                     status: ajax.status,
                                     response: ajax.responseText,
                                     file: file,
-                                    code: -200
+                                    code: -200,
+                                    responseHeaders: ajax.getAllResponseHeaders()
                                 };
                                 logger.debug("mkfile is error: ", info);
                                 uploader.trigger('Error', info);
