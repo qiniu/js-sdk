@@ -462,7 +462,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
         'SECRET_KEY': '<Your Secret Key>',
         'Bucket_Name': '<Your Bucket Name>',
         'Port': 19110,
-        'Uptoken_Url': '<Your Uptoken_Url>',
+        'Uptoken_Url': '<Your Uptoken_Url>', // demo 启动后会在本地 /uptoken 上提供获取 uptoken 的接口，所以这里可以填 'uptoken'
         'Domain': '<Your Bucket Domain>'
     }
 
