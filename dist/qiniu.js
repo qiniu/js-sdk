@@ -1,12 +1,12 @@
 /*!
- * qiniu-js-sdk v1.0.17.1
+ * qiniu-js-sdk v1.0.18
  *
  * Copyright 2015 by Qiniu
  * Released under GPL V2 License.
  *
  * GitHub: http://github.com/qiniu/js-sdk
  *
- * Date: 2016-10-13
+ * Date: 2017-2-6
 */
 
 /*global plupload ,mOxie*/
@@ -1335,7 +1335,8 @@ function QiniuJsSDK() {
                                     status: ajax.status,
                                     response: ajax.responseText,
                                     file: file,
-                                    code: -200
+                                    code: -200,
+                                    responseHeaders: ajax.getAllResponseHeaders()
                                 };
                                 logger.debug("mkfile is error: ", info);
                                 uploader.trigger('Error', info);
@@ -1392,14 +1393,17 @@ function QiniuJsSDK() {
      * @return {String} url of processed image
      */
     this.imageView2 = function(op, key) {
-        var mode = op.mode || '',
+        
+        if (!/^\d$/.test(op.mode)) {
+            return false;
+        }
+
+        var mode = op.mode,
             w = op.w || '',
             h = op.h || '',
             q = op.q || '',
             format = op.format || '';
-        if (!mode) {
-            return false;
-        }
+
         if (!w && !h) {
             return false;
         }
