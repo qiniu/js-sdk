@@ -89,7 +89,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 - 在使用 JS-SDK 之前，您必须先注册一个七牛帐号，并登录控制台获取一对有效的 AccessKey 和 SecretKey，您可以阅读[ 如何接入七牛 ](http://developer.qiniu.com/article/kodo/kodo-first/quickstart.html)和[ 安全机制 ](http://developer.qiniu.com/article/kodo/kodo-developer/index.html#security) 以进一步了解如何正确使用和管理密钥 。
 
 - JS-SDK 依赖服务端颁发 uptoken，可以通过以下二种方式实现：
-    - 利用[七牛服务端 SDK ](http://developer.qiniu.com/resource/official.html#sdk)构建后端服务   
+    - 利用[七牛服务端 SDK ](http://developer.qiniu.com/sdk#official-sdk)构建后端服务   
     - 利用七牛底层 API 构建服务，详见七牛[上传策略](http://developer.qiniu.com/article/developer/security/put-policy.html)和[上传凭证](http://developer.qiniu.com/article/developer/security/upload-token.html)
 
     后端服务应提供一个 URL 地址，供 JS-SDK 初始化使用，前端通过 Ajax 请求该地址后获得 uptoken。Ajax 请求成功后，服务端应返回如下格式的 json：
@@ -459,7 +459,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 2. 进入 `demo` 目录，按照目录下的 `config.example` 示例，创建 `config.js` 文件，其中，`Access Key` 和 `Secret Key` 按如下方式获取
 
     * [开通七牛开发者帐号](https://portal.qiniu.com/signup)
-    * [登录七牛开发者自助平台，查看 AccessKey 和 SecretKey](https://portal.qiniu.com/setting/key) 。
+    * [登录七牛开发者自助平台，查看 AccessKey 和 SecretKey](https://portal.qiniu.com/user/key) 。
 
     ```javascript
 
@@ -482,10 +482,10 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 
 2. JS-SDK 依赖 uptoken，可以直接设置 `uptoken`  、通过提供 Ajax 请求地址 `uptoken_url` 或者通过提供一个能够返回 uptoken 的函数 `uptoken_func` 实现。
 
-3. 如果您想了解更多七牛的上传策略，建议您仔细阅读 [七牛官方文档-上传](http://developer.qiniu.com/code/v6/api/kodo-api/index.html#up)。
+3. 如果您想了解更多七牛的上传策略，建议您仔细阅读 [七牛官方文档-上传](http://developer.qiniu.com/kodo/manual/put-policy)。
    另外，七牛的上传策略是在后端服务指定的，JS-SDK 的 setOption API 只是设置 Plupload 的初始化参数，和上传策略无关。
 
-4. 如果您想了解更多七牛的图片处理，建议您仔细阅读 [七牛官方文档-图片处理](http://developer.qiniu.com/code/v6/api/kodo-api/index.html#image)
+4. 如果您想了解更多七牛的图片处理，建议您仔细阅读 [七牛官方文档-图片处理](http://developer.qiniu.com/dora/api/image-processing-api)
 
 5. 如果是 https 网站，上传地址为 https://up.qbox.me 否则使用 http://upload.qiniu.com
 
