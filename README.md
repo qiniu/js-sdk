@@ -14,6 +14,12 @@ Qiniu-JavaScript-SDK
 
 Qiniu-JavaScript-SDK （下文简称为 JS-SDK）适用于 IE8+、Chrome、Firefox、Safari 等浏览器，基于七牛云存储官方 API 构建，其中上传功能基于 [Plupload](http://www.plupload.com/) 插件封装。开发者基于 JS-SDK 可以方便的从浏览器端上传文件至七牛云存储，并对上传成功后的图片进行丰富的数据处理操作。
 
+不考虑兼容性的情况下，如手机端，建议直接使用 Formdata 结合七牛[表单上传](https://developer.qiniu.com/kodo/manual/form-upload)的方式上传文件。
+
+[ Formdata 上传 demo ](http://jssdk.demo.qiniu.io/formdata)
+
+![ Formdata ](http://oky1vwhqm.bkt.clouddn.com/1486368013.png)
+
 Qiniu-JavaScript-SDK  为客户端 SDK，没有包含 token 生成实现，为了安全，token 建议通过网络从服务端获取，具体生成代码可以参考以下服务端 SDK 的文档。
 
 - [Java](http://developer.qiniu.com/code/v7/sdk/android.html)
@@ -190,7 +196,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
         // Ajax请求downToken的Url，私有空间时使用,JS-SDK 将向该地址POST文件的key和domain,服务端返回的JSON必须包含`url`字段，`url`值为该文件的下载地址
         // unique_names: true,              // 默认 false，key 为文件名。若开启该选项，JS-SDK 会为每个文件自动生成key（文件名）
         // save_key: true,                  // 默认 false。若在服务端生成 uptoken 的上传策略中指定了 `sava_key`，则开启，SDK在前端将不对key进行任何处理
-        domain: '<Your bucket domain>',     // bucket 域名，下载资源时用到，**必需**
+        domain: '<Your bucket domain>',     // bucket 域名，下载资源时用到，如：'http://xxx.bkt.clouddn.com/' **必需**
         container: 'container',             // 上传区域 DOM ID，默认是 browser_button 的父元素，
         max_file_size: '100mb',             // 最大文件体积限制
         flash_swf_url: 'path/of/plupload/Moxie.swf',  //引入 flash,相对路径
@@ -449,7 +455,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 <a id="demo"></a>
 ### 运行示例
 
-1. 进入项目根目录，执行 `make install` 安装依赖第三方库
+1. 进入项目根目录，执行 `make install` 或 `npm install & bower install` 安装依赖第三方库
 2. 进入 `demo` 目录，按照目录下的 `config.example` 示例，创建 `config.js` 文件，其中，`Access Key` 和 `Secret Key` 按如下方式获取
 
     * [开通七牛开发者帐号](https://portal.qiniu.com/signup)
@@ -463,11 +469,11 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
         'Bucket_Name': '<Your Bucket Name>',
         'Port': 19110,
         'Uptoken_Url': '<Your Uptoken_Url>', // demo 启动后会在本地 /uptoken 上提供获取 uptoken 的接口，所以这里可以填 'uptoken'
-        'Domain': '<Your Bucket Domain>'
+        'Domain': '<Your Bucket Domain>' // Bucket 的外链默认域名，在 Bucket 的内容管理里查看，如：'http://xxx.bkt.clouddn.com/'
     }
 
     ```
-3. 进入项目根目录，执行 `make dev` 访问 `http://127.0.0.1:19110/` 或 `http://localhost:19110/`
+3. 进入项目根目录，执行 `make dev` 或 `node demo/server.js` 访问命令行打印出的 demo 地址。
 
 <a id="note"></a>
 ### 说明

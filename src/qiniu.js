@@ -1393,14 +1393,17 @@ function QiniuJsSDK() {
      * @return {String} url of processed image
      */
     this.imageView2 = function(op, key) {
-        var mode = op.mode || '',
+        
+        if (!/^\d$/.test(op.mode)) {
+            return false;
+        }
+
+        var mode = op.mode,
             w = op.w || '',
             h = op.h || '',
             q = op.q || '',
             format = op.format || '';
-        if (!mode) {
-            return false;
-        }
+
         if (!w && !h) {
             return false;
         }

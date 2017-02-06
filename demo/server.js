@@ -75,6 +75,14 @@ app.get('/multiple', function(req, res) {
     });
 });
 
+app.get('/formdata', function(req, res) {
+    var token = uptoken.token();
+    res.render('formdata.html', {
+        domain: config.Domain,
+        uptoken: token
+    });
+});
+
 qiniu.conf.ACCESS_KEY = config.ACCESS_KEY;
 qiniu.conf.SECRET_KEY = config.SECRET_KEY;
 
@@ -82,5 +90,10 @@ var uptoken = new qiniu.rs.PutPolicy(config.Bucket_Name);
 
 
 app.listen(config.Port, function() {
-    console.log('Listening on port %d', config.Port);
+    console.log('Listening on port %d\n', config.Port);
+    console.log('▽ ▽ ▽ ▽ ▽ ▽ ▽ ▽ ▽ ▽ ▽ ▽ ▽  Demos  ▽ ▽ ▽ ▽ ▽ ▽ ▽ ▽ ▽ ▽ ▽ ▽ ▽ ▽ ▽ ▽')
+    console.log(' ▹▹▹▹▹▹▹▹▹▹▹▹▹▹▹▹  Upload: http://127.0.0.1:%d   ◁ ◁ ◁ ◁ ◁ ◁ ◁', config.Port);
+    console.log(' ▹▹▹▹▹▹▹  Multiple upload: http://127.0.0.1:%d/multiple  ◁ ◁ ◁', config.Port);
+    console.log(' ▹▹▹▹▹▹▹  Formdata upload: http://127.0.0.1:%d/formdata  ◁ ◁ ◁', config.Port);
+    console.log('△ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △ △\n');
 });
