@@ -1,9 +1,11 @@
 {
   "name": "qiniu",
   "description": "Javascript SDK for Qiniu Resource (Cloud) Storage API",
-  "version": "v1.0.14-beta",
+  "version": "v1.0.18",
   "main": "dist/qiniu.js",
-  "moduleType": ["globals"],
+  "moduleType": [
+    "globals"
+  ],
   "license": "GPL V2",
   "ignore": [
     "**/.*",
@@ -21,6 +23,10 @@
   ],
   "authors": "sdk@qiniu.com",
   "contributors": [
+    {
+      "name": "luoyeshu0507",
+      "email": "lizhiwei@qiniu.com"
+    },
     {
       "name": "codedogfish",
       "email": "jackyu@qiniu.com"
@@ -42,7 +48,8 @@
     "bootstrap": "~3.3.6",
     "highlight": "~8.9.1",
     "jquery": "~1.9.1",
-    "respond": "~1.4.2"
+    "respond": "~1.4.2",
+    "vue": "^2.2.1"
   },
   "private": false
 }
