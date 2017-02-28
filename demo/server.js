@@ -83,6 +83,13 @@ app.get('/formdata', function(req, res) {
     });
 });
 
+app.get('/performance', function(req, res) {
+    var token = uptoken.token();
+    res.render('performance.html', {
+        uptoken: token
+    });
+});
+
 qiniu.conf.ACCESS_KEY = config.ACCESS_KEY;
 qiniu.conf.SECRET_KEY = config.SECRET_KEY;
 
