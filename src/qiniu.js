@@ -624,7 +624,7 @@ function QiniuJsSDK() {
             }else{
                 ajax = that.createAjax();
             }
-            ajax.open('GET', uphosts_url, true);
+            ajax.open('GET', uphosts_url, false);
             var onreadystatechange = function(){
                 logger.debug("ajax.readyState: ", ajax.readyState);
                 if (ajax.readyState === 4) {
@@ -1393,7 +1393,7 @@ function QiniuJsSDK() {
      * @return {String} url of processed image
      */
     this.imageView2 = function(op, key) {
-        
+
         if (!/^\d$/.test(op.mode)) {
             return false;
         }
