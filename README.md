@@ -830,8 +830,6 @@ $(function() {
 <a id="license"></a>
 ### 许可证
 
-> Copyright (c) 2014 qiniu.com
+> Copyright (c) 2017 qiniu.com
 
-### 基于 GPL V2 协议发布:
-
-> [www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)
+### 基于 MIT 协议发布
