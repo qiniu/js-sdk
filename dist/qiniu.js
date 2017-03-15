@@ -1,12 +1,12 @@
 /*!
- * qiniu-js-sdk v1.0.18
+ * qiniu-js-sdk v1.0.19
  *
  * Copyright 2015 by Qiniu
  * Released under GPL V2 License.
  *
  * GitHub: http://github.com/qiniu/js-sdk
  *
- * Date: 2017-2-6
+ * Date: 2017-3-15
 */
 
 /*global plupload ,mOxie*/
@@ -624,7 +624,7 @@ function QiniuJsSDK() {
             }else{
                 ajax = that.createAjax();
             }
-            ajax.open('GET', uphosts_url, true);
+            ajax.open('GET', uphosts_url, false);
             var onreadystatechange = function(){
                 logger.debug("ajax.readyState: ", ajax.readyState);
                 if (ajax.readyState === 4) {
@@ -1393,7 +1393,7 @@ function QiniuJsSDK() {
      * @return {String} url of processed image
      */
     this.imageView2 = function(op, key) {
-        
+
         if (!/^\d$/.test(op.mode)) {
             return false;
         }
