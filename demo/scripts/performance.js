@@ -17,7 +17,7 @@ Vue.component('upload-performance', {
 });
 Vue.component('up-headers', {
   props: ['headers'],
-  template: '<div class="up-headers"><div class="per-title">响应头：</div><table><tr v-for="header in headers"><td>{{header.key}}</td><td>{{header.val}}</td></tr></table></div>'
+  template: '<div class="up-headers"><div class="per-title">响应头：</div><table><tr><th>类型</th><th>值</th></tr><tr v-for="header in headers"><td>{{header.key}}</td><td>{{header.val}}</td></tr></table></div>'
 });
 Vue.filter('tofixed', function (val, size) {
   return val.toFixed(size);
@@ -87,7 +87,7 @@ var app = new Vue({
     post: function(opt) {
       var xmlHttp = new XMLHttpRequest();
       xmlHttp.open('POST', opt.url, true);
-      xmlHttp.setRequestHeader('Performance-Page', 'true');
+      xmlHttp.setRequestHeader('X-Qiniu-Performance', 'true');
       xmlHttp.onreadystatechange = function () {
           if (xmlHttp.readyState == 4) {
             if (xmlHttp.status == 200) {
@@ -160,6 +160,11 @@ var app = new Vue({
     },
     getPerformance: function() {
       var per = httpPerformance.getByName(this.selectedHost.host + '/');
+      if(per.length == 2) {
+        per[1].redirect = per[0].redirect;
+        per[1].domainLookup = per[0].domainLookup;
+        per[1].connect = per[0].connect;
+      }
       this.performance = per[1] || per[0]; // 跨域有时候会先发送一个 option 请求，并不是真的上传请求。
     },
     formateHeader: function(headers) {
