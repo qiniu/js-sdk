@@ -14,12 +14,12 @@
       <input name="key" id="key" type="hidden" value="a.jpg">
       <input name="accept" type="hidden" />
     </form>
-    
-    <div class="low-browser hidden" :class="{'show': !isPerformanceSupported}" v-show="!isPerformanceSupported">您好，您的浏览器版本过低，请使用谷歌、火狐、Opera、IE9+等高级浏览器... </div>
-    
+
+    <div class="low-browser hidden" :class="{'show': !isPerformanceSupported}" v-show="!isPerformanceSupported">您好，您的浏览器版本过低，请使用谷歌、火狐、IE9+等高级浏览器... </div>
+
     <div v-if="isPerformanceSupported">
       <zone-list :host-map="hostMap" :current-zone="currentZone" :switch-zone="switchZone" :selected-host="selectedHost"></zone-list>
-      
+
       <span class="run" :class="{'disabled': !selectedHost.host}" @click="uploadTest">开始检测</span>
       <!-- upload info -->
       <div class="progress">{{loadMessage}}</div>
