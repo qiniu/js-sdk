@@ -91,7 +91,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 - 在使用 JS-SDK 之前，您必须先注册一个七牛帐号，并登录控制台获取一对有效的 AccessKey 和 SecretKey，您可以阅读[ 快速入门 ](https://developer.qiniu.com/kodo/manual/console-quickstart)和[ 安全机制 ](https://developer.qiniu.com/kodo/manual/security#security) 以进一步了解如何正确使用和管理密钥 。
 
 - JS-SDK 依赖服务端颁发 uptoken，可以通过以下二种方式实现：
-    - 利用[七牛服务端 SDK ](https://developer.qiniu.com/sdk#sdk)构建后端服务   
+    - 利用[七牛服务端 SDK ](https://developer.qiniu.com/sdk#sdk)构建后端服务
     - 利用七牛底层 API 构建服务，详见七牛[上传策略](https://developer.qiniu.com/kodo/manual/put-policy)和[上传凭证](https://developer.qiniu.com/kodo/manual/upload-token)
 
     后端服务应提供一个 URL 地址，供 JS-SDK 初始化使用，前端通过 Ajax 请求该地址后获得 uptoken。Ajax 请求成功后，服务端应返回如下格式的 json：
@@ -197,7 +197,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
         // downtoken_url: '/downtoken',
         // Ajax请求downToken的Url，私有空间时使用,JS-SDK 将向该地址POST文件的key和domain,服务端返回的JSON必须包含`url`字段，`url`值为该文件的下载地址
         // unique_names: true,              // 默认 false，key 为文件名。若开启该选项，JS-SDK 会为每个文件自动生成key（文件名）
-        // save_key: true,                  // 默认 false。若在服务端生成 uptoken 的上传策略中指定了 `sava_key`，则开启，SDK在前端将不对key进行任何处理
+        // save_key: true,                  // 默认 false。若在服务端生成 uptoken 的上传策略中指定了 `save_key`，则开启，SDK在前端将不对key进行任何处理
         domain: '<Your bucket domain>',     // bucket 域名，下载资源时用到，如：'http://xxx.bkt.clouddn.com/' **必需**
         container: 'container',             // 上传区域 DOM ID，默认是 browser_button 的父元素，
         max_file_size: '100mb',             // 最大文件体积限制
@@ -789,7 +789,7 @@ $(function() {
 
         <a class="btn btn-default btn-lg " id="up_load" style="width:160px" href="#" >
             <span>确认上传</span>
-        </a>  
+        </a>
 
         <a class="btn btn-default btn-lg " id="stop_load" style="width:160px" href="#" >
             <span>暂停上传</span>
@@ -804,7 +804,7 @@ $(function() {
 
         <a class="btn btn-default btn-lg " id="up_load2" style="width:160px" href="#" >
             <span>确认上传</span>
-        </a>  
+        </a>
 
         <a class="btn btn-default btn-lg " id="stop_load2" style="width:160px" href="#" >
             <span>暂停上传</span>
@@ -830,8 +830,6 @@ $(function() {
 <a id="license"></a>
 ### 许可证
 
-> Copyright (c) 2014 qiniu.com
+> Copyright (c) 2017 qiniu.com
 
-### 基于 GPL V2 协议发布:
-
-> [www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)
+### 基于 MIT 协议发布
