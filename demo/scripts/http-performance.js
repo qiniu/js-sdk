@@ -13,9 +13,10 @@
   var p = window.performance;
   var httpPerformance = {
     clear: function() {
-      p.clearMarks();
-      p.clearMeasures();
-      p.clearResourceTimings();
+
+      p.clearMarks && p.clearMarks();
+      p.clearMeasures && p.clearMeasures();
+      p.clearResourceTimings && p.clearResourceTimings();
     },
     getAll: function() {
       var performanceArr = [];

@@ -58,8 +58,10 @@ td, th{
   color: #108ee9;
   line-height: 26px;
 }
-.low-browser{
-  padding: 30px 20px;
+.warning{
+  color: #f0ad4e;
+  font-weight: normal;
+  font-size: 12px;
 }
 .run{
   display: block;
@@ -124,7 +126,7 @@ td, th{
   color: #108ee9;
 }
 .up-headers{
-  
+
 }
 .up-headers tr td:first-child{
   width: 120px;
