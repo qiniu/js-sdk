@@ -191,7 +191,7 @@ FileProgress.prototype.setComplete = function(up, info) {
     var td = this.fileProgressWrapper.find('td:eq(2)'),
         tdProgress = td.find('.progress');
 
-    var res = $.parseJSON(info);
+    var res = $.parseJSON(info.response);
     var url;
     if (res.url) {
         url = res.url;
