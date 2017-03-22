@@ -555,7 +555,7 @@ function QiniuJsSDK() {
             var ie = that.detectIEVersion();
             var BLOCK_BITS, MAX_CHUNK_SIZE, chunk_size;
             // case Safari 5、Windows 7、iOS 7 set isSpecialSafari to true
-            var isSpecialSafari = (mOxie.Env.browser === "Safari" && mOxie.Env.version <= 5 && mOxie.Env.os === "Windows" && mOxie.Env.osVersion === "7") || (mOxie.Env.browser === "Safari" && mOxie.Env.os === "iOS" && mOxie.Env.osVersion === "7");
+            var isSpecialSafari = (moxie.core.utils.Env.browser === "Safari" && moxie.core.utils.Env.version <= 5 && moxie.core.utils.Env.os === "Windows" && moxie.core.utils.Env.osVersion === "7") || (moxie.core.utils.Env.browser === "Safari" && moxie.core.utils.Env.os === "iOS" && moxie.core.utils.Env.osVersion === "7");
             // case IE 9-，chunk_size is not empty and flash is included in runtimes
             // set op.chunk_size to zero
             //if (ie && ie < 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
@@ -631,7 +631,7 @@ function QiniuJsSDK() {
             var ajax;
             if (ie && ie <= 9) {
                 ajax = new mOxie.XMLHttpRequest();
-                mOxie.Env.swf_url = op.flash_swf_url;
+                moxie.core.utils.Env.swf_url = op.flash_swf_url;
             }else{
                 ajax = that.createAjax();
             }
@@ -786,7 +786,7 @@ function QiniuJsSDK() {
 
         logger.debug("init uploader start");
 
-        logger.debug("environment: ", mOxie.Env);
+        logger.debug("environment: ", moxie.core.utils.Env);
 
         logger.debug("userAgent: ", navigator.userAgent);
 
@@ -869,7 +869,7 @@ function QiniuJsSDK() {
 
             // detect is iOS
             var is_ios = function (){
-                if(mOxie.Env.OS.toLowerCase()==="ios") {
+                if(moxie.core.utils.Env.OS.toLowerCase()==="ios") {
                     return true;
                 } else {
                     return false;
@@ -964,7 +964,7 @@ function QiniuJsSDK() {
             // detect is weixin or qq inner browser
             var is_android_weixin_or_qq = function (){
                 var ua = navigator.userAgent.toLowerCase();
-                if((ua.match(/MicroMessenger/i) || mOxie.Env.browser === "QQBrowser" || ua.match(/V1_AND_SQ/i)) && mOxie.Env.OS.toLowerCase()==="android") {
+                if((ua.match(/MicroMessenger/i) || moxie.core.utils.Env.browser === "QQBrowser" || ua.match(/V1_AND_SQ/i)) && moxie.core.utils.Env.OS.toLowerCase()==="android") {
                     return true;
                 } else {
                     return false;
@@ -1326,7 +1326,7 @@ function QiniuJsSDK() {
                     var ajax;
                     if (ie && ie <= 9) {
                         ajax = new mOxie.XMLHttpRequest();
-                        mOxie.Env.swf_url = op.flash_swf_url;
+                        moxie.core.utils.Env.swf_url = op.flash_swf_url;
                     }else{
                         ajax = that.createAjax();
                     }
