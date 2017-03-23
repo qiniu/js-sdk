@@ -9,7 +9,7 @@
  * Date: @DATE
 */
 
-/*global plupload ,mOxie*/
+/*global plupload ,moxie*/
 /*global ActiveXObject */
 /*exported Qiniu */
 /*exported QiniuJsSDK */
@@ -584,11 +584,11 @@ function QiniuJsSDK() {
 
         var getHosts = function(hosts) {
             var result = [];
-            var uploadIndex=-1;
+            var uploadIndex = -1;
             for (var i = 0; i < hosts.length; i++) {
                 var host = hosts[i];
-                if(host.indexOf("upload")!=-1) {
-                    uploadIndex=i;
+                if (host.indexOf("upload") !== -1) {
+                    uploadIndex = i;
                 }
                 if (host.indexOf('-H') === 0) {
                     result.push(host.split(' ')[2]);
@@ -597,11 +597,11 @@ function QiniuJsSDK() {
                 }
             }
 
-            if (uploadIndex!=-1) {
+            if (uploadIndex !== -1) {
                 //make upload domains first
-                var uploadDomain=result[uploadIndex];
-                result[uploadIndex]=result[0];
-                result[0]=uploadDomain;
+                var uploadDomain = result[uploadIndex];
+                result[uploadIndex] = result[0];
+                result[0] = uploadDomain;
             }
             return result;
         };
@@ -1337,15 +1337,17 @@ function QiniuJsSDK() {
                         logger.debug("ajax.readyState: ", ajax.readyState);
                         if (ajax.readyState === 4) {
                             localStorage.removeItem(file.name);
+                            var ajaxInfo;
                             if (ajax.status === 200) {
-                                var ajaxInfo = {};
-                                ajaxInfo.response = ajax.responseText;
-                                ajaxInfo.responseHeaders = ajax.getAllResponseHeaders();
-                                ajaxInfo.status = ajax.status;
+                                ajaxInfo = {
+                                    status: ajax.status,
+                                    response: ajax.responseText,
+                                    responseHeaders: ajax.getAllResponseHeaders(),
+                                };
                                 logger.debug("mkfile is success: ", ajaxInfo);
                                 last_step(up, file, ajaxInfo);
                             } else {
-                                var ajaxInfo = {
+                                ajaxInfo = {
                                     status: ajax.status,
                                     response: ajax.responseText,
                                     file: file,
@@ -1375,7 +1377,6 @@ function QiniuJsSDK() {
 
         // init uploader
         uploader.init();
-
         logger.debug("invoke uploader.init()");
 
         logger.debug("init uploader end");

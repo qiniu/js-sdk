@@ -6,10 +6,10 @@
  *
  * GitHub: http://github.com/qiniu/js-sdk
  *
- * Date: 2017-3-22
+ * Date: 2017-3-23
 */
 
-/*global plupload ,mOxie*/
+/*global plupload ,moxie*/
 /*global ActiveXObject */
 /*exported Qiniu */
 /*exported QiniuJsSDK */
@@ -555,7 +555,7 @@ function QiniuJsSDK() {
             var ie = that.detectIEVersion();
             var BLOCK_BITS, MAX_CHUNK_SIZE, chunk_size;
             // case Safari 5、Windows 7、iOS 7 set isSpecialSafari to true
-            var isSpecialSafari = (mOxie.Env.browser === "Safari" && mOxie.Env.version <= 5 && mOxie.Env.os === "Windows" && mOxie.Env.osVersion === "7") || (mOxie.Env.browser === "Safari" && mOxie.Env.os === "iOS" && mOxie.Env.osVersion === "7");
+            var isSpecialSafari = (moxie.core.utils.Env.browser === "Safari" && moxie.core.utils.Env.version <= 5 && moxie.core.utils.Env.os === "Windows" && moxie.core.utils.Env.osVersion === "7") || (moxie.core.utils.Env.browser === "Safari" && moxie.core.utils.Env.os === "iOS" && moxie.core.utils.Env.osVersion === "7");
             // case IE 9-，chunk_size is not empty and flash is included in runtimes
             // set op.chunk_size to zero
             //if (ie && ie < 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
@@ -584,11 +584,11 @@ function QiniuJsSDK() {
 
         var getHosts = function(hosts) {
             var result = [];
-            var uploadIndex=-1;
+            var uploadIndex = -1;
             for (var i = 0; i < hosts.length; i++) {
                 var host = hosts[i];
-                if(host.indexOf("upload")!=-1) {
-                    uploadIndex=i;
+                if (host.indexOf("upload") !== -1) {
+                    uploadIndex = i;
                 }
                 if (host.indexOf('-H') === 0) {
                     result.push(host.split(' ')[2]);
@@ -597,11 +597,11 @@ function QiniuJsSDK() {
                 }
             }
 
-            if (uploadIndex!=-1) {
+            if (uploadIndex !== -1) {
                 //make upload domains first
-                var uploadDomain=result[uploadIndex];
-                result[uploadIndex]=result[0];
-                result[0]=uploadDomain;
+                var uploadDomain = result[uploadIndex];
+                result[uploadIndex] = result[0];
+                result[0] = uploadDomain;
             }
             return result;
         };
@@ -630,8 +630,8 @@ function QiniuJsSDK() {
             var ie = that.detectIEVersion();
             var ajax;
             if (ie && ie <= 9) {
-                ajax = new mOxie.XMLHttpRequest();
-                mOxie.Env.swf_url = op.flash_swf_url;
+                ajax = new moxie.xhr.XMLHttpRequest();
+                moxie.core.utils.Env.swf_url = op.flash_swf_url;
             }else{
                 ajax = that.createAjax();
             }
@@ -786,7 +786,7 @@ function QiniuJsSDK() {
 
         logger.debug("init uploader start");
 
-        logger.debug("environment: ", mOxie.Env);
+        logger.debug("environment: ", moxie.core.utils.Env);
 
         logger.debug("userAgent: ", navigator.userAgent);
 
@@ -869,7 +869,7 @@ function QiniuJsSDK() {
 
             // detect is iOS
             var is_ios = function (){
-                if(mOxie.Env.OS.toLowerCase()==="ios") {
+                if(moxie.core.utils.Env.OS.toLowerCase()==="ios") {
                     return true;
                 } else {
                     return false;
@@ -964,7 +964,7 @@ function QiniuJsSDK() {
             // detect is weixin or qq inner browser
             var is_android_weixin_or_qq = function (){
                 var ua = navigator.userAgent.toLowerCase();
-                if((ua.match(/MicroMessenger/i) || mOxie.Env.browser === "QQBrowser" || ua.match(/V1_AND_SQ/i)) && mOxie.Env.OS.toLowerCase()==="android") {
+                if((ua.match(/MicroMessenger/i) || moxie.core.utils.Env.browser === "QQBrowser" || ua.match(/V1_AND_SQ/i)) && moxie.core.utils.Env.OS.toLowerCase()==="android") {
                     return true;
                 } else {
                     return false;
@@ -1325,8 +1325,8 @@ function QiniuJsSDK() {
                     var ie = that.detectIEVersion();
                     var ajax;
                     if (ie && ie <= 9) {
-                        ajax = new mOxie.XMLHttpRequest();
-                        mOxie.Env.swf_url = op.flash_swf_url;
+                        ajax = new moxie.xhr.XMLHttpRequest();
+                        moxie.core.utils.Env.swf_url = op.flash_swf_url;
                     }else{
                         ajax = that.createAjax();
                     }
@@ -1337,15 +1337,17 @@ function QiniuJsSDK() {
                         logger.debug("ajax.readyState: ", ajax.readyState);
                         if (ajax.readyState === 4) {
                             localStorage.removeItem(file.name);
+                            var ajaxInfo;
                             if (ajax.status === 200) {
-                                var ajaxInfo = {};
-                                ajaxInfo.response = ajax.responseText;
-                                ajaxInfo.responseHeaders = ajax.getAllResponseHeaders();
-                                ajaxInfo.status = ajax.status;
+                                ajaxInfo = {
+                                    status: ajax.status,
+                                    response: ajax.responseText,
+                                    responseHeaders: ajax.getAllResponseHeaders(),
+                                };
                                 logger.debug("mkfile is success: ", ajaxInfo);
                                 last_step(up, file, ajaxInfo);
                             } else {
-                                var ajaxInfo = {
+                                ajaxInfo = {
                                     status: ajax.status,
                                     response: ajax.responseText,
                                     file: file,
@@ -1375,7 +1377,6 @@ function QiniuJsSDK() {
 
         // init uploader
         uploader.init();
-
         logger.debug("invoke uploader.init()");
 
         logger.debug("init uploader end");
