@@ -46,6 +46,9 @@ $(function() {
         auto_start: true,
         log_level: 5,
         init: {
+            'BeforeChunkUpload':function (up,file) {
+                console.log("before chunk upload:",file.name);
+            },
             'FilesAdded': function(up, files) {
                 $('table').show();
                 $('#success').hide();
@@ -56,6 +59,7 @@ $(function() {
                 });
             },
             'BeforeUpload': function(up, file) {
+                console.log("this is a beforeupload function from init");
                 var progress = new FileProgress(file, 'fsUploadProgress');
                 var chunk_size = plupload.parseSize(this.getOption('chunk_size'));
                 if (up.runtime === 'html5' && chunk_size) {
@@ -88,8 +92,11 @@ $(function() {
                 // }
         }
     });
-
-    uploader.bind('FileUploaded', function() {
+    //uploader.init();
+    uploader.bind('BeforeUpload', function () {
+        console.log("hello man, i am going to upload a file");
+    });
+    uploader.bind('FileUploaded', function () {
         console.log('hello man,a file is uploaded');
     });
     $('#container').on(
