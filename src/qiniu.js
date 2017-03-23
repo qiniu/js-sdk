@@ -630,7 +630,7 @@ function QiniuJsSDK() {
             var ie = that.detectIEVersion();
             var ajax;
             if (ie && ie <= 9) {
-                ajax = new mOxie.XMLHttpRequest();
+                ajax = new moxie.xhr.XMLHttpRequest();
                 moxie.core.utils.Env.swf_url = op.flash_swf_url;
             }else{
                 ajax = that.createAjax();
@@ -1325,7 +1325,7 @@ function QiniuJsSDK() {
                     var ie = that.detectIEVersion();
                     var ajax;
                     if (ie && ie <= 9) {
-                        ajax = new mOxie.XMLHttpRequest();
+                        ajax = new moxie.xhr.XMLHttpRequest();
                         moxie.core.utils.Env.swf_url = op.flash_swf_url;
                     }else{
                         ajax = that.createAjax();

@@ -46,6 +46,9 @@ $(function() {
         auto_start: true,
         log_level: 5,
         init: {
+            'BeforeChunkUpload':function (up,file) {
+                console.log("before chunk upload:",file.name);
+            },
             'FilesAdded': function(up, files) {
                 $('table').show();
                 $('#success').hide();
