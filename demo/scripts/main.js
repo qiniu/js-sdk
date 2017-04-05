@@ -3,7 +3,6 @@
 /*global FileProgress */
 /*global hljs */
 
-
 $(function() {
     var uploader = Qiniu.uploader({
         runtimes: 'html5,flash,html4',

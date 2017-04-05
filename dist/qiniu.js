@@ -6,7 +6,7 @@
  *
  * GitHub: http://github.com/qiniu/js-sdk
  *
- * Date: 2017-3-23
+ * Date: 2017-4-5
 */
 
 /*global plupload ,moxie*/
@@ -690,8 +690,8 @@ function QiniuJsSDK() {
                 logger.debug("get uptoken from: ", that.uptoken_url);
                 // TODO: use mOxie
                 var ajax = that.createAjax();
-                ajax.open('GET', that.uptoken_url, false);
-                ajax.setRequestHeader("If-Modified-Since", "0");
+                ajax.open('GET', that.uptoken_url + '?' + (+ new Date()), false);
+                // ajax.setRequestHeader("If-Modified-Since", "0");
                 // ajax.onreadystatechange = function() {
                 //     if (ajax.readyState === 4 && ajax.status === 200) {
                 //         var res = that.parseJSON(ajax.responseText);
@@ -1639,7 +1639,6 @@ function QiniuJsSDK() {
 var Qiniu = new QiniuJsSDK();
 
 global.Qiniu = Qiniu;
-
 global.QiniuJsSDK = QiniuJsSDK;
 
 })( window );
