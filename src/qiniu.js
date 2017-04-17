@@ -64,6 +64,15 @@ if ( !window.localStorage ) {
     };
 }
 
+// Compatible with plupload 2.2.1 and mOxie 1.5.2
+// See issue https://github.com/qiniu/js-sdk/issues/197#
+if( !global.mOxie && global.moxie ) {
+    global.mOxie = {
+        Env: moxie.core.utils.Env,
+        XMLHttpRequest: moxie.xhr.XMLHttpRequest
+    };
+}
+
 function QiniuJsSDK() {
 
     var that = this;
