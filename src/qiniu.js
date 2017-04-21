@@ -795,6 +795,7 @@ function QiniuJsSDK() {
         // hold the handler from user passed options
         var _Error_Handler = op.init && op.init.Error;
         var _FileUploaded_Handler = op.init && op.init.FileUploaded;
+        var _Start_Handler = op.init && op.init.Start;
 
         // replace the handler for intercept
         op.init.Error = function() {};
@@ -887,7 +888,11 @@ function QiniuJsSDK() {
 
             if (auto_start) {
                 setTimeout(function(){
-                    up.start();
+                    if (_Start_Handler) {
+                        _Start_Handler(up);
+                    } else {
+                        up.start();
+                    }
                     logger.debug("invoke up.start()");
                 }, 0);
                 // up.start();
