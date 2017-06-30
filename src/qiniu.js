@@ -770,6 +770,16 @@
                 var qiniuCollectUploadLogUrl = "https://uplog.qbox.me/log/2";
 
                 /**
+                 * { log: string, status: number }[] status: 0 待处理， 1 正在发送， 2 发送完毕  
+                 */
+                var queue = [];
+                var TaskStatus = {
+                    waiting: 0,
+                    processing: 1,
+                    finished: 2
+                }
+
+                /**
                  * send logs to statistics server
                  * 
                  * @param {number} code status code
@@ -779,23 +789,49 @@
                  * @param {string} sdk_runtime js sdk runtime: html5, html4, flash
                  */
                 this.log = function (code, req_id, file_size, sent_size, sdk_runtime) {
-                    var log = Array.prototype.join.call(arguments, ',')
-                    logger.debug("[STATISTICS] send log to server", log)
-                    // TODO add send queue
-                    // var ajax = that.createAjax();
-                    // ajax.open('POST', qiniuCollectUploadLogUrl, true);
-                    // ajax.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-                    // ajax.onreadystatechange = function () {
-                    //     if (ajax.readyState === 4) {
-                    //         if (ajax.status === 200) {
-                    //             logger.debug("successfully report log to server")
-                    //         } else {
-                    //             logger.debug("report log to server failed")
-                    //         }
-                    //     }
-                    // };
-                    // ajax.send(arguments.join(","));
+                    var log = Array.prototype.join.call(arguments, ',');
+                    queue.push({
+                        log: log,
+                        status: TaskStatus.waiting
+                    });
+                    logger.debug("[STATISTICS] send log to statistics server", log);
                 }
+
+                function tick() {
+                    var unFinishedTasks = [];
+                    for (var i = 0; i < queue.length; i++) {
+                        if (queue[i].status !== TaskStatus.finished) {
+                            unFinishedTasks.push(queue[i]);
+                        }
+                        if (queue[i].status === TaskStatus.waiting) {
+                            send(queue[i]);
+                        }
+                    }
+                    queue = unFinishedTasks;
+                }
+
+                function send(task) {
+                    task.status = TaskStatus.processing;
+                    var ajax = that.createAjax();
+                    ajax.open('POST', qiniuCollectUploadLogUrl, true);
+                    ajax.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                    ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
+                    ajax.onreadystatechange = function () {
+                        if (ajax.readyState === 4) {
+                            if (ajax.status === 200) {
+                                logger.debug("[STATISTICS] successfully report log to server");
+                                task.status = TaskStatus.finished;
+                            } else {
+                                logger.debug("[STATISTICS] report log to server failed");
+                                task.status = TaskStatus.waiting;
+                            }
+                        }
+                    };
+                    ajax.send(task.log);
+                }
+
+                // start a timer to report
+                setInterval(tick, 1000);
             }
             var statisticsLogger = new StatisticsLogger();
 
