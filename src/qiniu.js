@@ -172,6 +172,9 @@
 
         var changeUrlTimes = 0;
 
+        // api to collect upload logs
+        var qiniuCollectUploadLogUrl = "https://uplog.qbox.me/log/2";
+
         /**
          * reset upload url
          * if current page protocal is https
@@ -519,7 +522,6 @@
                         }
                         return '{' + string.join(',') + '}';
                     }
-                    break;
                 case 'number':
                     return obj;
                 case false:
@@ -765,6 +767,33 @@
                 }
                 return key;
             };
+            
+            /**
+             * send logs to statistics server
+             * 
+             * @param {number} code status code
+             * @param {string} req_id request id
+             * @param {number} file_size file total size (bytes)
+             * @param {number} sent_size uploaded size (bytes)
+             * @param {string} sdk_runtime js sdk runtime: html5, html4, flash
+             */
+            var sendLogToServer = function (code, req_id, file_size, sent_size, sdk_runtime) {
+                logger.debug("[STATISTICS] send log to server", arguments)
+                // TODO add send queue
+                // var ajax = that.createAjax();
+                // ajax.open('POST', qiniuCollectUploadLogUrl, true);
+                // ajax.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                // ajax.onreadystatechange = function () {
+                //     if (ajax.readyState === 4) {
+                //         if (ajax.status === 200) {
+                //             logger.debug("successfully report log to server")
+                //         } else {
+                //             logger.debug("report log to server failed")
+                //         }
+                //     }
+                // };
+                // ajax.send(arguments.join(","));
+            }
 
             /********** inner function define end **********/
 
@@ -1232,6 +1261,11 @@
                         }
                     }
                     up.refresh(); // Reposition Flash/Silverlight
+
+                    // add send log for upload error
+                    var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([^,]*)/) : []
+                    var req_id = matchedGroups[2]
+                    sendLogToServer(err.code, req_id, err.file.size, err.file.size * (err.file.percent / 100), up.runtime);
                 };
             })(_Error_Handler));
 
@@ -1370,10 +1404,25 @@
                         last_step(up, file, info);
                     }
 
+                    // TODO status code ? send log for upload complete
+                    var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([^,]*)/)[2]
+                    sendLogToServer(info.status, req_id, file.size, file.size, up.runtime);
                 };
             })(_FileUploaded_Handler));
 
             logger.debug("bind FileUploaded event");
+
+            // bind 'FilesRemoved' event
+            // intercept the cancel of upload
+            // used to send statistics log to server
+            uploader.bind('FilesRemoved', function (up, files) {
+                // TODO status code ? add cancel log
+                for (var i = 0; i < files.length; i++) {
+                    sendLogToServer(-1, undefined, files[i].size, files[i].size * files[i].percent / 100, up.runtime);
+                }
+            })
+
+            logger.debug("bind FilesRemoved event");
 
             // init uploader
             uploader.init();
