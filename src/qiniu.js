@@ -834,6 +834,19 @@
                 setInterval(tick, 1000);
             }
             var statisticsLogger = new StatisticsLogger();
+            var ExtraErrors = {
+                ZeroSizeFile: -6,
+                InvalidToken: -5,
+                InvalidArgument: -4,
+                InvalidFile: -3,
+                Cancelled: -2,
+                NetworkError: -1,
+                UnknownError: 0,
+                TimedOut: -1001,
+                UnknownHost: -1003,
+                CannotConnectToHost: -1004,
+                NetworkConnectionLost: -1005
+            }
 
             /********** inner function define end **********/
 
@@ -1305,7 +1318,11 @@
                     // add send log for upload error
                     var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([^,]*)/) : []
                     var req_id = matchedGroups[2]
-                    statisticsLogger.log(err.code, req_id, err.file.size, err.file.size * (err.file.percent / 100), up.runtime);
+                    statisticsLogger.log(
+                        err.code == plupload.HTTP_ERROR ? err.status : err.code, req_id,
+                        err.file.size,
+                        err.file.size * (err.file.percent / 100),
+                        up.runtime);
                 };
             })(_Error_Handler));
 
@@ -1458,7 +1475,7 @@
             uploader.bind('FilesRemoved', function (up, files) {
                 // TODO status code ? add cancel log
                 for (var i = 0; i < files.length; i++) {
-                    statisticsLogger.log(-1, undefined, files[i].size, files[i].size * files[i].percent / 100, up.runtime);
+                    statisticsLogger.log(ExtraErrors.Cancelled, undefined, files[i].size, files[i].size * files[i].percent / 100, up.runtime);
                 }
             })
 
