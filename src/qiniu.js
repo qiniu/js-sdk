@@ -765,9 +765,36 @@
                 return key;
             };
 
+            var getDomainFromUrl = function (url) {
+                if (url && url.match) {
+                    var groups = url.match(/^https?:\/\/([^:^/]*)/);
+                    return groups ? groups[1] : "";
+                }
+                return "";
+            }
+
+            var getPortFromUrl = function (url) {
+                if (url && url.match) {
+                    var groups = url.match(/(^https?)/)
+                    if (!groups) {
+                        return "";
+                    }
+                    var type = groups[1];
+                    groups = url.match(/^https?:\/\/([^:^/]*):(\d*)/);
+                    if (groups) {
+                        return groups[2];
+                    } else if (type == "http") {
+                        return "80";
+                    } else {
+                        return "443";
+                    }
+                }
+                return "";
+            }
+
             function StatisticsLogger() {
                 // api to collect upload logs
-                var qiniuCollectUploadLogUrl = "https://uplog.qbox.me/log/2";
+                var qiniuCollectUploadLogUrl = "https://uplog.qbox.me/log/3";
 
                 /**
                  * { log: string, status: number }[] status: 0 待处理， 1 正在发送， 2 发送完毕  
@@ -784,11 +811,16 @@
                  * 
                  * @param {number} code status code
                  * @param {string} req_id request id
+                 * @param {string} host 
+                 * @param {string} remote_ip
+                 * @param {string} port 
+                 * @param {string} duration 
+                 * @param {string} up_time 
+                 * @param {number} bytes_sent uploaded size (bytes)
+                 * @param {string} up_type js sdk runtime: html5, html4, flash
                  * @param {number} file_size file total size (bytes)
-                 * @param {number} sent_size uploaded size (bytes)
-                 * @param {string} sdk_runtime js sdk runtime: html5, html4, flash
                  */
-                this.log = function (code, req_id, file_size, sent_size, sdk_runtime) {
+                this.log = function (code, req_id, host, remote_ip, port, duration, up_time, bytes_sent, up_type, file_size) {
                     var log = Array.prototype.join.call(arguments, ',');
                     queue.push({
                         log: log,
@@ -1318,11 +1350,19 @@
                     // add send log for upload error
                     var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([^,]*)/) : []
                     var req_id = matchedGroups[2]
+                    var errcode = plupload.HTTP_ERROR ? err.status : err.code, req_id
                     statisticsLogger.log(
-                        err.code == plupload.HTTP_ERROR ? err.status : err.code, req_id,
-                        err.file.size,
+                        errcode == 0 ? ExtraErrors.NetworkError: errcode,
+                        req_id,
+                        getDomainFromUrl(up.settings.url),
+                        undefined,
+                        getPortFromUrl(up.settings.url),
+                        undefined,
+                        file.lastModifiedDate.getTime(),
                         err.file.size * (err.file.percent / 100),
-                        up.runtime);
+                        "jssdk-" + up.runtime,
+                        file.size
+                    )
                 };
             })(_Error_Handler));
 
@@ -1461,9 +1501,20 @@
                         last_step(up, file, info);
                     }
 
-                    // TODO status code ? send log for upload complete
+                    // send statistics log
                     var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([^,]*)/)[2]
-                    statisticsLogger.log(info.status, req_id, file.size, file.size, up.runtime);
+                    statisticsLogger.log(
+                        info.status,
+                        req_id,
+                        getDomainFromUrl(up.settings.url),
+                        undefined,
+                        getPortFromUrl(up.settings.url),
+                        undefined,
+                        file.lastModifiedDate.getTime(),
+                        file.size,
+                        "jssdk-" + up.runtime,
+                        file.size
+                    )
                 };
             })(_FileUploaded_Handler));
 
@@ -1473,9 +1524,20 @@
             // intercept the cancel of upload
             // used to send statistics log to server
             uploader.bind('FilesRemoved', function (up, files) {
-                // TODO status code ? add cancel log
+                // add cancel log
                 for (var i = 0; i < files.length; i++) {
-                    statisticsLogger.log(ExtraErrors.Cancelled, undefined, files[i].size, files[i].size * files[i].percent / 100, up.runtime);
+                    statisticsLogger.log(
+                        ExtraErrors.Cancelled,
+                        undefined,
+                        getDomainFromUrl(up.settings.url),
+                        undefined,
+                        getPortFromUrl(up.settings.url),
+                        undefined,
+                        files[i].lastModifiedDate.getTime(),
+                        files[i].size,
+                        "jssdk-" + up.runtime,
+                        files[i].size
+                    );
                 }
             })
 
