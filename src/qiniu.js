@@ -184,7 +184,7 @@
                 waiting: 0,
                 processing: 1,
                 finished: 2
-            }
+            };
 
             /**
              * send logs to statistics server
@@ -207,7 +207,7 @@
                     status: TaskStatus.waiting
                 });
                 logger.debug("[STATISTICS] send log to statistics server", log);
-            }
+            };
 
             function tick() {
                 var unFinishedTasks = [];
@@ -258,7 +258,7 @@
             UnknownHost: -1003,
             CannotConnectToHost: -1004,
             NetworkConnectionLost: -1005
-        }
+        };
 
         /**
          * reset upload url
@@ -607,6 +607,7 @@
                         }
                         return '{' + string.join(',') + '}';
                     }
+                    break;
                 case 'number':
                     return obj;
                 case false:
@@ -859,11 +860,11 @@
                     return groups ? groups[1] : "";
                 }
                 return "";
-            }
+            };
 
             var getPortFromUrl = function (url) {
                 if (url && url.match) {
-                    var groups = url.match(/(^https?)/)
+                    var groups = url.match(/(^https?)/);
                     if (!groups) {
                         return "";
                     }
@@ -871,14 +872,14 @@
                     groups = url.match(/^https?:\/\/([^:^/]*):(\d*)/);
                     if (groups) {
                         return groups[2];
-                    } else if (type == "http") {
+                    } else if (type === "http") {
                         return "80";
                     } else {
                         return "443";
                     }
                 }
                 return "";
-            }
+            };
 
             /********** inner function define end **********/
 
@@ -1253,6 +1254,7 @@
                 return function (up, err) {
                     logger.error("Error event activated");
                     logger.error("err: ", err);
+                    var nowTime = new Date();
                     var errTip = '';
                     var file = err.file;
                     if (file) {
@@ -1354,12 +1356,12 @@
                         var req_id = matchedGroups[2];
                         var errcode = plupload.HTTP_ERROR ? err.status : err.code;
                         statisticsLogger.log(
-                            errcode == 0 ? ExtraErrors.NetworkError : errcode,
+                            errcode === 0 ? ExtraErrors.NetworkError : errcode,
                             req_id,
                             getDomainFromUrl(up.settings.url),
                             undefined,
                             getPortFromUrl(up.settings.url),
-                            (new Date()).getTime() - file._start_at.getTime(),
+                            nowTime.getTime() - file._start_at.getTime(),
                             file._start_at.getTime(),
                             err.file.size * (err.file.percent / 100),
                             "jssdk-" + up.runtime,
@@ -1380,6 +1382,7 @@
                     logger.debug("FileUploaded event activated");
                     logger.debug("FileUploaded file: ", file);
                     logger.debug("FileUploaded info: ", info);
+                    var nowTime = new Date();
                     var last_step = function (up, file, info) {
                         logger.debug("FileUploaded last step:", info);
                         if (op.downtoken_url) {
@@ -1513,7 +1516,7 @@
                             getDomainFromUrl(up.settings.url),
                             undefined,
                             getPortFromUrl(up.settings.url),
-                            (new Date()).getTime() - file._start_at.getTime(),
+                            nowTime.getTime() - file._start_at.getTime(),
                             file._start_at.getTime(),
                             file.size,
                             "jssdk-" + up.runtime,
@@ -1529,6 +1532,7 @@
             // intercept the cancel of upload
             // used to send statistics log to server
             uploader.bind('FilesRemoved', function (up, files) {
+                var nowTime = new Date();
                 // add cancel log
                 if (!op.disable_statistics_report) {
                     for (var i = 0; i < files.length; i++) {
@@ -1538,7 +1542,7 @@
                             getDomainFromUrl(up.settings.url),
                             undefined,
                             getPortFromUrl(up.settings.url),
-                            (new Date()).getTime() - files[i]._start_at.getTime(),
+                            nowTime.getTime() - files[i]._start_at.getTime(),
                             files[i]._start_at.getTime(),
                             files[i].size,
                             "jssdk-" + up.runtime,
@@ -1546,7 +1550,7 @@
                         );
                     }
                 }
-            })
+            });
 
             logger.debug("bind FilesRemoved event");
 
