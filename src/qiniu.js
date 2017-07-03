@@ -1348,22 +1348,23 @@
                     up.refresh(); // Reposition Flash/Silverlight
 
                     // add send log for upload error
-                    var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([^,]*)/) : []
-                    var req_id = matchedGroups[2]
-                    var errcode = plupload.HTTP_ERROR ? err.status : err.code,
-                        req_id
-                    statisticsLogger.log(
-                        errcode == 0 ? ExtraErrors.NetworkError : errcode,
-                        req_id,
-                        getDomainFromUrl(up.settings.url),
-                        undefined,
-                        getPortFromUrl(up.settings.url),
-                        undefined,
-                        file.lastModifiedDate.getTime(),
-                        err.file.size * (err.file.percent / 100),
-                        "jssdk-" + up.runtime,
-                        file.size
-                    )
+                    if (!op.disable_statistics_report) {
+                        var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([^,]*)/) : [];
+                        var req_id = matchedGroups[2];
+                        var errcode = plupload.HTTP_ERROR ? err.status : err.code;
+                        statisticsLogger.log(
+                            errcode == 0 ? ExtraErrors.NetworkError : errcode,
+                            req_id,
+                            getDomainFromUrl(up.settings.url),
+                            undefined,
+                            getPortFromUrl(up.settings.url),
+                            undefined,
+                            file.lastModifiedDate.getTime(),
+                            err.file.size * (err.file.percent / 100),
+                            "jssdk-" + up.runtime,
+                            file.size
+                        );
+                    }
                 };
             })(_Error_Handler));
 
@@ -1503,19 +1504,21 @@
                     }
 
                     // send statistics log
-                    var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([^,]*)/)[2]
-                    statisticsLogger.log(
-                        info.status,
-                        req_id,
-                        getDomainFromUrl(up.settings.url),
-                        undefined,
-                        getPortFromUrl(up.settings.url),
-                        undefined,
-                        file.lastModifiedDate.getTime(),
-                        file.size,
-                        "jssdk-" + up.runtime,
-                        file.size
-                    )
+                    if (!op.disable_statistics_report) {
+                        var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([^,]*)/)[2];
+                        statisticsLogger.log(
+                            info.status,
+                            req_id,
+                            getDomainFromUrl(up.settings.url),
+                            undefined,
+                            getPortFromUrl(up.settings.url),
+                            undefined,
+                            file.lastModifiedDate.getTime(),
+                            file.size,
+                            "jssdk-" + up.runtime,
+                            file.size
+                        );
+                    }
                 };
             })(_FileUploaded_Handler));
 
@@ -1526,19 +1529,21 @@
             // used to send statistics log to server
             uploader.bind('FilesRemoved', function (up, files) {
                 // add cancel log
-                for (var i = 0; i < files.length; i++) {
-                    statisticsLogger.log(
-                        ExtraErrors.Cancelled,
-                        undefined,
-                        getDomainFromUrl(up.settings.url),
-                        undefined,
-                        getPortFromUrl(up.settings.url),
-                        undefined,
-                        files[i].lastModifiedDate.getTime(),
-                        files[i].size,
-                        "jssdk-" + up.runtime,
-                        files[i].size
-                    );
+                if (!op.disable_statistics_report) {
+                    for (var i = 0; i < files.length; i++) {
+                        statisticsLogger.log(
+                            ExtraErrors.Cancelled,
+                            undefined,
+                            getDomainFromUrl(up.settings.url),
+                            undefined,
+                            getPortFromUrl(up.settings.url),
+                            undefined,
+                            files[i].lastModifiedDate.getTime(),
+                            files[i].size,
+                            "jssdk-" + up.runtime,
+                            files[i].size
+                        );
+                    }
                 }
             })
 
