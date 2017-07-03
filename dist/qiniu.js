@@ -539,6 +539,32 @@ function QiniuJsSDK() {
     };
 
     /**
+     * get private download token
+     * @param  {String} key of file
+     * @return {object} parsed json object from downtoken_url
+     */
+    this.downloadToken = function(key) {
+        // if op.dowontoken_url is not empty
+        var ajax_downtoken = that.createAjax();
+        var res_downtoken;
+        ajax_downtoken.open('POST', this.downtoken_url, false);
+        ajax_downtoken.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+        ajax_downtoken.onreadystatechange = function() {
+            if (ajax_downtoken.readyState === 4) {
+                if (ajax_downtoken.status === 200) {
+                    try {
+                        res_downtoken = that.parseJSON(ajax_downtoken.responseText);
+                    } catch (e) {
+                        throw ('invalid json format');
+                    }
+                }
+            }
+        };
+        ajax_downtoken.send("key=" + key);
+        return res_downtoken;
+    };
+
+    /**
      * create a uploader by QiniuJsSDK
      * @param  {object} options to create a new uploader
      * @return {object} uploader
@@ -804,6 +830,9 @@ function QiniuJsSDK() {
         that.token = '';
         that.key_handler = typeof op.init.Key === 'function' ? op.init.Key : '';
         this.domain = op.domain;
+        if (op.downtoken_url) {
+            this.downtoken_url = op.downtoken_url;
+        }
         // TODO: ctx is global in scope of a uploader instance
         // this maybe cause error
         var ctx = '';
@@ -1532,7 +1561,14 @@ function QiniuJsSDK() {
         if (!key) {
             return false;
         }
-        var url = this.getUrl(key) + '?imageInfo';
+        var url = "";
+        var key = key + '?imageInfo';
+        if (typeof this.downtoken_url != "undefined") {
+            res_downtoken = this.downloadToken(key);
+            url = res_downtoken.url;
+        } else {
+            url = this.getUrl(key);
+        }
         var xhr = this.createAjax();
         var info;
         var that = this;
@@ -1555,7 +1591,14 @@ function QiniuJsSDK() {
         if (!key) {
             return false;
         }
-        var url = this.getUrl(key) + '?exif';
+        var url = "";
+        var key = key + '?exif';
+        if (typeof this.downtoken_url != "undefined") {
+            res_downtoken = this.downloadToken(key);
+            url = res_downtoken.url;
+        } else {
+            url = this.getUrl(key);
+        }
         var xhr = this.createAjax();
         var info;
         var that = this;
