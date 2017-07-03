@@ -172,6 +172,94 @@
 
         var changeUrlTimes = 0;
 
+        function StatisticsLogger() {
+            // api to collect upload logs
+            var qiniuCollectUploadLogUrl = "https://uplog.qbox.me/log/3";
+
+            /**
+             * { log: string, status: number }[] status: 0 待处理， 1 正在发送， 2 发送完毕  
+             */
+            var queue = [];
+            var TaskStatus = {
+                waiting: 0,
+                processing: 1,
+                finished: 2
+            }
+
+            /**
+             * send logs to statistics server
+             * 
+             * @param {number} code status code
+             * @param {string} req_id request id
+             * @param {string} host 
+             * @param {string} remote_ip
+             * @param {string} port 
+             * @param {string} duration 
+             * @param {string} up_time 
+             * @param {number} bytes_sent uploaded size (bytes)
+             * @param {string} up_type js sdk runtime: html5, html4, flash
+             * @param {number} file_size file total size (bytes)
+             */
+            this.log = function (code, req_id, host, remote_ip, port, duration, up_time, bytes_sent, up_type, file_size) {
+                var log = Array.prototype.join.call(arguments, ',');
+                queue.push({
+                    log: log,
+                    status: TaskStatus.waiting
+                });
+                logger.debug("[STATISTICS] send log to statistics server", log);
+            }
+
+            function tick() {
+                var unFinishedTasks = [];
+                for (var i = 0; i < queue.length; i++) {
+                    if (queue[i].status !== TaskStatus.finished) {
+                        unFinishedTasks.push(queue[i]);
+                    }
+                    if (queue[i].status === TaskStatus.waiting) {
+                        send(queue[i]);
+                    }
+                }
+                queue = unFinishedTasks;
+            }
+
+            function send(task) {
+                task.status = TaskStatus.processing;
+                var ajax = that.createAjax();
+                ajax.open('POST', qiniuCollectUploadLogUrl, true);
+                ajax.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
+                ajax.onreadystatechange = function () {
+                    if (ajax.readyState === 4) {
+                        if (ajax.status === 200) {
+                            logger.debug("[STATISTICS] successfully report log to server");
+                            task.status = TaskStatus.finished;
+                        } else {
+                            logger.debug("[STATISTICS] report log to server failed");
+                            task.status = TaskStatus.waiting;
+                        }
+                    }
+                };
+                ajax.send(task.log);
+            }
+
+            // start a timer to report
+            setInterval(tick, 1000);
+        }
+        var statisticsLogger = new StatisticsLogger();
+        var ExtraErrors = {
+            ZeroSizeFile: -6,
+            InvalidToken: -5,
+            InvalidArgument: -4,
+            InvalidFile: -3,
+            Cancelled: -2,
+            NetworkError: -1,
+            UnknownError: 0,
+            TimedOut: -1001,
+            UnknownHost: -1003,
+            CannotConnectToHost: -1004,
+            NetworkConnectionLost: -1005
+        }
+
         /**
          * reset upload url
          * if current page protocal is https
@@ -792,94 +880,6 @@
                 return "";
             }
 
-            function StatisticsLogger() {
-                // api to collect upload logs
-                var qiniuCollectUploadLogUrl = "https://uplog.qbox.me/log/3";
-
-                /**
-                 * { log: string, status: number }[] status: 0 待处理， 1 正在发送， 2 发送完毕  
-                 */
-                var queue = [];
-                var TaskStatus = {
-                    waiting: 0,
-                    processing: 1,
-                    finished: 2
-                }
-
-                /**
-                 * send logs to statistics server
-                 * 
-                 * @param {number} code status code
-                 * @param {string} req_id request id
-                 * @param {string} host 
-                 * @param {string} remote_ip
-                 * @param {string} port 
-                 * @param {string} duration 
-                 * @param {string} up_time 
-                 * @param {number} bytes_sent uploaded size (bytes)
-                 * @param {string} up_type js sdk runtime: html5, html4, flash
-                 * @param {number} file_size file total size (bytes)
-                 */
-                this.log = function (code, req_id, host, remote_ip, port, duration, up_time, bytes_sent, up_type, file_size) {
-                    var log = Array.prototype.join.call(arguments, ',');
-                    queue.push({
-                        log: log,
-                        status: TaskStatus.waiting
-                    });
-                    logger.debug("[STATISTICS] send log to statistics server", log);
-                }
-
-                function tick() {
-                    var unFinishedTasks = [];
-                    for (var i = 0; i < queue.length; i++) {
-                        if (queue[i].status !== TaskStatus.finished) {
-                            unFinishedTasks.push(queue[i]);
-                        }
-                        if (queue[i].status === TaskStatus.waiting) {
-                            send(queue[i]);
-                        }
-                    }
-                    queue = unFinishedTasks;
-                }
-
-                function send(task) {
-                    task.status = TaskStatus.processing;
-                    var ajax = that.createAjax();
-                    ajax.open('POST', qiniuCollectUploadLogUrl, true);
-                    ajax.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-                    ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
-                    ajax.onreadystatechange = function () {
-                        if (ajax.readyState === 4) {
-                            if (ajax.status === 200) {
-                                logger.debug("[STATISTICS] successfully report log to server");
-                                task.status = TaskStatus.finished;
-                            } else {
-                                logger.debug("[STATISTICS] report log to server failed");
-                                task.status = TaskStatus.waiting;
-                            }
-                        }
-                    };
-                    ajax.send(task.log);
-                }
-
-                // start a timer to report
-                setInterval(tick, 1000);
-            }
-            var statisticsLogger = new StatisticsLogger();
-            var ExtraErrors = {
-                ZeroSizeFile: -6,
-                InvalidToken: -5,
-                InvalidArgument: -4,
-                InvalidFile: -3,
-                Cancelled: -2,
-                NetworkError: -1,
-                UnknownError: 0,
-                TimedOut: -1001,
-                UnknownHost: -1003,
-                CannotConnectToHost: -1004,
-                NetworkConnectionLost: -1005
-            }
-
             /********** inner function define end **********/
 
             if (op.log_level) {
@@ -1350,9 +1350,10 @@
                     // add send log for upload error
                     var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([^,]*)/) : []
                     var req_id = matchedGroups[2]
-                    var errcode = plupload.HTTP_ERROR ? err.status : err.code, req_id
+                    var errcode = plupload.HTTP_ERROR ? err.status : err.code,
+                        req_id
                     statisticsLogger.log(
-                        errcode == 0 ? ExtraErrors.NetworkError: errcode,
+                        errcode == 0 ? ExtraErrors.NetworkError : errcode,
                         req_id,
                         getDomainFromUrl(up.settings.url),
                         undefined,
