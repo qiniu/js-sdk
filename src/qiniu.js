@@ -1023,6 +1023,7 @@
             // - resume upload with the last breakpoint of file
             uploader.bind('BeforeUpload', function (up, file) {
                 logger.debug("BeforeUpload event activated");
+                file._start_at = new Date();
                 // add a key named speed for file object
                 file.speed = file.speed || 0;
                 ctx = '';
@@ -1358,8 +1359,8 @@
                             getDomainFromUrl(up.settings.url),
                             undefined,
                             getPortFromUrl(up.settings.url),
-                            undefined,
-                            file.lastModifiedDate.getTime(),
+                            (new Date()).getTime() - file._start_at.getTime(),
+                            file._start_at.getTime(),
                             err.file.size * (err.file.percent / 100),
                             "jssdk-" + up.runtime,
                             file.size
@@ -1512,8 +1513,8 @@
                             getDomainFromUrl(up.settings.url),
                             undefined,
                             getPortFromUrl(up.settings.url),
-                            undefined,
-                            file.lastModifiedDate.getTime(),
+                            (new Date()).getTime() - file._start_at.getTime(),
+                            file._start_at.getTime(),
                             file.size,
                             "jssdk-" + up.runtime,
                             file.size
@@ -1537,8 +1538,8 @@
                             getDomainFromUrl(up.settings.url),
                             undefined,
                             getPortFromUrl(up.settings.url),
-                            undefined,
-                            files[i].lastModifiedDate.getTime(),
+                            (new Date()).getTime() - files[i]._start_at.getTime(),
+                            files[i]._start_at.getTime(),
                             files[i].size,
                             "jssdk-" + up.runtime,
                             files[i].size
