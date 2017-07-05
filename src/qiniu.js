@@ -1352,7 +1352,7 @@
 
                     // add send log for upload error
                     if (!op.disable_statistics_report) {
-                        var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([^,]*)/) : [];
+                        var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )(\w*)/) : [];
                         var req_id = matchedGroups[2];
                         var errcode = plupload.HTTP_ERROR ? err.status : err.code;
                         statisticsLogger.log(
@@ -1509,7 +1509,7 @@
 
                     // send statistics log
                     if (!op.disable_statistics_report) {
-                        var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([^,]*)/)[2];
+                        var req_id = info.responseHeaders.match(/(X-Reqid\:\ )(\w*)/)[2];
                         statisticsLogger.log(
                             info.status,
                             req_id,
