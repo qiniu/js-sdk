@@ -1352,17 +1352,18 @@
 
                     // add send log for upload error
                     if (!op.disable_statistics_report) {
-                        var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )(\w*)/) : [];
+                        var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/) : [];
                         var req_id = matchedGroups[2];
                         var errcode = plupload.HTTP_ERROR ? err.status : err.code;
+                        var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime();
                         statisticsLogger.log(
                             errcode === 0 ? ExtraErrors.NetworkError : errcode,
                             req_id,
                             getDomainFromUrl(up.settings.url),
                             undefined,
                             getPortFromUrl(up.settings.url),
-                            nowTime.getTime() - file._start_at.getTime(),
-                            file._start_at.getTime(),
+                            nowTime.getTime() - startAt,
+                            startAt,
                             err.file.size * (err.file.percent / 100),
                             "jssdk-" + up.runtime,
                             file.size
@@ -1509,15 +1510,16 @@
 
                     // send statistics log
                     if (!op.disable_statistics_report) {
-                        var req_id = info.responseHeaders.match(/(X-Reqid\:\ )(\w*)/)[2];
+                        var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/)[2];
+                        var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime();
                         statisticsLogger.log(
                             info.status,
                             req_id,
                             getDomainFromUrl(up.settings.url),
                             undefined,
                             getPortFromUrl(up.settings.url),
-                            nowTime.getTime() - file._start_at.getTime(),
-                            file._start_at.getTime(),
+                            nowTime.getTime() - startAt,
+                            startAt,
                             file.size,
                             "jssdk-" + up.runtime,
                             file.size
@@ -1544,7 +1546,7 @@
                             getPortFromUrl(up.settings.url),
                             nowTime.getTime() - files[i]._start_at.getTime(),
                             files[i]._start_at.getTime(),
-                            files[i].size,
+                            files[i].size * files[i].percent / 100,
                             "jssdk-" + up.runtime,
                             files[i].size
                         );
