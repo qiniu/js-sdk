@@ -1355,7 +1355,7 @@
                         var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/) : [];
                         var req_id = matchedGroups[2];
                         var errcode = plupload.HTTP_ERROR ? err.status : err.code;
-                        var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime()
+                        var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime();
                         statisticsLogger.log(
                             errcode === 0 ? ExtraErrors.NetworkError : errcode,
                             req_id,
@@ -1511,7 +1511,7 @@
                     // send statistics log
                     if (!op.disable_statistics_report) {
                         var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/)[2];
-                        var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime()
+                        var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime();
                         statisticsLogger.log(
                             info.status,
                             req_id,
