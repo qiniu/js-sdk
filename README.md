@@ -85,7 +85,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 <a id="usage"></a>
 ### 准备
 
-- JS-SDK 的上传功能基于 [Plupload](http://www.plupload.com/) 插件封装的，所以需要[下载 Plupload](http://plupload.com/download)，建议使用 2.1.1 版本。
+- JS-SDK 的上传功能基于 [Plupload](http://www.plupload.com/) 插件封装的，所以需要[下载 Plupload](http://plupload.com/download)。
     您也可以访问[ 开放静态文件 CDN ](http://staticfile.org/)，搜索 plupload，使用 CDN 加速的静态文件地址。
 
 - 在使用 JS-SDK 之前，您必须先注册一个七牛帐号，并登录控制台获取一对有效的 AccessKey 和 SecretKey，您可以阅读[ 快速入门 ](https://developer.qiniu.com/kodo/manual/console-quickstart)和[ 安全机制 ](https://developer.qiniu.com/kodo/manual/security#security) 以进一步了解如何正确使用和管理密钥 。
@@ -182,6 +182,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 
     ```JavaScript
     var uploader = Qiniu.uploader({
+        disable_statistics_report: false,   // 禁止自动发送上传统计信息到七牛，默认允许发送
         runtimes: 'html5,flash,html4',      // 上传模式,依次退化
         browse_button: 'pickfiles',         // 上传选择的点选按钮，**必需**
         // 在初始化时，uptoken, uptoken_url, uptoken_func 三个参数中必须有一个被设置
