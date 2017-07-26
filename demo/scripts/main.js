@@ -80,7 +80,8 @@ $(function() {
       },
       'FileUploaded': function(up, file, info) {
         var progress = new FileProgress(file, 'fsUploadProgress');
-        progress.setComplete(up, info);
+        console.log("response:", info.response);
+        progress.setComplete(up, info.response);
       },
       'Error': function(up, err, errTip) {
           $('table').show();
