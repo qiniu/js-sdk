@@ -1403,8 +1403,9 @@
                                         }
                                         var info_extended = {};
                                         plupload.extend(info_extended, that.parseJSON(info.response), res_downtoken);
+                                        info.response = that.stringifyJSON(info_extended);
                                         if (_FileUploaded_Handler) {
-                                            _FileUploaded_Handler(up, file, that.stringifyJSON(info_extended));
+                                            _FileUploaded_Handler(up, file, info);
                                         }
                                     } else {
                                         uploader.trigger('Error', {
