@@ -32,7 +32,7 @@ $(function() {
     // },
     domain: $('#domain').val(),
     get_new_uptoken: false,
-    downtoken_url: '/downtoken',
+    //downtoken_url: '/downtoken',
     // unique_names: true,
     // save_key: true,
     // x_vars: {
