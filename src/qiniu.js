@@ -1362,8 +1362,8 @@
                             getDomainFromUrl(up.settings.url),
                             undefined,
                             getPortFromUrl(up.settings.url),
-                            nowTime.getTime() - startAt,
-                            startAt,
+                            (nowTime.getTime() - startAt)/1000,
+                            startAt/1000,
                             err.file.size * (err.file.percent / 100),
                             "jssdk-" + up.runtime,
                             file.size
@@ -1519,8 +1519,8 @@
                             getDomainFromUrl(up.settings.url),
                             undefined,
                             getPortFromUrl(up.settings.url),
-                            nowTime.getTime() - startAt,
-                            startAt,
+                            (nowTime.getTime() - startAt)/1000,
+                            startAt/1000,
                             file.size,
                             "jssdk-" + up.runtime,
                             file.size
@@ -1545,8 +1545,8 @@
                             getDomainFromUrl(up.settings.url),
                             undefined,
                             getPortFromUrl(up.settings.url),
-                            nowTime.getTime() - files[i]._start_at.getTime(),
-                            files[i]._start_at.getTime(),
+                            (nowTime.getTime() - files[i]._start_at.getTime())/1000,
+                            files[i]._start_at.getTime()/1000,
                             files[i].size * files[i].percent / 100,
                             "jssdk-" + up.runtime,
                             files[i].size
