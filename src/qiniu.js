@@ -1511,7 +1511,7 @@
 
                     // send statistics log
                     if (!op.disable_statistics_report) {
-                        var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/)[2];
+                        var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/i)[2];
                         var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime();
                         statisticsLogger.log(
                             info.status,
