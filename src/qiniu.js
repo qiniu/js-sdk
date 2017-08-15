@@ -1352,7 +1352,6 @@
 
                     // add send log for upload error
                     if (!op.disable_statistics_report) {
-                        console.log(334);
                         var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/) : [];
                         console.log(err);
                         var req_id = matchedGroups[2].replace(/[\r\n]/g,"");
@@ -1381,7 +1380,6 @@
             // - get downtoken from downtoken_url if bucket is private
             // - invoke mkfile api to compose chunks if upload strategy is chunk upload
             uploader.bind('FileUploaded', (function (_FileUploaded_Handler) {
-                console.log(123);
                 return function (up, file, info) {
                     logger.debug("FileUploaded event activated");
                     logger.debug("FileUploaded file: ", file);
@@ -1543,7 +1541,6 @@
                 var nowTime = new Date();
                 // add cancel log
                 if (!op.disable_statistics_report) {
-                    console.log(223);
                     for (var i = 0; i < files.length; i++) {
                         statisticsLogger.log(
                             ExtraErrors.Cancelled,
