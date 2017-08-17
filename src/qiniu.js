@@ -1352,7 +1352,7 @@
 
                     // add send log for upload error
                     if (!op.disable_statistics_report) {
-                        var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/) : [];
+                        var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/i) : [];
                         var req_id = matchedGroups[2];
                         var errcode = plupload.HTTP_ERROR ? err.status : err.code;
                         var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime();
