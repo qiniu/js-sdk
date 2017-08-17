@@ -1,5 +1,5 @@
 /*!
- * qiniu-js-sdk v1.0.21
+ * qiniu-js-sdk v1.0.22
  *
  * Copyright 2015 by Qiniu
  * Released under GPL V2 License.
