@@ -6,7 +6,7 @@
  *
  * GitHub: http://github.com/qiniu/js-sdk
  *
- * Date: 2017-8-10
+ * Date: 2017-8-17
  */
 
 /*global plupload ,moxie*/
@@ -802,7 +802,7 @@
                         var clientTime = getTimestamp(new Date());
                         that.tokenInfo = {
                             serverDelay: clientTime - serverTime,
-                            deadline: putPolicy.deadline,
+                            deadline: putPolicy.deadline/1000,
                             isExpired: function () {
                                 var leftTime = this.deadline - getTimestamp(new Date()) + this.serverDelay;
                                 return leftTime < 600;
@@ -1353,7 +1353,8 @@
                     // add send log for upload error
                     if (!op.disable_statistics_report) {
                         var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/) : [];
-                        var req_id = matchedGroups[2];
+                        console.log(err);
+                        var req_id = matchedGroups[2].replace(/[\r\n]/g,"");
                         var errcode = plupload.HTTP_ERROR ? err.status : err.code;
                         var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime();
                         statisticsLogger.log(
@@ -1363,7 +1364,7 @@
                             undefined,
                             getPortFromUrl(up.settings.url),
                             (nowTime.getTime() - startAt)/1000,
-                            startAt/1000,
+                            parseInt(startAt/1000),
                             err.file.size * (err.file.percent / 100),
                             "jssdk-" + up.runtime,
                             file.size
@@ -1471,7 +1472,6 @@
                         }
                         ajax.open('POST', url, true);
                         ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
-
                         console.log('uptoken:'+that.token);
                         ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
                         var onreadystatechange = function () {
@@ -1514,7 +1514,7 @@
                     // send statistics log
                     if (!op.disable_statistics_report) {
                         console.log(info.responseHeaders);
-                        var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/)[2];
+                        var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/i)[2].replace(/[\r\n]/g,"");
                         var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime();
                         statisticsLogger.log(
                             info.status,
@@ -1523,7 +1523,7 @@
                             undefined,
                             getPortFromUrl(up.settings.url),
                             (nowTime.getTime() - startAt)/1000,
-                            startAt/1000,
+                            parseInt(startAt/1000),
                             file.size,
                             "jssdk-" + up.runtime,
                             file.size

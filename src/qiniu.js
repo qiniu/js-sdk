@@ -1364,7 +1364,7 @@
                             undefined,
                             getPortFromUrl(up.settings.url),
                             (nowTime.getTime() - startAt)/1000,
-                            startAt/1000,
+                            parseInt(startAt/1000),
                             err.file.size * (err.file.percent / 100),
                             "jssdk-" + up.runtime,
                             file.size
@@ -1514,7 +1514,7 @@
                     // send statistics log
                     if (!op.disable_statistics_report) {
                         console.log(info.responseHeaders);
-                        var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/)[2].replace(/[\r\n]/g,"");
+                        var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/i)[2].replace(/[\r\n]/g,"");
                         var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime();
                         statisticsLogger.log(
                             info.status,
@@ -1523,7 +1523,7 @@
                             undefined,
                             getPortFromUrl(up.settings.url),
                             (nowTime.getTime() - startAt)/1000,
-                            startAt/1000,
+                            parseInt(startAt/1000),
                             file.size,
                             "jssdk-" + up.runtime,
                             file.size
