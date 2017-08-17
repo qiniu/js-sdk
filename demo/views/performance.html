@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+  <link rel="stylesheet" href="styles/performance.css">
+  <title>七牛云 - 上传速度检测</title>
+</head>
+<body>
+  <div id="app" class="container">
+    <div class="title">七牛云上传速度检测</div>
+
+    <form id="testform" method="post" enctype="multipart/form-data">
+      <input name="key" id="key" type="hidden" value="a.jpg">
+      <input name="accept" type="hidden" />
+    </form>
+
+    <zone-list :host-map="hostMap" :current-zone="currentZone" :switch-zone="switchZone" :selected-host="selectedHost"></zone-list>
+
+    <span class="run" :class="{'disabled': !selectedHost.host}" @click="uploadTest">开始检测</span>
+    <!-- upload info -->
+    <div class="progress">{{loadMessage}}</div>
+    <div class="uploaded-result">
+      <upload-performance :per='performance' v-if="performance" :warning="!isPerformanceSupported"></upload-performance>
+      <up-headers :headers="headers" v-if="headers"></up-headers>
+    </div>
+  </div>
+  <script src="scripts/http-performance.js"></script>
+  <script src="bower_components/vue/dist/vue.min.js"></script>
+  <script src="scripts/performance.js"></script>
+</body>
+</html>

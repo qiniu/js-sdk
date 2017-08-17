@@ -1,7 +1,7 @@
 {
   "name": "qiniu-js",
   "jsName": "qiniu",
-  "version": "1.0.17.1",
+  "version": "1.0.21",
   "private": false,
   "scripts": {
     "start": "node demo/server.js"
@@ -25,12 +25,16 @@
   "author": "sdk@qiniu.com",
   "contributors": [
     {
+      "name": "luoyeshu0507",
+      "email": "lizhiwei@qiniu.com"
+    },
+    {
       "name": "codedogfish",
       "email": "jackyu@qiniu.com"
     },
     {
-      "name": "dengchenhua",
-      "email": "dengchenhua@qiniu.com"
+      "name": "jinxinxin",
+      "email": "jinxinxin@qiniu.com"
     }
   ],
   "devDependencies": {
@@ -44,7 +48,7 @@
     "grunt-contrib-jshint": "~0.7.2",
     "grunt-contrib-uglify": "~0.2.2",
     "grunt-contrib-watch": "~0.5.3",
-    "qiniu": "~6.1.1"
+    "qiniu": "~7.0.5"
   },
   "license": "MIT"
 }
