@@ -1471,6 +1471,7 @@
                         }
                         ajax.open('POST', url, true);
                         ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+
                         console.log('uptoken:'+that.token);
                         ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
                         var onreadystatechange = function () {
@@ -1512,7 +1513,6 @@
 
                     // send statistics log
                     if (!op.disable_statistics_report) {
-                        console.log(123);
                         console.log(info.responseHeaders);
                         var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/)[2];
                         var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime();
