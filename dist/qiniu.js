@@ -6,7 +6,7 @@
  *
  * GitHub: http://github.com/qiniu/js-sdk
  *
- * Date: 2017-7-26
+ * Date: 2017-8-10
  */
 
 /*global plupload ,moxie*/
@@ -1362,8 +1362,8 @@
                             getDomainFromUrl(up.settings.url),
                             undefined,
                             getPortFromUrl(up.settings.url),
-                            nowTime.getTime() - startAt,
-                            startAt,
+                            (nowTime.getTime() - startAt)/1000,
+                            startAt/1000,
                             err.file.size * (err.file.percent / 100),
                             "jssdk-" + up.runtime,
                             file.size
@@ -1471,6 +1471,8 @@
                         }
                         ajax.open('POST', url, true);
                         ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+
+                        console.log('uptoken:'+that.token);
                         ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
                         var onreadystatechange = function () {
                             logger.debug("ajax.readyState: ", ajax.readyState);
@@ -1511,6 +1513,7 @@
 
                     // send statistics log
                     if (!op.disable_statistics_report) {
+                        console.log(info.responseHeaders);
                         var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/)[2];
                         var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime();
                         statisticsLogger.log(
@@ -1519,8 +1522,8 @@
                             getDomainFromUrl(up.settings.url),
                             undefined,
                             getPortFromUrl(up.settings.url),
-                            nowTime.getTime() - startAt,
-                            startAt,
+                            (nowTime.getTime() - startAt)/1000,
+                            startAt/1000,
                             file.size,
                             "jssdk-" + up.runtime,
                             file.size
@@ -1545,8 +1548,8 @@
                             getDomainFromUrl(up.settings.url),
                             undefined,
                             getPortFromUrl(up.settings.url),
-                            nowTime.getTime() - files[i]._start_at.getTime(),
-                            files[i]._start_at.getTime(),
+                            (nowTime.getTime() - files[i]._start_at.getTime())/1000,
+                            files[i]._start_at.getTime()/1000,
                             files[i].size * files[i].percent / 100,
                             "jssdk-" + up.runtime,
                             files[i].size

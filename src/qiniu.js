@@ -802,7 +802,7 @@
                         var clientTime = getTimestamp(new Date());
                         that.tokenInfo = {
                             serverDelay: clientTime - serverTime,
-                            deadline: putPolicy.deadline,
+                            deadline: putPolicy.deadline/1000,
                             isExpired: function () {
                                 var leftTime = this.deadline - getTimestamp(new Date()) + this.serverDelay;
                                 return leftTime < 600;
@@ -1353,7 +1353,8 @@
                     // add send log for upload error
                     if (!op.disable_statistics_report) {
                         var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/) : [];
-                        var req_id = matchedGroups[2];
+                        console.log(err);
+                        var req_id = matchedGroups[2].replace(/[\r\n]/g,"");
                         var errcode = plupload.HTTP_ERROR ? err.status : err.code;
                         var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime();
                         statisticsLogger.log(
@@ -1471,6 +1472,7 @@
                         }
                         ajax.open('POST', url, true);
                         ajax.setRequestHeader('Content-Type', 'text/plain;charset=UTF-8');
+                        console.log('uptoken:'+that.token);
                         ajax.setRequestHeader('Authorization', 'UpToken ' + that.token);
                         var onreadystatechange = function () {
                             logger.debug("ajax.readyState: ", ajax.readyState);
@@ -1511,7 +1513,8 @@
 
                     // send statistics log
                     if (!op.disable_statistics_report) {
-                        var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/i)[2];
+                        console.log(info.responseHeaders);
+                        var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/)[2].replace(/[\r\n]/g,"");
                         var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime();
                         statisticsLogger.log(
                             info.status,
