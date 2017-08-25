@@ -70,7 +70,6 @@ $(function() {
       },
       'UploadProgress': function(up, file) {
         var progress = new FileProgress(file, 'fsUploadProgress');
-        console.log(223);
         var chunk_size = plupload.parseSize(this.getOption(
           'chunk_size'));
         progress.setProgress(file.percent + "%", file.speed,

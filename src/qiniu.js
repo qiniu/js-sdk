@@ -790,10 +790,7 @@
                     if (ajax.status === 200) {
                         var res = that.parseJSON(ajax.responseText);
                         that.token = res.uptoken;
-                        console.log("token:"+that.token);
                         var segments = that.token.split(":");
-                        console.log(segments[2]);
-                        console.log(that.URLSafeBase64Decode(segments[2]));
                         var putPolicy = that.parseJSON(that.URLSafeBase64Decode(segments[2]));
                         console.log(putPolicy);
                         if (!that.tokenMap) {
@@ -1016,7 +1013,7 @@
                     //     logger.debug("file: ", file);
                     // });
                 }
-                //up.refresh(); // Reposition Flash/Silverlight
+                up.refresh(); // Reposition Flash/Silverlight
             });
 
             logger.debug("bind FilesAdded event");
@@ -1187,7 +1184,6 @@
             // bind 'UploadProgress' event
             // calculate upload speed
             uploader.bind('UploadProgress', function (up, file) {
-                console.log(123);
                 logger.trace("UploadProgress event activated");
                 speedCalInfo.currentTime = new Date().getTime();
                 var timeUsed = speedCalInfo.currentTime - speedCalInfo.startTime; // ms
