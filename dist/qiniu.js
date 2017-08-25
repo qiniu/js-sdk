@@ -1,12 +1,16 @@
 /*!
- * qiniu-js-sdk v@VERSION
+ * qiniu-js-sdk v1.0.22
  *
  * Copyright 2015 by Qiniu
  * Released under GPL V2 License.
  *
  * GitHub: http://github.com/qiniu/js-sdk
  *
- * Date: @DATE
+<<<<<<< HEAD
+ * Date: 2017-8-17
+=======
+ * Date: 2017-8-25
+>>>>>>> 解决点击处理效果没反应的情况
  */
 
 /*global plupload ,moxie*/
@@ -15,7 +19,6 @@
 /*exported QiniuJsSDK */
 
 ;(function (global) {
-
 
     /**
      * Creates new cookie or removes cookie with negative expiration
@@ -66,11 +69,6 @@
     }
 
     function QiniuJsSDK() {
-        var moxie = require('./plupload/moxie');
-        window.moxie = moxie;
-        var plupload = require('./plupload/plupload.dev');
-        window.plupload = plupload;
-
 
         var that = this;
 
@@ -88,8 +86,8 @@
                 all = div.getElementsByTagName('i');
             while (
                 div.innerHTML = '<!--[if gt IE ' + v + ']><i></i><![endif]-->',
-                    all[0]
-                ) {
+                all[0]
+            ) {
                 v++;
             }
             return v > 4 ? v : false;
@@ -151,9 +149,9 @@
 
         var qiniuUploadUrl;
         if (window.location.protocol === 'https:') {
-            qiniuUploadUrl = 'https://upload.qiniup.com';
+            qiniuUploadUrl = 'https://up.qbox.me';
         } else {
-            qiniuUploadUrl = 'http://upload.qiniup.com';
+            qiniuUploadUrl = 'http://upload.qiniu.com';
         }
 
         /**
@@ -162,17 +160,17 @@
          * @type {Array}
          */
         var qiniuUploadUrls = [
-            "http://upload.qiniup.com",
-            "http://up.qiniup.com"
+            "http://upload.qiniu.com",
+            "http://up.qiniu.com"
         ];
 
         var qiniuUpHosts = {
             "http": [
-                "http://upload.qiniup.com",
-                "http://up.qiniup.com"
+                "http://upload.qiniu.com",
+                "http://up.qiniu.com"
             ],
             "https": [
-                "https://upload.qiniup.com"
+                "https://up.qbox.me"
             ]
         };
 
@@ -183,7 +181,7 @@
             var qiniuCollectUploadLogUrl = "https://uplog.qbox.me/log/3";
 
             /**
-             * { log: string, status: number }[] status: 0 待处理， 1 正在发送， 2 发送完毕
+             * { log: string, status: number }[] status: 0 待处理， 1 正在发送， 2 发送完毕  
              */
             var queue = [];
             var TaskStatus = {
@@ -194,14 +192,14 @@
 
             /**
              * send logs to statistics server
-             *
+             * 
              * @param {number} code status code
              * @param {string} req_id request id
-             * @param {string} host
+             * @param {string} host 
              * @param {string} remote_ip
-             * @param {string} port
-             * @param {string} duration
-             * @param {string} up_time
+             * @param {string} port 
+             * @param {string} duration 
+             * @param {string} up_time 
              * @param {number} bytes_sent uploaded size (bytes)
              * @param {string} up_type js sdk runtime: html5, html4, flash
              * @param {number} file_size file total size (bytes)
@@ -273,24 +271,14 @@
          * else
          *     it will set 'qiniuUploadUrl' value with 'qiniuUploadUrls' looply
          */
-        this.resetUploadUrl = function (num) {
-            logger.debug('num: ' + num);
-            if( num == 0) {
-                logger.debug("use main uphost");
-                var hosts = qiniuUpHosts.main;
-                qiniuUploadUrl = window.location.protocol === 'https:' ? "https://" + hosts[0] : "http://" + hosts[0];
-            } else {
-                logger.debug("use backup uphost");
-                var hosts = qiniuUpHosts.backup;
-                if( num % 2 == 0) {
-                    qiniuUploadUrl = window.location.protocol === 'https:' ? "https://" + hosts[1] : "http://" + hosts[1];
-                } else {
-                    qiniuUploadUrl = window.location.protocol === 'https:' ? "https://" + hosts[0] : "http://" + hosts[0];
-                }
-            }
-            //qiniuUploadUrl = window.location.protocol === 'https:' ? "https://" + hosts[0] : "http://" + hosts[0];
+        this.resetUploadUrl = function () {
+            var hosts = window.location.protocol === 'https:' ? qiniuUpHosts.https : qiniuUpHosts.http;
+            var i = changeUrlTimes % hosts.length;
+            qiniuUploadUrl = hosts[i];
+            changeUrlTimes++;
             logger.debug('resetUploadUrl: ' + qiniuUploadUrl);
         };
+
         // this.resetUploadUrl();
 
 
@@ -651,40 +639,40 @@
 
             /********** inner function define start **********/
 
-                // according the different condition to reset chunk size
-                // and the upload strategy according with the chunk size
-                // when chunk size is zero will cause to direct upload
-                // see the statement binded on 'BeforeUpload' event
+            // according the different condition to reset chunk size
+            // and the upload strategy according with the chunk size
+            // when chunk size is zero will cause to direct upload
+            // see the statement binded on 'BeforeUpload' event
             var reset_chunk_size = function () {
-                    var ie = that.detectIEVersion();
-                    var BLOCK_BITS, MAX_CHUNK_SIZE, chunk_size;
-                    // case Safari 5、Windows 7、iOS 7 set isSpecialSafari to true
-                    var isSpecialSafari = (moxie.core.utils.Env.browser === "Safari" && moxie.core.utils.Env.version <= 5 && moxie.core.utils.Env.os === "Windows" && moxie.core.utils.Env.osVersion === "7") || (moxie.core.utils.Env.browser === "Safari" && moxie.core.utils.Env.os === "iOS" && moxie.core.utils.Env.osVersion === "7");
-                    // case IE 9-，chunk_size is not empty and flash is included in runtimes
-                    // set op.chunk_size to zero
-                    //if (ie && ie < 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
-                    if (ie && ie < 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
-                        //  link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
-                        //  when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
-                        op.chunk_size = 0;
-                    } else if (isSpecialSafari) {
-                        // win7 safari / iOS7 safari have bug when in chunk upload mode
-                        // reset chunk_size to 0
-                        // disable chunk in special version safari
-                        op.chunk_size = 0;
-                    } else {
-                        BLOCK_BITS = 20;
-                        MAX_CHUNK_SIZE = 4 << BLOCK_BITS; //4M
+                var ie = that.detectIEVersion();
+                var BLOCK_BITS, MAX_CHUNK_SIZE, chunk_size;
+                // case Safari 5、Windows 7、iOS 7 set isSpecialSafari to true
+                var isSpecialSafari = (moxie.core.utils.Env.browser === "Safari" && moxie.core.utils.Env.version <= 5 && moxie.core.utils.Env.os === "Windows" && moxie.core.utils.Env.osVersion === "7") || (moxie.core.utils.Env.browser === "Safari" && moxie.core.utils.Env.os === "iOS" && moxie.core.utils.Env.osVersion === "7");
+                // case IE 9-，chunk_size is not empty and flash is included in runtimes
+                // set op.chunk_size to zero
+                //if (ie && ie < 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
+                if (ie && ie < 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
+                    //  link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
+                    //  when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
+                    op.chunk_size = 0;
+                } else if (isSpecialSafari) {
+                    // win7 safari / iOS7 safari have bug when in chunk upload mode
+                    // reset chunk_size to 0
+                    // disable chunk in special version safari
+                    op.chunk_size = 0;
+                } else {
+                    BLOCK_BITS = 20;
+                    MAX_CHUNK_SIZE = 4 << BLOCK_BITS; //4M
 
-                        chunk_size = plupload.parseSize(op.chunk_size);
-                        if (chunk_size > MAX_CHUNK_SIZE) {
-                            op.chunk_size = MAX_CHUNK_SIZE;
-                        }
-                        // qiniu service  max_chunk_size is 4m
-                        // reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
+                    chunk_size = plupload.parseSize(op.chunk_size);
+                    if (chunk_size > MAX_CHUNK_SIZE) {
+                        op.chunk_size = MAX_CHUNK_SIZE;
                     }
-                    // if op.chunk_size set 0 will be cause to direct upload
-                };
+                    // qiniu service  max_chunk_size is 4m
+                    // reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
+                }
+                // if op.chunk_size set 0 will be cause to direct upload
+            };
 
             var getHosts = function (hosts) {
                 var result = [];
@@ -728,7 +716,7 @@
                 var putPolicy = getPutPolicy(uptoken);
                 // var uphosts_url = "//uc.qbox.me/v1/query?ak="+ak+"&bucket="+putPolicy.scope;
                 // IE9 does not support protocol relative url
-                var uphosts_url = window.location.protocol + "//api.qiniu.com/v2/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket;
+                var uphosts_url = window.location.protocol + "//uc.qbox.me/v1/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket;
                 logger.debug("putPolicy: ", putPolicy);
                 logger.debug("get uphosts from: ", uphosts_url);
                 var ie = that.detectIEVersion();
@@ -746,10 +734,10 @@
                         logger.debug("ajax.status: ", ajax.status);
                         if (ajax.status < 400) {
                             var res = that.parseJSON(ajax.responseText);
-                            qiniuUpHosts.main = res.up.acc.main;
-                            qiniuUpHosts.backup = res.up.acc.backup;
+                            qiniuUpHosts.http = getHosts(res.http.up);
+                            qiniuUpHosts.https = getHosts(res.https.up);
                             logger.debug("get new uphosts: ", qiniuUpHosts);
-                            that.resetUploadUrl(0);
+                            that.resetUploadUrl();
                         } else {
                             logger.error("get uphosts error: ", ajax.responseText);
                         }
@@ -794,7 +782,7 @@
                     logger.debug("get uptoken from: ", that.uptoken_url);
                     // TODO: use mOxie
                     var ajax = that.createAjax();
-                    ajax.open('GET', that.uptoken_url, false);
+                    ajax.open('GET', that.uptoken_url + '?' + (+new Date()), false);
                     // ajax.setRequestHeader("If-Modified-Since", "0");
                     // ajax.onreadystatechange = function() {
                     //     if (ajax.readyState === 4 && ajax.status === 200) {
@@ -822,7 +810,7 @@
                         var clientTime = getTimestamp(new Date());
                         that.tokenInfo = {
                             serverDelay: clientTime - serverTime,
-                            deadline: putPolicy.deadline,
+                            deadline: putPolicy.deadline/1000,
                             isExpired: function () {
                                 var leftTime = this.deadline - getTimestamp(new Date()) + this.serverDelay;
                                 return leftTime < 600;
@@ -1251,13 +1239,13 @@
 
             logger.debug("bind ChunkUploaded event");
 
-            var retries = op.max_retries;
+            var retries = qiniuUploadUrls.length;
 
             // if error is unkown switch upload url and retry
             var unknow_error_retry = function (file) {
                 if (retries-- > 0) {
                     setTimeout(function () {
-                        that.resetUploadUrl(retries);
+                        that.resetUploadUrl();
                         file.status = plupload.QUEUED;
                         uploader.stop();
                         uploader.start();
@@ -1372,6 +1360,7 @@
                     up.refresh(); // Reposition Flash/Silverlight
 
                     // add send log for upload error
+<<<<<<< HEAD
                     if (!op.disable_statistics_report) {
                         var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/) : [];
                         console.log(err);
@@ -1391,6 +1380,27 @@
                             file.size
                         );
                     }
+=======
+                    // if (!op.disable_statistics_report) {
+                    //     var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/) : [];
+                    //     console.log(err);
+                    //     var req_id = matchedGroups[2].replace(/[\r\n]/g,"");
+                    //     var errcode = plupload.HTTP_ERROR ? err.status : err.code;
+                    //     var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime();
+                    //     statisticsLogger.log(
+                    //         errcode === 0 ? ExtraErrors.NetworkError : errcode,
+                    //         req_id,
+                    //         getDomainFromUrl(up.settings.url),
+                    //         undefined,
+                    //         getPortFromUrl(up.settings.url),
+                    //         (nowTime.getTime() - startAt)/1000,
+                    //         startAt/1000,
+                    //         err.file.size * (err.file.percent / 100),
+                    //         "jssdk-" + up.runtime,
+                    //         file.size
+                    //     );
+                    // }
+>>>>>>> 解决点击处理效果没反应的情况
                 };
             })(_Error_Handler));
 
@@ -1405,7 +1415,7 @@
                     logger.debug("FileUploaded event activated");
                     logger.debug("FileUploaded file: ", file);
                     logger.debug("FileUploaded info: ", info);
-                    var nowTime = new Date();
+                    //var nowTime = new Date();
                     var last_step = function (up, file, info) {
                         logger.debug("FileUploaded last step:", info);
                         if (op.downtoken_url) {
@@ -1533,6 +1543,7 @@
                     }
 
                     // send statistics log
+<<<<<<< HEAD
                     if (!op.disable_statistics_report) {
                         console.log(info.responseHeaders);
                         var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/i)[2].replace(/[\r\n]/g,"");
@@ -1550,6 +1561,25 @@
                             file.size
                         );
                     }
+=======
+                    // if (!op.disable_statistics_report) {
+                    //     console.log(info.responseHeaders);
+                    //     var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/)[2].replace(/[\r\n]/g,"");
+                    //     var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime();
+                    //     statisticsLogger.log(
+                    //         info.status,
+                    //         req_id,
+                    //         getDomainFromUrl(up.settings.url),
+                    //         undefined,
+                    //         getPortFromUrl(up.settings.url),
+                    //         (nowTime.getTime() - startAt)/1000,
+                    //         startAt/1000,
+                    //         file.size,
+                    //         "jssdk-" + up.runtime,
+                    //         file.size
+                    //     );
+                    // }
+>>>>>>> 解决点击处理效果没反应的情况
                 };
             })(_FileUploaded_Handler));
 
@@ -1606,20 +1636,245 @@
             }
             return domain + key;
         };
+
+        /**
+         * invoke the imageView2 api of Qiniu
+         * @param  {Object} api params
+         * @param  {String} key of file
+         * @return {String} url of processed image
+         */
+        this.imageView2 = function (op, key) {
+
+            if (!/^\d$/.test(op.mode)) {
+                return false;
+            }
+
+            var mode = op.mode,
+                w = op.w || '',
+                h = op.h || '',
+                q = op.q || '',
+                format = op.format || '';
+
+            if (!w && !h) {
+                return false;
+            }
+
+            var imageUrl = 'imageView2/' + mode;
+            imageUrl += w ? '/w/' + w : '';
+            imageUrl += h ? '/h/' + h : '';
+            imageUrl += q ? '/q/' + q : '';
+            imageUrl += format ? '/format/' + format : '';
+            if (key) {
+                imageUrl = this.getUrl(key) + '?' + imageUrl;
+            }
+            return imageUrl;
+        };
+
+        /**
+         * invoke the imageMogr2 api of Qiniu
+         * @param  {Object} api params
+         * @param  {String} key of file
+         * @return {String} url of processed image
+         */
+        this.imageMogr2 = function (op, key) {
+            var auto_orient = op['auto-orient'] || '',
+                thumbnail = op.thumbnail || '',
+                strip = op.strip || '',
+                gravity = op.gravity || '',
+                crop = op.crop || '',
+                quality = op.quality || '',
+                rotate = op.rotate || '',
+                format = op.format || '',
+                blur = op.blur || '';
+            //Todo check option
+
+            var imageUrl = 'imageMogr2';
+
+            imageUrl += auto_orient ? '/auto-orient' : '';
+            imageUrl += thumbnail ? '/thumbnail/' + thumbnail : '';
+            imageUrl += strip ? '/strip' : '';
+            imageUrl += gravity ? '/gravity/' + gravity : '';
+            imageUrl += quality ? '/quality/' + quality : '';
+            imageUrl += crop ? '/crop/' + crop : '';
+            imageUrl += rotate ? '/rotate/' + rotate : '';
+            imageUrl += format ? '/format/' + format : '';
+            imageUrl += blur ? '/blur/' + blur : '';
+
+            if (key) {
+                imageUrl = this.getUrl(key) + '?' + imageUrl;
+            }
+            return imageUrl;
+        };
+
+        /**
+         * invoke the watermark api of Qiniu
+         * @param  {Object} api params
+         * @param  {String} key of file
+         * @return {String} url of processed image
+         */
+        this.watermark = function (op, key) {
+            var mode = op.mode;
+            if (!mode) {
+                return false;
+            }
+
+            var imageUrl = 'watermark/' + mode;
+
+            if (mode === 1) {
+                var image = op.image || '';
+                if (!image) {
+                    return false;
+                }
+                imageUrl += image ? '/image/' + this.URLSafeBase64Encode(image) : '';
+            } else if (mode === 2) {
+                var text = op.text ? op.text : '',
+                    font = op.font ? op.font : '',
+                    fontsize = op.fontsize ? op.fontsize : '',
+                    fill = op.fill ? op.fill : '';
+                if (!text) {
+                    return false;
+                }
+                imageUrl += text ? '/text/' + this.URLSafeBase64Encode(text) : '';
+                imageUrl += font ? '/font/' + this.URLSafeBase64Encode(font) : '';
+                imageUrl += fontsize ? '/fontsize/' + fontsize : '';
+                imageUrl += fill ? '/fill/' + this.URLSafeBase64Encode(fill) : '';
+            } else {
+                // Todo mode3
+                return false;
+            }
+
+            var dissolve = op.dissolve || '',
+                gravity = op.gravity || '',
+                dx = op.dx || '',
+                dy = op.dy || '';
+
+            imageUrl += dissolve ? '/dissolve/' + dissolve : '';
+            imageUrl += gravity ? '/gravity/' + gravity : '';
+            imageUrl += dx ? '/dx/' + dx : '';
+            imageUrl += dy ? '/dy/' + dy : '';
+
+            if (key) {
+                imageUrl = this.getUrl(key) + '?' + imageUrl;
+            }
+            return imageUrl;
+        };
+
+        /**
+         * invoke the imageInfo api of Qiniu
+         * @param  {String} key of file
+         * @return {Object} image info
+         */
+        this.imageInfo = function (key) {
+            if (!key) {
+                return false;
+            }
+            var url = this.getUrl(key) + '?imageInfo';
+            var xhr = this.createAjax();
+            var info;
+            var that = this;
+            xhr.open('GET', url, false);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    info = that.parseJSON(xhr.responseText);
+                }
+            };
+            xhr.send();
+            return info;
+        };
+
+        /**
+         * invoke the exif api of Qiniu
+         * @param  {String} key of file
+         * @return {Object} image exif
+         */
+        this.exif = function (key) {
+            if (!key) {
+                return false;
+            }
+            var url = this.getUrl(key) + '?exif';
+            var xhr = this.createAjax();
+            var info;
+            var that = this;
+            xhr.open('GET', url, false);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    info = that.parseJSON(xhr.responseText);
+                }
+            };
+            xhr.send();
+            return info;
+        };
+
+        /**
+         * invoke the exif or imageInfo api of Qiniu
+         * according with type param
+         * @param  {String} ['exif'|'imageInfo']type of info
+         * @param  {String} key of file
+         * @return {Object} image exif or info
+         */
+        this.get = function (type, key) {
+            if (!key || !type) {
+                return false;
+            }
+            if (type === 'exif') {
+                return this.exif(key);
+            } else if (type === 'imageInfo') {
+                return this.imageInfo(key);
+            }
+            return false;
+        };
+
+        /**
+         * invoke api of Qiniu like a pipeline
+         * @param  {Array of Object} params of a series api call
+         * each object in array is options of api which name is set as 'fop' property
+         * each api's output will be next api's input
+         * @param  {String} key of file
+         * @return {String|Boolean} url of processed image
+         */
+        this.pipeline = function (arr, key) {
+            var isArray = Object.prototype.toString.call(arr) === '[object Array]';
+            var option, errOp, imageUrl = '';
+            if (isArray) {
+                for (var i = 0, len = arr.length; i < len; i++) {
+                    option = arr[i];
+                    if (!option.fop) {
+                        return false;
+                    }
+                    switch (option.fop) {
+                        case 'watermark':
+                            imageUrl += this.watermark(option) + '|';
+                            break;
+                        case 'imageView2':
+                            imageUrl += this.imageView2(option) + '|';
+                            break;
+                        case 'imageMogr2':
+                            imageUrl += this.imageMogr2(option) + '|';
+                            break;
+                        default:
+                            errOp = true;
+                            break;
+                    }
+                    if (errOp) {
+                        return false;
+                    }
+                }
+                if (key) {
+                    imageUrl = this.getUrl(key) + '?' + imageUrl;
+                    var length = imageUrl.length;
+                    if (imageUrl.slice(length - 1) === '|') {
+                        imageUrl = imageUrl.slice(0, length - 1);
+                    }
+                }
+                return imageUrl;
+            }
+            return false;
+        };
     }
 
     var Qiniu = new QiniuJsSDK();
 
     global.Qiniu = Qiniu;
     global.QiniuJsSDK = QiniuJsSDK;
-    if (typeof module !== 'undefined' && module.exports) {
-        module.exports = QiniuJsSDK;
-    } else if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) {
-        // register as 'qiniu-js', consistent with npm package name
-        define('qiniu-js', ['./plupload/moxie.js','./plupload/plupload.dev.js'], function () {
-            return QiniuJsSDK;
-        });
-    } else {
-        global.QiniuJsSDK = QiniuJsSDK;
-    }
+
 })(window);
