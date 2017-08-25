@@ -808,7 +808,6 @@
                         that.token = res.uptoken;
                         var segments = that.token.split(":");
                         var putPolicy = that.parseJSON(that.URLSafeBase64Decode(segments[2]));
-                        console.log(putPolicy);
                         if (!that.tokenMap) {
                             that.tokenMap = {};
                         }
