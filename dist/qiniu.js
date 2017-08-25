@@ -6,11 +6,7 @@
  *
  * GitHub: http://github.com/qiniu/js-sdk
  *
-<<<<<<< HEAD
- * Date: 2017-8-17
-=======
  * Date: 2017-8-25
->>>>>>> 解决点击处理效果没反应的情况
  */
 
 /*global plupload ,moxie*/
@@ -796,10 +792,8 @@
                         that.token = res.uptoken;
                         console.log("token:"+that.token);
                         var segments = that.token.split(":");
-                        console.log(segments[2]);
                         console.log(that.URLSafeBase64Decode(segments[2]));
                         var putPolicy = that.parseJSON(that.URLSafeBase64Decode(segments[2]));
-                        console.log(putPolicy);
                         if (!that.tokenMap) {
                             that.tokenMap = {};
                         }
@@ -1191,7 +1185,6 @@
             // bind 'UploadProgress' event
             // calculate upload speed
             uploader.bind('UploadProgress', function (up, file) {
-                console.log(123);
                 logger.trace("UploadProgress event activated");
                 speedCalInfo.currentTime = new Date().getTime();
                 var timeUsed = speedCalInfo.currentTime - speedCalInfo.startTime; // ms
@@ -1263,7 +1256,7 @@
                 return function (up, err) {
                     logger.error("Error event activated");
                     logger.error("err: ", err);
-                    //var nowTime = new Date();
+                    var nowTime = new Date();
                     var errTip = '';
                     var file = err.file;
                     if (file) {
@@ -1360,7 +1353,6 @@
                     up.refresh(); // Reposition Flash/Silverlight
 
                     // add send log for upload error
-<<<<<<< HEAD
                     if (!op.disable_statistics_report) {
                         var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/) : [];
                         console.log(err);
@@ -1380,27 +1372,6 @@
                             file.size
                         );
                     }
-=======
-                    // if (!op.disable_statistics_report) {
-                    //     var matchedGroups = (err && err.responseHeaders && err.responseHeaders.match) ? err.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/) : [];
-                    //     console.log(err);
-                    //     var req_id = matchedGroups[2].replace(/[\r\n]/g,"");
-                    //     var errcode = plupload.HTTP_ERROR ? err.status : err.code;
-                    //     var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime();
-                    //     statisticsLogger.log(
-                    //         errcode === 0 ? ExtraErrors.NetworkError : errcode,
-                    //         req_id,
-                    //         getDomainFromUrl(up.settings.url),
-                    //         undefined,
-                    //         getPortFromUrl(up.settings.url),
-                    //         (nowTime.getTime() - startAt)/1000,
-                    //         startAt/1000,
-                    //         err.file.size * (err.file.percent / 100),
-                    //         "jssdk-" + up.runtime,
-                    //         file.size
-                    //     );
-                    // }
->>>>>>> 解决点击处理效果没反应的情况
                 };
             })(_Error_Handler));
 
@@ -1415,7 +1386,7 @@
                     logger.debug("FileUploaded event activated");
                     logger.debug("FileUploaded file: ", file);
                     logger.debug("FileUploaded info: ", info);
-                    //var nowTime = new Date();
+                    var nowTime = new Date();
                     var last_step = function (up, file, info) {
                         logger.debug("FileUploaded last step:", info);
                         if (op.downtoken_url) {
@@ -1543,7 +1514,6 @@
                     }
 
                     // send statistics log
-<<<<<<< HEAD
                     if (!op.disable_statistics_report) {
                         console.log(info.responseHeaders);
                         var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/i)[2].replace(/[\r\n]/g,"");
@@ -1561,25 +1531,6 @@
                             file.size
                         );
                     }
-=======
-                    // if (!op.disable_statistics_report) {
-                    //     console.log(info.responseHeaders);
-                    //     var req_id = info.responseHeaders.match(/(X-Reqid\:\ )([\w\.\%-]*)/)[2].replace(/[\r\n]/g,"");
-                    //     var startAt = file._start_at ? file._start_at.getTime() : nowTime.getTime();
-                    //     statisticsLogger.log(
-                    //         info.status,
-                    //         req_id,
-                    //         getDomainFromUrl(up.settings.url),
-                    //         undefined,
-                    //         getPortFromUrl(up.settings.url),
-                    //         (nowTime.getTime() - startAt)/1000,
-                    //         startAt/1000,
-                    //         file.size,
-                    //         "jssdk-" + up.runtime,
-                    //         file.size
-                    //     );
-                    // }
->>>>>>> 解决点击处理效果没反应的情况
                 };
             })(_FileUploaded_Handler));
 

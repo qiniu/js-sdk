@@ -1259,7 +1259,7 @@
                 return function (up, err) {
                     logger.error("Error event activated");
                     logger.error("err: ", err);
-                    //var nowTime = new Date();
+                    var nowTime = new Date();
                     var errTip = '';
                     var file = err.file;
                     if (file) {
