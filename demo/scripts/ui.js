@@ -209,6 +209,7 @@ FileProgress.prototype.setComplete = function(up, info) {
   } else {
     var domain = up.getOption('domain');
     url = domain + encodeURI(res.key);
+    console.log("url:"+url)
     var link = domain + res.key;
     str = "<div><strong>Link:</strong><a href=" + url + " target='_blank' > " +
       link + "</a></div>" +
@@ -278,6 +279,7 @@ FileProgress.prototype.setComplete = function(up, info) {
           $('#myModal-img').find('.text-warning').show();
         }
         var newImg = new Image();
+        console.log("height:"+height)
         modalBody.find('img').attr('src', 'images/loading.gif');
         newImg.onload = function() {
           modalBody.find('img').attr('src', url).data('key', key).data(
@@ -300,10 +302,12 @@ FileProgress.prototype.setComplete = function(up, info) {
           '.origin-height').text(), 10);
         if (height > $(window).height() - height_space) {
           height = parseInt($(window).height() - height_space, 10);
+          console.log("height3:"+parseInt($(window).height(),10))
         } else {
           height = parseInt(height, 10) || 300;
           //set a default height 300 for ie9-
         }
+        console.log("height2:"+height)
         var fopArr = [];
         fopArr.push({
           fop: 'imageView2',
