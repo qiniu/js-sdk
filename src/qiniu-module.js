@@ -66,6 +66,10 @@
     }
 
     function QiniuJsSDK() {
+        var moxie = require('./moxie');
+        window.moxie = moxie;
+        var plupload = require('./plupload.dev');
+        window.plupload = plupload;
 
 
         var that = this;
@@ -1826,4 +1830,14 @@
 
     global.Qiniu = Qiniu;
     global.QiniuJsSDK = QiniuJsSDK;
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = QiniuJsSDK;
+    } else if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) {
+        // register as 'qiniu-js', consistent with npm package name
+        define('qiniu-js', ['./moxie','./plupload.dev'], function () {
+            return QiniuJsSDK;
+        });
+    } else {
+        global.QiniuJsSDK = QiniuJsSDK;
+    }
 })(window);
