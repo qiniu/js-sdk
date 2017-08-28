@@ -48,7 +48,8 @@
     "grunt-contrib-jshint": "~0.7.2",
     "grunt-contrib-uglify": "~0.2.2",
     "grunt-contrib-watch": "~0.5.3",
-    "qiniu": "~7.0.5"
+    "qiniu": "~7.0.5",
+    "webpack": "^3.5.5"
   },
   "license": "MIT"
 }
