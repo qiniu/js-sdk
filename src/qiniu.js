@@ -16,6 +16,7 @@
 
 ;(function (global) {
 
+
     /**
      * Creates new cookie or removes cookie with negative expiration
      * @param  key       The key or identifier for the store
@@ -65,6 +66,11 @@
     }
 
     function QiniuJsSDK() {
+        var moxie = require('./moxie');
+        window.moxie = moxie;
+        var plupload = require('./plupload.dev');
+        window.plupload = plupload;
+
 
         var that = this;
 
@@ -82,8 +88,8 @@
                 all = div.getElementsByTagName('i');
             while (
                 div.innerHTML = '<!--[if gt IE ' + v + ']><i></i><![endif]-->',
-                all[0]
-            ) {
+                    all[0]
+                ) {
                 v++;
             }
             return v > 4 ? v : false;
@@ -177,7 +183,7 @@
             var qiniuCollectUploadLogUrl = "https://uplog.qbox.me/log/3";
 
             /**
-             * { log: string, status: number }[] status: 0 待处理， 1 正在发送， 2 发送完毕  
+             * { log: string, status: number }[] status: 0 待处理， 1 正在发送， 2 发送完毕
              */
             var queue = [];
             var TaskStatus = {
@@ -188,14 +194,14 @@
 
             /**
              * send logs to statistics server
-             * 
+             *
              * @param {number} code status code
              * @param {string} req_id request id
-             * @param {string} host 
+             * @param {string} host
              * @param {string} remote_ip
-             * @param {string} port 
-             * @param {string} duration 
-             * @param {string} up_time 
+             * @param {string} port
+             * @param {string} duration
+             * @param {string} up_time
              * @param {number} bytes_sent uploaded size (bytes)
              * @param {string} up_type js sdk runtime: html5, html4, flash
              * @param {number} file_size file total size (bytes)
@@ -269,8 +275,8 @@
          */
         this.resetUploadUrl = function () {
             var hosts = window.location.protocol === 'https:' ? qiniuUpHosts.https : qiniuUpHosts.http;
-            var i = changeUrlTimes % hosts.length;
-            qiniuUploadUrl = hosts[i];
+            var i = changeUrlTimes;
+            qiniuUploadUrl = hosts[0];
             changeUrlTimes++;
             logger.debug('resetUploadUrl: ' + qiniuUploadUrl);
         };
@@ -635,40 +641,40 @@
 
             /********** inner function define start **********/
 
-            // according the different condition to reset chunk size
-            // and the upload strategy according with the chunk size
-            // when chunk size is zero will cause to direct upload
-            // see the statement binded on 'BeforeUpload' event
+                // according the different condition to reset chunk size
+                // and the upload strategy according with the chunk size
+                // when chunk size is zero will cause to direct upload
+                // see the statement binded on 'BeforeUpload' event
             var reset_chunk_size = function () {
-                var ie = that.detectIEVersion();
-                var BLOCK_BITS, MAX_CHUNK_SIZE, chunk_size;
-                // case Safari 5、Windows 7、iOS 7 set isSpecialSafari to true
-                var isSpecialSafari = (moxie.core.utils.Env.browser === "Safari" && moxie.core.utils.Env.version <= 5 && moxie.core.utils.Env.os === "Windows" && moxie.core.utils.Env.osVersion === "7") || (moxie.core.utils.Env.browser === "Safari" && moxie.core.utils.Env.os === "iOS" && moxie.core.utils.Env.osVersion === "7");
-                // case IE 9-，chunk_size is not empty and flash is included in runtimes
-                // set op.chunk_size to zero
-                //if (ie && ie < 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
-                if (ie && ie < 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
-                    //  link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
-                    //  when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
-                    op.chunk_size = 0;
-                } else if (isSpecialSafari) {
-                    // win7 safari / iOS7 safari have bug when in chunk upload mode
-                    // reset chunk_size to 0
-                    // disable chunk in special version safari
-                    op.chunk_size = 0;
-                } else {
-                    BLOCK_BITS = 20;
-                    MAX_CHUNK_SIZE = 4 << BLOCK_BITS; //4M
+                    var ie = that.detectIEVersion();
+                    var BLOCK_BITS, MAX_CHUNK_SIZE, chunk_size;
+                    // case Safari 5、Windows 7、iOS 7 set isSpecialSafari to true
+                    var isSpecialSafari = (moxie.core.utils.Env.browser === "Safari" && moxie.core.utils.Env.version <= 5 && moxie.core.utils.Env.os === "Windows" && moxie.core.utils.Env.osVersion === "7") || (moxie.core.utils.Env.browser === "Safari" && moxie.core.utils.Env.os === "iOS" && moxie.core.utils.Env.osVersion === "7");
+                    // case IE 9-，chunk_size is not empty and flash is included in runtimes
+                    // set op.chunk_size to zero
+                    //if (ie && ie < 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
+                    if (ie && ie < 9 && op.chunk_size && op.runtimes.indexOf('flash') >= 0) {
+                        //  link: http://www.plupload.com/docs/Frequently-Asked-Questions#when-to-use-chunking-and-when-not
+                        //  when plupload chunk_size setting is't null ,it cause bug in ie8/9  which runs  flash runtimes (not support html5) .
+                        op.chunk_size = 0;
+                    } else if (isSpecialSafari) {
+                        // win7 safari / iOS7 safari have bug when in chunk upload mode
+                        // reset chunk_size to 0
+                        // disable chunk in special version safari
+                        op.chunk_size = 0;
+                    } else {
+                        BLOCK_BITS = 20;
+                        MAX_CHUNK_SIZE = 4 << BLOCK_BITS; //4M
 
-                    chunk_size = plupload.parseSize(op.chunk_size);
-                    if (chunk_size > MAX_CHUNK_SIZE) {
-                        op.chunk_size = MAX_CHUNK_SIZE;
+                        chunk_size = plupload.parseSize(op.chunk_size);
+                        if (chunk_size > MAX_CHUNK_SIZE) {
+                            op.chunk_size = MAX_CHUNK_SIZE;
+                        }
+                        // qiniu service  max_chunk_size is 4m
+                        // reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
                     }
-                    // qiniu service  max_chunk_size is 4m
-                    // reset chunk_size to max_chunk_size(4m) when chunk_size > 4m
-                }
-                // if op.chunk_size set 0 will be cause to direct upload
-            };
+                    // if op.chunk_size set 0 will be cause to direct upload
+                };
 
             var getHosts = function (hosts) {
                 var result = [];
@@ -778,7 +784,7 @@
                     logger.debug("get uptoken from: ", that.uptoken_url);
                     // TODO: use mOxie
                     var ajax = that.createAjax();
-                    ajax.open('GET', that.uptoken_url + '?' + (+new Date()), false);
+                    ajax.open('GET', that.uptoken_url, false);
                     // ajax.setRequestHeader("If-Modified-Since", "0");
                     // ajax.onreadystatechange = function() {
                     //     if (ajax.readyState === 4 && ajax.status === 200) {
@@ -1230,7 +1236,7 @@
 
             logger.debug("bind ChunkUploaded event");
 
-            var retries = qiniuUploadUrls.length;
+            var retries = op.max_retries;
 
             // if error is unkown switch upload url and retry
             var unknow_error_retry = function (file) {
@@ -1825,5 +1831,14 @@
 
     global.Qiniu = Qiniu;
     global.QiniuJsSDK = QiniuJsSDK;
-
+    if (typeof module !== 'undefined' && module.exports) {
+        module.exports = QiniuJsSDK;
+    } else if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) {
+        // register as 'qiniu-js', consistent with npm package name
+        define('qiniu-js', ['./moxie','./plupload.dev'], function () {
+            return QiniuJsSDK;
+        });
+    } else {
+        global.QiniuJsSDK = QiniuJsSDK;
+    }
 })(window);
