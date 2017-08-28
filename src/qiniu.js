@@ -784,7 +784,7 @@
                     logger.debug("get uptoken from: ", that.uptoken_url);
                     // TODO: use mOxie
                     var ajax = that.createAjax();
-                    ajax.open('GET', that.uptoken_url + '?' + (+new Date()), false);
+                    ajax.open('GET', that.uptoken_url, false);
                     // ajax.setRequestHeader("If-Modified-Since", "0");
                     // ajax.onreadystatechange = function() {
                     //     if (ajax.readyState === 4 && ajax.status === 200) {
