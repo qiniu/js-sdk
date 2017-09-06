@@ -808,7 +808,7 @@
                         var clientTime = getTimestamp(new Date());
                         that.tokenInfo = {
                             serverDelay: clientTime - serverTime,
-                            deadline: putPolicy.deadline/1000,
+                            deadline: putPolicy.deadline,
                             isExpired: function () {
                                 var leftTime = this.deadline - getTimestamp(new Date()) + this.serverDelay;
                                 return leftTime < 600;
