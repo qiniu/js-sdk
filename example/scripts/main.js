@@ -16,7 +16,8 @@ $(function() {
     chunk_size: '4mb',
     multi_selection: !(moxie.core.utils.Env.OS.toLowerCase() === "ios"),
     uptoken: "FMVCRs2-LO1ivRNi4l7mEZE6ZDvPv-519D12kZCO:DglHk5onPMC8986FR1JUdv3kCFc=:eyJzY29wZSI6Imh1YW5hbiIsImRlYWRsaW5lIjoyNTA1Nzg1NjMwfQ==",
-    //uptoken_url: $('#uptoken_url').val(),
+    max_retries: 3,
+      //uptoken_url: $('#uptoken_url').val(),
     // uptoken_func: function(){
     //     var ajax = new XMLHttpRequest();
     //     ajax.open('GET', $('#uptoken_url').val(), false);

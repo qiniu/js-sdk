@@ -14246,8 +14246,6 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
             ]
         };
 
-        var changeUrlTimes = 0;
-
         function StatisticsLogger() {
             // api to collect upload logs
             var qiniuCollectUploadLogUrl = "https://uplog.qbox.me/log/3";
@@ -14343,11 +14341,23 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
          * else
          *     it will set 'qiniuUploadUrl' value with 'qiniuUploadUrls' looply
          */
-        this.resetUploadUrl = function () {
-            var hosts = window.location.protocol === 'https:' ? qiniuUpHosts.https : qiniuUpHosts.http;
-            var i = changeUrlTimes;
-            qiniuUploadUrl = hosts[0];
-            changeUrlTimes++;
+
+        this.resetUploadUrl = function (num) {
+            logger.debug('num: ' + num);
+            if( num == 0) {
+                logger.debug("use main uphost");
+                var hosts = qiniuUpHosts.main;
+                qiniuUploadUrl = window.location.protocol === 'https:' ? "https://" + hosts[0] : "http://" + hosts[0];
+            } else {
+                logger.debug("use backup uphost");
+                var hosts = qiniuUpHosts.backup;
+                if( num % 2 == 0) {
+                    qiniuUploadUrl = window.location.protocol === 'https:' ? "https://" + hosts[1] : "http://" + hosts[1];
+                } else {
+                    qiniuUploadUrl = window.location.protocol === 'https:' ? "https://" + hosts[0] : "http://" + hosts[0];
+                }
+            }
+            //qiniuUploadUrl = window.location.protocol === 'https:' ? "https://" + hosts[0] : "http://" + hosts[0];
             logger.debug('resetUploadUrl: ' + qiniuUploadUrl);
         };
 
@@ -14788,7 +14798,7 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
                 var putPolicy = getPutPolicy(uptoken);
                 // var uphosts_url = "//uc.qbox.me/v1/query?ak="+ak+"&bucket="+putPolicy.scope;
                 // IE9 does not support protocol relative url
-                var uphosts_url = window.location.protocol + "//uc.qbox.me/v1/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket;
+                var uphosts_url = window.location.protocol + "//uc.qbox.me/v2/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket;
                 logger.debug("putPolicy: ", putPolicy);
                 logger.debug("get uphosts from: ", uphosts_url);
                 var ie = that.detectIEVersion();
@@ -14806,10 +14816,11 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
                         logger.debug("ajax.status: ", ajax.status);
                         if (ajax.status < 400) {
                             var res = that.parseJSON(ajax.responseText);
-                            qiniuUpHosts.http = getHosts(res.http.up);
-                            qiniuUpHosts.https = getHosts(res.https.up);
+                            qiniuUpHosts.main = res.up.acc.main;
+                            qiniuUpHosts.backup = res.up.acc.backup;
+                            //qiniuUpHosts.https = getHosts(res.https.up);
                             logger.debug("get new uphosts: ", qiniuUpHosts);
-                            that.resetUploadUrl();
+                            that.resetUploadUrl(0);
                         } else {
                             logger.error("get uphosts error: ", ajax.responseText);
                         }
@@ -15310,9 +15321,10 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 
             // if error is unkown switch upload url and retry
             var unknow_error_retry = function (file) {
+                logger.debug("retries" + retries);
                 if (retries-- > 0) {
                     setTimeout(function () {
-                        that.resetUploadUrl();
+                        that.resetUploadUrl(retries);
                         file.status = plupload.QUEUED;
                         uploader.stop();
                         uploader.start();
@@ -15337,6 +15349,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
                         switch (err.code) {
                             case plupload.FAILED:
                                 errTip = '上传失败。请稍后再试。';
+                                if (!unknow_error_retry(file)) {
+                                    return;
+                                }
                                 break;
                             case plupload.FILE_SIZE_ERROR:
                                 var max_file_size = up.getOption && up.getOption('max_file_size');
@@ -15363,9 +15378,15 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
                                         break;
                                     case 401:
                                         errTip = "客户端认证授权失败。请重试或提交反馈。";
+                                        if (!unknow_error_retry(file)) {
+                                            return;
+                                        }
                                         break;
                                     case 405:
                                         errTip = "客户端请求错误。请重试或提交反馈。";
+                                        if (!unknow_error_retry(file)) {
+                                            return;
+                                        }
                                         break;
                                     case 579:
                                         errTip = "资源上传成功，但回调失败。";
@@ -15390,6 +15411,9 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
                                         break;
                                     case 701:
                                         errTip = "上传数据块校验出错。请重试或提交反馈。";
+                                        if (!unknow_error_retry(file)) {
+                                            return;
+                                        }
                                         break;
                                     default:
                                         errTip = "未知错误。";
@@ -15405,9 +15429,15 @@ var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
                                 break;
                             case plupload.GENERIC_ERROR:
                                 errTip = '上传失败。请稍后再试。';
+                                if (!unknow_error_retry(file)) {
+                                    return;
+                                }
                                 break;
                             case plupload.IO_ERROR:
                                 errTip = '上传失败。请稍后再试。';
+                                if (!unknow_error_retry(file)) {
+                                    return;
+                                }
                                 break;
                             case plupload.INIT_ERROR:
                                 errTip = '网站配置错误。请联系网站管理员。';
