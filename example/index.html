@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>七牛云 - JavaScript SDK</title>
     <link href="images/favicon.ico" rel="shortcut icon">
-    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css">
+    <link rel="stylesheet" href="styles/bootstrap.min.css">
     <link rel="stylesheet" href="styles/main.css">
     <link rel="stylesheet" href="styles/highlight.css">
 
@@ -76,6 +76,15 @@
                             <a class="btn btn-default btn-lg " id="pickfiles" href="#" >
                                 <i class="glyphicon glyphicon-plus"></i>
                                 <span>选择文件</span>
+                            </a>
+                            <a class="btn btn-default btn-lg " id="up_load"  href="#" >
+                                <span>确认上传</span>
+                            </a>
+                            <a class="btn btn-default btn-lg " id="stop_load"  href="#" >
+                                <span>暂停上传</span>
+                            </a>
+                            <a class="btn btn-default btn-lg " id="retry"  href="#" >
+                                <span>重试</span>
                             </a>
                         </div>
                     </div>
@@ -355,14 +364,10 @@
 
 
 
-<script type="text/javascript" src="bower_components/jquery/jquery.min.js"></script>
-<script type="text/javascript" src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
-<script type="text/javascript" src="bower_components/plupload/js/moxie.js"></script>
-<script type="text/javascript" src="bower_components/plupload/js/plupload.dev.js"></script>
-<!-- <script type="text/javascript" src="bower_components/plupload/js/plupload.full.min.js"></script> -->
-<script type="text/javascript" src="bower_components/plupload/js/i18n/zh_CN.js"></script>
+<script type="text/javascript" src="scripts/jquery.min.js"></script>
+<script type="text/javascript" src="scripts/bootstrap.min.js"></script>
 <script type="text/javascript" src="scripts/ui.js"></script>
-<script type="text/javascript" src="src/qiniu.js"></script>
+<script type="text/javascript" src="dist/qiniu.js"></script>
 <script type="text/javascript" src="scripts/highlight.js"></script>
 <script type="text/javascript" src="scripts/main.js"></script>
 <script type="text/javascript">hljs.initHighlightingOnLoad();</script>

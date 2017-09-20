@@ -15,7 +15,9 @@ $(function() {
     dragdrop: true,
     chunk_size: '4mb',
     multi_selection: !(moxie.core.utils.Env.OS.toLowerCase() === "ios"),
-    uptoken_url: $('#uptoken_url').val(),
+    uptoken: "FMVCRs2-LO1ivRNi4l7mEZE6ZDvPv-519D12kZCO:DglHk5onPMC8986FR1JUdv3kCFc=:eyJzY29wZSI6Imh1YW5hbiIsImRlYWRsaW5lIjoyNTA1Nzg1NjMwfQ==",
+    max_retries: 3,
+      //uptoken_url: $('#uptoken_url').val(),
     // uptoken_func: function(){
     //     var ajax = new XMLHttpRequest();
     //     ajax.open('GET', $('#uptoken_url').val(), false);
@@ -30,7 +32,7 @@ $(function() {
     //         return '';
     //     }
     // },
-    domain: $('#domain').val(),
+    domain: 'http://otc1dt1fa.bkt.clouddn.com/',
     get_new_uptoken: false,
     //downtoken_url: '/downtoken',
     // unique_names: true,
@@ -104,6 +106,16 @@ $(function() {
   uploader.bind('FileUploaded', function() {
     console.log('hello man,a file is uploaded');
   });
+    $('#up_load').on('click', function(){
+        uploader.start();
+    });
+    $('#stop_load').on('click', function(){
+        uploader.stop();
+    });
+    $('#retry').on('click', function(){
+        uploader.stop();
+        uploader.start();
+    });
   $('#container').on(
     'dragenter',
     function(e) {
@@ -138,6 +150,7 @@ $(function() {
   $('body').on('click', 'table button.btn', function() {
     $(this).parents('tr').next().toggle();
   });
+
 
 
   var getRotate = function(url) {
