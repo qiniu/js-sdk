@@ -13,6 +13,7 @@ app.engine('html', require('ejs').renderFile);
 app.use(express.urlencoded());
 app.use('/bower_components', express.static(__dirname + '/../bower_components'));
 app.use('/src', express.static(__dirname + '/../src'));
+app.use('/dist', express.static(__dirname + '/../dist'));
 
 var mac = new qiniu.auth.digest.Mac(config.AccessKey, config.SecretKey);
 var options = {
