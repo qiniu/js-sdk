@@ -66,9 +66,9 @@
     }
 
     function QiniuJsSDK() {
-        var moxie = require('./moxie');
+        var moxie = require('./plupload/moxie');
         window.moxie = moxie;
-        var plupload = require('./plupload.dev');
+        var plupload = require('./plupload/plupload.dev');
         window.plupload = plupload;
 
 
@@ -172,7 +172,7 @@
                 "http://up.qiniu.com"
             ],
             "https": [
-                "https://up.qbox.me"
+                "https://upload.qiniup.com"
             ]
         };
 
@@ -273,14 +273,24 @@
          * else
          *     it will set 'qiniuUploadUrl' value with 'qiniuUploadUrls' looply
          */
-        this.resetUploadUrl = function () {
-            var hosts = window.location.protocol === 'https:' ? qiniuUpHosts.https : qiniuUpHosts.http;
-            var i = changeUrlTimes;
-            qiniuUploadUrl = hosts[0];
-            changeUrlTimes++;
+        this.resetUploadUrl = function (num) {
+            logger.debug('num: ' + num);
+            if( num == 0) {
+                logger.debug("use main uphost");
+                var hosts = qiniuUpHosts.main;
+                qiniuUploadUrl = window.location.protocol === 'https:' ? "https://" + hosts[0] : "http://" + hosts[0];
+            } else {
+                logger.debug("use backup uphost");
+                var hosts = qiniuUpHosts.backup;
+                if( num % 2 == 0) {
+                    qiniuUploadUrl = window.location.protocol === 'https:' ? "https://" + hosts[1] : "http://" + hosts[1];
+                } else {
+                    qiniuUploadUrl = window.location.protocol === 'https:' ? "https://" + hosts[0] : "http://" + hosts[0];
+                }
+            }
+            //qiniuUploadUrl = window.location.protocol === 'https:' ? "https://" + hosts[0] : "http://" + hosts[0];
             logger.debug('resetUploadUrl: ' + qiniuUploadUrl);
         };
-
         // this.resetUploadUrl();
 
 
@@ -718,7 +728,7 @@
                 var putPolicy = getPutPolicy(uptoken);
                 // var uphosts_url = "//uc.qbox.me/v1/query?ak="+ak+"&bucket="+putPolicy.scope;
                 // IE9 does not support protocol relative url
-                var uphosts_url = window.location.protocol + "//uc.qbox.me/v1/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket;
+                var uphosts_url = window.location.protocol + "//uc.qbox.me/v2/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket;
                 logger.debug("putPolicy: ", putPolicy);
                 logger.debug("get uphosts from: ", uphosts_url);
                 var ie = that.detectIEVersion();
@@ -736,10 +746,10 @@
                         logger.debug("ajax.status: ", ajax.status);
                         if (ajax.status < 400) {
                             var res = that.parseJSON(ajax.responseText);
-                            qiniuUpHosts.http = getHosts(res.http.up);
-                            qiniuUpHosts.https = getHosts(res.https.up);
+                            qiniuUpHosts.main = res.up.acc.main;
+                            qiniuUpHosts.backup = res.up.acc.backup;
                             logger.debug("get new uphosts: ", qiniuUpHosts);
-                            that.resetUploadUrl();
+                            that.resetUploadUrl(0);
                         } else {
                             logger.error("get uphosts error: ", ajax.responseText);
                         }
@@ -784,7 +794,7 @@
                     logger.debug("get uptoken from: ", that.uptoken_url);
                     // TODO: use mOxie
                     var ajax = that.createAjax();
-                    ajax.open('GET', that.uptoken_url + '?' + (+new Date()), false);
+                    ajax.open('GET', that.uptoken_url, false);
                     // ajax.setRequestHeader("If-Modified-Since", "0");
                     // ajax.onreadystatechange = function() {
                     //     if (ajax.readyState === 4 && ajax.status === 200) {
@@ -808,7 +818,7 @@
                         var clientTime = getTimestamp(new Date());
                         that.tokenInfo = {
                             serverDelay: clientTime - serverTime,
-                            deadline: putPolicy.deadline/1000,
+                            deadline: putPolicy.deadline,
                             isExpired: function () {
                                 var leftTime = this.deadline - getTimestamp(new Date()) + this.serverDelay;
                                 return leftTime < 600;
@@ -1242,7 +1252,7 @@
             var unknow_error_retry = function (file) {
                 if (retries-- > 0) {
                     setTimeout(function () {
-                        that.resetUploadUrl();
+                        that.resetUploadUrl(retries);
                         file.status = plupload.QUEUED;
                         uploader.stop();
                         uploader.start();
@@ -1835,7 +1845,7 @@
         module.exports = QiniuJsSDK;
     } else if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) {
         // register as 'qiniu-js', consistent with npm package name
-        define('qiniu-js', ['./moxie','./plupload.dev'], function () {
+        define('qiniu-js', ['./plupload/moxie.js','./plupload/plupload.dev.js'], function () {
             return QiniuJsSDK;
         });
     } else {
