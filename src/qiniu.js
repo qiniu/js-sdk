@@ -151,9 +151,9 @@
 
         var qiniuUploadUrl;
         if (window.location.protocol === 'https:') {
-            qiniuUploadUrl = 'https://upload.qiniu.com';
+            qiniuUploadUrl = 'https://upload.qiniup.com';
         } else {
-            qiniuUploadUrl = 'http://upload.qiniu.com';
+            qiniuUploadUrl = 'http://upload.qiniup.com';
         }
 
         /**
@@ -162,14 +162,14 @@
          * @type {Array}
          */
         var qiniuUploadUrls = [
-            "http://upload.qiniu.com",
-            "http://up.qiniu.com"
+            "http://upload.qiniup.com",
+            "http://up.qiniup.com"
         ];
 
         var qiniuUpHosts = {
             "http": [
-                "http://upload.qiniu.com",
-                "http://up.qiniu.com"
+                "http://upload.qiniup.com",
+                "http://up.qiniup.com"
             ],
             "https": [
                 "https://upload.qiniup.com"
