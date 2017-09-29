@@ -9,7 +9,7 @@ Qiniu-JavaScript-SDK
 - [安装与使用](#usage)
 - [运行示例](#demo)
 - [常见问题](#faq)
-
+- demo
 ### 概述
 
 Qiniu-JavaScript-SDK （下文简称为 JS-SDK）适用于 IE8+、Chrome、Firefox、Safari 等浏览器，基于七牛云存储官方 API 构建，其中上传功能基于 [Plupload](http://www.plupload.com/) 插件封装。开发者基于 JS-SDK 可以方便的从浏览器端上传文件至七牛云存储，并对上传成功后的图片进行丰富的数据处理操作。
