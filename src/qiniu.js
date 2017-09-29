@@ -151,7 +151,7 @@
 
         var qiniuUploadUrl;
         if (window.location.protocol === 'https:') {
-            qiniuUploadUrl = 'https://up.qbox.me';
+            qiniuUploadUrl = 'https://upload.qiniu.com';
         } else {
             qiniuUploadUrl = 'http://upload.qiniu.com';
         }
@@ -728,7 +728,7 @@
                 var putPolicy = getPutPolicy(uptoken);
                 // var uphosts_url = "//uc.qbox.me/v1/query?ak="+ak+"&bucket="+putPolicy.scope;
                 // IE9 does not support protocol relative url
-                var uphosts_url = window.location.protocol + "//uc.qbox.me/v2/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket;
+                var uphosts_url = window.location.protocol + "//api.qiniu.com/v2/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket;
                 logger.debug("putPolicy: ", putPolicy);
                 logger.debug("get uphosts from: ", uphosts_url);
                 var ie = that.detectIEVersion();
