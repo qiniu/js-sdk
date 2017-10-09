@@ -1558,14 +1558,15 @@
                 // add cancel log
                 if (!op.disable_statistics_report) {
                     for (var i = 0; i < files.length; i++) {
+                        var startAt = files[i]._start_at ? files[i]._start_at.getTime() : nowTime.getTime();
                         statisticsLogger.log(
                             ExtraErrors.Cancelled,
                             undefined,
                             getDomainFromUrl(up.settings.url),
                             undefined,
                             getPortFromUrl(up.settings.url),
-                            (nowTime.getTime() - files[i]._start_at.getTime())/1000,
-                            files[i]._start_at.getTime()/1000,
+                            (nowTime.getTime() - startAt)/1000,
+                            parseInt(startAt/1000),
                             files[i].size * files[i].percent / 100,
                             "jssdk-" + up.runtime,
                             files[i].size
