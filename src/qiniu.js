@@ -1249,7 +1249,7 @@
             var retries = op.max_retries;
 
             // if error is unkown switch upload url and retry
-            var unknow_error_retry = function (file) {
+            var unknow_error_retry = function (file, callback) {
                 if (retries-- > 0) {
                     setTimeout(function () {
                         that.resetUploadUrl(retries);
@@ -1259,6 +1259,7 @@
                     }, 0);
                     return true;
                 } else {
+                    callback.call(null)
                     retries = qiniuUploadUrls.length;
                     return false;
                 }
@@ -1290,7 +1291,7 @@
                                 if (err.response === '') {
                                     // Fix parseJSON error ,when http error is like net::ERR_ADDRESS_UNREACHABLE
                                     errTip = err.message || '未知网络错误。';
-                                    if (!unknow_error_retry(file)) {
+                                    if (!unknow_error_retry(file, _Error_Handler.bind(null, up, err, errTip))) {
                                         return;
                                     }
                                     break;
@@ -1312,7 +1313,7 @@
                                         break;
                                     case 599:
                                         errTip = "网络连接异常。请重试或提交反馈。";
-                                        if (!unknow_error_retry(file)) {
+                                        if (!unknow_error_retry(file, _Error_Handler.bind(null, up, err, errTip)) {
                                             return;
                                         }
                                         break;
@@ -1333,7 +1334,7 @@
                                         break;
                                     default:
                                         errTip = "未知错误。";
-                                        if (!unknow_error_retry(file)) {
+                                        if (!unknow_error_retry(file, _Error_Handler.bind(null, up, err, errTip)) {
                                             return;
                                         }
                                         break;
@@ -1355,7 +1356,7 @@
                                 break;
                             default:
                                 errTip = err.message + err.details;
-                                if (!unknow_error_retry(file)) {
+                                if (!unknow_error_retry(file, _Error_Handler.bind(null, up, err, errTip)) {
                                     return;
                                 }
                                 break;
