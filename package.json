@@ -4,7 +4,9 @@
   "version": "1.0.22",
   "private": false,
   "scripts": {
-    "start": "node demo/server.js"
+    "start": "node demo/server.js",
+    "watch": "webpack --watch",
+    "build": "webpack"
   },
   "description": "Javascript SDK for Qiniu Resource (Cloud) Storage API",
   "main": "dist/qiniu.js",
@@ -40,7 +42,7 @@
   "devDependencies": {
     "bower": "^1.6.8",
     "ejs": "~1.0.0",
-    "express": "~3.4.7",
+    "express": "^3.4.8",
     "grunt": "~0.4.2",
     "grunt-cli": "~0.1.13",
     "grunt-contrib-concat": "^0.5.1",
@@ -48,10 +50,10 @@
     "grunt-contrib-jshint": "~0.7.2",
     "grunt-contrib-uglify": "~0.2.2",
     "grunt-contrib-watch": "~0.5.3",
-    "qiniu": "~7.0.5",
     "open-browser-webpack-plugin": "0.0.5",
-    "webpack": "^3.5.5",
-    "webpack-dev-server": "^2.7.1"
+    "qiniu": "~7.0.5",
+    "webpack": "^3.8.1",
+    "webpack-dev-middleware": "^1.12.0"
   },
   "license": "MIT"
 }

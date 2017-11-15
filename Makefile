@@ -5,8 +5,9 @@ install :
 	bower install
 
 build :
-	grunt
+	npm run build
 
 dev :
+	npm run watch
 	node demo/server.js
 
