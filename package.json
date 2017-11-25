@@ -1,7 +1,7 @@
 {
   "name": "qiniu-js",
   "jsName": "qiniu",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "private": false,
   "scripts": {
     "start": "node demo/server.js",
