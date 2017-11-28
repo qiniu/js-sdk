@@ -37,9 +37,6 @@
     "type": "git",
     "url": "git://github.com/qiniu/js-sdk.git"
   },
-  "dependencies": {
-    "plupload": "~2.3.1"
-  },
   "devDependencies": {
     "bootstrap": "~3.3.6",
     "highlight": "~8.9.1",
