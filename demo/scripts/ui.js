@@ -292,7 +292,6 @@ FileProgress.prototype.setComplete = function(up, info) {
 
 
       var fopLink = $('<a class="fopLink"/>');
-      fopLink.attr('data-key', res.key).text('查看处理效果');
       infoWrapper.append(fopLink);
       fopLink.on('click', function() {
         var key = $(this).data('key');
@@ -305,22 +304,6 @@ FileProgress.prototype.setComplete = function(up, info) {
           //set a default height 300 for ie9-
         }
         var fopArr = [];
-        fopArr.push({
-          fop: 'imageView2',
-          mode: 3,
-          h: height,
-          q: 100,
-          format: 'png'
-        });
-        fopArr.push({
-          fop: 'watermark',
-          mode: 1,
-          image: 'http://www.b1.qiniudn.com/images/logo-2.png',
-          dissolve: 100,
-          gravity: 'SouthEast',
-          dx: 100,
-          dy: 100
-        });
         var url = Qiniu.pipeline(fopArr, key);
         $('#myModal-img').on('hide.bs.modal', function() {
           $('#myModal-img').find('.btn-default').removeClass(
@@ -340,28 +323,6 @@ FileProgress.prototype.setComplete = function(up, info) {
       });
 
       var ie = Qiniu.detectIEVersion();
-      if (!(ie && ie <= 9)) {
-        var exif = Qiniu.exif(res.key);
-        if (exif) {
-          var exifLink = $('<a href="" target="_blank">查看exif</a>');
-          exifLink.attr('href', url + '?exif');
-          infoWrapper.append(exifLink);
-        }
-
-        var imageInfo = Qiniu.imageInfo(res.key);
-        var infoArea = $('<div/>');
-        var infoInner = '<div>格式：<span class="origin-format">' +
-          imageInfo.format + '</span></div>' +
-          '<div>宽度：<span class="orgin-width">' + imageInfo.width +
-          'px</span></div>' +
-          '<div>高度：<span class="origin-height">' + imageInfo.height +
-          'px</span></div>';
-        infoArea.html(infoInner);
-
-        infoWrapper.append(infoArea);
-      }
-
-      Wrapper.append(infoWrapper);
 
     }).on('error', function() {
       showImg.attr('src', 'default.png');
