@@ -41,7 +41,7 @@
   ],
   "devDependencies": {
     "bower": "^1.6.8",
-    "ejs": "~1.0.0",
+    "ejs": "~2.5.5",
     "express": "^3.4.8",
     "grunt": "~0.4.2",
     "grunt-cli": "~0.1.13",
