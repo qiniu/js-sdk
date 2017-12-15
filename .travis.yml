@@ -9,7 +9,7 @@ install:
 - npm install
 - bower install
 script:
-- grunt
+- make build
 deploy:
   provider: npm
   email: sdk@qiniu.com
