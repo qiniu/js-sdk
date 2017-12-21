@@ -1,7 +1,7 @@
 {
   "name": "qiniu-js",
   "jsName": "qiniu",
-  "version": "1.0.23",
+  "version": "1.0.24",
   "private": false,
   "scripts": {
     "start": "node demo/server.js",
@@ -9,7 +9,7 @@
     "build": "webpack"
   },
   "description": "Javascript SDK for Qiniu Resource (Cloud) Storage API",
-  "main": "dist/qiniu.js",
+  "main": "dist/qiniu.min.js",
   "repository": {
     "type": "git",
     "url": "git://github.com/qiniu/js-sdk.git"
