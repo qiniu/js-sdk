@@ -2,7 +2,7 @@
   "name": "qiniu",
   "description": "Javascript SDK for Qiniu Resource (Cloud) Storage API",
   "version": "v1.0.24",
-  "main": "dist/qiniu.js",
+  "main": "dist/qiniu.min.js",
   "moduleType": [
     "globals"
   ],
