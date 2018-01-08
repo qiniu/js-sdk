@@ -1,59 +1,62 @@
 {
-  "name": "qiniu-js",
-  "jsName": "qiniu",
-  "version": "1.0.24",
-  "private": false,
-  "scripts": {
-    "start": "node demo/server.js",
-    "watch": "webpack --watch",
-    "build": "webpack"
-  },
-  "description": "Javascript SDK for Qiniu Resource (Cloud) Storage API",
-  "main": "dist/qiniu.min.js",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/qiniu/js-sdk.git"
-  },
-  "bugs": {
-    "url": "https://github.com/qiniu/js-sdk/issues"
-  },
-  "keywords": [
-    "cloud",
-    "storage",
-    "s3",
-    "qiniu",
-    "web-service"
-  ],
-  "author": "sdk@qiniu.com",
-  "contributors": [
-    {
-      "name": "luoyeshu0507",
-      "email": "lizhiwei@qiniu.com"
-    },
-    {
-      "name": "codedogfish",
-      "email": "jackyu@qiniu.com"
-    },
-    {
-      "name": "jinxinxin",
-      "email": "jinxinxin@qiniu.com"
-    }
-  ],
-  "devDependencies": {
-    "bower": "^1.6.8",
-    "ejs": "~2.5.5",
-    "express": "^3.4.8",
-    "grunt": "~0.4.2",
-    "grunt-cli": "~0.1.13",
-    "grunt-contrib-concat": "^0.5.1",
-    "grunt-contrib-copy": "~0.5.0",
-    "grunt-contrib-jshint": "~0.7.2",
-    "grunt-contrib-uglify": "~0.2.2",
-    "grunt-contrib-watch": "~0.5.3",
-    "open-browser-webpack-plugin": "0.0.5",
-    "qiniu": "~7.0.5",
-    "webpack": "^3.8.1",
-    "webpack-dev-middleware": "^1.12.0"
-  },
-  "license": "MIT"
+	"name": "qiniu-js",
+	"jsName": "qiniu",
+	"version": "1.0.24",
+	"private": false,
+	"scripts": {
+		"start": "node demo/server.js",
+		"watch": "webpack --watch",
+		"build": "webpack"
+	},
+	"description": "Javascript SDK for Qiniu Resource (Cloud) Storage API",
+	"main": "dist/qiniu.min.js",
+	"repository": {
+		"type": "git",
+		"url": "git://github.com/qiniu/js-sdk.git"
+	},
+	"bugs": {
+		"url": "https://github.com/qiniu/js-sdk/issues"
+	},
+	"keywords": [
+		"cloud",
+		"storage",
+		"s3",
+		"qiniu",
+		"web-service"
+	],
+	"author": "sdk@qiniu.com",
+	"contributors": [
+		{
+			"name": "luoyeshu0507",
+			"email": "lizhiwei@qiniu.com"
+		},
+		{
+			"name": "codedogfish",
+			"email": "jackyu@qiniu.com"
+		},
+		{
+			"name": "jinxinxin",
+			"email": "jinxinxin@qiniu.com"
+		}
+	],
+	"devDependencies": {
+		"bower": "^1.6.8",
+		"ejs": "~2.5.5",
+		"express": "^3.4.8",
+		"grunt": "~0.4.2",
+		"grunt-cli": "~0.1.13",
+		"grunt-contrib-concat": "^0.5.1",
+		"grunt-contrib-copy": "~0.5.0",
+		"grunt-contrib-jshint": "~0.7.2",
+		"grunt-contrib-uglify": "~0.2.2",
+		"grunt-contrib-watch": "~0.5.3",
+		"open-browser-webpack-plugin": "0.0.5",
+		"qiniu": "~7.0.5",
+		"webpack": "^3.8.1",
+		"webpack-dev-middleware": "^1.12.0"
+	},
+	"license": "MIT",
+	"dependencies": {
+		"@types/plupload": "^2.0.4"
+	}
 }

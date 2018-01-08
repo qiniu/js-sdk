@@ -1,0 +1,18 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "esnext",
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"noImplicitThis": true,
+		"lib": [
+			"esnext",
+			"dom"
+		],
+		"typeRoots": [],
+		"types": [
+			// "qiniu-js"
+		],
+		"watch": false
+	}
+}
