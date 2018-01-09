@@ -49,6 +49,14 @@ declare namespace Qiniu {
 			BeforeUpload(up: plupload, file: File): void;
 			// 每个文件上传时,处理相关的事情
 			UploadProgress(up: plupload, file: File): void;
+			// 分片上传信息
+			ChunkUploaded(up: plupload, file: File, info: {
+				offset: number;
+				response: string;
+				responseHeaders: string;
+				status: number;
+				total: number;
+			}): void;
 			// 每个文件上传成功后,处理相关的事情
 			// 其中 info.response 是文件上传成功后，服务端返回的json，形式如
 			// {
