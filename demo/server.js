@@ -4,26 +4,9 @@ var util = require("util");
 var config = require("./config.js");
 var request = require("request");
 var app = express();
-<<<<<<< HEAD
 
-<<<<<<< HEAD
-app.configure(function() {
-  app.use(express.static(__dirname + '/'));
-});
-
-app.set('views', __dirname + '/views');
-app.engine('html', require('ejs').renderFile);
-
-app.use(express.urlencoded());
-app.use('/bower_components', express.static(__dirname + '/../bower_components'));
-app.use('/src', express.static(__dirname + '/../src'));
-app.use('/dist', express.static(__dirname + '/../dist'));
-=======
-=======
->>>>>>> new sdk
 app.use(express.static(__dirname + "/"));
 var multiparty = require("multiparty");
->>>>>>> 新sdk
 
 var mac = new qiniu.auth.digest.Mac(config.AccessKey, config.SecretKey);
 var config2 = new qiniu.conf.Config();
@@ -46,8 +29,7 @@ app.get("/api/uptoken", function(req, res, next) {
   res.header("Expires", 0);
   if (token) {
     res.json({
-      uptoken: token,
-      domain: config.Domain
+      uptoken: token
     });
   }
 });

@@ -1,23 +1,3 @@
-<<<<<<< HEAD
-var path = require('path');
-var webpack = require('webpack');
-
-
-module.exports = {
-    entry: path.resolve(__dirname, 'src/qiniu.js'),
-    output: {
-        path: path.resolve(__dirname, 'dist/'),
-        filename: 'qiniu.min.js',
-    },
-    devtool: 'inline-source-map',
-    plugins: [
-        new webpack.optimize.UglifyJsPlugin({
-            compress: {
-                warnings: false
-            }
-        }),
-    ]
-=======
 const path = require("path"),
   webpack = require("webpack");
 var OpenBrowserPlugin = require("open-browser-webpack-plugin");
@@ -73,5 +53,4 @@ module.exports = {
       }
     ]
   }
->>>>>>> new sdk
 };
