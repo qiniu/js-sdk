@@ -1,7 +1,7 @@
 import { Config, Zone, Zones, PutExtra } from "./config.js";
 import { createFileUrl, checkExpire, getUploadUrl } from "./helpMethod.js";
 import { UploadManager } from "./upload.js";
-
+import { imageMogr2, watermark, imageInfo, exif, pipeline } from "./image.js";
 class Observable {
   constructor(subscribeAction) {
     this.subscribeAction = subscribeAction;
@@ -84,5 +84,10 @@ export {
   Zones,
   createFileUrl,
   checkExpire,
-  getUploadUrl
+  getUploadUrl,
+  imageMogr2,
+  watermark,
+  imageInfo,
+  exif,
+  pipeline
 };

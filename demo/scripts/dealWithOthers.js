@@ -1,4 +1,4 @@
-function dealWithOthers(token, putExtra, config) {
+function dealWithOthers(token, putExtra, config, domain) {
   controlTabDisplay("others");
   var uploadUrl = qiniu.getUploadUrl(config);
   console.log("uploadUrl:" + uploadUrl);
@@ -271,7 +271,6 @@ function dealWithOthers(token, putExtra, config) {
 
   function uploadFinish(res, board) {
     var data = JSON.parse(res);
-    console.log(data);
     $(board)
       .find("#totalBar")
       .addClass("hide");
@@ -285,5 +284,8 @@ function dealWithOthers(token, putExtra, config) {
           data.bucket +
           "</p>"
       );
+    if (data.key && data.key.match(/\.(jpg|jpeg|png|gif)$/)) {
+      imageDeal(board, data.key, domain);
+    }
   }
 }

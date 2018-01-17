@@ -49,3 +49,36 @@ function controlTabDisplay(type) {
       break;
   }
 }
+
+function imageDeal(board, key, domain) {
+  console.log(123);
+  var fopArr = [];
+  fopArr.push({
+    fop: "watermark",
+    mode: 1,
+    image: "http://www.b1.qiniudn.com/images/logo-2.png",
+    dissolve: 100,
+    gravity: "NorthWest",
+    ws: 0.5,
+    dx: 100,
+    dy: 100
+  });
+  fopArr.push({
+    fop: "imageView2",
+    mode: 3,
+    h: 500,
+    q: 500,
+    format: "png"
+  });
+  var newUrl = qiniu.pipeline(fopArr, key, domain);
+  $(".modal-body").html('<img src="' + newUrl + '"/>');
+  $(board)
+    .find(".wraper a")
+    .html(
+      '<img src="' +
+        domain +
+        key +
+        '"/>' +
+        '<a data-toggle="modal" data-target="#myModal">查看处理效果</a>'
+    );
+}

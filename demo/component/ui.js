@@ -23,6 +23,7 @@
     var parent =
       "<td>" +
       name +
+      "<div class='wraper'><a class='linkWrapper'></a></div>" +
       "</td>" +
       "<td>" +
       size +

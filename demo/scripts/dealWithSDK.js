@@ -1,6 +1,8 @@
-function dealWithSDK(token, putExtra, config) {
+function dealWithSDK(token, putExtra, config, domain) {
   //切换tab后进行一些css操作
   controlTabDisplay("sdk");
+  console.log(123);
+  console.log(domain);
   var width;
   var isfirstAddBoard = true;
   $("#select2").change(function() {
@@ -19,7 +21,7 @@ function dealWithSDK(token, putExtra, config) {
       };
 
       var complete = function(res) {
-        console.log(res);
+        console.log(res.key);
         $(board)
           .find("#totalBar")
           .addClass("hide");
@@ -33,6 +35,9 @@ function dealWithSDK(token, putExtra, config) {
               res.bucket +
               "</p>"
           );
+        if (res.key && res.key.match(/\.(jpg|jpeg|png|gif)$/)) {
+          imageDeal(board, res.key, domain);
+        }
       };
 
       var next = function(progress) {

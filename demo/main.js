@@ -3,7 +3,9 @@
   $("#box").addClass("hide");
   ajax.onreadystatechange = function() {
     if (ajax.readyState === 4 && ajax.status === 200) {
-      var token = eval("(" + ajax.responseText + ")").uptoken;
+      var token = JSON.parse(ajax.responseText).uptoken;
+      var domain = JSON.parse(ajax.responseText).domain;
+      console.log(domain);
       var config = new qiniu.Config();
       var putExtra = new qiniu.PutExtra();
       putExtra.crc32 = true;
@@ -17,10 +19,10 @@
           $(this).on("click", function(e) {
             switch (e.target.name) {
               case "h5":
-                dealWithSDK(token, putExtra, config);
+                dealWithSDK(token, putExtra, config, domain);
                 break;
               case "expand":
-                dealWithOthers(token, putExtra, config);
+                dealWithOthers(token, putExtra, config, domain);
                 break;
               case "directForm":
                 dealWithForm(token, putExtra, config);
@@ -30,7 +32,7 @@
             }
           });
         });
-      dealWithSDK(token, putExtra, config);
+      dealWithSDK(token, putExtra, config, domain);
     }
   };
 })();
