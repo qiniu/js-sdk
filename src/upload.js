@@ -1,7 +1,7 @@
-import { PutExtra, Config } from "./config.js";
+import { PutExtra, Config, BLOCK_SIZE } from "./config";
 import {
   initProgress,
-  initProgressIndex,
+  getProgressItem,
   getChunks,
   checkExpire,
   createAjax,
@@ -10,7 +10,7 @@ import {
   checkLocalFileInfo,
   getUploadUrl,
   updateProgress
-} from "./helpMethod.js";
+} from "./utils";
 
 export class UploadManager {
   constructor(option) {
@@ -18,7 +18,7 @@ export class UploadManager {
     this.size = "";
     this.cancelControl = false;
     this.option = option;
-    this.ot = "";
+    this.otime = "";
   }
   putFile() {
     this.cancelControl ? (this.cancelControl = false) : "";
@@ -37,7 +37,7 @@ export class UploadManager {
       }
     }
     this.uploadUrl = getUploadUrl(this.config);
-    if (this.file.size > this.config.BLOCK_SIZE) {
+    if (this.file.size > BLOCK_SIZE) {
       //分片上传
       this.resumeUpload();
     } else {
@@ -51,7 +51,7 @@ export class UploadManager {
   }
 
   resumeUpload() {
-    let arrayBlob = getChunks(this.file, this.config.BLOCK_SIZE); //返回根据file.size所产生的分段数据数组
+    let arrayBlob = getChunks(this.file, BLOCK_SIZE); //返回根据file.size所产生的分段数据数组
     this.uploadChunks(arrayBlob);
   }
 
@@ -69,7 +69,7 @@ export class UploadManager {
       if (info) {
         if (!checkExpire(info.expire_at)) {
           //本地存储的进度放到progress里
-          initProgressIndex(info, index, that.progress);
+          that.progress[index] = getProgressItem(info);
           return Promise.resolve(info);
         } else {
           return that.mkblkReq(blob, index);
@@ -147,7 +147,7 @@ export class UploadManager {
 
   mkblkReq(blob, index) {
     let reader = new FileReader();
-    initProgressIndex("", index, this.progress);
+    this.progress[index] = getProgressItem();
     reader.readAsArrayBuffer(blob);
     let status = true;
     let that = this;
@@ -196,7 +196,10 @@ export class UploadManager {
         .Ajax(requestURI, xhr, option, "file")
         .then(res => {
           //设置上传成功的本地状态
-          localStorage.setItem("qiniu_file_" + that.file.name, "success");
+          localStorage.setItem(
+            "qiniu_js_sdk_upload_file_status_" + that.file.name,
+            "success"
+          );
           if (this.onData) {
             this.progress["total"].percent = 100;
             this.onData(this.progress);

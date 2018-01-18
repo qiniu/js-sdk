@@ -80,3 +80,6 @@ body {
   width: 100px;
   height: 100px;
 }
+.modal-body {
+  text-align: center;
+}

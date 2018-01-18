@@ -1,113 +1,132 @@
-import { URLSafeBase64Encode } from "./base64.js";
-import { Zone } from "./config.js";
+import { URLSafeBase64Encode } from "./base64";
+import { ZONE } from "./config";
+// check是否时间过期
 export function checkExpire(expireAt) {
-  expireAt += 3600 * 24;
-  if (expireAt < new Date().getTime() / 1000) {
-    return true;
-  }
-  return false;
+  expireAt = (expireAt + 3600 * 24) * 1000;
+  return new Date().getTime() > expireAt;
 }
-//辅助方法加注释
+// 文件分块
 export function getChunks(file, BLOCK_SIZE) {
   let arrayBlob = [];
   let count = Math.ceil(file.size / BLOCK_SIZE);
-  let start = 0;
-  let end = 0;
   for (let i = 0; i < count; i++) {
-    if (i == count) {
-      end = file.size;
-    } else {
-      end = start + BLOCK_SIZE;
-    }
-    arrayBlob.push(file.slice(start, end));
-    start = end;
+    let chunk = file.slice(
+      BLOCK_SIZE * i,
+      i === count ? file.size : BLOCK_SIZE * (i + 1)
+    );
+    arrayBlob.push(chunk);
   }
   return arrayBlob;
 }
-
-export function initProgressIndex(info, index, progress) {
-  if (info) {
-    progress[index] = {};
-    progress[index].percent = 100;
-    progress[index].ot = info.ot;
-    progress[index].loaded = info.blockSize;
-  } else {
-    progress[index] = {};
-    progress[index].percent = 0;
-    progress[index].ot = new Date().getTime();
-    progress[index].loaded = 0;
-  }
-}
-
-export function initProgress(file) {
+// 按索引初始化progress
+export function getProgressItem(info) {
   let progress = {};
-  progress["total"] = {};
-  progress["total"].loaded = 0;
-  progress["total"].percent = 0;
-  progress["total"].ot = new Date().getTime();
-  let localFileInfo = JSON.parse(localStorage.getItem("qiniu_" + file.name));
-  let successStatus = localStorage.getItem("qiniu_file_" + file.name);
-  console.log("successStatus:" + successStatus);
+  if (info) {
+    progress = {
+      percent: 100,
+      otime: info.otime,
+      loaded: info.blockSize
+    };
+  } else {
+    progress = {
+      percent: 0,
+      otime: new Date().getTime(),
+      loaded: 0
+    };
+  }
+  return progress;
+}
+// 初始化progress
+export function initProgress(file) {
+  let progress = {
+    total: {
+      loaded: 0,
+      percent: 0,
+      otime: new Date().getTime()
+    }
+  };
+  let localFileInfo = getLocal(file.name, "info");
+  let successStatus = getLocal(file.name, "status");
   if (localFileInfo && localFileInfo.length) {
-    console.log("本地有该文件存储记录...");
-    if (successStatus != "success") {
+    if (successStatus !== "success") {
       localFileInfo.map(function(value, index) {
         if (value) {
-          console.log(value.blockSize);
-          progress["total"].loaded += value.blockSize;
+          progress.total.loaded += value.blockSize;
         }
       });
-      progress["total"].percent = Math.round(
-        progress["total"].loaded / file.size * 100
+      progress.total.percent = Math.round(
+        progress.total.loaded / file.size * 100
       );
-      console.log(progress);
     }
-    //了解下map和forEach区别
   }
   return progress;
 }
 
+function getLocal(name, type) {
+  try {
+    let localFileInfo =
+      JSON.parse(
+        localStorage.getItem("qiniu_js_sdk_upload_file_info_" + name)
+      ) || [];
+    let localFileStatus = localStorage.getItem(
+      "qiniu_js_sdk_upload_file_status_" + name
+    );
+    if (type === "info") {
+      return localFileInfo;
+    } else {
+      return localFileStatus;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+// 每次分块上传后都更新本地存储状态
 export function setLocalItem(name, option, size) {
   let index = option.index;
   let blkdata = option.data;
   let respo = option.respo;
-  let localInfo = JSON.parse(localStorage.getItem("qiniu_" + name)) || [];
-  localInfo[index] = {
+  let localFileInfo = getLocal(name, "info");
+  localFileInfo[index] = {
     ctx: respo.ctx,
     blockSize: blkdata.size,
     totalSize: size,
-    ot: new Date().getTime()
+    otime: new Date().getTime()
   };
-  localStorage.setItem("qiniu_" + name, JSON.stringify(localInfo));
+  localStorage.setItem(
+    "qiniu_js_sdk_upload_file_info_" + name,
+    JSON.stringify(localFileInfo)
+  );
 }
-
+// check本地存储的信息
 export function checkLocalFileInfo(file) {
   let size = 0;
   let totalSize;
-  let localFileInfo =
-    JSON.parse(localStorage.getItem("qiniu_" + file.name)) || [];
-  let successStatus = localStorage.getItem("qiniu_file_" + file.name);
-  if (localFileInfo.length) {
-    for (let i = 0; i < localFileInfo.length; i++) {
-      if (localFileInfo[i]) {
-        size += localFileInfo[i].blockSize;
-        totalSize = localFileInfo[i].totalSize;
-      }
-    }
-    if (totalSize == file.size) {
-      if (size === file.size && successStatus == "success") {
-        console.log("remove for success");
-        localStorage.removeItem("qiniu_" + file.name);
-        localStorage.removeItem("qiniu_file_" + file.name);
-      }
-    } else {
-      localStorage.removeItem("qiniu_" + file.name);
-      console.log("remove for not equal");
-    }
-  } else {
-    localStorage.removeItem("qiniu_" + file.name);
-    console.log("remove....");
+  let localFileInfo = getLocal(file.name, "info");
+  let localFileStatus = getLocal(file.name, "status");
+  if (!localFileInfo.length) {
+    return removeItemInfo(file.name);
   }
+  for (let i = 0; i < localFileInfo.length; i++) {
+    if (localFileInfo[i]) {
+      size += localFileInfo[i].blockSize;
+      totalSize = localFileInfo[i].totalSize;
+    }
+  }
+  if (totalSize !== file.size) {
+    return removeItemInfo(file.name);
+  }
+  if (size === file.size && localFileStatus === "success") {
+    removeItemInfo(file.name);
+    removeItemStatus(file.name);
+  }
+}
+
+function removeItemInfo(name) {
+  localStorage.removeItem("qiniu_js_sdk_upload_file_info_" + name);
+}
+
+function removeItemStatus(name) {
+  localStorage.removeItem("qiniu_js_sdk_upload_file_status_" + name);
 }
 
 export function updateProgress(evt, index, progress, totalSize) {
@@ -115,7 +134,7 @@ export function updateProgress(evt, index, progress, totalSize) {
   let progressTotal = progress["total"];
   let newLoad;
   if (evt.lengthComputable) {
-    if (index != "no") {
+    if (index !== "no") {
       let progressUnit = progress[index];
       progressUnit.total = evt.total;
       newLoad = evt.loaded - progressUnit.loaded;
@@ -125,7 +144,6 @@ export function updateProgress(evt, index, progress, totalSize) {
       newLoad = evt.loaded - progressTotal.loaded;
     }
   } else {
-    console.log("文件内容为空");
     return false;
   }
   progressTotal.loaded = progressTotal.loaded + newLoad;
@@ -133,7 +151,7 @@ export function updateProgress(evt, index, progress, totalSize) {
   progressTotal.percent = totalPercent >= 100 ? 100 - 1 : totalPercent;
   return progress;
 }
-
+// 构造file上传url
 export function createFileUrl(uploadUrl, file, key, putExtra) {
   let requestURI = uploadUrl + "/mkfile/" + file.size;
   if (key) {
@@ -147,7 +165,6 @@ export function createFileUrl(uploadUrl, file, key, putExtra) {
   }
   requestURI += "/fname/" + URLSafeBase64Encode(putExtra.fname);
   if (putExtra.params) {
-    //putExtra params
     for (var k in putExtra.params) {
       if (k.startsWith("x:") && putExtra.params[k]) {
         requestURI +=
@@ -166,24 +183,24 @@ export var createAjax = () => {
   }
   return xmlhttp;
 };
-
+// 构造区域上传url
 export function getUploadUrl(config) {
   let upHosts = {};
   switch (config.zone) {
-    case "Zone_z0":
-      upHosts = Zone.Zone_z0;
+    case "z0":
+      upHosts = ZONE.z0;
       break;
-    case "Zone_z1":
-      upHosts = Zone.Zone_z1;
+    case "z1":
+      upHosts = ZONE.z1;
       break;
-    case "Zone_z2":
-      upHosts = Zone.Zone_z2;
+    case "z2":
+      upHosts = ZONE.z2;
       break;
-    case "Zone_na0":
-      upHosts = Zone.Zone_na0;
+    case "na0":
+      upHosts = ZONE.na0;
       break;
     default:
-      upHosts = Zone.Zone_z0;
+      upHosts = ZONE.z0;
   }
   let scheme = config.useHttpsDomain ? "https://" : "http://";
   let uploadUrl = config.useCdnDomain

@@ -4,7 +4,6 @@ var util = require("util");
 var config = require("./config.js");
 var request = require("request");
 var app = express();
-
 app.use(express.static(__dirname + "/"));
 var multiparty = require("multiparty");
 
@@ -29,7 +28,8 @@ app.get("/api/uptoken", function(req, res, next) {
   res.header("Expires", 0);
   if (token) {
     res.json({
-      uptoken: token
+      uptoken: token,
+      domain: config.Domain
     });
   }
 });

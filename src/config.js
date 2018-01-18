@@ -1,47 +1,58 @@
 export class Config {
   constructor(options) {
-    options = options || {};
-    //use http or https protocol
-    this.useHttpsDomain = options.useHttpsDomain || false;
-    //use cdn accerlated domains
-    this.useCdnDomain = options.useCdnDomain || true;
-    //zone of the bucket
-    //z0 huadong, z1 huabei, z2 huanan, na0 beimei
-    this.zone = options.zone || null;
-    this.zoneExpire = options.zoneExpire || -1;
-    this.BLOCK_SIZE = 4 * 1024 * 1024;
-    this.putThreshhold = options.putThreshhold || 512 * 1024;
-    this.reponseTimeout = options.reponseTimeout || 60;
+    const defaultOption = {
+      useHttpsDomain: false,
+      useCdnDomain: true,
+      zone: null
+    };
+    extend(this, defaultOption, options);
   }
 }
 
-export var Zone = {
-  Zone_z0: {
+export const BLOCK_SIZE = 4 * 1024 * 1024;
+
+function extend(that, defaultOption, options) {
+  for (let m in defaultOption) {
+    that[m] = defaultOption[m];
+  }
+  if (typeof options === "object")
+    for (let n in options) {
+      that[n] = options[n];
+    }
+}
+
+export var ZONE = {
+  z0: {
     srcUphost: "up.qiniup.com",
     cdnUphost: "upload.qiniup.com"
   },
-  Zone_z1: {
+  z1: {
     srcUphost: "up-z1.qiniup.com",
     cdnUphost: "upload-z1.qiniup.com"
   },
-  Zone_z2: {
+  z2: {
     srcUphost: "up-z2.qiniup.com",
     cdnUphost: "upload-z2.qiniup.com"
   },
-  Zone_na0: {
+  na0: {
     srcUphost: "up-na0.qiniup.com",
     cdnUphost: "upload-na0.qiniup.com"
   }
 };
-export var Zones = {
-  Zone_z0: "Zone_z0",
-  Zone_z1: "Zone_z1",
-  Zone_z2: "Zone_z2",
-  Zone_na0: "Zone_na0"
+export var ZONES = {
+  z0: "z0",
+  z1: "z1",
+  z2: "z2",
+  na0: "na0"
 };
 
-export function PutExtra(fname, params, mimeType) {
-  this.fname = fname || "";
-  this.params = params || {};
-  this.mimeType = mimeType || null;
+export class PutExtra {
+  constructor(options) {
+    const defaultOption = {
+      fname: "",
+      params: {},
+      mimeType: null
+    };
+    extend(this, defaultOption, options);
+  }
 }

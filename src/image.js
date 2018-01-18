@@ -1,5 +1,5 @@
-import { createAjax } from "./helpMethod.js";
-import { URLSafeBase64Encode } from "./base64.js";
+import { createAjax } from "./utils";
+import { URLSafeBase64Encode } from "./base64";
 
 function getUrl(key, domain) {
   if (!key) {
@@ -103,7 +103,6 @@ export function watermark(op, key, domain) {
     // Todo mode3
     return false;
   }
-
   var dissolve = op.dissolve || "",
     gravity = op.gravity || "",
     dx = op.dx || "",

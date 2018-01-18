@@ -1,5 +1,6 @@
+const BLOCK_SIZE = 4 * 1024 * 1024;
 function addUploadBoard(file, config, key, type) {
-  var count = Math.ceil(file.size / config.BLOCK_SIZE);
+  var count = Math.ceil(file.size / BLOCK_SIZE);
   var board = widget.add("tr", {
     data: { num: count, name: key, size: file.size },
     node: $("#fsUploadProgress" + type)
@@ -51,7 +52,6 @@ function controlTabDisplay(type) {
 }
 
 function imageDeal(board, key, domain) {
-  console.log(123);
   var fopArr = [];
   fopArr.push({
     fop: "watermark",
@@ -59,18 +59,19 @@ function imageDeal(board, key, domain) {
     image: "http://www.b1.qiniudn.com/images/logo-2.png",
     dissolve: 100,
     gravity: "NorthWest",
-    ws: 0.5,
+    ws: 0.8,
     dx: 100,
     dy: 100
   });
   fopArr.push({
     fop: "imageView2",
-    mode: 3,
-    h: 500,
-    q: 500,
+    mode: 2,
+    w: 450,
+    h: 450,
+    q: 100,
     format: "png"
   });
-  var newUrl = qiniu.pipeline(fopArr, key, domain);
+  var newUrl = Qiniu.pipeline(fopArr, key, domain);
   $(".modal-body").html('<img src="' + newUrl + '"/>');
   $(board)
     .find(".wraper a")

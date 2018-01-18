@@ -5,14 +5,12 @@
     if (ajax.readyState === 4 && ajax.status === 200) {
       var token = JSON.parse(ajax.responseText).uptoken;
       var domain = JSON.parse(ajax.responseText).domain;
-      console.log(domain);
-      var config = new qiniu.Config();
-      var putExtra = new qiniu.PutExtra();
-      putExtra.crc32 = true;
-      config.zone = qiniu.Zones.Zone_z2;
-      config.useHttpsDomain = false;
-      config.useCdnDomain = true;
-      config.putThreshhold = 4 * 1024 * 1024; //启用分片上传阈值
+      var config = new Qiniu.Config({
+        useHttpsDomain: false,
+        useCdnDomain: true,
+        zone: Qiniu.ZONES.z2
+      });
+      var putExtra = new Qiniu.PutExtra();
       $(".nav-box")
         .find("a")
         .each(function(index) {
