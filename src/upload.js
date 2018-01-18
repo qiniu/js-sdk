@@ -8,20 +8,22 @@ import {
   createFileUrl,
   setLocalItem,
   checkLocalFileInfo,
-  getUploadUrl,
-  updateProgress
+  getLocal,
+  getUploadUrl
 } from "./utils";
 
 export class UploadManager {
   constructor(option) {
-    this.config = option.config || new Config();
+    this.config = new Config(option.config);
     this.size = "";
-    this.cancelControl = false;
+    this.stopped = false;
     this.option = option;
     this.otime = "";
   }
   putFile() {
-    this.cancelControl ? (this.cancelControl = false) : "";
+    if (this.stopped) {
+      this.stopped = false;
+    }
     this.file = this.option.file;
     this.key = this.option.key;
     this.uptoken = this.option.token;
@@ -29,42 +31,35 @@ export class UploadManager {
     if (!this.putExtra.fname) {
       this.putExtra.fname = this.key ? this.key : this.file.name;
     }
-    if (this.putExtra.mimeType) {
-      if (file.type != this.putExtra.mimeType) {
-        return Promise.reject({
-          message: "file type doesn't match with what you specify"
-        });
-      }
+    if (this.putExtra.mimeType && file.type !== this.putExtra.mimeType) {
+      return Promise.reject({
+        message: "file type doesn't match with what you specify"
+      });
     }
     this.uploadUrl = getUploadUrl(this.config);
     if (this.file.size > BLOCK_SIZE) {
-      //分片上传
       this.resumeUpload();
     } else {
-      //直传
       this.directUpload();
     }
   }
 
   stop() {
-    this.cancelControl = true;
+    this.stopped = true;
   }
-
+  // 分片上传
   resumeUpload() {
-    let arrayBlob = getChunks(this.file, BLOCK_SIZE); //返回根据file.size所产生的分段数据数组
-    this.uploadChunks(arrayBlob);
+    let arrayChunk = getChunks(this.file, BLOCK_SIZE); //返回根据file.size所产生的分段数据数组
+    this.uploadChunks(arrayChunk);
   }
 
-  uploadChunks(arrayBlob) {
-    //检查本地文件状态
+  uploadChunks(arrayChunk) {
     checkLocalFileInfo(this.file);
-    //初始化progress
     this.progress = initProgress(this.file);
     let size;
     let that = this;
-    let localFileInfo =
-      JSON.parse(localStorage.getItem("qiniu_" + this.file.name)) || [];
-    let promises = arrayBlob.map(function(blob, index) {
+    let localFileInfo = getLocal(this.file.name, "info");
+    let promises = arrayChunk.map(function(chunk, index) {
       let info = localFileInfo[index];
       if (info) {
         if (!checkExpire(info.expire_at)) {
@@ -72,10 +67,10 @@ export class UploadManager {
           that.progress[index] = getProgressItem(info);
           return Promise.resolve(info);
         } else {
-          return that.mkblkReq(blob, index);
+          return that.mkblkReq(chunk, index);
         }
       } else {
-        return that.mkblkReq(blob, index);
+        return that.mkblkReq(chunk, index);
       }
     });
     Promise.all(promises)
@@ -83,14 +78,15 @@ export class UploadManager {
       .then(function(context) {
         that.mkfileReq(context);
       })
-      ["catch"](err => {
+      .catch(err => {
+        this.stopped = true;
         if (this.onError) {
           this.onError(err);
         }
       });
   }
 
-  Ajax(url, xhr, option, type) {
+  ajax(url, xhr, option, type) {
     let that = this;
     return new Promise((resolve, reject) => {
       xhr.open("POST", url);
@@ -104,17 +100,10 @@ export class UploadManager {
       }
       if (type == "block" || type == "direct") {
         xhr.upload.addEventListener("progress", function(evt) {
-          if (that.cancelControl) {
-            console.log("已暂停...");
+          if (that.stopped) {
             xhr.abort();
           }
-          let newProgress = Object.assign({}, that.progress);
-          that.progress = updateProgress(
-            evt,
-            option.index,
-            newProgress,
-            that.file.size
-          );
+          that.updateProgress(evt, option.index, that.file.size);
           if (that.onData) {
             that.onData(that.progress);
           }
@@ -145,32 +134,51 @@ export class UploadManager {
     });
   }
 
-  mkblkReq(blob, index) {
+  mkblkReq(chunk, index) {
     let reader = new FileReader();
     this.progress[index] = getProgressItem();
-    reader.readAsArrayBuffer(blob);
+    reader.readAsArrayBuffer(chunk);
     let status = true;
     let that = this;
     return new Promise((resolve, reject) => {
       reader.onload = function() {
         let xhr = createAjax();
         let binary = this.result;
-        let requestURI = that.uploadUrl + "/mkblk/" + blob.size;
+        let requestURI = that.uploadUrl + "/mkblk/" + chunk.size;
         let option = {
-          data: blob,
+          data: chunk,
           index: index,
           body: binary
         };
         that
-          .Ajax(requestURI, xhr, option, "block")
+          .ajax(requestURI, xhr, option, "block")
           .then(res => resolve(res))
-          ["catch"](res => reject(res));
+          .catch(res => reject(res));
       };
     });
   }
+  updateProgress(evt, index, totalSize) {
+    // evt.total是需要传输的总字节，evt.loaded是已经传输的字节。如果evt.lengthComputable不为真，则evt.total等于0
+    let progressTotal = this.progress.total;
+    let newLoad = 0;
+    if (evt.lengthComputable) {
+      if (index !== "") {
+        let progressUnit = this.progress[index];
+        progressUnit.total = evt.total;
+        newLoad = evt.loaded - progressUnit.loaded;
+        progressUnit.loaded = evt.loaded;
+        progressUnit.percent = Math.floor(evt.loaded / evt.total * 100);
+      } else {
+        newLoad = evt.loaded - progressTotal.loaded;
+      }
+    }
+    progressTotal.loaded = progressTotal.loaded + newLoad;
+    let totalPercent = progressTotal.loaded / totalSize * 100;
+    progressTotal.percent =
+      totalPercent >= 100 ? 100 - 1 : Math.floor(totalPercent);
+  }
 
   mkfileReq(context) {
-    console.log("send file ctx list...");
     let that = this;
     let putExtra = Object.assign(
       {
@@ -193,7 +201,7 @@ export class UploadManager {
       let postBody = ctxList.join(",");
       let option = { body: postBody };
       that
-        .Ajax(requestURI, xhr, option, "file")
+        .ajax(requestURI, xhr, option, "file")
         .then(res => {
           //设置上传成功的本地状态
           localStorage.setItem(
@@ -208,14 +216,15 @@ export class UploadManager {
             this.onComplete(res);
           }
         })
-        ["catch"](err => {
+        .catch(err => {
+          this.stopped = true;
           if (this.onError) {
             this.onError(err);
           }
         });
     });
   }
-
+  // 直传
   directUpload() {
     let that = this;
     let formData = new FormData();
@@ -234,16 +243,17 @@ export class UploadManager {
     }
     let option = {
       body: formData,
-      index: "no"
+      index: ""
     };
     that
-      .Ajax(this.uploadUrl, xhr, option, "direct")
+      .ajax(this.uploadUrl, xhr, option, "direct")
       .then(res => {
         if (this.onComplete) {
           this.onComplete(res);
         }
       })
-      ["catch"](err => {
+      .catch(err => {
+        this.stopped = true;
         if (this.onError) {
           this.onError(err);
         }

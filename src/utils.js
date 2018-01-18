@@ -1,5 +1,6 @@
 import { URLSafeBase64Encode } from "./base64";
 import { ZONE } from "./config";
+import { ZONES } from "./index";
 // check是否时间过期
 export function checkExpire(expireAt) {
   expireAt = (expireAt + 3600 * 24) * 1000;
@@ -7,16 +8,16 @@ export function checkExpire(expireAt) {
 }
 // 文件分块
 export function getChunks(file, BLOCK_SIZE) {
-  let arrayBlob = [];
+  let arrayChunk = [];
   let count = Math.ceil(file.size / BLOCK_SIZE);
   for (let i = 0; i < count; i++) {
     let chunk = file.slice(
       BLOCK_SIZE * i,
       i === count ? file.size : BLOCK_SIZE * (i + 1)
     );
-    arrayBlob.push(chunk);
+    arrayChunk.push(chunk);
   }
-  return arrayBlob;
+  return arrayChunk;
 }
 // 按索引初始化progress
 export function getProgressItem(info) {
@@ -62,7 +63,7 @@ export function initProgress(file) {
   return progress;
 }
 
-function getLocal(name, type) {
+export function getLocal(name, type) {
   try {
     let localFileInfo =
       JSON.parse(
@@ -129,28 +130,6 @@ function removeItemStatus(name) {
   localStorage.removeItem("qiniu_js_sdk_upload_file_status_" + name);
 }
 
-export function updateProgress(evt, index, progress, totalSize) {
-  // evt.total是需要传输的总字节，evt.loaded是已经传输的字节。如果evt.lengthComputable不为真，则evt.total等于0
-  let progressTotal = progress["total"];
-  let newLoad;
-  if (evt.lengthComputable) {
-    if (index !== "no") {
-      let progressUnit = progress[index];
-      progressUnit.total = evt.total;
-      newLoad = evt.loaded - progressUnit.loaded;
-      progressUnit.loaded = evt.loaded;
-      progressUnit.percent = Math.round(evt.loaded / evt.total * 100);
-    } else {
-      newLoad = evt.loaded - progressTotal.loaded;
-    }
-  } else {
-    return false;
-  }
-  progressTotal.loaded = progressTotal.loaded + newLoad;
-  let totalPercent = Math.round(progressTotal.loaded / totalSize * 100);
-  progressTotal.percent = totalPercent >= 100 ? 100 - 1 : totalPercent;
-  return progress;
-}
 // 构造file上传url
 export function createFileUrl(uploadUrl, file, key, putExtra) {
   let requestURI = uploadUrl + "/mkfile/" + file.size;
@@ -160,15 +139,16 @@ export function createFileUrl(uploadUrl, file, key, putExtra) {
   if (putExtra.mimeType) {
     requestURI += "/mimeType/" + URLSafeBase64Encode(putExtra.mimeType);
   }
-  if (!putExtra.fname) {
-    putExtra.fname = key ? key : file.name;
-  }
-  requestURI += "/fname/" + URLSafeBase64Encode(putExtra.fname);
+  const fname = putExtra.fname || key || file.name;
+  requestURI += "/fname/" + URLSafeBase64Encode(fname);
   if (putExtra.params) {
     for (var k in putExtra.params) {
       if (k.startsWith("x:") && putExtra.params[k]) {
         requestURI +=
-          "/" + k + "/" + URLSafeBase64Encode(putExtra.params[k].toString());
+          "/" +
+          encodeURIComponent(k) +
+          "/" +
+          URLSafeBase64Encode(putExtra.params[k].toString());
       }
     }
   }
@@ -177,34 +157,14 @@ export function createFileUrl(uploadUrl, file, key, putExtra) {
 
 export var createAjax = () => {
   if (window.XMLHttpRequest) {
-    xmlhttp = new XMLHttpRequest();
-  } else {
-    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+    return new XMLHttpRequest();
   }
-  return xmlhttp;
+  return new ActiveXObject("Microsoft.XMLHTTP");
 };
 // 构造区域上传url
 export function getUploadUrl(config) {
-  let upHosts = {};
-  switch (config.zone) {
-    case "z0":
-      upHosts = ZONE.z0;
-      break;
-    case "z1":
-      upHosts = ZONE.z1;
-      break;
-    case "z2":
-      upHosts = ZONE.z2;
-      break;
-    case "na0":
-      upHosts = ZONE.na0;
-      break;
-    default:
-      upHosts = ZONE.z0;
-  }
-  let scheme = config.useHttpsDomain ? "https://" : "http://";
-  let uploadUrl = config.useCdnDomain
-    ? scheme + upHosts["cdnUphost"]
-    : scheme + upHosts["srcUphost"];
-  return uploadUrl;
+  let upHosts = ZONE[config.zone] || ZONE.z0;
+  const protocol = config.useHttpsDomain ? "https" : "http";
+  const host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost;
+  return `${protocol}://${host}`;
 }
