@@ -8,7 +8,7 @@
  *
  * Date: @DATE
  */
-
+//version 1.1.0
 /*global plupload ,moxie*/
 /*global ActiveXObject */
 /*exported Qiniu */
