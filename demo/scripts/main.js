@@ -52,13 +52,23 @@ $(function() {
       'FilesAdded': function(up, files) {
         $('table').show();
         $('#success').hide();
+        //文件限制
         plupload.each(files, function(file) {
-          var progress = new FileProgress(file,
-            'fsUploadProgress');
-          progress.setStatus("等待...");
-          progress.bindUploadCancel(up);
-        });
-      },
+            console.log('filetype: ' + file.type);
+            if(file.type=='image/jpeg'||file.type=='image/jpg'||file.type=='image/png'||file.type=='image/gif' || file.type=='video/x-matroska' || file.type=='video/mp4'){
+                console.log('type:' + file.type);
+                isUpload =true;
+               // file.album_name=album_name;
+                var progress = new FileProgress(file, 'fsUploadProgress');
+                progress.setStatus("等待...");
+                progress.bindUploadCancel(up);
+            }else {
+                isUpload = false;
+                up.removeFile(file);
+                console.log('上传类型只能是.jpg,.png,.gif,.mkv');
+                return false;
+            }});
+    },
       'BeforeUpload': function(up, file) {
         console.log("this is a beforeupload function from init");
         var progress = new FileProgress(file, 'fsUploadProgress');
