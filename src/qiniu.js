@@ -638,7 +638,7 @@
 
             var getUpHosts = function (uptoken) {
                 var putPolicy = getPutPolicy(uptoken);
-                var uphosts_url = window.location.protocol === 'https:' ? "https://" + "//api.qiniu.com/v2/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket : "http://" + "//api.qiniu.com/v2/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket;
+                var uphosts_url = window.location.protocol === 'https:' ? "https://" + "api.qiniu.com/v2/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket : "http://" + "api.qiniu.com/v2/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket;
                 logger.debug("putPolicy: ", putPolicy);
                 logger.debug("get uphosts from: ", uphosts_url);
                 var ie = that.detectIEVersion();
