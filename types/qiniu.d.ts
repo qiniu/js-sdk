@@ -54,6 +54,8 @@ declare namespace Qiniu {
 		init: Partial<{
 			// 文件添加进队列后,处理相关的事情
 			FilesAdded(up: plupload, files: File[]): void;
+			// 删除文件事件
+			FilesRemoved(up: plupload, files: File[]): void;
 			// 每个文件上传前,处理相关的事情
 			BeforeUpload(up: plupload, file: File): void;
 			// 每个文件上传时,处理相关的事情
