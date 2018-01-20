@@ -1554,21 +1554,24 @@
             // intercept the cancel of upload
             // used to send statistics log to server
             uploader.bind('FilesRemoved', function (up, files) {
-                var nowTime = new Date();
+                var nowTime = new Date().getTime();
                 // add cancel log
                 if (!op.disable_statistics_report) {
                     for (var i = 0; i < files.length; i++) {
+                        var file = files[i];
+                        var startTime = file._start_at ? file._start_at.getTime() / 1000 : 0;
+                        var duration = startTime ? nowTime - startTime : 0;
                         statisticsLogger.log(
                             ExtraErrors.Cancelled,
                             undefined,
                             getDomainFromUrl(up.settings.url),
                             undefined,
                             getPortFromUrl(up.settings.url),
-                            (nowTime.getTime() - files[i]._start_at.getTime())/1000,
-                            files[i]._start_at.getTime()/1000,
-                            files[i].size * files[i].percent / 100,
+                            duration,
+                            startTime,
+                            file.size * file.percent / 100,
                             "jssdk-" + up.runtime,
-                            files[i].size
+                            file.size
                         );
                     }
                 }
