@@ -1,4 +1,4 @@
-import { Config, ZONE, ZONES, PutExtra } from "./config";
+import { zoneUphostMap, ZONES } from "./config";
 import { createFileUrl, checkExpire, getUploadUrl } from "./utils";
 import { UploadManager } from "./upload";
 import { imageMogr2, watermark, imageInfo, exif, pipeline } from "./image";
@@ -23,8 +23,6 @@ function upload(file, key, uptoken, putExtra, config) {
 }
 export {
   upload,
-  Config,
-  PutExtra,
   ZONES,
   createFileUrl,
   checkExpire,

@@ -5,12 +5,16 @@
     if (ajax.readyState === 4 && ajax.status === 200) {
       var token = JSON.parse(ajax.responseText).uptoken;
       var domain = JSON.parse(ajax.responseText).domain;
-      var config = new Qiniu.Config({
+      var config = {
         useHttpsDomain: false,
         useCdnDomain: true,
         zone: Qiniu.ZONES.z2
-      });
-      var putExtra = new Qiniu.PutExtra();
+      };
+      var putExtra = {
+        fname: "",
+        params: {},
+        mimeType: null
+      };
       $(".nav-box")
         .find("a")
         .each(function(index) {
@@ -30,6 +34,7 @@
             }
           });
         });
+      imageControl(domain);
       dealWithSDK(token, putExtra, config, domain);
     }
   };

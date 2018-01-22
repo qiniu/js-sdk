@@ -1,17 +1,6 @@
-export class Config {
-  constructor(options) {
-    const defaultOption = {
-      useHttpsDomain: false,
-      useCdnDomain: true,
-      zone: null
-    };
-    Object.assign(this, defaultOption, options);
-  }
-}
-
 export const BLOCK_SIZE = 4 * 1024 * 1024;
 
-export var ZONE = {
+export var zoneUphostMap = {
   z0: {
     srcUphost: "up.qiniup.com",
     cdnUphost: "upload.qiniup.com"
@@ -35,14 +24,3 @@ export var ZONES = {
   z2: "z2",
   na0: "na0"
 };
-
-export class PutExtra {
-  constructor(options) {
-    const defaultOption = {
-      fname: "",
-      params: {},
-      mimeType: null
-    };
-    Object.assign(this, defaultOption, options);
-  }
-}

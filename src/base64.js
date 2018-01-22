@@ -1,4 +1,4 @@
-var utf8_encode = function(argString) {
+function utf8Encode(argString) {
   // http://kevin.vanzonneveld.net
   // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
   // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
@@ -11,7 +11,7 @@ var utf8_encode = function(argString) {
   // +   bugfixed by: Rafal Kukawski
   // +   improved by: kirilloid
   // +   bugfixed by: kirilloid
-  // *     example 1: this.utf8_encode('Kevin van Zonneveld');
+  // *     example 1: this.utf8Encode('Kevin van Zonneveld');
   // *     returns 1: 'Kevin van Zonneveld'
 
   if (argString === null || typeof argString === "undefined") {
@@ -71,9 +71,9 @@ var utf8_encode = function(argString) {
   }
 
   return utftext;
-};
+}
 
-var base64_encode = function(data) {
+function base64Encode(data) {
   // http://kevin.vanzonneveld.net
   // +   original by: Tyler Akins (http://rumkin.com)
   // +   improved by: Bayron Guevara
@@ -81,8 +81,8 @@ var base64_encode = function(data) {
   // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
   // +   bugfixed by: Pellentesque Malesuada
   // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-  // -    depends on: this.utf8_encode
-  // *     example 1: this.base64_encode('Kevin van Zonneveld');
+  // -    depends on: this.utf8Encode
+  // *     example 1: this.base64Encode('Kevin van Zonneveld');
   // *     returns 1: 'S2V2aW4gdmFuIFpvbm5ldmVsZA=='
   // mozilla has this native
   // - but breaks in 2.0.0.12!
@@ -107,7 +107,7 @@ var base64_encode = function(data) {
     return data;
   }
 
-  data = utf8_encode(data + "");
+  data = utf8Encode(data + "");
 
   do {
     // pack three octets into four hexets
@@ -139,9 +139,9 @@ var base64_encode = function(data) {
   }
 
   return enc;
-};
+}
 
-export var URLSafeBase64Encode = function(v) {
-  v = base64_encode(v);
+export function uRLSafeBase64Encode(v) {
+  v = base64Encode(v);
   return v.replace(/\//g, "_").replace(/\+/g, "-");
-};
+}

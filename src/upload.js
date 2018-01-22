@@ -1,4 +1,4 @@
-import { PutExtra, Config, BLOCK_SIZE } from "./config";
+import { BLOCK_SIZE } from "./config";
 import {
   initProgress,
   getProgressItem,
@@ -9,14 +9,32 @@ import {
   setLocalItem,
   checkLocalFileInfo,
   getLocal,
+  isMagic,
   getUploadUrl
 } from "./utils";
 
 export class UploadManager {
   constructor(option) {
-    this.config = new Config(option.config);
+    this.config =
+      typeof option.config === "object"
+        ? option.config
+        : {
+            useHttpsDomain: false,
+            useCdnDomain: true,
+            zone: null
+          };
     this.stopped = false;
-    this.option = option;
+    this.file = option.file;
+    this.key = option.key;
+    this.uptoken = option.token;
+    this.putExtra =
+      typeof option.putExtra === "object"
+        ? option.putExtra
+        : {
+            fname: "",
+            params: {},
+            mimeType: null
+          };
     this.otime = "";
     this.onData = () => {};
     this.onError = () => {};
@@ -26,10 +44,6 @@ export class UploadManager {
     if (this.stopped) {
       this.stopped = false;
     }
-    this.file = this.option.file;
-    this.key = this.option.key;
-    this.uptoken = this.option.token;
-    this.putExtra = this.option.putExtra || new PutExtra();
     if (!this.putExtra.fname) {
       this.putExtra.fname = this.key ? this.key : this.file.name;
     }
@@ -92,6 +106,7 @@ export class UploadManager {
     return new Promise((resolve, reject) => {
       try {
         let auth = "UpToken " + this.uptoken;
+        let index = option.index;
         xhr.setRequestHeader("Authorization", auth);
         xhr.upload.addEventListener("progress", evt => {
           if (this.stopped) {
@@ -261,9 +276,8 @@ export class UploadManager {
       formData.append("key", this.key);
     }
     formData.append("fname", this.putExtra.fname);
-    let magicVar = getMagic(putExtra, "direct");
     for (let k in this.putExtra.params) {
-      if (isMagic(k, this.putExtra.param)) {
+      if (isMagic(k, this.putExtra.params)) {
         formData.append(k, this.putExtra.params[k].toString());
       }
     }

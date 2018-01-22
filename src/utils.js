@@ -1,6 +1,5 @@
-import { URLSafeBase64Encode } from "./base64";
-import { ZONE } from "./config";
-import { ZONES } from "./index";
+import { uRLSafeBase64Encode } from "./base64";
+import { zoneUphostMap } from "./config";
 
 // check是否时间过期
 export function isExpired(expireAt) {
@@ -132,15 +131,15 @@ export function checkLocalFileInfo(file) {
   }
 }
 
-function removeItemInfo(name) {
+export function removeItemInfo(name) {
   localStorage.removeItem("qiniu_js_sdk_upload_file_info_" + name);
 }
 
-function removeItemStatus(name) {
+export function removeItemStatus(name) {
   localStorage.removeItem("qiniu_js_sdk_upload_file_status_" + name);
 }
 
-function isMagic(k, params) {
+export function isMagic(k, params) {
   return k.startsWith("x:") && params[k];
 }
 // 构造file上传url
@@ -177,7 +176,7 @@ export var createAjax = () => {
 
 // 构造区域上传url
 export function getUploadUrl(config) {
-  let upHosts = ZONE[config.zone] || ZONE.z0;
+  let upHosts = zoneUphostMap[config.zone] || zoneUphostMap.z0;
   const protocol = config.useHttpsDomain ? "https" : "http";
   const host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost;
   return `${protocol}://${host}`;
