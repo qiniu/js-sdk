@@ -9,7 +9,6 @@ export class Observable {
   }
 }
 
-// observer的构造类
 class Observer {
   constructor(onNext, onError, onCompleted) {
     this.isStopped = false;
@@ -42,7 +41,6 @@ class Observer {
   }
 }
 
-// subscription构造函数
 class Subscription {
   constructor(observer, result) {
     this.observer = observer;

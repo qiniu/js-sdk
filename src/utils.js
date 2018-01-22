@@ -1,53 +1,54 @@
 import { uRLSafeBase64Encode } from "./base64";
 import { zoneUphostMap } from "./config";
 
-// check是否时间过期
-export function isExpired(expireAt) {
+// 对上传块本地存储时间检验是否过期
+export function isChunkExpired(expireAt) {
   expireAt = (expireAt + 3600 * 24) * 1000;
   return new Date().getTime() > expireAt;
 }
 
 // 文件分块
-export function getChunks(file, BLOCK_SIZE) {
-  let arrayChunk = [];
-  let count = Math.ceil(file.size / BLOCK_SIZE);
+export function getChunks(file, blockSize) {
+  let chunks = [];
+  let count = Math.ceil(file.size / blockSize);
   for (let i = 0; i < count; i++) {
-    let chunk = file.slice(
-      BLOCK_SIZE * i,
-      i === count ? file.size : BLOCK_SIZE * (i + 1)
+    let chunks = file.slice(
+      blockSize * i,
+      i === count - 1 ? file.size : blockSize * (i + 1)
     );
-    arrayChunk.push(chunk);
+    chunks.push(chunk);
   }
-  return arrayChunk;
+  return chunks;
 }
 
 // 按索引初始化progress
-export function getProgressItem(info) {
-  let progress = {};
+export function getCurrentStateItem(info) {
+  let currentState = {};
   if (info) {
-    progress = {
+    currentState = {
       percent: 100,
       otime: info.otime,
-      loaded: info.blockSize
+      loaded: infot.totalSize
     };
   } else {
-    progress = {
+    currentState = {
       percent: 0,
       otime: new Date().getTime(),
       loaded: 0
     };
   }
-  return progress;
+  return currentState;
 }
 
 // 初始化progress
-export function initProgress(file) {
-  let progress = {
+export function initCurrentState(file) {
+  let currentState = {
     total: {
       loaded: 0,
       percent: 0,
       otime: new Date().getTime()
-    }
+    },
+    chunks: []
   };
   let localFileInfo = getLocal(file.name, "info");
   let successStatus = getLocal(file.name, "status");
@@ -55,15 +56,15 @@ export function initProgress(file) {
     if (successStatus !== "success") {
       localFileInfo.map(function(value, index) {
         if (value) {
-          progress.total.loaded += value.blockSize;
+          currentState.total.loaded += value.blockSize;
         }
       });
-      progress.total.percent = Math.round(
-        progress.total.loaded / file.size * 100
+      currentState.total.percent = Math.round(
+        currentState.total.loaded / file.size * 100
       );
     }
   }
-  return progress;
+  return currentState;
 }
 
 export function getLocal(name, type) {

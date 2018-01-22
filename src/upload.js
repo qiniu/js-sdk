@@ -1,7 +1,7 @@
 import { BLOCK_SIZE } from "./config";
 import {
-  initProgress,
-  getProgressItem,
+  initCurrentState,
+  getCurrentStateItem,
   getChunks,
   isExpired,
   createAjax,
@@ -40,6 +40,51 @@ export class UploadManager {
     this.onError = () => {};
     this.onComplete = () => {};
   }
+
+  calculateTotalProgress() {
+    const uploadedSize = this.currentState.chunks.reduce((sum, chunk) => {
+      return sum + chunk.loaded;
+    }, 0);
+    const uploadPercent = uploadedSize / this.file.size;
+    const mkFilePercent = this.currentState.mkFileReq;
+    let totalPercent = uploadPercent * 0.99 + mkFilePercent * 0.01;
+    this.currentState.total =
+      totalPercent >= 100 ? 100 : totalPercent.toFixed(1);
+    this.onData(this.currentState);
+  }
+
+  updateChunkProgress(evt, index) {
+    if (this.stopped) {
+      xhr.abort();
+    }
+    if (evt.lengthComputable) {
+      let currentStateUnit = this.currentState.chunks[index];
+      currentStateUnit.total = evt.total;
+      currentStateUnit.loaded = evt.loaded;
+      currentStateUnit.percent = evt.loaded / evt.total;
+    }
+    this.calculateTotalProgress();
+  }
+
+  updateDirectProgress(evt) {
+    let progressTotal = this.currentState.total;
+    let totalPercent = 0;
+    if (this.stopped) {
+      xhr.abort();
+    }
+    if (evt.lengthComputable) {
+      totalPercent = evt.loaded / this.file.size * 100;
+      progressTotal.percent =
+        totalPercent >= 100 ? 100 : totalPercent.toFixed(1);
+      this.onData(this.currentState);
+    }
+  }
+
+  updateMkFileProgress() {
+    this.currentState.mkFileReq = 1;
+    this.calculateTotalProgress();
+  }
+
   putFile() {
     if (this.stopped) {
       this.stopped = false;
@@ -72,12 +117,12 @@ export class UploadManager {
   uploadChunks(arrayChunk) {
     try {
       checkLocalFileInfo(this.file);
-      this.progress = initProgress(this.file);
+      this.currentState = initCurrentState(this.file);
       let localFileInfo = getLocal(this.file.name, "info");
       let updatePromises = arrayChunk.map((chunk, index) => {
         let info = localFileInfo[index];
         if (info && !isExpired(info.expire_at)) {
-          this.progress[index] = getProgressItem(info);
+          this.currentState.chunks[index] = getCurrentStateItem(info);
           return Promise.resolve(info);
         }
         return this.mkblkReq(chunk, index);
@@ -102,45 +147,14 @@ export class UploadManager {
       });
   }
 
-  ajax(xhr, option, type) {
+  request(xhr, option, onProgress) {
     return new Promise((resolve, reject) => {
       try {
         let auth = "UpToken " + this.uptoken;
         let index = option.index;
         xhr.setRequestHeader("Authorization", auth);
         xhr.upload.addEventListener("progress", evt => {
-          if (this.stopped) {
-            xhr.abort();
-          }
-          let progressTotal = this.progress.total;
-          let newLoad = 0;
-          let ctxLoaded = 0;
-          let ctxTotal = evt.total;
-          let totalPercent = 0;
-          if (evt.lengthComputable) {
-            if (index !== -1 && index !== -2) {
-              let progressUnit = this.progress[index];
-              progressUnit.total = evt.total;
-              newLoad = evt.loaded - progressUnit.loaded;
-              progressUnit.loaded = evt.loaded;
-              progressUnit.percent = (evt.loaded / evt.total).toFixed(1);
-            }
-            progressTotal.loaded = progressTotal.loaded + newLoad;
-            totalPercent = progressTotal.loaded / this.file.size * 99;
-            if (index === -1) {
-              newLoad = evt.loaded - progressTotal.loaded;
-              progressTotal.loaded = progressTotal.loaded + newLoad;
-              totalPercent = progressTotal.loaded / this.file.size * 100;
-            }
-            if (index === -2) {
-              ctxLoaded = evt.loaded;
-              totalPercent = 99 + ctxLoaded / ctxTotal;
-            }
-          }
-          progressTotal.percent =
-            totalPercent >= 100 ? 100 : totalPercent.toFixed(1);
-          //this.updateProgress(evt, option.index, this.file.size);
-          this.onData(this.progress);
+          onProgress(evt);
         });
         xhr.upload.addEventListener("error", evt => {
           reject({ message: "An error occurred while transferring the file." });
@@ -158,10 +172,6 @@ export class UploadManager {
             return;
           }
           let response = JSON.parse(responseText);
-          if (type === "block") {
-            option.response = response;
-            setLocalItem(this.file.name, option, this.file.size);
-          }
           resolve(response);
         };
         xhr.send(option.body);
@@ -174,7 +184,7 @@ export class UploadManager {
   mkblkReq(chunk, index) {
     return new Promise((resolve, reject) => {
       let reader = new FileReader();
-      this.progress[index] = getProgressItem();
+      this.currentState.chunks[index] = getProgressItem();
       let requestURI = this.uploadUrl + "/mkblk/" + chunk.size;
       reader.readAsArrayBuffer(chunk);
       reader.onload = evt => {
@@ -187,41 +197,18 @@ export class UploadManager {
           index: index,
           body: binary
         };
-        this.ajax(xhr, option, "block")
-          .then(res => resolve(res))
+        this.request(xhr, option, event =>
+          updateChunkProgress(event, option.index)
+        )
+          .then(response => {
+            option.response = response;
+            setLocalItem(this.file.name, option, this.file.size);
+            resolve(response);
+          })
           .catch(res => reject(res));
       };
     });
   }
-  // updateProgress(evt, index, totalSize) {
-  //   // evt.total是需要传输的总字节，evt.loaded是已经传输的字节。如果evt.lengthComputable不为真，则evt.total等于0
-  //   let progressTotal = this.progress.total;
-  //   let newLoad = 0;
-  //   let ctxLoaded = 0;
-  //   let ctxTotal = evt.total;
-  //   let totalPercent = 0;
-  //   if (evt.lengthComputable) {
-  //     if (index !== -1 && index !== -2) {
-  //       let progressUnit = this.progress[index];
-  //       progressUnit.total = evt.total;
-  //       newLoad = evt.loaded - progressUnit.loaded;
-  //       progressUnit.loaded = evt.loaded;
-  //       progressUnit.percent = (evt.loaded / evt.total).toFixed(1);
-  //     }
-  //     progressTotal.loaded = progressTotal.loaded + newLoad;
-  //     totalPercent = progressTotal.loaded / totalSize * 99;
-  //     if (index === -1) {
-  //       newLoad = evt.loaded - progressTotal.loaded;
-  //       progressTotal.loaded = progressTotal.loaded + newLoad;
-  //       totalPercent = progressTotal.loaded / totalSize * 100;
-  //     }
-  //     if (index === -2) {
-  //       ctxLoaded = evt.loaded;
-  //       totalPercent = 99 + ctxLoaded / ctxTotal;
-  //     }
-  //   }
-  //   progressTotal.percent = totalPercent >= 100 ? 100 : totalPercent.toFixed(1);
-  // }
 
   mkfileReq(ctxList) {
     return new Promise((resolve, reject) => {
@@ -243,14 +230,14 @@ export class UploadManager {
         xhr.setRequestHeader("content-type", "text/plain");
         let postBody = ctxList.join(",");
         let option = { body: postBody, index: -2 };
-        this.ajax(xhr, option, "file")
+        this.request(xhr, option, fileProgressListener)
           .then(res => {
+            this.updateMkFileProgress();
             // 设置上传成功的本地状态
             localStorage.setItem(
               "qiniu_js_sdk_upload_file_status_" + this.file.name,
               "success"
             );
-            this.onData(this.progress);
             this.onComplete(res);
           })
           .catch(err => {
@@ -262,12 +249,13 @@ export class UploadManager {
       }
     });
   }
+
   // 直传
   directUpload() {
     let formData = new FormData();
     let xhr = createAjax();
     xhr.open("POST", this.uploadUrl);
-    this.progress = initProgress(this.file);
+    this.currentState = initCurrentState(this.file);
     let status = true;
     let multipart_params = {};
     formData.append("file", this.file);
@@ -285,7 +273,7 @@ export class UploadManager {
       body: formData,
       index: -1
     };
-    return this.ajax(xhr, option, "direct")
+    return this.request(xhr, option, updateDirectProgress)
       .then(res => {
         this.onComplete(res);
       })

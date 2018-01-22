@@ -1,6 +1,6 @@
 export const BLOCK_SIZE = 4 * 1024 * 1024;
 
-export var zoneUphostMap = {
+export let zoneUphostMap = {
   z0: {
     srcUphost: "up.qiniup.com",
     cdnUphost: "upload.qiniup.com"
@@ -18,7 +18,7 @@ export var zoneUphostMap = {
     cdnUphost: "upload-na0.qiniup.com"
   }
 };
-export var ZONES = {
+export let ZONES = {
   z0: "z0",
   z1: "z1",
   z2: "z2",

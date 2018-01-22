@@ -4,11 +4,11 @@ import { UploadManager } from "./upload";
 import { imageMogr2, watermark, imageInfo, exif, pipeline } from "./image";
 import { Observable } from "./observable";
 
-function upload(file, key, uptoken, putExtra, config) {
+function upload(file, key, token, putExtra, config) {
   let option = {
     file: file,
     key: key,
-    token: uptoken,
+    token: token,
     putExtra: putExtra,
     config: config
   };
@@ -21,6 +21,7 @@ function upload(file, key, uptoken, putExtra, config) {
     return uploadManager.stop.bind(uploadManager);
   });
 }
+
 export {
   upload,
   ZONES,
