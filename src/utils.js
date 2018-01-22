@@ -1,11 +1,13 @@
 import { URLSafeBase64Encode } from "./base64";
 import { ZONE } from "./config";
 import { ZONES } from "./index";
+
 // check是否时间过期
-export function checkExpire(expireAt) {
+export function isExpired(expireAt) {
   expireAt = (expireAt + 3600 * 24) * 1000;
   return new Date().getTime() > expireAt;
 }
+
 // 文件分块
 export function getChunks(file, BLOCK_SIZE) {
   let arrayChunk = [];
@@ -19,6 +21,7 @@ export function getChunks(file, BLOCK_SIZE) {
   }
   return arrayChunk;
 }
+
 // 按索引初始化progress
 export function getProgressItem(info) {
   let progress = {};
@@ -37,6 +40,7 @@ export function getProgressItem(info) {
   }
   return progress;
 }
+
 // 初始化progress
 export function initProgress(file) {
   let progress = {
@@ -78,26 +82,32 @@ export function getLocal(name, type) {
       return localFileStatus;
     }
   } catch (error) {
-    console.log(error);
+    throw error;
   }
 }
-// 每次分块上传后都更新本地存储状态
+
+// 更新分块的本地存储状态
 export function setLocalItem(name, option, size) {
-  let index = option.index;
-  let blkdata = option.data;
-  let respo = option.respo;
-  let localFileInfo = getLocal(name, "info");
-  localFileInfo[index] = {
-    ctx: respo.ctx,
-    blockSize: blkdata.size,
-    totalSize: size,
-    otime: new Date().getTime()
-  };
-  localStorage.setItem(
-    "qiniu_js_sdk_upload_file_info_" + name,
-    JSON.stringify(localFileInfo)
-  );
+  try {
+    let index = option.index;
+    let blkdata = option.data;
+    let response = option.response;
+    let localFileInfo = getLocal(name, "info");
+    localFileInfo[index] = {
+      ctx: response.ctx,
+      blockSize: blkdata.size,
+      totalSize: size,
+      otime: new Date().getTime()
+    };
+    localStorage.setItem(
+      "qiniu_js_sdk_upload_file_info_" + name,
+      JSON.stringify(localFileInfo)
+    );
+  } catch (err) {
+    throw err;
+  }
 }
+
 // check本地存储的信息
 export function checkLocalFileInfo(file) {
   let size = 0;
@@ -130,6 +140,9 @@ function removeItemStatus(name) {
   localStorage.removeItem("qiniu_js_sdk_upload_file_status_" + name);
 }
 
+function isMagic(k, params) {
+  return k.startsWith("x:") && params[k];
+}
 // 构造file上传url
 export function createFileUrl(uploadUrl, file, key, putExtra) {
   let requestURI = uploadUrl + "/mkfile/" + file.size;
@@ -143,7 +156,7 @@ export function createFileUrl(uploadUrl, file, key, putExtra) {
   requestURI += "/fname/" + URLSafeBase64Encode(fname);
   if (putExtra.params) {
     for (var k in putExtra.params) {
-      if (k.startsWith("x:") && putExtra.params[k]) {
+      if (isMagic(k, putExtra.params)) {
         requestURI +=
           "/" +
           encodeURIComponent(k) +
@@ -161,6 +174,7 @@ export var createAjax = () => {
   }
   return new ActiveXObject("Microsoft.XMLHTTP");
 };
+
 // 构造区域上传url
 export function getUploadUrl(config) {
   let upHosts = ZONE[config.zone] || ZONE.z0;

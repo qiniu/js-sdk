@@ -1,6 +1,6 @@
 {
-  "name": "qiniu-js",
-  "version": "1.0.0",
+  "name": "qiniu-sdk",
+  "version": "2.0.0",
   "description": "\"Qiniu javascript sdk for upload your files\"",
   "main": "index.js",
   "scripts": {
@@ -22,10 +22,6 @@
     {
       "name": "winddies",
       "email": "zhangheng01@qiniu.com"
-    },
-    {
-      "name": "nighca",
-      "email": "yanghanxing@qiniu.com"
     }
   ],
   "devDependencies": {

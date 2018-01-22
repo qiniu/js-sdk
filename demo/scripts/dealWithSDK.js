@@ -1,8 +1,6 @@
 function dealWithSDK(token, putExtra, config, domain) {
-  //切换tab后进行一些css操作
+  // 切换tab后进行一些css操作
   controlTabDisplay("sdk");
-  console.log(123);
-  console.log(domain);
   var width;
   var isfirstAddBoard = true;
   $("#select2").change(function() {
@@ -10,12 +8,12 @@ function dealWithSDK(token, putExtra, config, domain) {
     var observable;
     if (file) {
       var key = file.name;
-      //添加上传dom面板
+      // 添加上传dom面板
       var board = addUploadBoard(file, config, key, "");
       var dom_total = $(board)
         .find("#totalBar")
         .children("#totalBarColor");
-      //设置next,error,complete对应的操作，分别处理相应的进度信息，错误信息，以及完成后的操作
+      // 设置next,error,complete对应的操作，分别处理相应的进度信息，错误信息，以及完成后的操作
       var error = function(err) {
         console.log(err);
       };
@@ -71,7 +69,7 @@ function dealWithSDK(token, putExtra, config, domain) {
         complete: complete
       };
       var subscription;
-      //判断是否是第一次增加，这里主要是获得dom上传面板的初始宽度
+      // 判断是否是第一次增加，这里主要是获得dom上传面板的初始宽度
       if (isfirstAddBoard) {
         width = getBoardWidth(board);
         console.log(width);
@@ -79,8 +77,8 @@ function dealWithSDK(token, putExtra, config, domain) {
       }
       putExtra.params["x:name"] = key.split(".")[0];
       board.start = true;
-      //调用sdk上传接口获得相应的observable，控制上传和暂停
-      observable = qiniu.upload(file, key, token, putExtra, config);
+      // 调用sdk上传接口获得相应的observable，控制上传和暂停
+      observable = Qiniu.upload(file, key, token, putExtra, config);
       $(board)
         .find(".control-upload")
         .on("click", function() {

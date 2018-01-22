@@ -1,9 +1,9 @@
 import { createAjax } from "./utils";
 import { URLSafeBase64Encode } from "./base64";
 
-function getUrl(key, domain) {
+function getImageUrl(key, domain) {
   if (!key) {
-    return false;
+    throw "key can't be empty";
   }
   key = encodeURI(key);
   if (domain.slice(domain.length - 1) !== "/") {
@@ -14,34 +14,33 @@ function getUrl(key, domain) {
 
 export function imageView2(op, key, domain) {
   if (!/^\d$/.test(op.mode)) {
-    return false;
+    throw "mode should be number in imageView2";
   }
-  var mode = op.mode,
+  let mode = op.mode,
     w = op.w || "",
     h = op.h || "",
     q = op.q || "",
     format = op.format || "";
 
   if (!w && !h) {
-    return false;
+    throw "param w or h is empty in imageView2";
   }
 
-  var imageUrl = "imageView2/" + mode;
+  let imageUrl = "imageView2/" + mode;
   imageUrl += w ? "/w/" + w : "";
   imageUrl += h ? "/h/" + h : "";
   imageUrl += q ? "/q/" + q : "";
   imageUrl += format ? "/format/" + format : "";
   if (key) {
-    imageUrl = getUrl(key, domain) + "?" + imageUrl;
+    imageUrl = getImageUrl(key, domain) + "?" + imageUrl;
   }
   return imageUrl;
 }
 
-/**
- * invoke the imageMogr2 api of Qiniu
- */
+// invoke the imageMogr2 api of Qiniu
+
 export function imageMogr2(op, key, domain) {
-  var auto_orient = op["auto-orient"] || "",
+  let auto_orient = op["auto-orient"] || "",
     thumbnail = op.thumbnail || "",
     strip = op.strip || "",
     gravity = op.gravity || "",
@@ -50,9 +49,8 @@ export function imageMogr2(op, key, domain) {
     rotate = op.rotate || "",
     format = op.format || "",
     blur = op.blur || "";
-  //Todo check option
 
-  var imageUrl = "imageMogr2";
+  let imageUrl = "imageMogr2";
 
   imageUrl += auto_orient ? "/auto-orient" : "";
   imageUrl += thumbnail ? "/thumbnail/" + thumbnail : "";
@@ -65,45 +63,43 @@ export function imageMogr2(op, key, domain) {
   imageUrl += blur ? "/blur/" + blur : "";
 
   if (key) {
-    imageUrl = getUrl(key, domain) + "?" + imageUrl;
+    imageUrl = getImageUrl(key, domain) + "?" + imageUrl;
   }
   return imageUrl;
 }
 
-/**
- * invoke the watermark api of Qiniu
- */
+// invoke the watermark api of Qiniu
+
 export function watermark(op, key, domain) {
-  var mode = op.mode;
+  let mode = op.mode;
   if (!mode) {
-    return false;
+    throw "mode can't be empty in watermark";
   }
 
-  var imageUrl = "watermark/" + mode;
+  let imageUrl = "watermark/" + mode;
 
   if (mode === 1) {
-    var image = op.image || "";
+    let image = op.image || "";
     if (!image) {
-      return false;
+      throw "image can't be empty in watermark";
     }
     imageUrl += image ? "/image/" + URLSafeBase64Encode(image) : "";
   } else if (mode === 2) {
-    var text = op.text ? op.text : "",
+    let text = op.text ? op.text : "",
       font = op.font ? op.font : "",
       fontsize = op.fontsize ? op.fontsize : "",
       fill = op.fill ? op.fill : "";
     if (!text) {
-      return false;
+      throw "text can't be empty in watermark";
     }
     imageUrl += text ? "/text/" + URLSafeBase64Encode(text) : "";
     imageUrl += font ? "/font/" + URLSafeBase64Encode(font) : "";
     imageUrl += fontsize ? "/fontsize/" + fontsize : "";
     imageUrl += fill ? "/fill/" + URLSafeBase64Encode(fill) : "";
   } else {
-    // Todo mode3
-    return false;
+    throw "mode is wrong";
   }
-  var dissolve = op.dissolve || "",
+  let dissolve = op.dissolve || "",
     gravity = op.gravity || "",
     dx = op.dx || "",
     dy = op.dy || "";
@@ -114,63 +110,78 @@ export function watermark(op, key, domain) {
   imageUrl += dy ? "/dy/" + dy : "";
 
   if (key) {
-    imageUrl = getUrl(key, domain) + "?" + imageUrl;
+    imageUrl = getImageUrl(key, domain) + "?" + imageUrl;
   }
   return imageUrl;
 }
 
-/**
- * invoke the imageInfo api of Qiniu
- */
+// invoke the imageInfo api of Qiniu
 export function imageInfo(key, domain) {
-  if (!key) {
-    return false;
-  }
-  var url = getUrl(key, domain) + "?imageInfo";
-  var xhr = createAjax();
-  var info;
-  var that = this;
-  xhr.open("GET", url, false);
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === 4 && xhr.status === 200) {
-      info = that.parseJSON(xhr.responseText);
+  return new Promise((resolve, reject) => {
+    try {
+      if (!key) {
+        throw "key can't be empty in imageInfo";
+      }
+      let url = getImageUrl(key, domain) + "?imageInfo";
+      let xhr = createAjax();
+      let info;
+      let that = this;
+      xhr.open("GET", url);
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState !== 4) {
+          return;
+        }
+        let info = JSON.parse(xhr.responseText);
+        if (xhr.status === 200) {
+          resolve(info);
+        }
+      };
+      xhr.send();
+      return info;
+    } catch (err) {
+      reject(err);
     }
-  };
-  xhr.send();
-  return info;
+  });
 }
 
-/**
- * invoke the exif api of Qiniu
- */
+// invoke the exif api of Qiniu
 export function exif(key, domain) {
-  if (!key) {
-    return false;
-  }
-  var url = getUrl(key, domain) + "?exif";
-  var xhr = createAjax();
-  var info;
-  var that = this;
-  xhr.open("GET", url, false);
-  xhr.onreadystatechange = function() {
-    if (xhr.readyState === 4 && xhr.status === 200) {
-      info = that.parseJSON(xhr.responseText);
+  return new Promise((resolve, reject) => {
+    try {
+      if (!key) {
+        throw "key can't be empty in exif";
+      }
+      let url = getImageUrl(key, domain) + "?exif";
+      let xhr = createAjax();
+      let info;
+      let that = this;
+      xhr.open("GET", url);
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState !== 4) {
+          return;
+        }
+        let info = JSON.parse(xhr.responseText);
+        if (xhr.status === 200) {
+          resolve(info);
+        }
+      };
+      xhr.send();
+    } catch (err) {
+      reject(err);
     }
-  };
-  xhr.send();
-  return info;
+  });
 }
 
 export function pipeline(arr, key, domain) {
-  var isArray = Object.prototype.toString.call(arr) === "[object Array]";
-  var option,
+  let isArray = Object.prototype.toString.call(arr) === "[object Array]";
+  let option,
     errOp,
     imageUrl = "";
   if (isArray) {
-    for (var i = 0, len = arr.length; i < len; i++) {
+    for (let i = 0, len = arr.length; i < len; i++) {
       option = arr[i];
       if (!option.fop) {
-        return false;
+        throw "fop can't be empty in pipeline";
       }
       switch (option.fop) {
         case "watermark":
@@ -187,17 +198,17 @@ export function pipeline(arr, key, domain) {
           break;
       }
       if (errOp) {
-        return false;
+        throw "fop is wrong in pipeline";
       }
     }
     if (key) {
-      imageUrl = getUrl(key, domain) + "?" + imageUrl;
-      var length = imageUrl.length;
+      imageUrl = getImageUrl(key, domain) + "?" + imageUrl;
+      let length = imageUrl.length;
       if (imageUrl.slice(length - 1) === "|") {
         imageUrl = imageUrl.slice(0, length - 1);
       }
     }
     return imageUrl;
   }
-  return false;
+  throw "pipeline's first param should be array";
 }

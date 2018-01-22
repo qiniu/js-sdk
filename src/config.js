@@ -5,21 +5,11 @@ export class Config {
       useCdnDomain: true,
       zone: null
     };
-    extend(this, defaultOption, options);
+    Object.assign(this, defaultOption, options);
   }
 }
 
 export const BLOCK_SIZE = 4 * 1024 * 1024;
-
-function extend(that, defaultOption, options) {
-  for (let m in defaultOption) {
-    that[m] = defaultOption[m];
-  }
-  if (typeof options === "object")
-    for (let n in options) {
-      that[n] = options[n];
-    }
-}
 
 export var ZONE = {
   z0: {
@@ -53,6 +43,6 @@ export class PutExtra {
       params: {},
       mimeType: null
     };
-    extend(this, defaultOption, options);
+    Object.assign(this, defaultOption, options);
   }
 }
