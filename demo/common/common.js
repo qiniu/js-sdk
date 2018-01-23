@@ -66,7 +66,7 @@ var getRotate = function(url) {
 
 function imageControl(domain) {
   $(".modal-body")
-    .find("a")
+    .find(".buttonList a")
     .on("click", function() {
       var img = $(".modal-body").find(".display img");
       var key = img.data("key");

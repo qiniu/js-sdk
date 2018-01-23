@@ -1,16 +1,16 @@
-//实现form直传无刷新并解决跨域问题
+// 实现form直传无刷新并解决跨域问题
 function dealWithForm(token, putExtra, config) {
   controlTabDisplay("form");
-  //获得上传地址
-  var uploadUrl = qiniu.getUploadUrl(config);
+  // 获得上传地址
+  var uploadUrl = Qiniu.getUploadUrl(config);
   document.getElementsByName("token")[0].value = token;
   document.getElementsByName("url")[0].value = uploadUrl;
-  //当选择文件后执行的操作
+  // 当选择文件后执行的操作
   $("#select3").change(function() {
     var iframe = createIframe();
     disableButtonOfSelect();
     var key = this.files[0].name;
-    //添加上传dom面板
+    // 添加上传dom面板
     var board = addUploadBoard(this.files[0], config, key, "3");
     $(board)
       .find("#totalBar")
@@ -19,7 +19,7 @@ function dealWithForm(token, putExtra, config) {
       .find(".control-upload")
       .on("click", function() {
         enableButtonOfSelect();
-        //把action地址指向我们的 node sdk 后端服务,通过后端来实现跨域访问
+        // 把action地址指向我们的 node sdk 后端服务,通过后端来实现跨域访问
         $("#uploadForm").attr("target", iframe.name);
         $("#uploadForm")
           .attr("action", "/api/transfer")
@@ -64,6 +64,7 @@ function enableButtonOfSelect() {
     .find("button")
     .css("backgroundColor", "#00b7ee");
 }
+
 function disableButtonOfSelect() {
   $("#select3").attr("disabled", "disabled");
   $("#directForm")

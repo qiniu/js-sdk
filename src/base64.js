@@ -18,17 +18,17 @@ function utf8Encode(argString) {
     return "";
   }
 
-  var string = argString + ""; // .replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-  var utftext = "",
+  let string = argString + ""; // .replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  let utftext = "",
     start,
     end,
     stringl = 0;
 
   start = end = 0;
   stringl = string.length;
-  for (var n = 0; n < stringl; n++) {
-    var c1 = string.charCodeAt(n);
-    var enc = null;
+  for (let n = 0; n < stringl; n++) {
+    let c1 = string.charCodeAt(n);
+    let enc = null;
 
     if (c1 < 128) {
       end++;
@@ -45,7 +45,7 @@ function utf8Encode(argString) {
       if ((c1 & 0xfc00) ^ (0xd800 > 0)) {
         throw new RangeError("Unmatched trail surrogate at " + n);
       }
-      var c2 = string.charCodeAt(++n);
+      let c2 = string.charCodeAt(++n);
       if ((c2 & 0xfc00) ^ (0xdc00 > 0)) {
         throw new RangeError("Unmatched lead surrogate at " + (n - 1));
       }
@@ -89,8 +89,8 @@ function base64Encode(data) {
   //if (typeof this.window['atob'] == 'function') {
   //    return atob(data);
   //}
-  var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
-  var o1,
+  let b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+  let o1,
     o2,
     o3,
     h1,

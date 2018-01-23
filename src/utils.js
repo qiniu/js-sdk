@@ -12,7 +12,7 @@ export function getChunks(file, blockSize) {
   let chunks = [];
   let count = Math.ceil(file.size / blockSize);
   for (let i = 0; i < count; i++) {
-    let chunks = file.slice(
+    let chunk = file.slice(
       blockSize * i,
       i === count - 1 ? file.size : blockSize * (i + 1)
     );
@@ -28,7 +28,7 @@ export function getCurrentStateItem(info) {
     currentState = {
       percent: 100,
       otime: info.otime,
-      loaded: infot.totalSize
+      loaded: info.blockSize
     };
   } else {
     currentState = {
@@ -48,6 +48,7 @@ export function initCurrentState(file) {
       percent: 0,
       otime: new Date().getTime()
     },
+    mkFileReqState: 0,
     chunks: []
   };
   let localFileInfo = getLocal(file.name, "info");
@@ -69,10 +70,7 @@ export function initCurrentState(file) {
 
 export function getLocal(name, type) {
   try {
-    let localFileInfo =
-      JSON.parse(
-        localStorage.getItem("qiniu_js_sdk_upload_file_info_" + name)
-      ) || [];
+    let localFileInfo = getLocalItemInfo(name) || [];
     let localFileStatus = localStorage.getItem(
       "qiniu_js_sdk_upload_file_status_" + name
     );
@@ -86,8 +84,18 @@ export function getLocal(name, type) {
   }
 }
 
+export function getLocalItemInfo(name) {
+  try {
+    let localFileInfo = JSON.parse(
+      localStorage.getItem("qiniu_js_sdk_upload_file_info_" + name)
+    );
+    return localFileInfo;
+  } catch (err) {
+    throw err;
+  }
+}
 // 更新分块的本地存储状态
-export function setLocalItem(name, option, size) {
+export function updateLocalItem(name, option, size) {
   try {
     let index = option.index;
     let blkdata = option.data;
@@ -99,6 +107,14 @@ export function setLocalItem(name, option, size) {
       totalSize: size,
       otime: new Date().getTime()
     };
+    setLocalItem(localFileInfo, name);
+  } catch (err) {
+    throw err;
+  }
+}
+
+export function setLocalItem(localFileInfo, name) {
+  try {
     localStorage.setItem(
       "qiniu_js_sdk_upload_file_info_" + name,
       JSON.stringify(localFileInfo)
@@ -107,7 +123,6 @@ export function setLocalItem(name, option, size) {
     throw err;
   }
 }
-
 // check本地存储的信息
 export function checkLocalFileInfo(file) {
   let size = 0;
@@ -115,7 +130,7 @@ export function checkLocalFileInfo(file) {
   let localFileInfo = getLocal(file.name, "info");
   let localFileStatus = getLocal(file.name, "status");
   if (!localFileInfo.length) {
-    return removeItemInfo(file.name);
+    return removeLocalItemInfo(file.name);
   }
   for (let i = 0; i < localFileInfo.length; i++) {
     if (localFileInfo[i]) {
@@ -124,51 +139,64 @@ export function checkLocalFileInfo(file) {
     }
   }
   if (totalSize !== file.size) {
-    return removeItemInfo(file.name);
+    return removeLocalItemInfo(file.name);
   }
   if (size === file.size && localFileStatus === "success") {
-    removeItemInfo(file.name);
-    removeItemStatus(file.name);
+    removeLocalItemInfo(file.name);
+    removeLocalItemStatus(file.name);
   }
 }
 
-export function removeItemInfo(name) {
+export function removeLocalItemInfo(name) {
   localStorage.removeItem("qiniu_js_sdk_upload_file_info_" + name);
 }
 
-export function removeItemStatus(name) {
+export function removeLocalItemStatus(name) {
   localStorage.removeItem("qiniu_js_sdk_upload_file_status_" + name);
 }
 
 export function isMagic(k, params) {
   return k.startsWith("x:") && params[k];
 }
+
 // 构造file上传url
 export function createFileUrl(uploadUrl, file, key, putExtra) {
   let requestURI = uploadUrl + "/mkfile/" + file.size;
-  if (key) {
-    requestURI += "/key/" + URLSafeBase64Encode(key);
+  if (key !== null && key !== undefined) {
+    requestURI += "/key/" + uRLSafeBase64Encode(key);
   }
   if (putExtra.mimeType) {
-    requestURI += "/mimeType/" + URLSafeBase64Encode(putExtra.mimeType);
+    requestURI += "/mimeType/" + uRLSafeBase64Encode(putExtra.mimeType);
   }
   const fname = putExtra.fname || key || file.name;
-  requestURI += "/fname/" + URLSafeBase64Encode(fname);
+  requestURI += "/fname/" + uRLSafeBase64Encode(fname);
   if (putExtra.params) {
-    for (var k in putExtra.params) {
+    for (let k in putExtra.params) {
       if (isMagic(k, putExtra.params)) {
         requestURI +=
           "/" +
           encodeURIComponent(k) +
           "/" +
-          URLSafeBase64Encode(putExtra.params[k].toString());
+          uRLSafeBase64Encode(putExtra.params[k].toString());
       }
     }
   }
   return requestURI;
 }
 
-export var createAjax = () => {
+export function setChunkUploadOption(xhr, url) {
+  xhr.open("POST", requestURI);
+  xhr.setRequestHeader("content-type", "application/octet-stream");
+}
+
+export function setCtxUploadOption(xhr, url, token) {
+  xhr.open("POST", url);
+  xhr.setRequestHeader("Content-Type", "text/plain");
+  var auth = "UpToken " + token;
+  xhr.setRequestHeader("Authorization", auth);
+}
+
+export let createAjax = () => {
   if (window.XMLHttpRequest) {
     return new XMLHttpRequest();
   }

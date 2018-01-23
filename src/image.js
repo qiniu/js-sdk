@@ -1,11 +1,8 @@
 import { createAjax } from "./utils";
-import { URLSafeBase64Encode } from "./base64";
+import { uRLSafeBase64Encode } from "./base64";
 
 function getImageUrl(key, domain) {
-  if (!key) {
-    throw "key can't be empty";
-  }
-  key = encodeURI(key);
+  key = encodeURIComponent(key);
   if (domain.slice(domain.length - 1) !== "/") {
     domain = domain + "/";
   }
@@ -23,14 +20,14 @@ export function imageView2(op, key, domain) {
     format = op.format || "";
 
   if (!w && !h) {
-    throw "param w or h is empty in imageView2";
+    throw "param w and h is empty in imageView2";
   }
 
-  let imageUrl = "imageView2/" + mode;
-  imageUrl += w ? "/w/" + w : "";
-  imageUrl += h ? "/h/" + h : "";
-  imageUrl += q ? "/q/" + q : "";
-  imageUrl += format ? "/format/" + format : "";
+  let imageUrl = "imageView2/" + encodeURIComponent(mode);
+  imageUrl += w ? "/w/" + encodeURIComponent(w) : "";
+  imageUrl += h ? "/h/" + encodeURIComponent(h) : "";
+  imageUrl += q ? "/q/" + encodeURIComponent(q) : "";
+  imageUrl += format ? "/format/" + encodeURIComponent(format) : "";
   if (key) {
     imageUrl = getImageUrl(key, domain) + "?" + imageUrl;
   }
@@ -53,15 +50,14 @@ export function imageMogr2(op, key, domain) {
   let imageUrl = "imageMogr2";
 
   imageUrl += auto_orient ? "/auto-orient" : "";
-  imageUrl += thumbnail ? "/thumbnail/" + thumbnail : "";
+  imageUrl += thumbnail ? "/thumbnail/" + encodeURIComponent(thumbnail) : "";
   imageUrl += strip ? "/strip" : "";
-  imageUrl += gravity ? "/gravity/" + gravity : "";
-  imageUrl += quality ? "/quality/" + quality : "";
-  imageUrl += crop ? "/crop/" + crop : "";
-  imageUrl += rotate ? "/rotate/" + rotate : "";
-  imageUrl += format ? "/format/" + format : "";
-  imageUrl += blur ? "/blur/" + blur : "";
-
+  imageUrl += gravity ? "/gravity/" + encodeURIComponent(gravity) : "";
+  imageUrl += quality ? "/quality/" + encodeURIComponent(quality) : "";
+  imageUrl += crop ? "/crop/" + encodeURIComponent(crop) : "";
+  imageUrl += rotate ? "/rotate/" + encodeURIComponent(rotate) : "";
+  imageUrl += format ? "/format/" + encodeURIComponent(format) : "";
+  imageUrl += blur ? "/blur/" + encodeURIComponent(blur) : "";
   if (key) {
     imageUrl = getImageUrl(key, domain) + "?" + imageUrl;
   }
@@ -77,14 +73,19 @@ export function watermark(op, key, domain) {
   }
 
   let imageUrl = "watermark/" + mode;
+  if (mode !== 1 && mode !== 2) {
+    throw "mode is wrong";
+  }
 
   if (mode === 1) {
     let image = op.image || "";
     if (!image) {
       throw "image can't be empty in watermark";
     }
-    imageUrl += image ? "/image/" + URLSafeBase64Encode(image) : "";
-  } else if (mode === 2) {
+    imageUrl += image ? "/image/" + uRLSafeBase64Encode(image) : "";
+  }
+
+  if (mode === 2) {
     let text = op.text ? op.text : "",
       font = op.font ? op.font : "",
       fontsize = op.fontsize ? op.fontsize : "",
@@ -92,23 +93,20 @@ export function watermark(op, key, domain) {
     if (!text) {
       throw "text can't be empty in watermark";
     }
-    imageUrl += text ? "/text/" + URLSafeBase64Encode(text) : "";
-    imageUrl += font ? "/font/" + URLSafeBase64Encode(font) : "";
+    imageUrl += text ? "/text/" + uRLSafeBase64Encode(text) : "";
+    imageUrl += font ? "/font/" + uRLSafeBase64Encode(font) : "";
     imageUrl += fontsize ? "/fontsize/" + fontsize : "";
-    imageUrl += fill ? "/fill/" + URLSafeBase64Encode(fill) : "";
-  } else {
-    throw "mode is wrong";
+    imageUrl += fill ? "/fill/" + uRLSafeBase64Encode(fill) : "";
   }
   let dissolve = op.dissolve || "",
     gravity = op.gravity || "",
     dx = op.dx || "",
     dy = op.dy || "";
 
-  imageUrl += dissolve ? "/dissolve/" + dissolve : "";
-  imageUrl += gravity ? "/gravity/" + gravity : "";
-  imageUrl += dx ? "/dx/" + dx : "";
-  imageUrl += dy ? "/dy/" + dy : "";
-
+  imageUrl += dissolve ? "/dissolve/" + encodeURIComponent(dissolve) : "";
+  imageUrl += gravity ? "/gravity/" + encodeURIComponent(gravity) : "";
+  imageUrl += dx ? "/dx/" + encodeURIComponent(dx) : "";
+  imageUrl += dy ? "/dy/" + encodeURIComponent(dy) : "";
   if (key) {
     imageUrl = getImageUrl(key, domain) + "?" + imageUrl;
   }
@@ -119,9 +117,6 @@ export function watermark(op, key, domain) {
 export function imageInfo(key, domain) {
   return new Promise((resolve, reject) => {
     try {
-      if (!key) {
-        throw "key can't be empty in imageInfo";
-      }
       let url = getImageUrl(key, domain) + "?imageInfo";
       let xhr = createAjax();
       let info;
@@ -148,9 +143,6 @@ export function imageInfo(key, domain) {
 export function exif(key, domain) {
   return new Promise((resolve, reject) => {
     try {
-      if (!key) {
-        throw "key can't be empty in exif";
-      }
       let url = getImageUrl(key, domain) + "?exif";
       let xhr = createAjax();
       let info;

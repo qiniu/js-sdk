@@ -38,29 +38,27 @@ function dealWithSDK(token, putExtra, config, domain) {
         }
       };
 
-      var next = function(progress) {
-        for (var key in progress) {
-          if (key != "total") {
-            $(board)
-              .find(".fragment-group li")
-              .eq(key)
-              .find("#childBarColor")
-              .css(
-                "width",
-                Math.floor(progress[key].percent / 100 * width.childWidth - 2) +
-                  "px"
-              );
-          } else {
-            $(board)
-              .find(".speed")
-              .text("进度：" + progress[key].percent + "% ");
-            dom_total.css(
+      var next = function(response) {
+        console.log(response);
+        let chunks = response.chunks;
+        let total = response.total;
+        for (var i = 0; i < chunks.length; i++) {
+          $(board)
+            .find(".fragment-group li")
+            .eq(i)
+            .find("#childBarColor")
+            .css(
               "width",
-              Math.floor(progress[key].percent / 100 * width.totalWidth - 2) +
-                "px"
+              Math.floor(chunks[i].percent / 100 * width.childWidth - 2) + "px"
             );
-          }
         }
+        $(board)
+          .find(".speed")
+          .text("进度：" + total.percent + "% ");
+        dom_total.css(
+          "width",
+          Math.floor(total.percent / 100 * width.totalWidth - 2) + "px"
+        );
       };
 
       var subObject = {
