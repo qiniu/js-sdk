@@ -1,10 +1,10 @@
 function dealWithOthers(token, putExtra, config, domain) {
   controlTabDisplay("others");
-  var uploadUrl = qiniu.getUploadUrl(config);
-  console.log("uploadUrl:" + uploadUrl);
+  var uploadUrl = Qiniu.getUploadUrl(config);
   var ctx = "";
   var board = {};
   var chunk_size;
+  var blockSize;
   var isfirstAddBoard = true;
   var width;
   var speedCalInfo = {
@@ -16,10 +16,10 @@ function dealWithOthers(token, putExtra, config, domain) {
   var uploader = new plupload.Uploader({
     runtimes: "html5,flash,silverlight,html4",
     url: uploadUrl,
-    browse_button: "select", //触发文件选择对话框的按钮，为那个元素id
-    flash_swf_url: "./js/Moxie.swf", //swf文件，当需要使用swf方式进行上传时需要配置该参数
+    browse_button: "select", // 触发文件选择对话框的按钮，为那个元素id
+    flash_swf_url: "./js/Moxie.swf", // swf文件，当需要使用swf方式进行上传时需要配置该参数
     silverlight_xap_url: "./js/Moxie.xap",
-    chunk_size: config.BLOCK_SIZE,
+    chunk_size: 4 * 1024 * 1024,
     multipart_params: {
       // token从服务端获取，没有token无法上传
       token: token
@@ -29,33 +29,32 @@ function dealWithOthers(token, putExtra, config, domain) {
         console.log("upload init");
       },
       FilesAdded: function(up, files) {
+        $("#box input").attr("disabled", "disabled");
+        $("#box button").css("backgroundColor", "#aaaaaa");
         chunk_size = uploader.getOption("chunk_size");
-        console.log(chunk_size);
-        for (var i = 0; i < files.length; i++) {
-          var id = files[i].id;
-          //添加上传dom面板
-          board[id] = addUploadBoard(files[i], config, files[i].name, "2");
-          board[id].start = true;
-          //拿到初始宽度来为后面方便进度计算
-          if (isfirstAddBoard) {
-            width = getBoardWidth(board[id]);
-            isfirstAddBoard = false;
-          }
-          //绑定上传按钮开始事件
-          $(board[id])
-            .find(".control-upload")
-            .on("click", function() {
-              if (board[id].start) {
-                uploader.start();
-                board[id].start = false;
-                $(this).text("暂停上传");
-              } else {
-                uploader.stop();
-                board[id].start = "reusme";
-                $(this).text("继续上传");
-              }
-            });
+        var id = files[0].id;
+        // 添加上传dom面板
+        board[id] = addUploadBoard(files[0], config, files[0].name, "2");
+        board[id].start = true;
+        // 拿到初始宽度来为后面方便进度计算
+        if (isfirstAddBoard) {
+          width = getBoardWidth(board[id]);
+          isfirstAddBoard = false;
         }
+        // 绑定上传按钮开始事件
+        $(board[id])
+          .find(".control-upload")
+          .on("click", function() {
+            if (board[id].start) {
+              uploader.start();
+              board[id].start = false;
+              $(this).text("暂停上传");
+            } else {
+              uploader.stop();
+              board[id].start = "reusme";
+              $(this).text("继续上传");
+            }
+          });
       },
       FileUploaded: function(up, file, info) {
         console.log(info);
@@ -81,9 +80,8 @@ function dealWithOthers(token, putExtra, config, domain) {
       var multipart_params_obj = {};
       multipart_params_obj.token = token;
       if (putExtra.params) {
-        //putExtra params
         for (var k in putExtra.params) {
-          if (k.startsWith("x:") && putExtra.params[k]) {
+          if (Qiniu.isMagic(k, putExtra.params)) {
             multipart_params_obj[k] = putExtra.params[k].toString();
           }
         }
@@ -97,37 +95,11 @@ function dealWithOthers(token, putExtra, config, domain) {
     };
 
     var resumeUpload = function() {
-      var localFileInfo = localStorage.getItem("qiniu_" + file.name);
-      var blockSize = chunk_size;
-      if (localFileInfo) {
-        localFileInfo = JSON.parse(localFileInfo);
-        var before = localFileInfo.time || 0;
-        if (!qiniu.checkExpire(before)) {
-          if (localFileInfo.percent !== 100) {
-            if (file.size === localFileInfo.total) {
-              // TODO: if file.name and file.size is the same
-              // but not the same file will cause error
-              file.percent = localFileInfo.percent;
-              file.loaded = localFileInfo.offset;
-              var leftSize = file.size - localFileInfo.offset;
-              if (leftSize > chunk_size) {
-                blockSize = chunk_size;
-              }
-              ctx = localFileInfo.ctx;
-            } else {
-              localStorage.removeItem("qiniu_" + file.name);
-            }
-          } else {
-            // remove file info when upload percent is 100%
-            localStorage.removeItem("qiniu_" + file.name);
-          }
-        } else {
-          // remove file info when last upload time is over one day
-          localStorage.removeItem("qiniu_" + file.name);
-        }
-      }
+      var localFileInfo = Qiniu.getLocalItemInfo(file.name);
+      blockSize = chunk_size;
+      checkLocalFileInfo(localFileInfo, file);
       var multipart_params_obj = {};
-      //计算已上传的chunk数量
+      // 计算已上传的chunk数量
       var index = Math.floor(file.loaded / chunk_size);
       var dom_total = $(board[id])
         .find("#totalBar")
@@ -141,7 +113,7 @@ function dealWithOthers(token, putExtra, config, domain) {
         "width",
         Math.floor(file.percent / 100 * width.totalWidth - 2) + "px"
       );
-      //初始化已上传的chunk进度
+      // 初始化已上传的chunk进度
       for (var i = 0; i < index; i++) {
         var dom_finished = $(board[id])
           .find(".fragment-group li")
@@ -159,7 +131,7 @@ function dealWithOthers(token, putExtra, config, domain) {
         multipart_params: multipart_params_obj
       });
     };
-    //判断是否采取分片上传
+    // 判断是否采取分片上传
     if (
       (uploader.runtime === "html5" || uploader.runtime === "flash") &&
       chunk_size
@@ -192,19 +164,21 @@ function dealWithOthers(token, putExtra, config, domain) {
         Authorization: "UpToken " + token
       }
     });
-    localStorage.setItem(
-      "qiniu_" + file.name,
-      JSON.stringify({
+    // 更新本地存储状态
+    Qiniu.setLocalItem(
+      {
         ctx: ctx,
         percent: file.percent,
         total: info.total,
         offset: info.offset,
         time: new Date().getTime() / 1000
-      })
+      },
+      file.name
     );
   });
-  //每个事件监听函数都会传入一些很有用的参数，
-  //我们可以利用这些参数提供的信息来做比如更新UI，提示上传进度等操作
+
+  // 每个事件监听函数都会传入一些很有用的参数，
+  // 我们可以利用这些参数提供的信息来做比如更新UI，提示上传进度等操作
   uploader.bind("UploadProgress", function(uploader, file) {
     var id = file.id;
     //更新进度条进度信息;
@@ -229,21 +203,16 @@ function dealWithOthers(token, putExtra, config, domain) {
   uploader.bind("FileUploaded", function(uploader, file, info) {
     var id = file.id;
     if (ctx) {
-      //调用sdk的url构建函数
-      var requestURI = qiniu.createFileUrl(uploadUrl, file, key, putExtra);
-      console.log("requestURI:" + requestURI);
+      // 调用sdk的url构建函数
+      var requestURI = Qiniu.createFileUrl(uploadUrl, file, key, putExtra);
       var xhr = createAjax();
-      xhr.open("POST", requestURI);
-      xhr.setRequestHeader("Content-Type", "text/plain");
-      var auth = "UpToken " + token;
-      xhr.setRequestHeader("Authorization", auth);
+      // 设置上传的header信息
+      Qiniu.setCtxUploadOption(xhr, requestURI, token);
       xhr.send(ctx);
       xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
           if (xhr.status === 200) {
             uploadFinish(this.responseText, board[id]);
-          } else {
-            console.log(JSON.parse(this.responseText));
           }
         }
       };
@@ -270,6 +239,8 @@ function dealWithOthers(token, putExtra, config, domain) {
   }
 
   function uploadFinish(res, board) {
+    $("#box input").removeAttr("disabled", "disabled");
+    $("#box button").css("backgroundColor", "#00b7ee");
     var data = JSON.parse(res);
     $(board)
       .find("#totalBar")
@@ -287,5 +258,26 @@ function dealWithOthers(token, putExtra, config, domain) {
     if (data.key && data.key.match(/\.(jpg|jpeg|png|gif)$/)) {
       imageDeal(board, data.key, domain);
     }
+  }
+
+  function checkLocalFileInfo(localFileInfo, file) {
+    var oldTime;
+    if (!localFileInfo) {
+      return;
+    }
+    oldTime = localFileInfo.time || 0;
+    if (Qiniu.isChunkExpired(oldTime)) {
+      Qiniu.removeLocalItemInfo(file.name);
+      return;
+    }
+    if (localFileInfo.percent !== 100 && file.size === localFileInfo.total) {
+      file.percent = localFileInfo.percent;
+      file.loaded = localFileInfo.offset;
+      var leftSize = file.size - localFileInfo.offset;
+      leftSize > chunk_size ? (blockSize = chunk_size) : (blockSize = leftSize);
+      ctx = localFileInfo.ctx;
+      return;
+    }
+    Qiniu.removeLocalItemInfo(file.name);
   }
 }

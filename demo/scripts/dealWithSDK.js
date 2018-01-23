@@ -39,7 +39,6 @@ function dealWithSDK(token, putExtra, config, domain) {
       };
 
       var next = function(response) {
-        console.log(response);
         let chunks = response.chunks;
         let total = response.total;
         for (var i = 0; i < chunks.length; i++) {

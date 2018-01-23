@@ -83,3 +83,25 @@ body {
 .modal-body {
   text-align: center;
 }
+.buttonList a {
+  padding: 5px 10px;
+  background: #fff;
+  border-radius: 5px;
+  color: #000;
+  margin-left: 10px;
+  cursor: pointer;
+}
+.buttonList ul {
+  text-align: left;
+}
+.buttonList li {
+  list-style: none;
+  margin-top: 15px;
+}
+.disabled {
+  background: #ccc;
+}
+.display a {
+  display: block;
+  background: #fff;
+}
