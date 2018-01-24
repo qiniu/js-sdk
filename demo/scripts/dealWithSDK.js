@@ -10,6 +10,9 @@ function dealWithSDK(token, putExtra, config, domain) {
       var key = file.name;
       // 添加上传dom面板
       var board = addUploadBoard(file, config, key, "");
+      if (!board) {
+        return;
+      }
       var dom_total = $(board)
         .find("#totalBar")
         .children("#totalBarColor");
@@ -19,7 +22,6 @@ function dealWithSDK(token, putExtra, config, domain) {
       };
 
       var complete = function(res) {
-        console.log(res.key);
         $(board)
           .find("#totalBar")
           .addClass("hide");
@@ -68,8 +70,8 @@ function dealWithSDK(token, putExtra, config, domain) {
       var subscription;
       // 判断是否是第一次增加，这里主要是获得dom上传面板的初始宽度
       if (isfirstAddBoard) {
+        console.log(123);
         width = getBoardWidth(board);
-        console.log(width);
         isfirstAddBoard = false;
       }
       putExtra.params["x:name"] = key.split(".")[0];

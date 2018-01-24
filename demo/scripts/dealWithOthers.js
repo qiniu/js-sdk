@@ -1,8 +1,9 @@
 function dealWithOthers(token, putExtra, config, domain) {
   controlTabDisplay("others");
   var uploadUrl = Qiniu.getUploadUrl(config);
-  var ctx = "";
   var board = {};
+  var indexCount = 0;
+  var ctx;
   var chunk_size;
   var blockSize;
   var isfirstAddBoard = true;
@@ -29,6 +30,7 @@ function dealWithOthers(token, putExtra, config, domain) {
         console.log("upload init");
       },
       FilesAdded: function(up, files) {
+        ctx = "";
         $("#box input").attr("disabled", "disabled");
         $("#box button").css("backgroundColor", "#aaaaaa");
         chunk_size = uploader.getOption("chunk_size");
@@ -71,7 +73,6 @@ function dealWithOthers(token, putExtra, config, domain) {
   uploader.init();
 
   uploader.bind("BeforeUpload", function(uploader, file) {
-    ctx = "";
     key = file.name;
     putExtra.params["x:name"] = key.split(".")[0];
     var id = file.id;
@@ -95,9 +96,21 @@ function dealWithOthers(token, putExtra, config, domain) {
     };
 
     var resumeUpload = function() {
-      var localFileInfo = Qiniu.getLocalItemInfo(file.name);
+      if (!ctx) {
+        Qiniu.removeLocalItemInfo(file.name);
+      }
       blockSize = chunk_size;
-      checkLocalFileInfo(localFileInfo, file);
+      var localFileInfo = Qiniu.getLocalItemInfo(file.name);
+      if (localFileInfo.length) {
+        for (var i = 0; i < localFileInfo.length; i++) {
+          if (Qiniu.isChunkExpired(localFileInfo[i].time)) {
+            Qiniu.removeLocalItemInfo(file.name);
+            break;
+          }
+        }
+      }
+      initFileInfo(file);
+
       var multipart_params_obj = {};
       // 计算已上传的chunk数量
       var index = Math.floor(file.loaded / chunk_size);
@@ -165,16 +178,15 @@ function dealWithOthers(token, putExtra, config, domain) {
       }
     });
     // 更新本地存储状态
-    Qiniu.setLocalItem(
-      {
-        ctx: ctx,
-        percent: file.percent,
-        total: info.total,
-        offset: info.offset,
-        time: new Date().getTime() / 1000
-      },
-      file.name
-    );
+    var localFileInfo = Qiniu.getLocalItemInfo(file.name);
+    localFileInfo[indexCount] = {
+      ctx: res.ctx,
+      time: new Date().getTime() / 1000,
+      offset: info.offset,
+      percent: file.percent
+    };
+    indexCount++;
+    Qiniu.setLocalItemInfo(localFileInfo, file.name);
   });
 
   // 每个事件监听函数都会传入一些很有用的参数，
@@ -204,10 +216,9 @@ function dealWithOthers(token, putExtra, config, domain) {
     var id = file.id;
     if (ctx) {
       // 调用sdk的url构建函数
-      var requestURI = Qiniu.createFileUrl(uploadUrl, file, key, putExtra);
-      var xhr = createAjax();
+      var requestURI = Qiniu.createMkFileUrl(uploadUrl, file, key, putExtra);
       // 设置上传的header信息
-      Qiniu.setCtxUploadOption(xhr, requestURI, token);
+      let xhr = Qiniu.getResumeUploadXHR(requestURI, token, "ctx");
       xhr.send(ctx);
       xhr.onreadystatechange = function() {
         if (xhr.readyState == 4) {
@@ -259,25 +270,14 @@ function dealWithOthers(token, putExtra, config, domain) {
       imageDeal(board, data.key, domain);
     }
   }
-
-  function checkLocalFileInfo(localFileInfo, file) {
-    var oldTime;
-    if (!localFileInfo) {
-      return;
+  function initFileInfo(file) {
+    var localFileInfo = Qiniu.getLocalItemInfo(file.name);
+    var length = localFileInfo.length;
+    if (length) {
+      file.loaded = localFileInfo[length - 1].offset;
+      file.percent = localFileInfo[length - 1].percent;
+    } else {
+      indexCount = 0;
     }
-    oldTime = localFileInfo.time || 0;
-    if (Qiniu.isChunkExpired(oldTime)) {
-      Qiniu.removeLocalItemInfo(file.name);
-      return;
-    }
-    if (localFileInfo.percent !== 100 && file.size === localFileInfo.total) {
-      file.percent = localFileInfo.percent;
-      file.loaded = localFileInfo.offset;
-      var leftSize = file.size - localFileInfo.offset;
-      leftSize > chunk_size ? (blockSize = chunk_size) : (blockSize = leftSize);
-      ctx = localFileInfo.ctx;
-      return;
-    }
-    Qiniu.removeLocalItemInfo(file.name);
   }
 }

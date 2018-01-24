@@ -1,12 +1,13 @@
-import { zoneUphostMap, ZONES } from "./config";
+import { ZONES } from "./config";
 import {
-  createFileUrl,
+  createMkFileUrl,
   isChunkExpired,
+  checkLocalFileInfo,
   getUploadUrl,
   isMagic,
-  setLocalItem,
+  setLocalItemInfo,
   getLocalItemInfo,
-  setCtxUploadOption,
+  getResumeUploadXHR,
   removeLocalItemInfo
 } from "./utils";
 import { UploadManager } from "./upload";
@@ -21,11 +22,13 @@ function upload(file, key, token, putExtra, config) {
     putExtra: putExtra,
     config: config
   };
-  let uploadManager = new UploadManager(options);
+
   return new Observable(observer => {
-    uploadManager.onData = e => observer.next(e);
-    uploadManager.onError = e => observer.error(e);
-    uploadManager.onComplete = e => observer.complete(e);
+    let uploadManager = new UploadManager(options, {
+      onData: e => observer.next(e),
+      onError: e => observer.error(e),
+      onComplete: e => observer.complete(e)
+    });
     uploadManager.putFile();
     return uploadManager.stop.bind(uploadManager);
   });
@@ -34,17 +37,18 @@ function upload(file, key, token, putExtra, config) {
 export {
   upload,
   ZONES,
-  createFileUrl,
+  createMkFileUrl,
   isChunkExpired,
+  checkLocalFileInfo,
+  setLocalItemInfo,
   getUploadUrl,
   imageMogr2,
   watermark,
   imageInfo,
-  isMagic,
-  setCtxUploadOption,
-  setLocalItem,
-  getLocalItemInfo,
-  removeLocalItemInfo,
   exif,
-  pipeline
+  pipeline,
+  isMagic,
+  getResumeUploadXHR,
+  getLocalItemInfo,
+  removeLocalItemInfo
 };

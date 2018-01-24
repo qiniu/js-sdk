@@ -1,5 +1,7 @@
 import { uRLSafeBase64Encode } from "./base64";
-import { zoneUphostMap } from "./config";
+import { zoneUphostMap, ZONES } from "./config";
+import SparkMD5 from "spark-md5";
+import { create } from "domain";
 
 // 对上传块本地存储时间检验是否过期
 export function isChunkExpired(expireAt) {
@@ -21,7 +23,7 @@ export function getChunks(file, blockSize) {
   return chunks;
 }
 
-// 按索引初始化progress
+// 按索引初始化currentState
 export function getCurrentStateItem(info) {
   let currentState = {};
   if (info) {
@@ -40,7 +42,7 @@ export function getCurrentStateItem(info) {
   return currentState;
 }
 
-// 初始化progress
+// 初始化currentState
 export function initCurrentState(file) {
   let currentState = {
     total: {
@@ -51,8 +53,8 @@ export function initCurrentState(file) {
     mkFileReqState: 0,
     chunks: []
   };
-  let localFileInfo = getLocal(file.name, "info");
-  let successStatus = getLocal(file.name, "status");
+  let localFileInfo = getLocalItemInfo(file.name);
+  let successStatus = getLocalItemStatus(file.name);
   if (localFileInfo && localFileInfo.length) {
     if (successStatus !== "success") {
       localFileInfo.map(function(value, index) {
@@ -68,91 +70,149 @@ export function initCurrentState(file) {
   return currentState;
 }
 
-export function getLocal(name, type) {
+export function getLocalItemInfo(name) {
   try {
-    let localFileInfo = getLocalItemInfo(name) || [];
+    let localFileInfo =
+      JSON.parse(
+        localStorage.getItem("qiniu_js_sdk_upload_file_info_" + name)
+      ) || [];
+    return localFileInfo;
+  } catch (err) {
+    console.warn("localStorage.getItem failed");
+    return [];
+  }
+}
+
+export function getLocalItemStatus(name) {
+  try {
     let localFileStatus = localStorage.getItem(
       "qiniu_js_sdk_upload_file_status_" + name
     );
-    if (type === "info") {
-      return localFileInfo;
-    } else {
-      return localFileStatus;
-    }
-  } catch (error) {
-    throw error;
+    return localFileStatus;
+  } catch (err) {
+    console.warn("localStorage.getItem failed");
+    return "";
   }
 }
 
-export function getLocalItemInfo(name) {
-  try {
-    let localFileInfo = JSON.parse(
-      localStorage.getItem("qiniu_js_sdk_upload_file_info_" + name)
-    );
-    return localFileInfo;
-  } catch (err) {
-    throw err;
-  }
-}
 // 更新分块的本地存储状态
 export function updateLocalItem(name, option, size) {
-  try {
-    let index = option.index;
-    let blkdata = option.data;
-    let response = option.response;
-    let localFileInfo = getLocal(name, "info");
-    localFileInfo[index] = {
-      ctx: response.ctx,
-      blockSize: blkdata.size,
-      totalSize: size,
-      otime: new Date().getTime()
-    };
-    setLocalItem(localFileInfo, name);
-  } catch (err) {
-    throw err;
-  }
+  let index = option.index;
+  let blkdata = option.data;
+  let response = option.response;
+  let localFileInfo = getLocalItemInfo(name);
+  localFileInfo[index] = {
+    ctx: response.ctx,
+    blockSize: blkdata.size,
+    totalSize: size,
+    otime: new Date().getTime()
+  };
+  setLocalItemInfo(localFileInfo, name);
 }
 
-export function setLocalItem(localFileInfo, name) {
+export function setLocalItemInfo(localFileInfo, name) {
   try {
     localStorage.setItem(
       "qiniu_js_sdk_upload_file_info_" + name,
       JSON.stringify(localFileInfo)
     );
   } catch (err) {
-    throw err;
+    console.warn("localStorage.setItem failed");
   }
 }
+
+export function setLocalItemStatus(name) {
+  try {
+    localStorage.setItem("qiniu_js_sdk_upload_file_status_" + name, "success");
+  } catch (err) {
+    console.warn("localStorage.setItem failed");
+  }
+}
+
+export function setLocalMd5(md5, name) {
+  try {
+    localStorage.setItem("qiniu_js_sdk_upload_file_md5_" + name, md5);
+  } catch (err) {
+    console.warn("localStorage.setItem failed");
+  }
+}
+
+function getFileMd5Info(file) {
+  return new Promise((resolve, reject) => {
+    let reader = new FileReader();
+    let spark = new SparkMD5.ArrayBuffer();
+    reader.readAsArrayBuffer(file);
+    reader.onload = evt => {
+      let binary = evt.target.result;
+      spark.append(binary);
+      resolve(spark.end());
+    };
+    reader.onerror = () => reject(new Error("fileReader 读取错误"));
+  });
+}
+
+function getLocalMd5(name) {
+  try {
+    let localFileInfo = localStorage.getItem(
+      "qiniu_js_sdk_upload_file_md5_" + name
+    );
+    return localFileInfo;
+  } catch (err) {
+    console.warn("localStorage.getItem failed");
+    return "";
+  }
+}
+
 // check本地存储的信息
 export function checkLocalFileInfo(file) {
-  let size = 0;
-  let totalSize;
-  let localFileInfo = getLocal(file.name, "info");
-  let localFileStatus = getLocal(file.name, "status");
-  if (!localFileInfo.length) {
-    return removeLocalItemInfo(file.name);
-  }
-  for (let i = 0; i < localFileInfo.length; i++) {
-    if (localFileInfo[i]) {
-      size += localFileInfo[i].blockSize;
-      totalSize = localFileInfo[i].totalSize;
-    }
-  }
-  if (totalSize !== file.size) {
-    return removeLocalItemInfo(file.name);
-  }
-  if (size === file.size && localFileStatus === "success") {
-    removeLocalItemInfo(file.name);
-    removeLocalItemStatus(file.name);
-  }
+  let localFileInfo = getLocalItemInfo(file.name);
+  let localFileStatus = getLocalItemStatus(file.name);
+  let localMd5 = getLocalMd5(file.name);
+  getFileMd5Info(file)
+    .then(md5 => {
+      if (md5 !== localMd5) {
+        removeLocalMd5(file.name);
+        setLocalMd5(md5, file.name);
+        removeLocalItemStatus(file.name);
+        return removeLocalItemInfo(file.name);
+      }
+      if (!localFileInfo.length) {
+        removeLocalItemStatus(file.name);
+        return removeLocalItemInfo(file.name);
+      }
+      if (localFileStatus === "success") {
+        removeLocalItemInfo(file.name);
+        removeLocalItemStatus(file.name);
+      }
+    })
+    .catch(err => {
+      removeLocalItemInfo(file.name);
+      removeLocalItemStatus(file.name);
+    });
 }
 
 export function removeLocalItemInfo(name) {
-  localStorage.removeItem("qiniu_js_sdk_upload_file_info_" + name);
+  try {
+    localStorage.removeItem("qiniu_js_sdk_upload_file_info_" + name);
+  } catch (err) {
+    console.warn("localStorage.removeItem failed");
+  }
 }
 
 export function removeLocalItemStatus(name) {
-  localStorage.removeItem("qiniu_js_sdk_upload_file_status_" + name);
+  try {
+    localStorage.removeItem("qiniu_js_sdk_upload_file_status_" + name);
+  } catch (err) {
+    console.warn("localStorage.removeItem failed");
+  }
+}
+
+export function removeLocalMd5(name) {
+  try {
+    localStorage.removeItem("qiniu_js_sdk_upload_file_md5_" + name);
+  } catch (err) {
+    console.warn("localStorage.removeItem failed");
+  }
 }
 
 export function isMagic(k, params) {
@@ -160,16 +220,18 @@ export function isMagic(k, params) {
 }
 
 // 构造file上传url
-export function createFileUrl(uploadUrl, file, key, putExtra) {
-  let requestURI = uploadUrl + "/mkfile/" + file.size;
+export function createMkFileUrl(url, file, key, putExtra) {
+  let requestURI = url + "/mkfile/" + file.size;
   if (key !== null && key !== undefined) {
     requestURI += "/key/" + uRLSafeBase64Encode(key);
   }
   if (putExtra.mimeType) {
     requestURI += "/mimeType/" + uRLSafeBase64Encode(putExtra.mimeType);
   }
-  const fname = putExtra.fname || key || file.name;
-  requestURI += "/fname/" + uRLSafeBase64Encode(fname);
+  let fname = putExtra.fname;
+  if (fname) {
+    requestURI += "/fname/" + uRLSafeBase64Encode(fname);
+  }
   if (putExtra.params) {
     for (let k in putExtra.params) {
       if (isMagic(k, putExtra.params)) {
@@ -184,19 +246,20 @@ export function createFileUrl(uploadUrl, file, key, putExtra) {
   return requestURI;
 }
 
-export function setChunkUploadOption(xhr, url) {
-  xhr.open("POST", requestURI);
-  xhr.setRequestHeader("content-type", "application/octet-stream");
-}
-
-export function setCtxUploadOption(xhr, url, token) {
+export function getResumeUploadXHR(url, token, type) {
+  let xhr = createXHR();
   xhr.open("POST", url);
-  xhr.setRequestHeader("Content-Type", "text/plain");
-  var auth = "UpToken " + token;
+  let auth = "UpToken " + token;
   xhr.setRequestHeader("Authorization", auth);
+  if (type === "chunk") {
+    xhr.setRequestHeader("content-type", "application/octet-stream");
+  } else {
+    xhr.setRequestHeader("Content-Type", "text/plain");
+  }
+  return xhr;
 }
 
-export let createAjax = () => {
+export let createXHR = () => {
   if (window.XMLHttpRequest) {
     return new XMLHttpRequest();
   }
@@ -205,7 +268,7 @@ export let createAjax = () => {
 
 // 构造区域上传url
 export function getUploadUrl(config) {
-  let upHosts = zoneUphostMap[config.zone] || zoneUphostMap.z0;
+  let upHosts = zoneUphostMap[config.zone] || zoneUphostMap[Zones.z0];
   const protocol = config.useHttpsDomain ? "https" : "http";
   const host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost;
   return `${protocol}://${host}`;
