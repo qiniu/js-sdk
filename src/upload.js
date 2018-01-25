@@ -1,4 +1,3 @@
-import { BLOCK_SIZE } from "./config";
 import {
   initCurrentState,
   getCurrentStateItem,
@@ -7,14 +6,17 @@ import {
   createXHR,
   createMkFileUrl,
   updateLocalItem,
-  checkLocalFileInfo,
-  checkFileMd5Info,
-  getLocalItemInfo,
-  setLocalItemStatus,
-  isMagic,
+  getLocalFileInfo,
+  setLocalFileInfo,
+  getHeadersForChunkUpload,
+  getHeadersForMkfile,
+  removeLocalFileInfo,
+  isCustomVar,
   getResumeUploadXHR,
   getUploadUrl
 } from "./utils";
+
+const BLOCK_SIZE = 4 * 1024 * 1024;
 
 export class UploadManager {
   constructor(options, handlers) {
@@ -71,8 +73,6 @@ export class UploadManager {
   // 直传
   directUpload() {
     let formData = new FormData();
-    let xhr = createXHR();
-    xhr.open("POST", this.uploadUrl);
     this.currentState = initCurrentState(this.file);
     let multipart_params = {};
     formData.append("file", this.file);
@@ -82,12 +82,17 @@ export class UploadManager {
     }
     formData.append("fname", this.putExtra.fname);
     for (let k in this.putExtra.params) {
-      if (isMagic(k, this.putExtra.params)) {
+      if (isCustomVar(k, this.putExtra.params)) {
         formData.append(k, this.putExtra.params[k].toString());
       }
     }
-    return this.request(xhr, formData, event =>
-      this.updateDirectProgress(event)
+    return this.request(
+      "POST",
+      this.uploadUrl,
+      "",
+      formData,
+      (loaded, lengthComputable) =>
+        this.updateDirectProgress(loaded, lengthComputable)
     )
       .then(res => {
         this.onComplete(res);
@@ -100,50 +105,59 @@ export class UploadManager {
 
   // 分片上传
   resumeUpload() {
-    let chunks = getChunks(this.file, BLOCK_SIZE); // 返回根据file.size所产生的分段数据数组
-    return this.uploadFileChunks(chunks);
-  }
-
-  uploadFileChunks(chunks) {
-    checkLocalFileInfo(this.file);
-    this.currentState = initCurrentState(this.file);
-    let localFileInfo = getLocalItemInfo(this.file.name);
-    let updatePromises = chunks.map((chunk, index) => {
-      let info = localFileInfo[index];
-      if (info && !isChunkExpired(info.expire_at)) {
-        this.currentState.chunks[index] = getCurrentStateItem(info);
-        return Promise.resolve(info);
-      }
-      return this.mkblkReq(chunk, index);
-    });
-    return Promise.all(updatePromises)
-      .then(context => {
-        let ctxList = [];
-        for (let m = 0; m < context.length; m++) {
-          ctxList.push(context[m].ctx);
-        }
-        this.mkfileReq(ctxList).catch(err => {
+    return getLocalFileInfo(this.file).then(res => {
+      console.log(res);
+      this.currentState = initCurrentState(this.file);
+      this.ctxList = [];
+      this.localInfo = res.info;
+      let md5 = res.md5;
+      console.log(this.config);
+      let chunks = getChunks(this.file, BLOCK_SIZE);
+      console.log(chunks);
+      let uploadChunks = chunks.map((chunk, index) => {
+        return this.mkblkReq(chunk, index);
+      });
+      let result = Promise.all(uploadChunks)
+        .then(() => {
+          return this.mkfileReq();
+        })
+        .catch(err => {
+          Promise.reject(err);
+        });
+      return result
+        .then(res => {
+          this.updateMkFileProgress();
+          this.onData(this.currentState);
+          // 设置上传成功的本地状态
+          removeLocalFileInfo(this.file.name, md5);
+          this.onComplete(res);
+        })
+        .catch(err => {
+          setLocalFileInfo(this.file.name, md5, this.ctxList);
           this.stop();
           this.onError(err);
         });
-      })
-      .catch(err => {
-        this.stop();
-        this.onError(err);
-      });
+    });
+    // const uploadChunks = chunks.map(uploadChunk);
+    // const result = uploadChunks.then(() => mkFile());
+    // result.catch(() => saveLocalInfo());
   }
 
-  request(xhr, data, onProgress) {
+  request(method, url, headers, body, onProgress) {
     return new Promise((resolve, reject) => {
+      let xhr = createXHR();
+      xhr.open(method, url);
+      if (headers) {
+        for (let key in headers) {
+          xhr.setRequestHeader(key, headers[key]);
+        }
+      }
       xhr.upload.addEventListener("progress", evt => {
         if (this.stopped) {
           xhr.abort();
         }
-        onProgress(evt);
+        onProgress(evt.loaded, evt.lengthComputable);
         this.onData(this.currentState);
-      });
-      xhr.upload.addEventListener("error", evt => {
-        reject(new Error("An error occurred while transferring the file."));
       });
       xhr.onreadystatechange = evt => {
         let responseText = evt.target.responseText;
@@ -151,39 +165,61 @@ export class UploadManager {
           return;
         }
         if (xhr.status !== 200 && responseText) {
-          reject(JSON.parse(responseText));
+          reject(
+            new Error(
+              "xhr request failed,code:" +
+                xhr.status +
+                ";response:" +
+                responseText
+            )
+          );
+          return;
         }
         if (xhr.status !== 200 && !responseText) {
-          reject(new Error("已暂停..."));
+          reject(new Error("xhr request failed,code:" + xhr.status));
           return;
         }
         let response = JSON.parse(responseText);
         resolve(response);
       };
-      xhr.send(data);
+      xhr.send(body);
     });
   }
 
   mkblkReq(chunk, index) {
     return new Promise((resolve, reject) => {
+      let info = this.localInfo[index];
+      console.log("this.localInfo:" + this.localInfo);
+      let item = { blockSize: chunk.size, loaded: 0, percent: 0 };
+      if (info && !isChunkExpired(info.time)) {
+        item.percent = 100;
+        item.loaded = chunk.size;
+        this.currentState.chunks[index] = getCurrentStateItem(item);
+        this.ctxList[index] = info.ctx;
+        resolve();
+      }
+      console.log(index);
       let reader = new FileReader();
-      this.currentState.chunks[index] = getCurrentStateItem();
+      this.currentState.chunks[index] = getCurrentStateItem(item);
       let requestURI = this.uploadUrl + "/mkblk/" + chunk.size;
       reader.readAsArrayBuffer(chunk);
       reader.onload = evt => {
-        let xhr = getResumeUploadXHR(requestURI, this.token, "chunk");
-        let binary = evt.target.result;
-        let option = {
-          data: chunk,
-          index: index
-        };
-        this.request(xhr, binary, event =>
-          this.updateChunkProgress(event, index)
+        let body = evt.target.result;
+        let headers = getHeadersForChunkUpload(this.token);
+        this.request(
+          "POST",
+          requestURI,
+          headers,
+          body,
+          (loaded, lengthComputable) =>
+            this.updateChunkProgress(loaded, lengthComputable, index)
         )
           .then(response => {
-            option.response = response;
-            updateLocalItem(this.file.name, option, this.file.size);
-            resolve(response);
+            this.ctxList[index] = {
+              time: response.expire_at,
+              ctx: response.ctx
+            };
+            resolve();
           })
           .catch(err => reject(err));
       };
@@ -193,7 +229,7 @@ export class UploadManager {
     });
   }
 
-  mkfileReq(ctxList) {
+  mkfileReq() {
     return new Promise((resolve, reject) => {
       let putExtra = Object.assign(
         {
@@ -207,18 +243,17 @@ export class UploadManager {
         this.key,
         putExtra
       );
-      let xhr = getResumeUploadXHR(requestURI, this.token, "ctx");
-      let postBody = ctxList.join(",");
-      this.request(xhr, postBody, () => {})
+      let ctxs = [];
+      for (let m = 0; m < this.ctxList.length; m++) {
+        ctxs.push(this.ctxList[m].ctx);
+      }
+      let postBody = ctxs.join(",");
+      let headers = getHeadersForMkfile(this.token);
+      this.request("POST", requestURI, headers, postBody, () => {})
         .then(res => {
-          this.updateMkFileProgress();
-          this.onData(this.currentState);
-          // 设置上传成功的本地状态
-          setLocalItemStatus(this.file.name);
-          this.onComplete(res);
+          resolve(res);
         })
         .catch(err => {
-          this.stop();
           reject(err);
         });
     });
@@ -235,21 +270,21 @@ export class UploadManager {
     this.currentState.total.percent = totalPercent >= 100 ? 100 : totalPercent;
   }
 
-  updateChunkProgress(evt, index) {
+  updateChunkProgress(loaded, lengthComputable, index) {
     let currentStateUnit = this.currentState.chunks[index];
-    if (evt.lengthComputable) {
-      currentStateUnit.total = evt.total;
-      currentStateUnit.loaded = evt.loaded;
-      currentStateUnit.percent = evt.loaded / evt.total * 100;
+    let total = this.currentState.chunks[index].total;
+    if (lengthComputable) {
+      currentStateUnit.loaded = loaded;
+      currentStateUnit.percent = loaded / total * 100;
     }
     this.calculateTotalProgress();
   }
 
-  updateDirectProgress(evt) {
+  updateDirectProgress(loaded, lengthComputable) {
     let currentStateTotal = this.currentState.total;
     let totalPercent = 0;
-    if (evt.lengthComputable) {
-      totalPercent = evt.loaded / this.file.size * 100;
+    if (lengthComputable) {
+      totalPercent = loaded / this.file.size * 100;
       currentStateTotal.percent =
         totalPercent >= 100 ? 100 : totalPercent.toFixed(1);
     }

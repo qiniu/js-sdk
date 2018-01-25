@@ -1,5 +1,3 @@
-export const BLOCK_SIZE = 4 * 1024 * 1024;
-
 export let zoneUphostMap = {
   z0: {
     srcUphost: "up.qiniup.com",

@@ -2,13 +2,8 @@ import { ZONES } from "./config";
 import {
   createMkFileUrl,
   isChunkExpired,
-  checkLocalFileInfo,
   getUploadUrl,
-  isMagic,
-  setLocalItemInfo,
-  getLocalItemInfo,
-  getResumeUploadXHR,
-  removeLocalItemInfo
+  isCustomVar
 } from "./utils";
 import { UploadManager } from "./upload";
 import { imageMogr2, watermark, imageInfo, exif, pipeline } from "./image";
@@ -47,8 +42,5 @@ export {
   imageInfo,
   exif,
   pipeline,
-  isMagic,
-  getResumeUploadXHR,
-  getLocalItemInfo,
-  removeLocalItemInfo
+  isCustomVar
 };
