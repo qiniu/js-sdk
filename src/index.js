@@ -3,7 +3,7 @@ import {
   createMkFileUrl,
   isChunkExpired,
   getUploadUrl,
-  isCustomVar
+  filterParams
 } from "./utils";
 import { UploadManager } from "./upload";
 import { imageMogr2, watermark, imageInfo, exif, pipeline } from "./image";
@@ -11,11 +11,11 @@ import { Observable } from "./observable";
 
 function upload(file, key, token, putExtra, config) {
   let options = {
-    file: file,
-    key: key,
-    token: token,
-    putExtra: putExtra,
-    config: config
+    file,
+    key,
+    token,
+    putExtra,
+    config
   };
 
   return new Observable(observer => {
@@ -34,13 +34,11 @@ export {
   ZONES,
   createMkFileUrl,
   isChunkExpired,
-  checkLocalFileInfo,
-  setLocalItemInfo,
+  filterParams,
   getUploadUrl,
   imageMogr2,
   watermark,
   imageInfo,
   exif,
-  pipeline,
-  isCustomVar
+  pipeline
 };

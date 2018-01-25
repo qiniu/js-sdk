@@ -80,12 +80,10 @@ function dealWithOthers(token, putExtra, config, domain) {
     var directUpload = function() {
       var multipart_params_obj = {};
       multipart_params_obj.token = token;
-      if (putExtra.params) {
-        for (var k in putExtra.params) {
-          if (Qiniu.isMagic(k, putExtra.params)) {
-            multipart_params_obj[k] = putExtra.params[k].toString();
-          }
-        }
+      var customVarList = Qiniu.filterParams(putExtra.params);
+      for (var i = 0; i < customVarList.length; i++) {
+        var k = customVarList[i];
+        multipart_params_obj[k] = putExtra.params[k].toString();
       }
       multipart_params_obj.key = key;
       uploader.setOption({
@@ -97,14 +95,14 @@ function dealWithOthers(token, putExtra, config, domain) {
 
     var resumeUpload = function() {
       if (!ctx) {
-        Qiniu.removeLocalItemInfo(file.name);
+        localStorage.removeItem(file.name);
       }
       blockSize = chunk_size;
-      var localFileInfo = Qiniu.getLocalItemInfo(file.name);
+      var localFileInfo = localStorage.getItem(file.name);
       if (localFileInfo.length) {
         for (var i = 0; i < localFileInfo.length; i++) {
           if (Qiniu.isChunkExpired(localFileInfo[i].time)) {
-            Qiniu.removeLocalItemInfo(file.name);
+            Qiniu.removeItem(file.name);
             break;
           }
         }
@@ -178,7 +176,7 @@ function dealWithOthers(token, putExtra, config, domain) {
       }
     });
     // 更新本地存储状态
-    var localFileInfo = Qiniu.getLocalItemInfo(file.name);
+    var localFileInfo = JSON.parse(localStorage.getItem(file.name));
     localFileInfo[indexCount] = {
       ctx: res.ctx,
       time: new Date().getTime() / 1000,
@@ -186,7 +184,7 @@ function dealWithOthers(token, putExtra, config, domain) {
       percent: file.percent
     };
     indexCount++;
-    Qiniu.setLocalItemInfo(localFileInfo, file.name);
+    localStorage.setItem(file.name, JSON.stringify(localFileInfo));
   });
 
   // 每个事件监听函数都会传入一些很有用的参数，
@@ -216,7 +214,12 @@ function dealWithOthers(token, putExtra, config, domain) {
     var id = file.id;
     if (ctx) {
       // 调用sdk的url构建函数
-      var requestURI = Qiniu.createMkFileUrl(uploadUrl, file, key, putExtra);
+      var requestURI = Qiniu.createMkFileUrl(
+        uploadUrl,
+        file.size,
+        key,
+        putExtra
+      );
       // 设置上传的header信息
       let xhr = Qiniu.getResumeUploadXHR(requestURI, token, "ctx");
       xhr.send(ctx);
@@ -271,7 +274,7 @@ function dealWithOthers(token, putExtra, config, domain) {
     }
   }
   function initFileInfo(file) {
-    var localFileInfo = Qiniu.getLocalItemInfo(file.name);
+    var localFileInfo = localStorage.getItem(file.name);
     var length = localFileInfo.length;
     if (length) {
       file.loaded = localFileInfo[length - 1].offset;

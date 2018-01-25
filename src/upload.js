@@ -5,15 +5,13 @@ import {
   isChunkExpired,
   createXHR,
   createMkFileUrl,
-  updateLocalItem,
-  getLocalFileInfo,
-  setLocalFileInfo,
+  getLocalFileInfoAndMd5,
+  setLocalFileInfoAndMd5,
+  removeLocalFileInfoAndMd5,
   getHeadersForChunkUpload,
   getHeadersForMkfile,
-  removeLocalFileInfo,
-  isCustomVar,
-  getResumeUploadXHR,
-  getUploadUrl
+  getUploadUrl,
+  filterParams
 } from "./utils";
 
 const BLOCK_SIZE = 4 * 1024 * 1024;
@@ -36,7 +34,7 @@ export class UploadManager {
       },
       options.putExtra
     );
-    this.stopped = true;
+    this.xhrList = [];
     this.file = options.file;
     this.key = options.key;
     this.token = options.token;
@@ -47,9 +45,6 @@ export class UploadManager {
   }
 
   putFile() {
-    if (this.stopped) {
-      this.stopped = false;
-    }
     if (!this.putExtra.fname) {
       this.putExtra.fname = this.file.name;
     }
@@ -59,21 +54,22 @@ export class UploadManager {
       return Promise.reject(err);
     }
     this.uploadUrl = getUploadUrl(this.config);
-    if (this.file.size > BLOCK_SIZE) {
-      return this.resumeUpload();
-    } else {
-      return this.directUpload();
-    }
+    let upload =
+      this.file.size > BLOCK_SIZE ? this.resumeUpload() : this.directUpload();
+    return upload.catch(err => {
+      this.stop();
+      this.onError(err);
+    });
   }
 
   stop() {
-    this.stopped = true;
+    this.xhrList.map(xhr => xhr.abort());
   }
 
   // 直传
   directUpload() {
+    this.currentState = initCurrentState(this.file.size);
     let formData = new FormData();
-    this.currentState = initCurrentState(this.file);
     let multipart_params = {};
     formData.append("file", this.file);
     formData.append("token", this.token);
@@ -81,124 +77,110 @@ export class UploadManager {
       formData.append("key", this.key);
     }
     formData.append("fname", this.putExtra.fname);
-    for (let k in this.putExtra.params) {
-      if (isCustomVar(k, this.putExtra.params)) {
-        formData.append(k, this.putExtra.params[k].toString());
-      }
-    }
-    return this.request(
-      "POST",
-      this.uploadUrl,
-      "",
-      formData,
-      (loaded, lengthComputable) =>
-        this.updateDirectProgress(loaded, lengthComputable)
-    )
-      .then(res => {
-        this.onComplete(res);
-      })
-      .catch(err => {
-        this.stop();
-        this.onError(err);
-      });
+    filterParams(this.putExtra.params).map(k =>
+      formData.append(k, this.putExtra.params[k].toString())
+    );
+
+    return this.postRequest(this.uploadUrl, {
+      body: formData,
+      onProgress: loaded => this.updateDirectProgress(loaded)
+    }).then(res => {
+      this.onComplete(res);
+    });
   }
 
   // 分片上传
   resumeUpload() {
-    return getLocalFileInfo(this.file).then(res => {
-      console.log(res);
-      this.currentState = initCurrentState(this.file);
+    return getLocalFileInfoAndMd5(this.file).then(res => {
       this.ctxList = [];
       this.localInfo = res.info;
       let md5 = res.md5;
-      console.log(this.config);
+      this.currentState = initCurrentState(this.file.size, this.localInfo);
       let chunks = getChunks(this.file, BLOCK_SIZE);
-      console.log(chunks);
       let uploadChunks = chunks.map((chunk, index) => {
         return this.mkblkReq(chunk, index);
       });
-      let result = Promise.all(uploadChunks)
-        .then(() => {
-          return this.mkfileReq();
-        })
-        .catch(err => {
-          Promise.reject(err);
-        });
-      return result
-        .then(res => {
-          this.updateMkFileProgress();
+
+      let result = Promise.all(uploadChunks).then(() => {
+        return this.mkfileReq();
+      });
+
+      return result.then(
+        res => {
+          let progress = 1;
+          this.updateMkFileProgress(progress);
           this.onData(this.currentState);
-          // 设置上传成功的本地状态
-          removeLocalFileInfo(this.file.name, md5);
+          removeLocalFileInfoAndMd5(this.file.name, md5);
           this.onComplete(res);
-        })
-        .catch(err => {
-          setLocalFileInfo(this.file.name, md5, this.ctxList);
-          this.stop();
-          this.onError(err);
-        });
+        },
+        err => {
+          setLocalFileInfoAndMd5(this.file.name, md5, this.ctxList);
+          return Promise.reject(err);
+        }
+      );
     });
     // const uploadChunks = chunks.map(uploadChunk);
     // const result = uploadChunks.then(() => mkFile());
     // result.catch(() => saveLocalInfo());
   }
 
-  request(method, url, headers, body, onProgress) {
+  postRequest(url, options) {
     return new Promise((resolve, reject) => {
       let xhr = createXHR();
-      xhr.open(method, url);
-      if (headers) {
-        for (let key in headers) {
-          xhr.setRequestHeader(key, headers[key]);
-        }
+      this.xhrList.push(xhr);
+      xhr.open("POST", url);
+      if (options.headers) {
+        Object.keys(options.headers).map(k =>
+          xhr.setRequestHeader(k, options.headers[k])
+        );
       }
       xhr.upload.addEventListener("progress", evt => {
-        if (this.stopped) {
-          xhr.abort();
+        if (evt.lengthComputable && options.onProgress) {
+          options.onProgress(evt.loaded);
         }
-        onProgress(evt.loaded, evt.lengthComputable);
         this.onData(this.currentState);
       });
-      xhr.onreadystatechange = evt => {
-        let responseText = evt.target.responseText;
+
+      xhr.onreadystatechange = () => {
+        let responseText = xhr.responseText;
         if (xhr.readyState !== 4) {
           return;
         }
         if (xhr.status !== 200 && responseText) {
           reject(
             new Error(
-              "xhr request failed,code:" +
+              "xhr request failed, code: " +
                 xhr.status +
-                ";response:" +
+                "; response: " +
                 responseText
             )
           );
           return;
         }
         if (xhr.status !== 200 && !responseText) {
-          reject(new Error("xhr request failed,code:" + xhr.status));
+          reject(new Error("xhr request failed, code: " + xhr.status));
           return;
         }
         let response = JSON.parse(responseText);
         resolve(response);
       };
-      xhr.send(body);
+
+      xhr.send(options.body);
     });
   }
 
   mkblkReq(chunk, index) {
     return new Promise((resolve, reject) => {
       let info = this.localInfo[index];
-      console.log("this.localInfo:" + this.localInfo);
       let item = { blockSize: chunk.size, loaded: 0, percent: 0 };
-      if (info && !isChunkExpired(info.time)) {
+      if (info && !isChunkExpired(info.expired_at)) {
         item.percent = 100;
         item.loaded = chunk.size;
         this.currentState.chunks[index] = getCurrentStateItem(item);
-        this.ctxList[index] = info.ctx;
+        this.ctxList[index] = { ctx: info.ctx, time: info.expired_at };
         resolve();
+        return;
       }
-      console.log(index);
       let reader = new FileReader();
       this.currentState.chunks[index] = getCurrentStateItem(item);
       let requestURI = this.uploadUrl + "/mkblk/" + chunk.size;
@@ -206,22 +188,17 @@ export class UploadManager {
       reader.onload = evt => {
         let body = evt.target.result;
         let headers = getHeadersForChunkUpload(this.token);
-        this.request(
-          "POST",
-          requestURI,
-          headers,
-          body,
-          (loaded, lengthComputable) =>
-            this.updateChunkProgress(loaded, lengthComputable, index)
-        )
-          .then(response => {
-            this.ctxList[index] = {
-              time: response.expire_at,
-              ctx: response.ctx
-            };
-            resolve();
-          })
-          .catch(err => reject(err));
+        let onProgress = loaded => this.updateChunkProgress(loaded, index);
+        resolve(
+          this.postRequest(requestURI, { headers, body, onProgress }).then(
+            response => {
+              this.ctxList[index] = {
+                expired_at: response.expired_at,
+                ctx: response.ctx
+              };
+            }
+          )
+        );
       };
       reader.onerror = () => {
         reject(new Error("fileReader 读取错误"));
@@ -239,23 +216,13 @@ export class UploadManager {
       );
       let requestURI = createMkFileUrl(
         this.uploadUrl,
-        this.file,
+        this.file.size,
         this.key,
         putExtra
       );
-      let ctxs = [];
-      for (let m = 0; m < this.ctxList.length; m++) {
-        ctxs.push(this.ctxList[m].ctx);
-      }
-      let postBody = ctxs.join(",");
+      let body = this.ctxList.map(value => value.ctx).join(",");
       let headers = getHeadersForMkfile(this.token);
-      this.request("POST", requestURI, headers, postBody, () => {})
-        .then(res => {
-          resolve(res);
-        })
-        .catch(err => {
-          reject(err);
-        });
+      resolve(this.postRequest(requestURI, { body, headers }));
     });
   }
 
@@ -270,28 +237,24 @@ export class UploadManager {
     this.currentState.total.percent = totalPercent >= 100 ? 100 : totalPercent;
   }
 
-  updateChunkProgress(loaded, lengthComputable, index) {
+  updateChunkProgress(loaded, index) {
     let currentStateUnit = this.currentState.chunks[index];
     let total = this.currentState.chunks[index].total;
-    if (lengthComputable) {
-      currentStateUnit.loaded = loaded;
-      currentStateUnit.percent = loaded / total * 100;
-    }
+    currentStateUnit.loaded = loaded;
+    currentStateUnit.percent = loaded / total * 100;
     this.calculateTotalProgress();
   }
 
-  updateDirectProgress(loaded, lengthComputable) {
+  updateDirectProgress(loaded) {
     let currentStateTotal = this.currentState.total;
     let totalPercent = 0;
-    if (lengthComputable) {
-      totalPercent = loaded / this.file.size * 100;
-      currentStateTotal.percent =
-        totalPercent >= 100 ? 100 : totalPercent.toFixed(1);
-    }
+    totalPercent = loaded / this.file.size * 100;
+    currentStateTotal.percent =
+      totalPercent >= 100 ? 100 : totalPercent.toFixed(1);
   }
 
-  updateMkFileProgress() {
-    this.currentState.mkFileReqState = 1;
+  updateMkFileProgress(progress) {
+    this.currentState.mkFileReqState = progress;
     this.calculateTotalProgress();
   }
 }

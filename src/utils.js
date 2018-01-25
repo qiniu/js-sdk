@@ -35,46 +35,31 @@ export function getCurrentStateItem(item) {
 }
 
 // 初始化currentState
-export function initCurrentState(file) {
+export function initCurrentState(size, localInfo) {
   let currentState = {
     total: {
       loaded: 0,
-      percent: 0,
-      otime: new Date().getTime()
+      percent: 0
     },
     mkFileReqState: 0,
     chunks: []
   };
-  let localFileInfo = getLocalItemInfo(file.name);
-  let successStatus = getLocalItemStatus(file.name);
-  if (localFileInfo && localFileInfo.length) {
-    if (successStatus !== "success") {
-      localFileInfo.map(function(value, index) {
-        if (value) {
-          currentState.total.loaded += value.blockSize;
-        }
-      });
-      currentState.total.percent = Math.round(
-        currentState.total.loaded / file.size * 100
-      );
-    }
+
+  if (localInfo && localInfo.length) {
+    localInfo.map((value, index) => {
+      if (value) {
+        currentState.total.loaded += value.blockSize;
+      }
+    });
+    currentState.total.percent = Math.round(
+      currentState.total.loaded / size * 100
+    );
   }
   return currentState;
 }
 
-// 更新分块的本地存储状态
-export function updateLocalItem(name, option, size) {
-  let index = option.index;
-  let blkdata = option.data;
-  let response = option.response;
-  let localFileInfo = getLocalItemInfo(name);
-  localFileInfo[index] = {
-    ctx: response.ctx,
-    blockSize: blkdata.size,
-    totalSize: size,
-    otime: new Date().getTime()
-  };
-  setLocalItemInfo(localFileInfo, name);
+export function filterParams(params) {
+  return Object.keys(params).filter(value => value.startsWith("x:"));
 }
 
 function getFileMd5Info(file) {
@@ -92,7 +77,7 @@ function getFileMd5Info(file) {
 }
 
 // check本地存储的信息
-export function getLocalFileInfo(file) {
+export function getLocalFileInfoAndMd5(file) {
   return new Promise((resolve, reject) => {
     getFileMd5Info(file)
       .then(md5 => {
@@ -105,7 +90,7 @@ export function getLocalFileInfo(file) {
   });
 }
 
-export function setLocalFileInfo(name, md5, info) {
+export function setLocalFileInfoAndMd5(name, md5, info) {
   try {
     localStorage.setItem(
       "qiniu_js_sdk_upload_file_md5_" + md5 + "_" + name,
@@ -117,7 +102,7 @@ export function setLocalFileInfo(name, md5, info) {
   }
 }
 
-export function removeLocalFileInfo(name, md5) {
+export function removeLocalFileInfoAndMd5(name, md5) {
   try {
     localStorage.removeItem("qiniu_js_sdk_upload_file_md5_" + md5 + "_" + name);
   } catch (err) {
@@ -139,13 +124,9 @@ function getLocal(name, md5) {
   }
 }
 
-export function isCustomVar(k, params) {
-  return k.startsWith("x:") && params[k];
-}
-
 // 构造file上传url
-export function createMkFileUrl(url, file, key, putExtra) {
-  let requestURI = url + "/mkfile/" + file.size;
+export function createMkFileUrl(url, size, key, putExtra) {
+  let requestURI = url + "/mkfile/" + size;
   if (key !== null && key !== undefined) {
     requestURI += "/key/" + uRLSafeBase64Encode(key);
   }
@@ -157,30 +138,16 @@ export function createMkFileUrl(url, file, key, putExtra) {
     requestURI += "/fname/" + uRLSafeBase64Encode(fname);
   }
   if (putExtra.params) {
-    for (let k in putExtra.params) {
-      if (isCustomVar(k, putExtra.params)) {
-        requestURI +=
+    filterParams(putExtra.params).map(
+      k =>
+        (requestURI +=
           "/" +
           encodeURIComponent(k) +
           "/" +
-          uRLSafeBase64Encode(putExtra.params[k].toString());
-      }
-    }
+          uRLSafeBase64Encode(putExtra.params[k].toString()))
+    );
   }
   return requestURI;
-}
-
-export function getResumeUploadXHR(url, token, type) {
-  let xhr = createXHR();
-  xhr.open("POST", url);
-  let auth = "UpToken " + token;
-  xhr.setRequestHeader("Authorization", auth);
-  if (type === "chunk") {
-    xhr.setRequestHeader("content-type", "application/octet-stream");
-  } else {
-    xhr.setRequestHeader("Content-Type", "text/plain");
-  }
-  return xhr;
 }
 
 function getAuthHeaders(token) {
@@ -192,6 +159,7 @@ export function getHeadersForChunkUpload(token) {
   let header = getAuthHeaders(token);
   return Object.assign({ "content-type": "application/octet-stream" }, header);
 }
+
 export function getHeadersForMkfile(token) {
   let header = getAuthHeaders(token);
   return Object.assign({ "content-type": "text/plain" }, header);

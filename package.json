@@ -1,13 +1,14 @@
 {
-  "name": "qiniu-sdk",
+  "name": "qiniu-js",
+  "jsName": "qiniu",
   "version": "2.0.0",
+  "private": false,
   "description": "\"Qiniu javascript sdk for upload your files\"",
   "main": "index.js",
   "scripts": {
     "build:prod": "webpack --config webpack.prod.js",
     "build:dev": "webpack-dev-server --open --config webpack.dev.js",
-    "server": "node demo/server.js",
-    "devServer": "webpack-dev-server"
+    "server": "node demo/server.js"
   },
   "repository": {
     "type": "git",

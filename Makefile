@@ -1,8 +1,10 @@
-all: dev 
+all : install build dev
 
-start:
-	npm start
+install :
+	npm install
 
+build:
+	npm run build:prod
 dev: 
-	npm run dev 
-	npm start
+	npm run server 
+	npm run build:dev
