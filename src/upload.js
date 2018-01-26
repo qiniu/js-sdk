@@ -185,7 +185,6 @@ export class UploadManager {
   }
 
   calculateTotalProgress(data) {
-    console.log(data)
     let uploadedSize = data.reduce((sum, chunk) => {
       if(chunk){
         return sum + chunk.loaded;
