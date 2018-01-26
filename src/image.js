@@ -1,4 +1,4 @@
-import { createAjax } from "./utils";
+import { createXHR, xhrStateDeal } from "./utils";
 import { uRLSafeBase64Encode } from "./base64";
 
 function getImageUrl(key, domain) {
@@ -14,10 +14,10 @@ export function imageView2(op, key, domain) {
     throw "mode should be number in imageView2";
   }
   let mode = op.mode,
-    w = op.w || "",
-    h = op.h || "",
-    q = op.q || "",
-    format = op.format || "";
+    w = op.w,
+    h = op.h,
+    q = op.q,
+    format = op.format;
 
   if (!w && !h) {
     throw "param w and h is empty in imageView2";
@@ -37,15 +37,15 @@ export function imageView2(op, key, domain) {
 // invoke the imageMogr2 api of Qiniu
 
 export function imageMogr2(op, key, domain) {
-  let auto_orient = op["auto-orient"] || "",
-    thumbnail = op.thumbnail || "",
-    strip = op.strip || "",
-    gravity = op.gravity || "",
-    crop = op.crop || "",
-    quality = op.quality || "",
-    rotate = op.rotate || "",
-    format = op.format || "",
-    blur = op.blur || "";
+  let auto_orient = op["auto-orient"],
+    thumbnail = op.thumbnail,
+    strip = op.strip,
+    gravity = op.gravity,
+    crop = op.crop,
+    quality = op.quality,
+    rotate = op.rotate,
+    format = op.format,
+    blur = op.blur;
 
   let imageUrl = "imageMogr2";
 
@@ -78,7 +78,7 @@ export function watermark(op, key, domain) {
   }
 
   if (mode === 1) {
-    let image = op.image || "";
+    let image = op.image;
     if (!image) {
       throw "image can't be empty in watermark";
     }
@@ -86,10 +86,10 @@ export function watermark(op, key, domain) {
   }
 
   if (mode === 2) {
-    let text = op.text ? op.text : "",
-      font = op.font ? op.font : "",
-      fontsize = op.fontsize ? op.fontsize : "",
-      fill = op.fill ? op.fill : "";
+    let text = op.text,
+      font = op.font,
+      fontsize = op.fontsize,
+      fill = op.fill;
     if (!text) {
       throw "text can't be empty in watermark";
     }
@@ -98,10 +98,10 @@ export function watermark(op, key, domain) {
     imageUrl += fontsize ? "/fontsize/" + fontsize : "";
     imageUrl += fill ? "/fill/" + uRLSafeBase64Encode(fill) : "";
   }
-  let dissolve = op.dissolve || "",
-    gravity = op.gravity || "",
-    dx = op.dx || "",
-    dy = op.dy || "";
+  let dissolve = op.dissolve,
+    gravity = op.gravity,
+    dx = op.dx,
+    dy = op.dy;
 
   imageUrl += dissolve ? "/dissolve/" + encodeURIComponent(dissolve) : "";
   imageUrl += gravity ? "/gravity/" + encodeURIComponent(gravity) : "";
@@ -116,51 +116,22 @@ export function watermark(op, key, domain) {
 // invoke the imageInfo api of Qiniu
 export function imageInfo(key, domain) {
   return new Promise((resolve, reject) => {
-    try {
-      let url = getImageUrl(key, domain) + "?imageInfo";
-      let xhr = createAjax();
-      let info;
-      let that = this;
-      xhr.open("GET", url);
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState !== 4) {
-          return;
-        }
-        let info = JSON.parse(xhr.responseText);
-        if (xhr.status === 200) {
-          resolve(info);
-        }
-      };
-      xhr.send();
-      return info;
-    } catch (err) {
-      reject(err);
-    }
+    let url = getImageUrl(key, domain) + "?imageInfo";
+    let xhr = createXHR();
+    xhr.open("GET", url);
+    xhr.onreadystatechange = () => xhrStateDeal(resolve, reject, xhr);
+    xhr.send();
   });
 }
 
 // invoke the exif api of Qiniu
 export function exif(key, domain) {
   return new Promise((resolve, reject) => {
-    try {
-      let url = getImageUrl(key, domain) + "?exif";
-      let xhr = createAjax();
-      let info;
-      let that = this;
-      xhr.open("GET", url);
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState !== 4) {
-          return;
-        }
-        let info = JSON.parse(xhr.responseText);
-        if (xhr.status === 200) {
-          resolve(info);
-        }
-      };
-      xhr.send();
-    } catch (err) {
-      reject(err);
-    }
+    let url = getImageUrl(key, domain) + "?exif";
+    let xhr = createXHR();
+    xhr.open("GET", url);
+    xhr.onreadystatechange = () => xhrStateDeal(resolve, reject, xhr);
+    xhr.send();
   });
 }
 

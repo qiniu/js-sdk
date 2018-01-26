@@ -5,6 +5,7 @@ import {
   isChunkExpired,
   createXHR,
   createMkFileUrl,
+  xhrStateDeal,
   getLocalFileInfoAndMd5,
   setLocalFileInfoAndMd5,
   removeLocalFileInfoAndMd5,
@@ -119,9 +120,6 @@ export class UploadManager {
         }
       );
     });
-    // const uploadChunks = chunks.map(uploadChunk);
-    // const result = uploadChunks.then(() => mkFile());
-    // result.catch(() => saveLocalInfo());
   }
 
   postRequest(url, options) {
@@ -140,31 +138,7 @@ export class UploadManager {
         }
         this.onData(this.currentState);
       });
-
-      xhr.onreadystatechange = () => {
-        let responseText = xhr.responseText;
-        if (xhr.readyState !== 4) {
-          return;
-        }
-        if (xhr.status !== 200 && responseText) {
-          reject(
-            new Error(
-              "xhr request failed, code: " +
-                xhr.status +
-                "; response: " +
-                responseText
-            )
-          );
-          return;
-        }
-        if (xhr.status !== 200 && !responseText) {
-          reject(new Error("xhr request failed, code: " + xhr.status));
-          return;
-        }
-        let response = JSON.parse(responseText);
-        resolve(response);
-      };
-
+      xhr.onreadystatechange = () => xhrStateDeal(resolve, reject, xhr);
       xhr.send(options.body);
     });
   }

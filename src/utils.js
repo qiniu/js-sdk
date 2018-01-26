@@ -172,6 +172,29 @@ export let createXHR = () => {
   return new ActiveXObject("Microsoft.XMLHTTP");
 };
 
+export function xhrStateDeal(resolve, reject, xhr) {
+  let responseText = xhr.responseText;
+  if (xhr.readyState !== 4) {
+    return;
+  }
+  if (xhr.status !== 200 && responseText) {
+    reject(
+      new Error(
+        "xhr request failed, code: " +
+          xhr.status +
+          "; response: " +
+          responseText
+      )
+    );
+    return;
+  }
+  if (xhr.status !== 200 && !responseText) {
+    reject(new Error("xhr request failed, code: " + xhr.status));
+    return;
+  }
+  let response = JSON.parse(responseText);
+  resolve(response);
+}
 // 构造区域上传url
 export function getUploadUrl(config) {
   let upHosts = zoneUphostMap[config.zone] || zoneUphostMap[Zones.z0];
