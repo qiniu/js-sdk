@@ -15,7 +15,7 @@ declare namespace Qiniu {
 		status: number;
 		type: string;
 	}
-	interface Options {
+	interface UploadOptions {
 		disable_statistics_report: boolean;   // 禁止自动发送上传统计信息到七牛，默认允许发送
 		runtimes: string;	// 'html5,flash,html4'      // 上传模式,依次退化
 		browse_button: string | HTMLElement;         // 上传选择的点选按钮，**必需**
@@ -85,7 +85,92 @@ declare namespace Qiniu {
 			Key(up: plupload, file: File): string;
 		}>;
 	}
-	function uploader<Uploader extends plupload>(options: Partial<Options>): Uploader;
+	function uploader<Uploader extends plupload>(options: Partial<UploadOptions>): Uploader;
+
+	interface WaterMarkOptions1 {
+		mode: 1;			// 图片水印
+		image: string;		// 图片水印的Url，mode = 1 时 **必需**
+		dissolve?: number;	// 透明度，取值范围1-100，非必需，下同
+		gravity?: string;	// 水印位置，为以下参数[NorthWest、North、NorthEast、West、Center、East、SouthWest、South、SouthEast]之一
+		dx: number;			// 横轴边距，单位:像素(px)
+		dy: number;			// 纵轴边距，单位:像素(px)
+	}
+	interface WaterMarkOptions2 {
+		mode: 2;			// 图片水印
+		text: string;		// 水印文字，mode = 2 时 **必需**
+		dissolve?: number;	// 透明度，取值范围1-100，非必需，下同
+		gravity?: string;	// 水印位置，为以下参数[NorthWest、North、NorthEast、West、Center、East、SouthWest、South、SouthEast]之一
+		fontsize: number;	// 字体大小，单位: 缇
+		font: string;		// 水印文字字体
+		dx: number;			// 横轴边距，单位:像素(px)
+		dy: number;			// 纵轴边距，单位:像素(px)
+		fill: string;		// 水印文字颜色，RGB格式，可以是颜色名称
+	}
+	function watermark(options: WaterMarkOptions1 | WaterMarkOptions2, key: string): string;
+
+	interface ImageView2Options {
+		mode: 0 | 1 | 2 | 3 | 4 | 5;	// 缩略模式，共6种[0-5]
+		w: number;						// 具体含义由缩略模式决定
+		h: number;						// 具体含义由缩略模式决定
+		q: number;						// 新图的图像质量，取值范围：1-100
+		format: 'png'  // 新图的输出格式，取值范围：jpg，gif，png，webp等
+	}
+
+	function imageView2(optoins: ImageView2Options, key: string): string;
+
+	interface ImageMogr2Options {
+		'auto-orient'?: boolean;		// 布尔值，是否根据原图EXIF信息自动旋正，便于后续处理，建议放在首位。
+		strip?: boolean;				// 布尔值，是否去除图片中的元信息
+		thumbnail?: string;			// 缩放操作参数
+		crop?: string;				// 裁剪操作参数
+		gravity?: string;			// 裁剪锚点参数
+		quality?: number;			// 图片质量，取值范围1-100
+		rotate?: number;			// 旋转角度，取值范围1-360，缺省为不旋转。
+		format?: string;				// 新图的输出格式，取值范围：jpg，gif，png，webp等
+		blur?: string;				// 高斯模糊参数
+	}
+
+	function imageMogr2(optoins: ImageMogr2Options, key: string): string;
+
+	interface ImageInfo {
+		size: number;							// 文件大小，单位：Bytes
+		format: 'png' | 'jpeg' | 'gif' | 'bmp';	// 图片类型，如png、jpeg、gif、bmp等。
+		width: number;							// 图片宽度，单位：像素(px) 。
+		height: number;							// 图片高度，单位：像素(px) 。
+		colorModel: string;						// 彩色空间，如palette16、ycbcr等。
+		frameNumber?: number;					// 帧数，gif 图片会返回此项。
+	}
+
+	function imageInfo(key: string): ImageInfo;
+
+	interface ExtendedInfo {
+		code: number;
+		error: string;
+		[key: string]: {
+			type: number;
+			val: string;
+		} | number | string;
+	}
+
+	function exif(key: string): ImageInfo;
+
+	interface WaterMarkFopOptions1 extends WaterMarkOptions1 {
+		fop: 'watermark' | string; // 指定watermark操作
+	}
+
+	interface WaterMarkFopOptions2 extends WaterMarkOptions2 {
+		fop: 'watermark' | string; // 指定watermark操作
+	}
+
+	interface ImageViewFopOptions extends ImageView2Options {
+		fop: 'imageView2' | string; // 指定watermark操作
+	}
+
+	interface ImageMogrFopOptions extends ImageMogr2Options {
+		fop: 'imageMogr2' | string; // 指定watermark操作
+	}
+
+	function pipeline(fos: (WaterMarkFopOptions1 | WaterMarkFopOptions2 | ImageViewFopOptions | ImageMogrFopOptions)[], key: string): string;
 }
 
 declare module 'qiniu-js' {

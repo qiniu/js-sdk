@@ -83,3 +83,97 @@ var uploader1 = Qiniu.uploader({
 // domain 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取
 
 // uploader 为一个 plupload 对象，继承了所有 plupload 的方法，参考http://plupload.com/docs
+
+const key = '123';
+var imgLink = Qiniu.watermark({
+	mode: 1,  // 图片水印
+	image: 'http://www.b1.qiniudn.com/images/logo-2.png', // 图片水印的Url，mode = 1 时 **必需**
+	dissolve: 50,          // 透明度，取值范围1-100，非必需，下同
+	gravity: 'SouthWest',  // 水印位置，为以下参数[NorthWest、North、NorthEast、West、Center、East、SouthWest、South、SouthEast]之一
+	dx: 100,  // 横轴边距，单位:像素(px)
+	dy: 100   // 纵轴边距，单位:像素(px)
+}, key);      // key 为非必需参数，下同
+
+var imgLink = Qiniu.watermark({
+	mode: 2,  // 文字水印
+	text: 'hello world !', // 水印文字，mode = 2 时 **必需**
+	dissolve: 50,          // 透明度，取值范围1-100，非必需，下同
+	gravity: 'SouthWest',  // 水印位置，同上
+	fontsize: 500,         // 字体大小，单位: 缇
+	font: '黑体',           // 水印文字字体
+	dx: 100,               // 横轴边距，单位:像素(px)
+	dy: 100,               // 纵轴边距，单位:像素(px)
+	fill: '#FFF000'        // 水印文字颜色，RGB格式，可以是颜色名称
+}, key);
+
+var imgLink = Qiniu.imageView2({
+	mode: 3,  // 缩略模式，共6种[0-5]
+	w: 100,   // 具体含义由缩略模式决定
+	h: 100,   // 具体含义由缩略模式决定
+	q: 100,   // 新图的图像质量，取值范围：1-100
+	format: 'png'  // 新图的输出格式，取值范围：jpg，gif，png，webp等
+}, key);
+
+var imageInfoObj = Qiniu.imageInfo(key);
+
+var exifOjb = Qiniu.exif(key);
+
+var fopArr = [{
+	fop: 'watermark', // 指定watermark操作
+	mode: 2,          // 此参数同watermark函数的参数，下同。
+	text: 'hello world !',
+	dissolve: 50,
+	gravity: 'SouthWest',
+	fontsize: 500,
+	font: '黑体',
+	dx: 100,
+	dy: 100,
+	fill: '#FFF000'
+}, {
+	fop: 'imageView2', // 指定imageView2操作
+	mode: 3,           // 此参数同imageView2函数的参数，下同
+	w: 100,
+	h: 100,
+	q: 100,
+	format: 'png'
+}, {
+	fop: 'imageMogr2',  // 指定imageMogr2操作
+	'auto-orient': true,  // 此参数同imageMogr2函数的参数，下同。
+	strip: true,
+	thumbnail: '1000x1000',
+	crop: '!300x400a10a10',
+	gravity: 'NorthWest',
+	quality: 40,
+	rotate: 20,
+	format: 'png',
+	blur: '3x5'
+}];
+
+// fopArr 可以为三种类型'watermark'、'imageMogr2'、'imageView2'中的任意1-3个
+// 例如只对'watermark'、'imageMogr2'进行管道操作，则如下即可
+// var fopArr = [{
+//    fop: 'watermark', // 指定watermark操作
+//    mode: 2, // 此参数同watermark函数的参数，下同。
+//    text: 'hello world !',
+//    dissolve: 50,
+//     gravity: 'SouthWest',
+//     fontsize: 500,
+//     font : '黑体',
+//     dx: 100,
+//     dy: 100,
+//     fill: '#FFF000'
+// },{
+//    fop: 'imageMogr2',  // 指定imageMogr2操作
+//    auto-orient: true,  // 此参数同imageMogr2函数的参数，下同。
+//    strip: true,
+//    thumbnail: '1000x1000'
+//    crop: '!300x400a10a10',
+//    gravity: 'NorthWest',
+//    quality: 40,
+//    rotate: 20,
+//    format: 'png',
+//    blur:'3x5'
+// }];
+
+
+var imgLink = Qiniu.pipeline(fopArr, key);
