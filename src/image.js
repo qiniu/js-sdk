@@ -1,4 +1,4 @@
-import { createXHR, xhrStateDeal } from "./utils";
+import { createXHR, request } from "./utils";
 import { uRLSafeBase64Encode } from "./base64";
 
 function getImageUrl(key, domain) {
@@ -115,24 +115,14 @@ export function watermark(op, key, domain) {
 
 // invoke the imageInfo api of Qiniu
 export function imageInfo(key, domain) {
-  return new Promise((resolve, reject) => {
-    let url = getImageUrl(key, domain) + "?imageInfo";
-    let xhr = createXHR();
-    xhr.open("GET", url);
-    xhr.onreadystatechange = () => xhrStateDeal(resolve, reject, xhr);
-    xhr.send();
-  });
+  let url = getImageUrl(key, domain) + "?imageInfo";
+  return request(url, { method: "GET" });
 }
 
 // invoke the exif api of Qiniu
 export function exif(key, domain) {
-  return new Promise((resolve, reject) => {
-    let url = getImageUrl(key, domain) + "?exif";
-    let xhr = createXHR();
-    xhr.open("GET", url);
-    xhr.onreadystatechange = () => xhrStateDeal(resolve, reject, xhr);
-    xhr.send();
-  });
+  let url = getImageUrl(key, domain) + "?exif";
+  return request(url, { method: "GET" });
 }
 
 export function pipeline(arr, key, domain) {

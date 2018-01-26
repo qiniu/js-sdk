@@ -1,4 +1,4 @@
-import { ZONES } from "./config";
+import { zones } from "./config";
 import {
   createMkFileUrl,
   isChunkExpired,
@@ -31,7 +31,7 @@ function upload(file, key, token, putExtra, config) {
 
 export {
   upload,
-  ZONES,
+  zones,
   createMkFileUrl,
   isChunkExpired,
   filterParams,

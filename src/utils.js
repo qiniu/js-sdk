@@ -1,12 +1,10 @@
 import { uRLSafeBase64Encode } from "./base64";
-import { zoneUphostMap, ZONES } from "./config";
+import { zoneUphostMap, zones } from "./config";
 import SparkMD5 from "spark-md5";
-import { create } from "domain";
-import { resolve } from "url";
 
 // 对上传块本地存储时间检验是否过期
-export function isChunkExpired(expireAt) {
-  expireAt = (expireAt + 3600 * 24) * 1000;
+export function isChunkExpired(time) {
+  let expireAt = time + 3600 * 24* 1000;
   return new Date().getTime() > expireAt;
 }
 
@@ -24,63 +22,20 @@ export function getChunks(file, blockSize) {
   return chunks;
 }
 
-// 按索引初始化currentState
-export function getCurrentStateItem(item) {
-  let currentState = {
-    percent: item.percent,
-    total: item.blockSize,
-    loaded: item.loaded
-  };
-  return currentState;
-}
-
-// 初始化currentState
-export function initCurrentState(size, localInfo) {
-  let currentState = {
-    total: {
-      loaded: 0,
-      percent: 0
-    },
-    mkFileReqState: 0,
-    chunks: []
-  };
-
-  if (localInfo && localInfo.length) {
-    localInfo.map((value, index) => {
-      if (value) {
-        currentState.total.loaded += value.blockSize;
-      }
-    });
-    currentState.total.percent = Math.round(
-      currentState.total.loaded / size * 100
-    );
-  }
-  return currentState;
-}
-
 export function filterParams(params) {
-  return Object.keys(params).filter(value => value.startsWith("x:"));
-}
-
-function getFileMd5Info(file) {
-  return new Promise((resolve, reject) => {
-    let reader = new FileReader();
-    let spark = new SparkMD5.ArrayBuffer();
-    reader.readAsArrayBuffer(file);
-    reader.onload = evt => {
-      let binary = evt.target.result;
-      spark.append(binary);
-      resolve(spark.end());
-    };
-    reader.onerror = () => reject(new Error("fileReader 读取错误"));
-  });
+  return Object.keys(params)
+    .filter(value => value.startsWith("x:"))
+    .map(k => [k, params[k].toString()]);
 }
 
 // check本地存储的信息
 export function getLocalFileInfoAndMd5(file) {
   return new Promise((resolve, reject) => {
-    getFileMd5Info(file)
-      .then(md5 => {
+    readAsArrayBuffer(file)
+      .then(body => {
+        let spark = new SparkMD5.ArrayBuffer();
+        spark.append(body);
+        let md5 = spark.end();
         let localFileInfo = getLocal(file.name, md5);
         resolve({ md5: md5, info: localFileInfo });
       })
@@ -120,7 +75,7 @@ function getLocal(name, md5) {
     return localFileInfo;
   } catch (err) {
     console.warn("localStorage.getItem failed");
-    return "";
+    return [];
   }
 }
 
@@ -141,10 +96,7 @@ export function createMkFileUrl(url, size, key, putExtra) {
     filterParams(putExtra.params).map(
       k =>
         (requestURI +=
-          "/" +
-          encodeURIComponent(k) +
-          "/" +
-          uRLSafeBase64Encode(putExtra.params[k].toString()))
+          "/" + encodeURIComponent(k[0]) + "/" + uRLSafeBase64Encode(k[1]))
     );
   }
   return requestURI;
@@ -172,29 +124,62 @@ export let createXHR = () => {
   return new ActiveXObject("Microsoft.XMLHTTP");
 };
 
-export function xhrStateDeal(resolve, reject, xhr) {
-  let responseText = xhr.responseText;
-  if (xhr.readyState !== 4) {
-    return;
-  }
-  if (xhr.status !== 200 && responseText) {
-    reject(
-      new Error(
-        "xhr request failed, code: " +
-          xhr.status +
-          "; response: " +
-          responseText
-      )
-    );
-    return;
-  }
-  if (xhr.status !== 200 && !responseText) {
-    reject(new Error("xhr request failed, code: " + xhr.status));
-    return;
-  }
-  let response = JSON.parse(responseText);
-  resolve(response);
+export function readAsArrayBuffer(data) {
+  return new Promise((resolve, reject) => {
+    let reader = new FileReader();
+    reader.readAsArrayBuffer(data);
+    reader.onload = evt => {
+      let body = evt.target.result;
+      resolve(body);
+    };
+    reader.onerror = () => {
+      reject(new Error("fileReader 读取错误"));
+    };
+  });
 }
+
+export function request(url, options) {
+  return new Promise((resolve, reject) => {
+    let xhr = createXHR();
+    xhr.open(options.method, url);
+
+    if (options.onHandler) {
+      options.onHandler(xhr);
+    }
+    if (options.headers) {
+      Object.keys(options.headers).map(k =>
+        xhr.setRequestHeader(k, options.headers[k])
+      );
+    }
+
+    xhr.upload.addEventListener("progress", evt => {
+      if (evt.lengthComputable && options.onProgress) {
+        options.onProgress(evt.loaded);
+      }
+    });
+
+    xhr.onreadystatechange = () => {
+      let responseText = xhr.responseText;
+      if (xhr.readyState !== 4) {
+        return;
+      }
+      if (xhr.status !== 200) {
+        let message = `xhr request failed, code: ${xhr.status}; `;
+        if (responseText) {
+          message = message + `response: ${responseText}`;
+        }
+        reject(new Error(message));
+      }
+      try {
+        responseText = JSON.parse(responseText);
+      } catch (err) {}
+      resolve(responseText);
+    };
+
+    xhr.send(options.body);
+  });
+}
+
 // 构造区域上传url
 export function getUploadUrl(config) {
   let upHosts = zoneUphostMap[config.zone] || zoneUphostMap[Zones.z0];

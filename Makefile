@@ -5,6 +5,7 @@ install :
 
 build:
 	npm run build:prod
+
 dev: 
-	npm run server 
+	npm run server
 	npm run build:dev
