@@ -51,7 +51,6 @@ app.post("/api/transfer", function(req, res) {
         throw respErr;
       }
       if (respInfo.statusCode == 200) {
-        console.log(123);
         res.json(respBody);
       } else {
         console.log(respInfo.statusCode);

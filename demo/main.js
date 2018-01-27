@@ -6,8 +6,8 @@
       var token = JSON.parse(ajax.responseText).uptoken;
       var domain = JSON.parse(ajax.responseText).domain;
       var config = {
-        useHttpsDomain: true,
-        useCdnDomain: false,
+        useHttpsDomain: false,
+        useCdnDomain: true,
         zone: Qiniu.zones.z2
       };
       var putExtra = {

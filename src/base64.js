@@ -141,7 +141,7 @@ function base64Encode(data) {
   return enc;
 }
 
-export function uRLSafeBase64Encode(v) {
+export function urlSafeBase64Encode(v) {
   v = base64Encode(v);
   return v.replace(/\//g, "_").replace(/\+/g, "-");
 }

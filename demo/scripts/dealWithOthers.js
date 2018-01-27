@@ -8,12 +8,6 @@ function dealWithOthers(token, putExtra, config, domain) {
   var blockSize;
   var isfirstAddBoard = true;
   var width;
-  var speedCalInfo = {
-    isResumeUpload: false,
-    resumeFilesize: 0,
-    startTime: "",
-    currentTime: ""
-  };
   var uploader = new plupload.Uploader({
     runtimes: "html5,flash,silverlight,html4",
     url: uploadUrl,
@@ -83,7 +77,7 @@ function dealWithOthers(token, putExtra, config, domain) {
       var customVarList = Qiniu.filterParams(putExtra.params);
       for (var i = 0; i < customVarList.length; i++) {
         var k = customVarList[i];
-        multipart_params_obj[k] = putExtra.params[k].toString();
+        multipart_params_obj[k[0]] = k[1];
       }
       multipart_params_obj.key = key;
       uploader.setOption({
@@ -132,6 +126,7 @@ function dealWithOthers(token, putExtra, config, domain) {
           .find("#childBarColor");
         dom_finished.css("width", Math.floor(width.childWidth - 2) + "px");
       }
+      var headers = Qiniu.getHeadersForChunkUpload(token)
       uploader.setOption({
         url: uploadUrl + "/mkblk/" + blockSize,
         multipart: false,

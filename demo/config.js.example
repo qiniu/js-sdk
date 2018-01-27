@@ -1,0 +1,8 @@
+module.exports = {
+    'AccessKey': '<Your Access Key>',  // https://portal.qiniu.com/user/key
+    'SecretKey': '<Your Secret Key>',
+    'Bucket': '<Your Bucket Name>',
+    'Port': 19110,
+    'UptokenUrl': 'uptoken',
+    'Domain': '<Your Bucket Name>' // bucket domain eg:http://qiniu-plupload.qiniudn.com/
+};

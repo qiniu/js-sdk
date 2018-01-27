@@ -1,5 +1,5 @@
 import { createXHR, request } from "./utils";
-import { uRLSafeBase64Encode } from "./base64";
+import { urlSafeBase64Encode } from "./base64";
 
 function getImageUrl(key, domain) {
   key = encodeURIComponent(key);
@@ -82,7 +82,7 @@ export function watermark(op, key, domain) {
     if (!image) {
       throw "image can't be empty in watermark";
     }
-    imageUrl += image ? "/image/" + uRLSafeBase64Encode(image) : "";
+    imageUrl += image ? "/image/" + urlSafeBase64Encode(image) : "";
   }
 
   if (mode === 2) {
@@ -93,10 +93,10 @@ export function watermark(op, key, domain) {
     if (!text) {
       throw "text can't be empty in watermark";
     }
-    imageUrl += text ? "/text/" + uRLSafeBase64Encode(text) : "";
-    imageUrl += font ? "/font/" + uRLSafeBase64Encode(font) : "";
+    imageUrl += text ? "/text/" + urlSafeBase64Encode(text) : "";
+    imageUrl += font ? "/font/" + urlSafeBase64Encode(font) : "";
     imageUrl += fontsize ? "/fontsize/" + fontsize : "";
-    imageUrl += fill ? "/fill/" + uRLSafeBase64Encode(fill) : "";
+    imageUrl += fill ? "/fill/" + urlSafeBase64Encode(fill) : "";
   }
   let dissolve = op.dissolve,
     gravity = op.gravity,

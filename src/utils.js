@@ -1,4 +1,4 @@
-import { uRLSafeBase64Encode } from "./base64";
+import { urlSafeBase64Encode } from "./base64";
 import { zoneUphostMap, zones } from "./config";
 import SparkMD5 from "spark-md5";
 
@@ -36,7 +36,7 @@ export function getLocalFileInfoAndMd5(file) {
         let spark = new SparkMD5.ArrayBuffer();
         spark.append(body);
         let md5 = spark.end();
-        let localFileInfo = getLocal(file.name, md5);
+        let localFileInfo = getLocalFileInfo(file.name, md5);
         resolve({ md5: md5, info: localFileInfo });
       })
       .catch(err => {
@@ -45,34 +45,34 @@ export function getLocalFileInfoAndMd5(file) {
   });
 }
 
-export function setLocalFileInfoAndMd5(name, md5, info) {
+export function setLocalFileInfo(name, md5, info) {
   try {
     localStorage.setItem(
-      "qiniu_js_sdk_upload_file_md5_" + md5 + "_" + name,
+      createLocalKey(name, md5),
       JSON.stringify(info)
     );
   } catch (err) {
     console.warn("localStorage.setItem failed");
-    return "";
   }
 }
 
-export function removeLocalFileInfoAndMd5(name, md5) {
+function createLocalKey(name, md5){
+  return "qiniu_js_sdk_upload_file_md5_" + md5 + "_" + name
+}
+
+export function removeLocalFileInfo(name, md5) {
   try {
-    localStorage.removeItem("qiniu_js_sdk_upload_file_md5_" + md5 + "_" + name);
+    localStorage.removeItem(createLocalKey(name, md5));
   } catch (err) {
     console.warn("localStorage.removeItem failed");
-    return "";
   }
 }
 
-function getLocal(name, md5) {
+function getLocalFileInfo(name, md5) {
   try {
-    let localFileInfo =
-      JSON.parse(
-        localStorage.getItem("qiniu_js_sdk_upload_file_md5_" + md5 + "_" + name)
+    return JSON.parse(
+        localStorage.getItem(createLocalKey(name, md5))
       ) || [];
-    return localFileInfo;
   } catch (err) {
     console.warn("localStorage.getItem failed");
     return [];
@@ -83,20 +83,20 @@ function getLocal(name, md5) {
 export function createMkFileUrl(url, size, key, putExtra) {
   let requestURI = url + "/mkfile/" + size;
   if (key !== null && key !== undefined) {
-    requestURI += "/key/" + uRLSafeBase64Encode(key);
+    requestURI += "/key/" + urlSafeBase64Encode(key);
   }
   if (putExtra.mimeType) {
-    requestURI += "/mimeType/" + uRLSafeBase64Encode(putExtra.mimeType);
+    requestURI += "/mimeType/" + urlSafeBase64Encode(putExtra.mimeType);
   }
   let fname = putExtra.fname;
   if (fname) {
-    requestURI += "/fname/" + uRLSafeBase64Encode(fname);
+    requestURI += "/fname/" + urlSafeBase64Encode(fname);
   }
   if (putExtra.params) {
     filterParams(putExtra.params).map(
       k =>
         (requestURI +=
-          "/" + encodeURIComponent(k[0]) + "/" + uRLSafeBase64Encode(k[1]))
+          "/" + encodeURIComponent(k[0]) + "/" + urlSafeBase64Encode(k[1]))
     );
   }
   return requestURI;
@@ -143,8 +143,8 @@ export function request(url, options) {
     let xhr = createXHR();
     xhr.open(options.method, url);
 
-    if (options.onHandler) {
-      options.onHandler(xhr);
+    if (options.onPush) {
+      options.onPush(xhr);
     }
     if (options.headers) {
       Object.keys(options.headers).map(k =>
@@ -171,9 +171,10 @@ export function request(url, options) {
         reject(new Error(message));
       }
       try {
-        responseText = JSON.parse(responseText);
-      } catch (err) {}
-      resolve(responseText);
+        resolve(JSON.parse(responseText))
+      } catch (err) {
+        reject(err)
+      }
     };
 
     xhr.send(options.body);
@@ -183,7 +184,7 @@ export function request(url, options) {
 // 构造区域上传url
 export function getUploadUrl(config) {
   let upHosts = zoneUphostMap[config.zone] || zoneUphostMap[Zones.z0];
-  const protocol = config.useHttpsDomain ? "https" : "http";
-  const host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost;
+  let protocol = config.useHttpsDomain ? "https" : "http";
+  let host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost;
   return `${protocol}://${host}`;
 }
