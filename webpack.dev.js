@@ -18,7 +18,6 @@ module.exports = merge(common, {
     host: "0.0.0.0", // Use this rather than localhost so we can access from a VM for browser testing
     contentBase: path.join(__dirname, "./"),
     publicPath: "/dist/",
-    // HMR adds `Object.defineProperty` that breaks IE8
     hot: true
   },
   plugins: [

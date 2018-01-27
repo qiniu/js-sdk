@@ -3,7 +3,10 @@ import {
   createMkFileUrl,
   isChunkExpired,
   getUploadUrl,
-  filterParams
+  getHeadersForMkfile,
+  getHeadersForChunkUpload,
+  filterParams,
+  request
 } from "./utils";
 import { UploadManager } from "./upload";
 import { imageMogr2, watermark, imageInfo, exif, pipeline } from "./image";
@@ -34,6 +37,9 @@ export {
   zones,
   createMkFileUrl,
   isChunkExpired,
+  request,
+  getHeadersForChunkUpload,
+  getHeadersForMkfile,
   filterParams,
   getUploadUrl,
   imageMogr2,

@@ -7,7 +7,6 @@ cache:
   - bower_components
 install:
 - npm install
-- bower install
 script:
 - make build
 deploy:

@@ -3,7 +3,7 @@ function dealWithOthers(token, putExtra, config, domain) {
   var uploadUrl = Qiniu.getUploadUrl(config);
   var board = {};
   var indexCount = 0;
-  var ctx;
+  var resume = false;
   var chunk_size;
   var blockSize;
   var isfirstAddBoard = true;
@@ -24,7 +24,7 @@ function dealWithOthers(token, putExtra, config, domain) {
         console.log("upload init");
       },
       FilesAdded: function(up, files) {
-        ctx = "";
+        resume = false;
         $("#box input").attr("disabled", "disabled");
         $("#box button").css("backgroundColor", "#aaaaaa");
         chunk_size = uploader.getOption("chunk_size");
@@ -44,11 +44,11 @@ function dealWithOthers(token, putExtra, config, domain) {
             if (board[id].start) {
               uploader.start();
               board[id].start = false;
-              $(this).text("暂停上传");
+              $(this).text("取消上传");
             } else {
               uploader.stop();
               board[id].start = "reusme";
-              $(this).text("继续上传");
+              $(this).text("开始上传");
             }
           });
       },
@@ -74,6 +74,7 @@ function dealWithOthers(token, putExtra, config, domain) {
     var directUpload = function() {
       var multipart_params_obj = {};
       multipart_params_obj.token = token;
+      // filterParams 返回符合自定义变量格式的数组，每个值为也为一个数组，包含变量名及变量值
       var customVarList = Qiniu.filterParams(putExtra.params);
       for (var i = 0; i < customVarList.length; i++) {
         var k = customVarList[i];
@@ -88,21 +89,10 @@ function dealWithOthers(token, putExtra, config, domain) {
     };
 
     var resumeUpload = function() {
-      if (!ctx) {
-        localStorage.removeItem(file.name);
-      }
       blockSize = chunk_size;
-      var localFileInfo = localStorage.getItem(file.name);
-      if (localFileInfo.length) {
-        for (var i = 0; i < localFileInfo.length; i++) {
-          if (Qiniu.isChunkExpired(localFileInfo[i].time)) {
-            Qiniu.removeItem(file.name);
-            break;
-          }
-        }
-      }
+      
       initFileInfo(file);
-
+      resume = true;
       var multipart_params_obj = {};
       // 计算已上传的chunk数量
       var index = Math.floor(file.loaded / chunk_size);
@@ -118,11 +108,13 @@ function dealWithOthers(token, putExtra, config, domain) {
         "width",
         Math.floor(file.percent / 100 * width.totalWidth - 2) + "px"
       );
+      console.log(file)
+      console.log(file.percent)
       // 初始化已上传的chunk进度
       for (var i = 0; i < index; i++) {
         var dom_finished = $(board[id])
           .find(".fragment-group li")
-          .eq(index)
+          .eq(i)
           .find("#childBarColor");
         dom_finished.css("width", Math.floor(width.childWidth - 2) + "px");
       }
@@ -157,7 +149,6 @@ function dealWithOthers(token, putExtra, config, domain) {
 
   uploader.bind("ChunkUploaded", function(up, file, info) {
     var res = JSON.parse(info.response);
-    ctx = ctx ? ctx + "," + res.ctx : res.ctx;
     var leftSize = info.total - info.offset;
     var chunk_size = uploader.getOption && uploader.getOption("chunk_size");
     if (leftSize < chunk_size) {
@@ -171,10 +162,10 @@ function dealWithOthers(token, putExtra, config, domain) {
       }
     });
     // 更新本地存储状态
-    var localFileInfo = JSON.parse(localStorage.getItem(file.name));
+    var localFileInfo = JSON.parse(localStorage.getItem(file.name))|| [];
     localFileInfo[indexCount] = {
       ctx: res.ctx,
-      time: new Date().getTime() / 1000,
+      time: new Date().getTime(),
       offset: info.offset,
       percent: file.percent
     };
@@ -201,36 +192,37 @@ function dealWithOthers(token, putExtra, config, domain) {
       .text("进度：" + percent);
     var count = Math.ceil(file.size / uploader.getOption("chunk_size"));
     if (file.size > chunk_size) {
-      setChunkProgress(file, board[id], chunk_size, count);
+      updateChunkProgress(file, board[id], chunk_size, count);
     }
   });
 
   uploader.bind("FileUploaded", function(uploader, file, info) {
     var id = file.id;
-    if (ctx) {
+    if (resume) {
       // 调用sdk的url构建函数
-      var requestURI = Qiniu.createMkFileUrl(
+      var requestUrl = Qiniu.createMkFileUrl(
         uploadUrl,
         file.size,
         key,
         putExtra
       );
+      var ctx = []
+      var local = JSON.parse(localStorage.getItem(file.name))
+      for(var i =0;i<local.length;i++){
+        ctx.push(local[i].ctx)
+      }
       // 设置上传的header信息
-      let xhr = Qiniu.getResumeUploadXHR(requestURI, token, "ctx");
-      xhr.send(ctx);
-      xhr.onreadystatechange = function() {
-        if (xhr.readyState == 4) {
-          if (xhr.status === 200) {
-            uploadFinish(this.responseText, board[id]);
-          }
-        }
-      };
+      var headers = Qiniu.getHeadersForMkfile(token)
+      Qiniu.request(requestUrl, {method: "POST", body: ctx.join(","), headers: headers}).then(function(res){
+        uploadFinish(res, file.name,board[id]);
+      })
     } else {
-      uploadFinish(info.response, board[id]);
+      uploadFinish(JSON.parse(info.response), file.name,board[id]);
     }
   });
 
-  function setChunkProgress(file, board, chunk_size, count) {
+  function updateChunkProgress(file, board, chunk_size, count) {
+
     var index = Math.ceil(file.loaded / chunk_size);
     var leftSize = file.loaded - chunk_size * (index - 1);
     if (index == count) {
@@ -247,10 +239,10 @@ function dealWithOthers(token, putExtra, config, domain) {
     );
   }
 
-  function uploadFinish(res, board) {
+  function uploadFinish(res, name, board) {
+    localStorage.removeItem(name)
     $("#box input").removeAttr("disabled", "disabled");
     $("#box button").css("backgroundColor", "#00b7ee");
-    var data = JSON.parse(res);
     $(board)
       .find("#totalBar")
       .addClass("hide");
@@ -258,24 +250,46 @@ function dealWithOthers(token, putExtra, config, domain) {
       .find(".control-container")
       .html(
         "<p><strong>Hash：</strong>" +
-          data.hash +
+          res.hash +
           "</p>" +
           "<p><strong>Bucket：</strong>" +
-          data.bucket +
+          res.bucket +
           "</p>"
       );
-    if (data.key && data.key.match(/\.(jpg|jpeg|png|gif)$/)) {
+    if (res.key && res.key.match(/\.(jpg|jpeg|png|gif)$/)) {
       imageDeal(board, data.key, domain);
     }
   }
+
   function initFileInfo(file) {
-    var localFileInfo = localStorage.getItem(file.name);
-    var length = localFileInfo.length;
+    var localFileInfo = JSON.parse(localStorage.getItem(file.name))|| [];
+    indexCount = 0;
+    console.log(localFileInfo)
+    var length = localFileInfo.length
     if (length) {
+      var clearStatus = false
+      for (var i = 0; i < localFileInfo.length; i++) {
+          indexCount++
+        if (Qiniu.isChunkExpired(localFileInfo[i].time)) {
+          console.log("time")
+          clearStatus = true
+          localStorage.removeItem(file.name);
+          break;
+        }
+      }
+      if(clearStatus){
+        indexCount = 0;
+        return
+      }
       file.loaded = localFileInfo[length - 1].offset;
+      var leftSize = file.size - file.loaded;
+      if(leftSize < chunk_size){
+        blockSize = leftSize
+      }
       file.percent = localFileInfo[length - 1].percent;
-    } else {
-      indexCount = 0;
+      return
+    }else{
+      indexCount = 0
     }
   }
 }
