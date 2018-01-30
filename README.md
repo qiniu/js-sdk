@@ -11,7 +11,7 @@
 
 ### 概述
 
-Qiniu-JavaScript-SDK （下文简称为 JS-SDK）适用于 、Chrome、Firefox、Safari 等浏览器，基于七牛云存储官方 API 构建，其中上传功能基于 H5 File API。开发者基于 JS-SDK 可以方便的从浏览器端上传文件至七牛云存储，并对上传成功后的图片进行丰富的数据处理操作。
+Qiniu-JavaScript-SDK （下文简称为 JS-SDK）适用于 ：IE11、Edge、Chrome、Firefox、Safari 等浏览器，基于七牛云存储官方 API 构建，其中上传功能基于 H5 File API。开发者基于 JS-SDK 可以方便的从浏览器端上传文件至七牛云存储，并对上传成功后的图片进行丰富的数据处理操作。
 JS-SDK 兼容支持 H5 File API 的浏览器，在不支持 File API 的浏览器建议用插件如 plupload，JS-SDK 提供了一些接口可以结合插件来进行上传工作。
 
 Qiniu-JavaScript-SDK 为客户端 SDK，没有包含 token 生成实现，为了安全，token 建议通过网络从服务端获取，具体生成代码可以参考以下服务端 SDK 的文档。
@@ -36,7 +36,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 ### 功能简介
 
 * 上传
-  * html5 模式大于 4M 时可分块上传，小于 4M 时直传
+  * 大于 4M 时可分块上传，小于 4M 时直传
   * 分块上传时，可以断点续上传
 * 数据处理（图片）
   * imageView2（缩略图）
@@ -46,32 +46,6 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
   * watermark （文字、图片水印）
   * pipeline （管道，可对 imageView2、imageMogr2、watermark 进行链式处理）
 
-### 项目构成介绍
-
-```
-├── demo             // 示例 Demo
-│   ├── images
-│   │   └── ...
-│   ├── scripts
-│   │   └── ...
-│   ├── styles
-│   │   └── ...
-│   ├── views
-│   │   └── ...
-│   ├── config.js.example
-│   └── server.js         // 示例 Demo 的服务器端程序
-├── dist              // SDK 输出目录
-│   ├── qiniu.js          // 非压缩版
-│   ├── qiniu.min.js      // 压缩版
-│   └── qiniu.min.map     // 压缩版的 source map 文件
-├── src               // SDK 源目录
-│   └── qiniu.js          // 源文件
-├── Gruntfile.js
-├── Makefile
-├── README.md
-├── bower.json
-└── package.json
-```
 
 <a id="usage"></a>
 
@@ -84,13 +58,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
   * 利用[七牛服务端 SDK ](https://developer.qiniu.com/sdk#sdk)构建后端服务
   * 利用七牛底层 API 构建服务，详见七牛[上传策略](https://developer.qiniu.com/kodo/manual/put-policy)和[上传凭证](https://developer.qiniu.com/kodo/manual/upload-token)
 
-  后端服务应提供一个 URL 地址，供 JS-SDK 初始化使用，前端通过 Ajax 请求该地址后获得 uptoken。Ajax 请求成功后，服务端应返回如下格式的 json：
-
-  ```
-  {
-      "uptoken": "0MLvWPnyya1WtPnXFy9KLyGHyFPNdZceomL..."
-  }
-  ```
+  后端服务应提供一个 URL 地址，供 JS-SDK 初始化使用，前端通过 Ajax 请求该地址后获得 uptoken。Ajax 请求成功后，服务端应返回包含 token 信息的数据。
 
 ### 安装
 
@@ -110,45 +78,64 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
   npm install qiniu-js
   ```
 
-  执行之后，JS-SDK 在以下位置
-
-  ```
-  node_modules
-  └── qiniu-js
-      └── dist
-          ├── qiniu.js
-          ├── qiniu.min.js
-          └── qiniu.min.map
-  ```
-
-* 通过 Github 上的 qiniu/js-sdk 仓库获取
-
-  下载最新的[ 发布版本 ](https://github.com/qiniu/js-sdk/releases)并解压 或 直接克隆仓库
-
-  ```
-  git clone https://github.com/qiniu/js-sdk.git
-  ```
-
-  JS-SDK 在 `dist` 目录中
-
 ### 使用
 
 #### 上传功能
 
-Qiniu.upload 返回一个 observable 对象用来控制上传行为，observable 对像通过 subscribe 方法可以被 observer 所订阅，订阅同时会开始触发上传，同时返回一个 subscription 对象，该对象有一个 unsubscribe 方法取消订阅，同时终止上传行为。
+Qiniu.upload 返回一个 observable 对象用来控制上传行为，observable 对像通过 subscribe 方法可以被 observer 所订阅，订阅同时会开始触发上传，同时返回一个 subscription 对象，该对象有一个 unsubscribe 方法取消订阅，同时终止上传行为。对于不支持sdk的浏览器可以参考demo中用插件处理和form直传的方式，demo:http://jssdk.demo.qiniu.io; 一般form提交常常会导致网页跳转，demo中form直传通过加入iframe，并结合后端sdk上传来解决网页跳转问题，实现form无刷新上传。
+
+```JavaScript
+var Qiniu = require('qiniu-js')
+
+var observable = Qiniu.upload(file, key, token, putExtra, config);
+
+var subscription = observable.subscribe(observer)// 上传开始
+或者
+var subscription = observable.subscribe(next,error,complete)// 这样传参形式也可以
+
+subscription.unsubscribe()// 上传取消
+```
+
+## Options
+
+### config
 
 ```JavaScript
 var config = {
-  useHttpsDomain: false, // 是否使用https上传域名
-  useCdnDomain: true, // 是否使用cdn加速域名
-  zone: Qiniu.ZONES.z2 // 设置区域，指定不同区域的上传域名
+  useHttpsDomain: false,
+  useCdnDomain: true,
+  zone: Qiniu.zones.z2
 };
+```
+* config.useHttpsDomain: 表示是否使用https协议，为布尔值，true表示使用https
+* config.useCdnDomain: 表示是否使用cdn加速域名，为布尔值，true表示使用
+* config.zone: 选择上传域名区域，z0表示华东，z1表示华北，z2表示华南，na0表示北美
+
+### putExtra
+
+```JavaScript
 var putExtra = {
-  fname: file.name, // 文件的原名
-  params: {}, //
-  mimeType: null // 设置接受的文件类型
+  fname: "",
+  params: {},
+  mimeType: null
 };
-var observable = Qiniu.upload(file, key, token, putExtra, config);
+```
+* putExtra.fname: 文件原文件名
+* putExtra.params: object, 用来放置自定义变量
+* mimeType: 用来限制上传文件类型
+
+### observer
+
+observer 用来设置上传过程的监听函数，有三个属性next、error、complete
+
+```JavaScript
+
+var observer = {
+  next: next,// 接收上传进度信息，
+  error: error,// 接收上传错误信息
+  complete: complete// 上传完成后执行
+};
+
 var next = function(res){ //res为一个包含total字段的json,total里有该上传进度信息
   ...
 }
@@ -158,15 +145,27 @@ var error = function(err){
 var complete = function(res){
   ...
 }
-var observer = {
-  next: next,// 接收上传进度信息，
-  error: error,// 接收上传错误信息
-  complete: complete// 上传完成后执行
-};
-var subscription = observable.subscribe(observer)// 上传开始
-var subscription = observable.subscribe(next,error,complete)// 这样也可以
-subscription.unsubscribe()// 上传取消
 ```
+
+* observer.next: 接收上传进度信息
+* observer.error: 上传过程中暂停或者发生错误触发
+* observer.complete: 上传完成后执行
+
+## interface
+
+* Qiniu.createMkFileUrl(url, fileSize, key, putExtra): 返回创建文件的url; 当分片上传时，我们需要把分片返回的ctx信息拼接后通过该url上传给七牛以创建文件。
+
+* Qiniu.isChunkExpired(time): 判断当前时间是否过期
+
+* Qiniu.zones : z0(华东)、z1(华北)、z2(华南)、na0(北美)
+
+* Qiniu.getUploadUrl(config) : 返回根据config里所配置信息的上传域名
+
+* Qiniu.getHeadersForChunkUpload(token): 返回object,包含用来获得分片上传设置的头信息
+
+* Qiniu.getHeadersForMkFile(token): 返回object，包含用来获得文件创建的头信息
+
+* Qiniu.filterParams(putExtra.params): 返回[[k,v],...]格式的数组，k为自定义变量key名，v为自定义变量值，用来提取putExtra.params包含的自定义变量
 
 #### 对上传成功的图片进行数据处理
 
@@ -334,7 +333,7 @@ subscription.unsubscribe()// 上传取消
 
 ### 运行示例
 
-1. 进入项目根目录，执行 `npm install`安装依赖库，然后`npm run server`， `npm run build:dev`运行服务 demo
+1. 进入项目根目录，执行 `npm install`安装依赖库，然后`npm run serve && npm run build:dev`运行服务 demo
 2. 进入 `demo` 目录，按照目录下的 `config.js.example` 示例，创建 `config.js` 文件，其中，`Access Key` 和 `Secret Key` 按如下方式获取
 
    * [开通七牛开发者帐号](https://portal.qiniu.com/signup)
@@ -369,15 +368,11 @@ subscription.unsubscribe()// 上传取消
 
 **1. 关于上传文件命名问题，可以参考：**
 
-在 main.js 里面，unique_names 是 plupload 插件下面的一个参数，当值为 true 时会为每个上传的文件生成一个唯一的文件名，这个是 plupload 插件自动生成的，如果设置成 false，七牛这边是会以上传的原始名进行命名的。
+1. 上传的 scope 为 bucket 的形式，上传后文件资源名以设置的key为主，如果key为null或者undefined，则文件资源名会以hash值作为资源名。
+2. 上传的 scope 为 bucket:key 的形式，上传文件本地的名字需要和 scope 中的 key 是一致的，不然会报错 key doesn‘t match with scope。
+3. 上传的 scope 为 bucket，但是 token 中有设定 saveKey，这种形式下客户端的 key 如果设定为 null 或者 undefined，则会以 saveKey 作为文件资源名，否则仍然是以 key 值作为资源名，并且上传的本地文件名也是需要和这个 savekey 文件名一致的。
 
-1. 上传的 scope 为 bucket 的形式，unique_names 参数设置为 false，上传后文件的 key 是本地的文件名 abc.txt
-2. 上传的 scope 为 bucket 的形式，unique_names 参数设置为 true，plupload 插件会忽略本地文件名，而且这个命名也是没有规律的，上传后文件的 key 是 plupload 插件生成的，比如 Yc7DZRS1m73o.txt。
-3. 上传的 scope 为 bucket:key 的形式，上传文件本地的名字需要和 scope 中的 key 是一致的，不然会报错 key doesn‘t match with scope, 注意，这种形式是不能设置 unique_names 为 true 的，因为即使上传文件本地名字为 abc.txt,但是 plupload 会给这个文件赋值另外一个文件名。
-4. 上传的 scope 为 bucket，但是 token 中有设定 saveKey，这种形式下客户端的key如果设定为null或者undefined，则会以saveKey作为文件资源名，否则仍然是以key值作为资源名，并且上传的本地文件名也是需要和这个 savekey 文件名一致的。
-
-
-**4. 限制上传文件的类型：**
+**2. 限制上传文件的类型：**
 
 这里又分为两种方法：
 
@@ -387,53 +382,7 @@ subscription.unsubscribe()// 上传取消
 “image/jpeg;image/png” 表示只允许上传 jpg 和 png 类型的图片；
 “!application/json;text/plain” 表示禁止上传 json 文本和纯文本。（注意最前面的感叹号）
 
-2. 通过 putExtra的mimeType参数直接在 JS 前端限定
-
-
-**5. 设置每次只能选择一个文件**
-
-通过 plupload 插件中的 multi_selection 参数控制，如下
-
-```
-// 设置一次只能选择一个文件
-multi_selection: false,
-```
-
-**6. 设置取消上传，暂停上传**
-
-在 index.html 中加入者两个控制按钮：
-
-```
-<a class="btn btn-default btn-lg " id="up_load"  href="#" >
-     <span>确认上传</span>
-</a>
-<a class="btn btn-default btn-lg " id="stop_load"  href="#" >
-     <span>暂停上传</span>
-</a>
-```
-
-然后在 main.js 文件里面绑定这两个按钮，添加代码如下：
-
-```
-$('#up_load').on('click', function(){
-   uploader.start();
-});
-$('#stop_load').on('click', function(){
-   uploader.stop();
-});
-```
-
-**7. 取消分片上传**
-
-将 main.js 里面 `chunk_size: '4mb'` 设置 `chunk_size: '0mb'`，注意分片上传默认也只能是 4M，如果设置一个别的分片的大小会出现上传失败。
-
-**8. 取消自动上传**
-
-将 main.js 文件 `auto_start` 参数改成 `auto_start: false`
-
-**9. 关于请求 token 出现跨域**
-
-因为都是建议用户从后端 SDK 获取 token，然后在 main.js 设置参数 uptoken_url: '获取 uptoken 的 url', 这里就有可能出现跨域的现象，此时在服务端添加 response.setHeader("Access-Control-Allow-Origin","\*"); 相应头字段即可。
+2. 通过 putExtra 的 mimeType 参数直接在 JS 前端限定
 
 ### 贡献代码
 

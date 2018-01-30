@@ -8,7 +8,7 @@
   "scripts": {
     "build:prod": "webpack --config webpack.prod.js",
     "build:dev": "webpack-dev-server --open --config webpack.dev.js",
-    "server": "node demo/server.js"
+    "serve": "node demo/server.js"
   },
   "repository": {
     "type": "git",
