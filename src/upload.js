@@ -48,7 +48,7 @@ export class UploadManager {
 
   putFile() {
     this.loaded = {
-      direct: 0,
+      direct: {loaded: 0, total: 0},
       mkFileProgress: 0,
       chunks: null
     };
@@ -234,9 +234,7 @@ export class UploadManager {
     return {
       loaded: loaded,
       size: size,
-      percent: this.loaded.mkFileProgress
-        ? (loaded + 1) / (size + 1) * 100
-        : loaded / (size + 1) * 100
+      percent: this.loaded.mkFileProgress ? (loaded + 1) / (size + 1) * 100 : loaded / (size + 1) * 100
     };
   }
 }
