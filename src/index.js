@@ -3,7 +3,7 @@ import {
   createMkFileUrl,
   isChunkExpired,
   getUploadUrl,
-  getHeadersForMkfile,
+  getHeadersForMkFile,
   getHeadersForChunkUpload,
   filterParams,
   request
@@ -39,7 +39,7 @@ export {
   isChunkExpired,
   request,
   getHeadersForChunkUpload,
-  getHeadersForMkfile,
+  getHeadersForMkFile,
   filterParams,
   getUploadUrl,
   imageMogr2,

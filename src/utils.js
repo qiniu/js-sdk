@@ -45,14 +45,17 @@ export function getLocalFileInfoAndMd5(file) {
   });
 }
 
+export function sum(list){
+  return list.reduce((sum, loaded) => {
+    return sum + loaded;
+  },0)
+}
+
 export function setLocalFileInfo(name, md5, info) {
   try {
-    localStorage.setItem(
-      createLocalKey(name, md5),
-      JSON.stringify(info)
-    );
+    localStorage.setItem(createLocalKey(name, md5), JSON.stringify(info));
   } catch (err) {
-    console.warn("localStorage.setItem failed");
+    console.warn("setLocalFileInfo failed");
   }
 }
 
@@ -64,42 +67,39 @@ export function removeLocalFileInfo(name, md5) {
   try {
     localStorage.removeItem(createLocalKey(name, md5));
   } catch (err) {
-    console.warn("localStorage.removeItem failed");
+    console.warn("removeLocalFileInfo failed");
   }
 }
 
 function getLocalFileInfo(name, md5) {
   try {
-    return JSON.parse(
-        localStorage.getItem(createLocalKey(name, md5))
-      ) || [];
+    return JSON.parse(localStorage.getItem(createLocalKey(name, md5))) || [];
   } catch (err) {
-    console.warn("localStorage.getItem failed");
+    console.warn("getLocalFileInfo failed");
     return [];
   }
 }
 
 // 构造file上传url
 export function createMkFileUrl(url, size, key, putExtra) {
-  let requestURI = url + "/mkfile/" + size;
+  let requestUrl = url + "/mkfile/" + size;
   if (key !== null && key !== undefined) {
-    requestURI += "/key/" + urlSafeBase64Encode(key);
+    requestUrl += "/key/" + urlSafeBase64Encode(key);
   }
   if (putExtra.mimeType) {
-    requestURI += "/mimeType/" + urlSafeBase64Encode(putExtra.mimeType);
+    requestUrl += "/mimeType/" + urlSafeBase64Encode(putExtra.mimeType);
   }
   let fname = putExtra.fname;
   if (fname) {
-    requestURI += "/fname/" + urlSafeBase64Encode(fname);
+    requestUrl += "/fname/" + urlSafeBase64Encode(fname);
   }
   if (putExtra.params) {
-    filterParams(putExtra.params).map(
-      k =>
-        (requestURI +=
-          "/" + encodeURIComponent(k[0]) + "/" + urlSafeBase64Encode(k[1]))
+    filterParams(putExtra.params).forEach(
+      item =>
+        (requestUrl += "/" + encodeURIComponent(item[0]) + "/" + urlSafeBase64Encode(item[1]))
     );
   }
-  return requestURI;
+  return requestUrl;
 }
 
 function getAuthHeaders(token) {
@@ -112,7 +112,7 @@ export function getHeadersForChunkUpload(token) {
   return Object.assign({ "content-type": "application/octet-stream" }, header);
 }
 
-export function getHeadersForMkfile(token) {
+export function getHeadersForMkFile(token) {
   let header = getAuthHeaders(token);
   return Object.assign({ "content-type": "text/plain" }, header);
 }
@@ -143,18 +143,18 @@ export function request(url, options) {
     let xhr = createXHR();
     xhr.open(options.method, url);
 
-    if (options.onPush) {
-      options.onPush(xhr);
+    if (options.onCreate) {
+      options.onCreate(xhr);
     }
     if (options.headers) {
-      Object.keys(options.headers).map(k =>
+      Object.keys(options.headers).forEach(k =>
         xhr.setRequestHeader(k, options.headers[k])
       );
     }
 
     xhr.upload.addEventListener("progress", evt => {
       if (evt.lengthComputable && options.onProgress) {
-        options.onProgress(evt.loaded);
+        options.onProgress(evt);
       }
     });
 
@@ -164,11 +164,12 @@ export function request(url, options) {
         return;
       }
       if (xhr.status !== 200) {
-        let message = `xhr request failed, code: ${xhr.status}; `;
+        let message = `xhr request failed, code: ${xhr.status};`;
         if (responseText) {
-          message = message + `response: ${responseText}`;
+          message = message + ` response: ${responseText}`;
         }
         reject(new Error(message));
+        return;
       }
       try {
         resolve(JSON.parse(responseText))

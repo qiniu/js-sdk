@@ -212,7 +212,7 @@ function dealWithOthers(token, putExtra, config, domain) {
         ctx.push(local[i].ctx)
       }
       // 设置上传的header信息
-      var headers = Qiniu.getHeadersForMkfile(token)
+      var headers = Qiniu.getHeadersForMkFile(token)
       Qiniu.request(requestUrl, {method: "POST", body: ctx.join(","), headers: headers}).then(function(res){
         uploadFinish(res, file.name,board[id]);
       })
