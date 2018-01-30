@@ -189,3 +189,7 @@ export function getUploadUrl(config) {
   let host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost;
   return `${protocol}://${host}`;
 }
+
+export function isContainFileMimeType(fileType, mimeType){
+  return mimeType.join(",").indexOf(`,${fileType},`) !== -1
+}

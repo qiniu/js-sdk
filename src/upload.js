@@ -6,6 +6,7 @@ import {
   getLocalFileInfoAndMd5,
   setLocalFileInfo,
   removeLocalFileInfo,
+  isContainFileMimeType,
   sum,
   getHeadersForChunkUpload,
   getHeadersForMkFile,
@@ -47,18 +48,22 @@ export class UploadManager {
   }
 
   putFile() {
+
     this.loaded = {
       direct: {loaded: 0, total: 0},
       mkFileProgress: 0,
       chunks: null
     };
+
     if (!this.putExtra.fname) {
       this.putExtra.fname = this.file.name;
     }
-    if (this.putExtra.mimeType && this.file.type !== this.putExtra.mimeType) {
-      let err = new Error("file type doesn't match with what you specify");
-      this.onError(err);
-      return Promise.reject(err);
+    if (this.putExtra.mimeType && this.putExtra.mimeType.length) {
+      if(!isContainFileMimeType(this.file.type, this.putExtra.mimeType)){
+        let err = new Error("file type doesn't match with what you specify");
+        this.onError(err);
+        return Promise.reject(err);
+      }
     }
 
     this.uploadUrl = getUploadUrl(this.config);
