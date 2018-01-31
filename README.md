@@ -78,9 +78,8 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
   npm install qiniu-js
   ```
 
-## 使用
 
-### 上传功能
+## 上传功能
 
 Qiniu.upload 返回一个 observable 对象用来控制上传行为，observable 对像通过 subscribe 方法可以被 observer 所订阅，订阅同时会开始触发上传，同时返回一个 subscription 对象，该对象有一个 unsubscribe 方法取消订阅，同时终止上传行为。对于不支持sdk的浏览器可以参考demo中用插件处理和form直传的方式，demo:http://jssdk.demo.qiniu.io; 一般form提交常常会导致网页跳转，demo中form直传通过加入iframe，并结合后端sdk上传来解决网页跳转问题，实现form无刷新上传。
 
@@ -96,9 +95,9 @@ var subscription = observable.subscribe(next,error,complete)// 这样传参形�
 subscription.unsubscribe()// 上传取消
 ```
 
-### Options
+## Options
 
-#### config
+### config
 
 ```JavaScript
 var config = {
@@ -111,7 +110,7 @@ var config = {
 * config.useCdnDomain: 表示是否使用cdn加速域名，为布尔值，true表示使用
 * config.zone: 选择上传域名区域，z0表示华东，z1表示华北，z2表示华南，na0表示北美
 
-#### putExtra
+### putExtra
 
 ```JavaScript
 var putExtra = {
@@ -124,7 +123,7 @@ var putExtra = {
 * putExtra.params: object, 用来放置自定义变量
 * mimeType: 用来限制上传文件类型
 
-#### observer
+### observer
 
 observer 用来设置上传过程的监听函数，有三个属性next、error、complete
 
@@ -151,23 +150,77 @@ var complete = function(res){
 * observer.error: 上传过程中暂停或者发生错误触发
 * observer.complete: 上传完成后执行
 
-### interface
+## interface
 
-* Qiniu.createMkFileUrl(url, fileSize, key, putExtra): 返回创建文件的url; 当分片上传时，我们需要把分片返回的ctx信息拼接后通过该url上传给七牛以创建文件。
+### Qiniu.createMkFileUrl: 
 
-* Qiniu.isChunkExpired(time): 判断当前时间是否过期
+返回创建文件的url; 当分片上传时，我们需要把分片返回的ctx信息拼接后通过该url上传给七牛以创建文件。
 
-* Qiniu.zones : z0(华东)、z1(华北)、z2(华南)、na0(北美)
+```JavaScript
+var requestUrl = Qiniu.createMkFileUrl(
+   uploadUrl, // 上传域名，可以通过qiniu.getUploadUrl()获得
+   file.size, // 文件大小
+   key, // 文件资源名
+   putExtra
+ );
+```
 
-* Qiniu.getUploadUrl(config) : 返回根据config里所配置信息的上传域名
+### Qiniu.isChunkExpired: 
 
-* Qiniu.getHeadersForChunkUpload(token): 返回object,包含用来获得分片上传设置的头信息
+判断当前存储的时间是否过期，如果过期代表该分片的ctx信息不能继续使用了
 
-* Qiniu.getHeadersForMkFile(token): 返回object，包含用来获得文件创建的头信息
+```JavaScript
+ if(Qiniu.isChunkExpired(time)){
+  ....
+ }
+```
 
-* Qiniu.filterParams(putExtra.params): 返回[[k,v],...]格式的数组，k为自定义变量key名，v为自定义变量值，用来提取putExtra.params包含的自定义变量
+### Qiniu.zones : 
 
-### 对上传成功的图片数据处理
+* Qiniu.zones.z0: 代表华东区域
+* Qiniu.zones.z1: 代表华北区域
+* Qiniu.zones.z2: 代表华南区域
+* Qiniu.zones.na0: 代表北美区域
+
+### Qiniu.getUploadUrl: 
+
+接收参数为config对象，返回根据config里所配置信息的上传域名
+
+```JavaScript
+var requestUrl = Qiniu.getUpload(config)
+```
+
+### Qiniu.getHeadersForChunkUpload: 
+
+返回object,包含用来获得分片上传设置的头信息,参数为token字符串；当分片上传时，请求需要带该函数返回的头信息
+
+```JavaScript
+var headers = Qiniu.getHeadersForChunkUpload(token)
+```
+
+### Qiniu.getHeadersForMkFile: 
+
+返回object，包含用来获得文件创建的头信息，参数为token字符串；当分片上传完需要把ctx信息传给七牛用来创建文件时，请求需要带该函数返回的头信息
+
+```JavaScript
+var headers = Qiniu.getHeadersForMkFile(token)
+```
+
+
+### Qiniu.filterParams: 
+
+返回[[k,v],...]格式的数组，k为自定义变量key名，v为自定义变量值，用来提取putExtra.params包含的自定义变量
+
+```JavaScript
+var customVarList = Qiniu.filterParams(putExtra.params);
+
+ for (var i = 0; i < customVarList.length; i++) {
+   var k = customVarList[i];
+   multipart_params_obj[k[0]] = k[1];
+ }
+```
+
+## 对上传成功的图片数据处理
 
 * watermark（水印）
 
