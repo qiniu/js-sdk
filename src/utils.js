@@ -154,7 +154,7 @@ export function request(url, options) {
 
     xhr.upload.addEventListener("progress", evt => {
       if (evt.lengthComputable && options.onProgress) {
-        options.onProgress(evt);
+        options.onProgress({loaded: evt.loaded, total: evt.total});
       }
     });
 
@@ -191,5 +191,5 @@ export function getUploadUrl(config) {
 }
 
 export function isContainFileMimeType(fileType, mimeType){
-  return mimeType.join(",").indexOf(`,${fileType},`) !== -1
+  return mimeTyp.indexOf(fileType) > -1
 }

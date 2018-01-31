@@ -1,10 +1,12 @@
 (function() {
-  var ajax = getToken();
+  var xhr = createXHR();
+  xhr.open("GET", "/api/uptoken");
+  xhr.send()
   $("#box").addClass("hide");
-  ajax.onreadystatechange = function() {
-    if (ajax.readyState === 4 && ajax.status === 200) {
-      var token = JSON.parse(ajax.responseText).uptoken;
-      var domain = JSON.parse(ajax.responseText).domain;
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4 && xhr.status === 200) {
+      var token = JSON.parse(xhr.responseText).uptoken;
+      var domain = JSON.parse(xhr.responseText).domain;
       var config = {
         useHttpsDomain: false,
         useCdnDomain: true,
@@ -39,24 +41,3 @@
     }
   };
 })();
-
-function getToken() {
-  if (window.XMLHttpRequest) {
-    xmlhttp = new XMLHttpRequest();
-  } else {
-    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-  }
-  var token;
-  xmlhttp.open("GET", "/api/uptoken");
-  xmlhttp.send();
-  return xmlhttp;
-}
-function createAjax() {
-  var xmlhttp = {};
-  if (window.XMLHttpRequest) {
-    xmlhttp = new XMLHttpRequest();
-  } else {
-    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-  }
-  return xmlhttp;
-}

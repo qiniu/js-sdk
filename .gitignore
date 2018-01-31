@@ -5,3 +5,4 @@ demo/config.js
 deploy.sh
 npm-debug.log
 dist
+demo/config.js

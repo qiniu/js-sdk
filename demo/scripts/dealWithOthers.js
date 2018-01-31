@@ -47,7 +47,7 @@ function dealWithOthers(token, putExtra, config, domain) {
               $(this).text("取消上传");
             } else {
               uploader.stop();
-              board[id].start = "reusme";
+              board[id].start = true;
               $(this).text("开始上传");
             }
           });
@@ -92,6 +92,11 @@ function dealWithOthers(token, putExtra, config, domain) {
       blockSize = chunk_size;
       
       initFileInfo(file);
+      if(blockSize === 0){
+        mkFileRequest(file)
+        uploader.stop()
+        return
+      }
       resume = true;
       var multipart_params_obj = {};
       // 计算已上传的chunk数量
@@ -197,23 +202,7 @@ function dealWithOthers(token, putExtra, config, domain) {
   uploader.bind("FileUploaded", function(uploader, file, info) {
     var id = file.id;
     if (resume) {
-      // 调用sdk的url构建函数
-      var requestUrl = qiniu.createMkFileUrl(
-        uploadUrl,
-        file.size,
-        key,
-        putExtra
-      );
-      var ctx = []
-      var local = JSON.parse(localStorage.getItem(file.name))
-      for(var i =0;i<local.length;i++){
-        ctx.push(local[i].ctx)
-      }
-      // 设置上传的header信息
-      var headers = qiniu.getHeadersForMkFile(token)
-      qiniu.request(requestUrl, {method: "POST", body: ctx.join(","), headers: headers}).then(function(res){
-        uploadFinish(res, file.name,board[id]);
-      })
+      mkFileRequest(file)
     } else {
       uploadFinish(JSON.parse(info.response), file.name,board[id]);
     }
@@ -255,21 +244,19 @@ function dealWithOthers(token, putExtra, config, domain) {
           "</p>"
       );
     if (res.key && res.key.match(/\.(jpg|jpeg|png|gif)$/)) {
-      imageDeal(board, data.key, domain);
+      imageDeal(board, res.key, domain);
     }
   }
 
   function initFileInfo(file) {
     var localFileInfo = JSON.parse(localStorage.getItem(file.name))|| [];
     indexCount = 0;
-    console.log(localFileInfo)
     var length = localFileInfo.length
     if (length) {
       var clearStatus = false
       for (var i = 0; i < localFileInfo.length; i++) {
           indexCount++
         if (qiniu.isChunkExpired(localFileInfo[i].time)) {
-          console.log("time")
           clearStatus = true
           localStorage.removeItem(file.name);
           break;
@@ -289,5 +276,35 @@ function dealWithOthers(token, putExtra, config, domain) {
     }else{
       indexCount = 0
     }
+  }
+
+  function mkFileRequest(file){
+    // 调用sdk的url构建函数
+    var requestUrl = qiniu.createMkFileUrl(
+      uploadUrl,
+      file.size,
+      key,
+      putExtra
+    );
+    var ctx = []
+    var id = file.id
+    var local = JSON.parse(localStorage.getItem(file.name))
+    for(var i =0;i<local.length;i++){
+      ctx.push(local[i].ctx)
+    }
+    // 设置上传的header信息
+    var headers = qiniu.getHeadersForMkFile(token)
+    var xhr = createXHR()
+    xhr.open("POST",requestUrl)
+    for(var key in headers){
+      xhr.setRequestHeader(key, headers[key])
+    }
+    xhr.onreadystatechange = function(){
+      if(xhr.readyState === 4 && xhr.status === 200){
+        var responseText = xhr.responseText;
+        uploadFinish(JSON.parse(responseText), file.name,board[id]);
+      }
+    }
+    xhr.send(ctx.join(","))
   }
 }

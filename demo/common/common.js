@@ -1,4 +1,5 @@
 var BLOCK_SIZE = 4 * 1024 * 1024;
+
 function addUploadBoard(file, config, key, type) {
   var count = Math.ceil(file.size / BLOCK_SIZE);
   var board = widget.add("tr", {
@@ -15,6 +16,16 @@ function addUploadBoard(file, config, key, type) {
         .find(".resume")
         .addClass("hide");
   return board;
+}
+
+function createXHR() {
+  var xmlhttp = {};
+  if (window.XMLHttpRequest) {
+    xmlhttp = new XMLHttpRequest();
+  } else {
+    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+  }
+  return xmlhttp;
 }
 
 function getBoardWidth(board) {

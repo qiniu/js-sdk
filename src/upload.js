@@ -49,12 +49,6 @@ export class UploadManager {
 
   putFile() {
 
-    this.loaded = {
-      direct: {loaded: 0, total: 0},
-      mkFileProgress: 0,
-      chunks: null
-    };
-
     if (!this.putExtra.fname) {
       this.putExtra.fname = this.file.name;
     }
@@ -71,8 +65,8 @@ export class UploadManager {
     let upload =
       this.file.size > BLOCK_SIZE ? this.resumeUpload() : this.directUpload();
     upload.then(res => this.onComplete(res)).catch(err => {
-      this.stop();
       this.onError(err);
+      this.stop();
     });
 
     return upload;
@@ -99,8 +93,8 @@ export class UploadManager {
     return request(this.uploadUrl, {
       method: "POST",
       body: formData,
-      onProgress: evt => {
-        this.updateDirectProgress(evt.loaded, evt.total);
+      onProgress: (data) => {
+        this.updateDirectProgress(data.loaded, data.total);
       },
       onCreate: this.xhrHandler
     });
@@ -108,6 +102,12 @@ export class UploadManager {
 
   // 分片上传
   resumeUpload() {
+
+    this.loaded = {
+      mkFileProgress: 0,
+      chunks: null
+    };
+
     return getLocalFileInfoAndMd5(this.file).then(res => {
       this.ctxList = [];
       let md5 = res.md5;
@@ -147,8 +147,8 @@ export class UploadManager {
 
     return readAsArrayBuffer(chunk).then(body => {
       let headers = getHeadersForChunkUpload(this.token);
-      let onProgress = evt => {
-        this.updateChunkProgress(evt.loaded, index);
+      let onProgress = data => {
+        this.updateChunkProgress(data.loaded, index);
       };
       let onCreate = this.xhrHandler;
       let method = "POST";
@@ -200,8 +200,9 @@ export class UploadManager {
   }
 
   updateDirectProgress(loaded, total) {
-    this.loaded.direct = { loaded: loaded, total: total };
-    this.notifyProgress();
+    this.onData(
+      {total: this.getProgressInfoItem(loaded, total)}
+    )
   }
 
   updateChunkProgress(loaded, index) {
@@ -210,7 +211,7 @@ export class UploadManager {
   }
 
   updateMkFileProgress(progress) {
-    this.loaded.mkFileProgress = 1;
+    this.loaded.mkFileProgress = progress;
     this.notifyProgress();
   }
 
@@ -219,16 +220,8 @@ export class UploadManager {
   }
 
   getProgressInfo() {
-    if (!this.loaded.chunks) {
-      return {
-        total: this.getProgressInfoItem(
-          this.loaded.direct.loaded,
-          this.loaded.direct.total
-        )
-      };
-    }
     return {
-      total: this.getProgressInfoItem(sum(this.loaded.chunks), this.file.size),
+      total: this.getProgressInfoItem(sum(this.loaded.chunks) + this.loaded.mkFileProgress, this.file.size + 1),
       chunks: this.chunks.map((chunk, index) => {
         return this.getProgressInfoItem(this.loaded.chunks[index], chunk.size);
       })
@@ -239,7 +232,7 @@ export class UploadManager {
     return {
       loaded: loaded,
       size: size,
-      percent: this.loaded.mkFileProgress ? (loaded + 1) / (size + 1) * 100 : loaded / (size + 1) * 100
+      percent: loaded/size * 100
     };
   }
 }
