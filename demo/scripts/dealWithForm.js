@@ -2,7 +2,7 @@
 function dealWithForm(token, putExtra, config) {
   controlTabDisplay("form");
   // 获得上传地址
-  var uploadUrl = Qiniu.getUploadUrl(config);
+  var uploadUrl = qiniu.getUploadUrl(config);
   document.getElementsByName("token")[0].value = token;
   document.getElementsByName("url")[0].value = uploadUrl;
   // 当选择文件后执行的操作

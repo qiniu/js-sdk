@@ -1,6 +1,6 @@
 function dealWithOthers(token, putExtra, config, domain) {
   controlTabDisplay("others");
-  var uploadUrl = Qiniu.getUploadUrl(config);
+  var uploadUrl = qiniu.getUploadUrl(config);
   var board = {};
   var indexCount = 0;
   var resume = false;
@@ -75,7 +75,7 @@ function dealWithOthers(token, putExtra, config, domain) {
       var multipart_params_obj = {};
       multipart_params_obj.token = token;
       // filterParams 返回符合自定义变量格式的数组，每个值为也为一个数组，包含变量名及变量值
-      var customVarList = Qiniu.filterParams(putExtra.params);
+      var customVarList = qiniu.filterParams(putExtra.params);
       for (var i = 0; i < customVarList.length; i++) {
         var k = customVarList[i];
         multipart_params_obj[k[0]] = k[1];
@@ -108,8 +108,6 @@ function dealWithOthers(token, putExtra, config, domain) {
         "width",
         Math.floor(file.percent / 100 * width.totalWidth - 2) + "px"
       );
-      console.log(file)
-      console.log(file.percent)
       // 初始化已上传的chunk进度
       for (var i = 0; i < index; i++) {
         var dom_finished = $(board[id])
@@ -118,7 +116,7 @@ function dealWithOthers(token, putExtra, config, domain) {
           .find("#childBarColor");
         dom_finished.css("width", Math.floor(width.childWidth - 2) + "px");
       }
-      var headers = Qiniu.getHeadersForChunkUpload(token)
+      var headers = qiniu.getHeadersForChunkUpload(token)
       uploader.setOption({
         url: uploadUrl + "/mkblk/" + blockSize,
         multipart: false,
@@ -177,7 +175,7 @@ function dealWithOthers(token, putExtra, config, domain) {
   // 我们可以利用这些参数提供的信息来做比如更新UI，提示上传进度等操作
   uploader.bind("UploadProgress", function(uploader, file) {
     var id = file.id;
-    //更新进度条进度信息;
+    // 更新进度条进度信息;
     var fileUploaded = file.loaded || 0;
     var dom_total = $(board[id])
       .find("#totalBar")
@@ -200,7 +198,7 @@ function dealWithOthers(token, putExtra, config, domain) {
     var id = file.id;
     if (resume) {
       // 调用sdk的url构建函数
-      var requestUrl = Qiniu.createMkFileUrl(
+      var requestUrl = qiniu.createMkFileUrl(
         uploadUrl,
         file.size,
         key,
@@ -212,8 +210,8 @@ function dealWithOthers(token, putExtra, config, domain) {
         ctx.push(local[i].ctx)
       }
       // 设置上传的header信息
-      var headers = Qiniu.getHeadersForMkFile(token)
-      Qiniu.request(requestUrl, {method: "POST", body: ctx.join(","), headers: headers}).then(function(res){
+      var headers = qiniu.getHeadersForMkFile(token)
+      qiniu.request(requestUrl, {method: "POST", body: ctx.join(","), headers: headers}).then(function(res){
         uploadFinish(res, file.name,board[id]);
       })
     } else {
@@ -270,7 +268,7 @@ function dealWithOthers(token, putExtra, config, domain) {
       var clearStatus = false
       for (var i = 0; i < localFileInfo.length; i++) {
           indexCount++
-        if (Qiniu.isChunkExpired(localFileInfo[i].time)) {
+        if (qiniu.isChunkExpired(localFileInfo[i].time)) {
           console.log("time")
           clearStatus = true
           localStorage.removeItem(file.name);

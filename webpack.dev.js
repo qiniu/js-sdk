@@ -1,10 +1,10 @@
-const merge = require("webpack-merge");
-const path = require("path");
+var merge = require("webpack-merge");
+var path = require("path");
 var webpack = require("webpack");
-const common = require("./webpack.common.js");
+var common = require("./webpack.common.js");
 var OpenBrowserPlugin = require("open-browser-webpack-plugin");
 module.exports = merge(common, {
-  devtool: "inline-source-map",
+  //devtool: "inline-source-map",
   devServer: {
     disableHostCheck: true,
     progress: true,
@@ -18,10 +18,11 @@ module.exports = merge(common, {
     host: "0.0.0.0", // Use this rather than localhost so we can access from a VM for browser testing
     contentBase: path.join(__dirname, "./"),
     publicPath: "/dist/",
-    hot: true
+    hot: false,
+    inline: false
   },
   plugins: [
-    new OpenBrowserPlugin({ url: "http://0.0.0.0:8080/demo" }),
-    new webpack.HotModuleReplacementPlugin()
+    // new OpenBrowserPlugin({ url: "http://0.0.0.0:8080/demo" }),
+    // new webpack.HotModuleReplacementPlugin()
   ]
 });

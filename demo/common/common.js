@@ -1,4 +1,4 @@
-const BLOCK_SIZE = 4 * 1024 * 1024;
+var BLOCK_SIZE = 4 * 1024 * 1024;
 function addUploadBoard(file, config, key, type) {
   var count = Math.ceil(file.size / BLOCK_SIZE);
   var board = widget.add("tr", {
@@ -159,7 +159,7 @@ function imageControl(domain) {
             });
           }
         });
-      var newUrl = Qiniu.pipeline(fopArr, key, domain);
+      var newUrl = qiniu.pipeline(fopArr, key, domain);
 
       var newImg = new Image();
       img.attr("src", "images/loading.gif");
@@ -193,7 +193,7 @@ function imageDeal(board, key, domain) {
     q: 100,
     format: "png"
   });
-  var newUrl = Qiniu.pipeline(fopArr, key, domain);
+  var newUrl = qiniu.pipeline(fopArr, key, domain);
   $(board)
     .find(".wraper a")
     .html(

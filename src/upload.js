@@ -16,7 +16,7 @@ import {
   filterParams
 } from "./utils";
 
-const BLOCK_SIZE = 4 * 1024 * 1024;
+let BLOCK_SIZE = 4 * 1024 * 1024;
 
 export class UploadManager {
   constructor(options, handlers) {

@@ -49,9 +49,8 @@ function dealWithSDK(token, putExtra, config, domain) {
       };
 
       var next = function(response) {
-        console.log(response)
-        let chunks = response.chunks||[];
-        let total = response.total;
+        var chunks = response.chunks||[];
+        var total = response.total;
         for (var i = 0; i < chunks.length; i++) {
           $(board)
             .find(".fragment-group li")
@@ -78,7 +77,7 @@ function dealWithSDK(token, putExtra, config, domain) {
       };
       var subscription;
       // 调用sdk上传接口获得相应的observable，控制上传和暂停
-      observable = Qiniu.upload(file, key, token, putExtra, config);
+      observable = qiniu.upload(file, key, token, putExtra, config);
 
       $(board)
         .find(".control-upload")

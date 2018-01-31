@@ -8,7 +8,7 @@
       var config = {
         useHttpsDomain: false,
         useCdnDomain: true,
-        zone: Qiniu.zones.z2
+        zone: qiniu.zones.z2
       };
       var putExtra = {
         fname: "",

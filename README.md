@@ -1,4 +1,4 @@
-# Qiniu-JavaScript-SDK
+# qiniu-JavaScript-SDK
 
 基于七牛 API 开发的前端 JavaScript SDK
 
@@ -11,10 +11,10 @@
 
 ## 概述
 
-Qiniu-JavaScript-SDK （下文简称为 JS-SDK）适用于 ：IE11、Edge、Chrome、Firefox、Safari 等浏览器，基于七牛云存储官方 API 构建，其中上传功能基于 H5 File API。开发者基于 JS-SDK 可以方便的从浏览器端上传文件至七牛云存储，并对上传成功后的图片进行丰富的数据处理操作。
+qiniu-JavaScript-SDK （下文简称为 JS-SDK）适用于 ：IE11、Edge、Chrome、Firefox、Safari 等浏览器，基于七牛云存储官方 API 构建，其中上传功能基于 H5 File API。开发者基于 JS-SDK 可以方便的从浏览器端上传文件至七牛云存储，并对上传成功后的图片进行丰富的数据处理操作。
 JS-SDK 兼容支持 H5 File API 的浏览器，在不支持 File API 的浏览器建议用插件如 plupload，JS-SDK 提供了一些接口可以结合插件来进行上传工作。
 
-Qiniu-JavaScript-SDK 为客户端 SDK，没有包含 token 生成实现，为了安全，token 建议通过网络从服务端获取，具体生成代码可以参考以下服务端 SDK 的文档。
+qiniu-JavaScript-SDK 为客户端 SDK，没有包含 token 生成实现，为了安全，token 建议通过网络从服务端获取，具体生成代码可以参考以下服务端 SDK 的文档。
 
 * [Android](https://developer.qiniu.com/kodo/sdk/android)
 * [Java](https://developer.qiniu.com/kodo/sdk/java)
@@ -27,7 +27,7 @@ Qiniu-JavaScript-SDK 为客户端 SDK，没有包含 token 生成实现，为了
 * [C/C++](https://developer.qiniu.com/kodo/sdk/cpp)
 * [Objective-C](https://developer.qiniu.com/kodo/sdk/objc)
 
-Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js 服务器端 SDK ](https://developer.qiniu.com/kodo/sdk/nodejs) 开发的。
+qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js 服务器端 SDK ](https://developer.qiniu.com/kodo/sdk/nodejs) 开发的。
 
 <!--
 本 SDK 可使开发者忽略上传底层实现细节，而更多的关注 UI 层的展现。
@@ -81,12 +81,12 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 
 ## 上传功能
 
-Qiniu.upload 返回一个 observable 对象用来控制上传行为，observable 对像通过 subscribe 方法可以被 observer 所订阅，订阅同时会开始触发上传，同时返回一个 subscription 对象，该对象有一个 unsubscribe 方法取消订阅，同时终止上传行为。对于不支持sdk的浏览器可以参考demo中用插件处理和form直传的方式，demo:http://jssdk.demo.qiniu.io; 一般form提交常常会导致网页跳转，demo中form直传通过加入iframe，并结合后端sdk上传来解决网页跳转问题，实现form无刷新上传。
+qiniu.upload 返回一个 observable 对象用来控制上传行为，observable 对像通过 subscribe 方法可以被 observer 所订阅，订阅同时会开始触发上传，同时返回一个 subscription 对象，该对象有一个 unsubscribe 方法取消订阅，同时终止上传行为。对于不支持sdk的浏览器可以参考demo中用插件处理和form直传的方式，demo:http://jssdk.demo.qiniu.io; 一般form提交常常会导致网页跳转，demo中form直传通过加入iframe，并结合后端sdk上传来解决网页跳转问题，实现form无刷新上传。
 
 ```JavaScript
-var Qiniu = require('qiniu-js')
+var qiniu = require('qiniu-js')
 
-var observable = Qiniu.upload(file, key, token, putExtra, config);
+var observable = qiniu.upload(file, key, token, putExtra, config);
 
 var subscription = observable.subscribe(observer)// 上传开始
 或者
@@ -103,7 +103,7 @@ subscription.unsubscribe()// 上传取消
 var config = {
   useHttpsDomain: false,
   useCdnDomain: true,
-  zone: Qiniu.zones.z2
+  zone: qiniu.zones.z2
 };
 ```
 * config.useHttpsDomain: 表示是否使用https协议，为布尔值，true表示使用https
@@ -116,12 +116,13 @@ var config = {
 var putExtra = {
   fname: "",
   params: {},
-  mimeType: null
+  mimeType: []|| null
 };
 ```
-* putExtra.fname: 文件原文件名
-* putExtra.params: object, 用来放置自定义变量
-* mimeType: 用来限制上传文件类型
+* putExtra.fname: string，文件原文件名
+* putExtra.params: object，用来放置自定义变量
+* mimeType: null || array，用来限制上传文件类型,为null时表示不对文件类型限制；限制类型放到数组里：
+["image/png", "image/jpeg", "image/gif"]
 
 ### observer
 
@@ -152,12 +153,12 @@ var complete = function(res){
 
 ## interface
 
-### Qiniu.createMkFileUrl: 
+### qiniu.createMkFileUrl: 
 
 返回创建文件的url; 当分片上传时，我们需要把分片返回的ctx信息拼接后通过该url上传给七牛以创建文件。
 
 ```JavaScript
-var requestUrl = Qiniu.createMkFileUrl(
+var requestUrl = qiniu.createMkFileUrl(
    uploadUrl, // 上传域名，可以通过qiniu.getUploadUrl()获得
    file.size, // 文件大小
    key, // 文件资源名
@@ -165,54 +166,54 @@ var requestUrl = Qiniu.createMkFileUrl(
  );
 ```
 
-### Qiniu.isChunkExpired: 
+### qiniu.isChunkExpired: 
 
 判断当前存储的时间是否过期，如果过期代表该分片的ctx信息不能继续使用了
 
 ```JavaScript
- if(Qiniu.isChunkExpired(time)){
+ if(qiniu.isChunkExpired(time)){
   ....
  }
 ```
 
-### Qiniu.zones : 
+### qiniu.zones : 
 
-* Qiniu.zones.z0: 代表华东区域
-* Qiniu.zones.z1: 代表华北区域
-* Qiniu.zones.z2: 代表华南区域
-* Qiniu.zones.na0: 代表北美区域
+* qiniu.zones.z0: 代表华东区域
+* qiniu.zones.z1: 代表华北区域
+* qiniu.zones.z2: 代表华南区域
+* qiniu.zones.na0: 代表北美区域
 
-### Qiniu.getUploadUrl: 
+### qiniu.getUploadUrl: 
 
 接收参数为config对象，返回根据config里所配置信息的上传域名
 
 ```JavaScript
-var requestUrl = Qiniu.getUpload(config)
+var requestUrl = qiniu.getUpload(config)
 ```
 
-### Qiniu.getHeadersForChunkUpload: 
+### qiniu.getHeadersForChunkUpload: 
 
 返回object,包含用来获得分片上传设置的头信息,参数为token字符串；当分片上传时，请求需要带该函数返回的头信息
 
 ```JavaScript
-var headers = Qiniu.getHeadersForChunkUpload(token)
+var headers = qiniu.getHeadersForChunkUpload(token)
 ```
 
-### Qiniu.getHeadersForMkFile: 
+### qiniu.getHeadersForMkFile: 
 
 返回object，包含用来获得文件创建的头信息，参数为token字符串；当分片上传完需要把ctx信息传给七牛用来创建文件时，请求需要带该函数返回的头信息
 
 ```JavaScript
-var headers = Qiniu.getHeadersForMkFile(token)
+var headers = qiniu.getHeadersForMkFile(token)
 ```
 
 
-### Qiniu.filterParams: 
+### qiniu.filterParams: 
 
 返回[[k,v],...]格式的数组，k为自定义变量key名，v为自定义变量值，用来提取putExtra.params包含的自定义变量
 
 ```JavaScript
-var customVarList = Qiniu.filterParams(putExtra.params);
+var customVarList = qiniu.filterParams(putExtra.params);
 
  for (var i = 0; i < customVarList.length; i++) {
    var k = customVarList[i];
@@ -228,7 +229,7 @@ var customVarList = Qiniu.filterParams(putExtra.params);
   // key 为每个文件上传成功后，服务端返回的json字段，即资源的最终名字，下同
   // key 可在每个文件'FileUploaded'事件被触发时获得
 
-  var imgLink = Qiniu.watermark({
+  var imgLink = qiniu.watermark({
        mode: 1,  // 图片水印
        image: 'http://www.b1.qiniudn.com/images/logo-2.png', // 图片水印的Url，mode = 1 时 **必需**
        dissolve: 50,          // 透明度，取值范围1-100，非必需，下同
@@ -247,7 +248,7 @@ var customVarList = Qiniu.filterParams(putExtra.params);
   或
 
   ```JavaScript
-  var imgLink = Qiniu.watermark({
+  var imgLink = qiniu.watermark({
        mode: 2,  // 文字水印
        text: 'hello world !', // 水印文字，mode = 2 时 **必需**
        dissolve: 50,          // 透明度，取值范围1-100，非必需，下同
@@ -265,7 +266,7 @@ var customVarList = Qiniu.filterParams(putExtra.params);
 * imageView2
 
   ```JavaScript
-  var imgLink = Qiniu.imageView2({
+  var imgLink = qiniu.imageView2({
      mode: 3,  // 缩略模式，共6种[0-5]
      w: 100,   // 具体含义由缩略模式决定
      h: 100,   // 具体含义由缩略模式决定
@@ -279,7 +280,7 @@ var customVarList = Qiniu.filterParams(putExtra.params);
 * imageMogr2
 
   ```JavaScript
-  var imgLink = Qiniu.imageMogr2({
+  var imgLink = qiniu.imageMogr2({
      auto-orient: true,       // 布尔值，是否根据原图EXIF信息自动旋正，便于后续处理，建议放在首位。
      strip: true,             // 布尔值，是否去除图片中的元信息
      thumbnail: '1000x1000'   // 缩放操作参数
@@ -297,22 +298,18 @@ var customVarList = Qiniu.filterParams(putExtra.params);
 * imageInfo
 
   ```JavaScript
-  Qiniu.imageInfo(key, domain).then(res => {});
+  qiniu.imageInfo(key, domain).then(res => {});
   ```
 
   具体 imageInfo 解释见[图片基本信息（imageInfo）](https://developer.qiniu.com/dora/api/pictures-basic-information-imageinfo)
 
-  Ajax 跨域限制，IE 系列此函数只支持 IE10+
-
 * exif
 
   ```JavaScript
-  Qiniu.exif(key, domain).then(res => {});
+  qiniu.exif(key, domain).then(res => {});
   ```
 
   具体 exif 解释见[图片 EXIF 信息（exif）](https://developer.qiniu.com/dora/api/photo-exif-information-exif)
-
-  Ajax 跨域限制，IE 系列此函数只支持 IE10+
 
 * pipeline(管道操作）
 
@@ -376,7 +373,7 @@ var customVarList = Qiniu.filterParams(putExtra.params);
   ```
 
 
-    var imgLink = Qiniu.pipeline(fopArr, key, domain));
+    var imgLink = qiniu.pipeline(fopArr, key, domain));
 
     ```
 

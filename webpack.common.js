@@ -1,9 +1,9 @@
-const path = require("path");
+var path = require("path");
 module.exports = {
   entry: "./src/index.js",
   output: {
     filename: "qiniu.min.js",
-    library: "Qiniu",
+    library: "qiniu",
     libraryTarget: "umd",
     path: path.resolve(__dirname, "dist"),
     publicPath: "/dist/"
