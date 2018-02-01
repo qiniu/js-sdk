@@ -4,9 +4,13 @@
 
 ## 快速导航
 
-* [示例网站](http://jssdk.demo.qiniu.io/) //导航补全
-* [安装与使用](#usage)
+* [示例网站](http://jssdk.demo.qiniu.io/)
+* [功能简介](#summary)
+* [准备](#ready)
+* [安装](#install)
+* [使用](#usage)
 * [运行示例](#demo)
+* [说明](#note)
 * [常见问题](#faq)
 
 ## 概述
@@ -32,6 +36,7 @@ qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 <!--
 本 SDK 可使开发者忽略上传底层实现细节，而更多的关注 UI 层的展现。
  -->
+<a id="summary"></a>
 
 ## 功能简介
 
@@ -46,7 +51,7 @@ qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
   * watermark （文字、图片水印）
   * pipeline （管道，可对 imageView2、imageMogr2、watermark 进行链式处理）
 
-<a id="usage"></a>
+<a id="ready"></a>
 
 ## 准备
 
@@ -58,6 +63,8 @@ qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
   * 利用七牛底层 API 构建服务，详见七牛[上传策略](https://developer.qiniu.com/kodo/manual/put-policy)和[上传凭证](https://developer.qiniu.com/kodo/manual/upload-token)
 
   前端通过接口请求以获得 token 信息
+
+<a id="install"></a>
 
 ## 安装
 
@@ -75,9 +82,11 @@ qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 
   ```
   npm install qiniu-js
-  ```
 
-## 上传功能
+  ```
+<a id="usage"></a>
+
+## 使用
 
 qiniu.upload 返回一个 observable 对象用来控制上传行为，observable 对像通过 subscribe 方法可以被 observer 所订阅，订阅同时会开始触发上传，同时返回一个 subscription 对象，该对象有一个 unsubscribe 方法取消订阅，同时终止上传行为。对于不支持 sdk 的浏览器可以参考 demo 中用插件处理和 form 直传的方式，demo:http://jssdk.demo.qiniu.io; 一般 form 提交常常会导致网页跳转，demo 中 form 直传通过加入 iframe，并结合后端 sdk 上传来解决网页跳转问题，实现 form 无刷新上传。
 
@@ -158,79 +167,83 @@ subscription.unsubscribe()// 上传取消
     * putExtra.params: object，用来放置自定义变量
     * mimeType: null || array，用来限制上传文件类型,为 null 时表示不对文件类型限制；限制类型放到数组里：
       ["image/png", "image/jpeg", "image/gif"]
-
+    <br>
+    <br>
+ 
 ### qiniu.createMkFileUrl(url: string, size: number, key: string, putExtra: object): string
 
-返回创建文件的 url; 当分片上传时，我们需要把分片返回的 ctx 信息拼接后通过该 url 上传给七牛以创建文件。
+  返回创建文件的 url; 当分片上传时，我们需要把分片返回的 ctx 信息拼接后通过该 url 上传给七牛以创建文件。
 
-  * **url**: 上传域名，可以通过qiniu.getUploadUrl()获得
-  * **size**: 文件大小
-  * **key**: 文件资源名
-  * **putExtra**: 同上
+    * **url**: 上传域名，可以通过qiniu.getUploadUrl()获得
+    * **size**: 文件大小
+    * **key**: 文件资源名
+    * **putExtra**: 同上
 
-```JavaScript
-var requestUrl = qiniu.createMkFileUrl(
-   uploadUrl, 
-   file.size,
-   key, 
-   putExtra
- );
-```
-
+  ```JavaScript
+  var requestUrl = qiniu.createMkFileUrl(
+    uploadUrl, 
+    file.size,
+    key, 
+    putExtra
+  );
+  ```
+<br><br>
 ### qiniu.isChunkExpired(time: string): boolean
 
-判断当前存储的时间是否过期，如果过期代表该分片的 ctx 信息不能继续使用了
+  判断当前存储的时间是否过期，如果过期代表该分片的 ctx 信息不能继续使用了
 
-```JavaScript
- if(qiniu.isChunkExpired(time)){
-  ....
- }
-```
+  ```JavaScript
+  if(qiniu.isChunkExpired(time)){
+    ....
+  }
+  ```
+<br><br>
+### qiniu.zones: object
 
-### qiniu.zones : object
-
-* **qiniu.zones.z0**: 代表华东区域
-* **qiniu.zones.z1**: 代表华北区域
-* **qiniu.zones.z2**: 代表华南区域
-* **qiniu.zones.na0**: 代表北美区域
+  * **qiniu.zones.z0**: 代表华东区域
+  * **qiniu.zones.z1**: 代表华北区域
+  * **qiniu.zones.z2**: 代表华南区域
+  * **qiniu.zones.na0**: 代表北美区域
+<br>
+<br>
 
 ### qiniu.getUploadUrl(config:object): string
 
-接收参数为 config 对象，返回根据 config 里所配置信息的上传域名
+  接收参数为 config 对象，返回根据 config 里所配置信息的上传域名
 
-```JavaScript
-var requestUrl = qiniu.getUpload(config)
-```
-
+  ```JavaScript
+  var requestUrl = qiniu.getUpload(config)
+  ```
+<br><br>
 ### qiniu.getHeadersForChunkUpload(token: string):object
-返回 object,包含用来获得分片上传设置的头信息,参数为 token 字符串；当分片上传时，请求需要带该函数返回的头信息
-  * **token** : 后端返回的上传验证信息
+  返回 object,包含用来获得分片上传设置的头信息,参数为 token 字符串；当分片上传时，请求需要带该函数返回的头信息
+    * **token** : 后端返回的上传验证信息
 
-```JavaScript
-var headers = qiniu.getHeadersForChunkUpload(token)
-```
-
+  ```JavaScript
+  var headers = qiniu.getHeadersForChunkUpload(token)
+  ```
+<br><br>
 ### qiniu.getHeadersForMkFile(token: string): object
 
-返回 object，包含用来获得文件创建的头信息，参数为 token 字符串；当分片上传完需要把 ctx 信息传给七牛用来创建文件时，请求需要带该函数返回的头信息
+  返回 object，包含用来获得文件创建的头信息，参数为 token 字符串；当分片上传完需要把 ctx 信息传给七牛用来创建文件时，请求需要带该函数返回的头信息
 
-```JavaScript
-var headers = qiniu.getHeadersForMkFile(token)
-```
-
+  ```JavaScript
+  var headers = qiniu.getHeadersForMkFile(token)
+  ```
+<br><br>
 ### qiniu.filterParams(params: object): array
 
-返回[[k,v],...]格式的数组，k 为自定义变量 key 名，v 为自定义变量值，用来提取 putExtra.params 包含的自定义变量
+  返回[[k,v],...]格式的数组，k 为自定义变量 key 名，v 为自定义变量值，用来提取 putExtra.params 包含的自定义变量
 
-```JavaScript
-var customVarList = qiniu.filterParams(putExtra.params);
+  ```JavaScript
+  var customVarList = qiniu.filterParams(putExtra.params);
 
- for (var i = 0; i < customVarList.length; i++) {
-   var k = customVarList[i];
-   multipart_params_obj[k[0]] = k[1];
- }
-```
-
+  for (var i = 0; i < customVarList.length; i++) {
+    var k = customVarList[i];
+    multipart_params_obj[k[0]] = k[1];
+  }
+  ```
+<br><br>
 ### qiniu.watermark(options: object, key: string, domain: string): string（水印）
   返回添加水印后的图片地址
   * **key** : 文件资源名
@@ -273,6 +286,7 @@ var customVarList = qiniu.filterParams(putExtra.params);
   ```
 
   options包含的具体水印参数解释见[水印（watermark）](https://developer.qiniu.com/dora/api/image-watermarking-processing-watermark)
+<br><br>
 
 ### qiniu.imageView2(options: object, key: string, domain: string): string (缩略)
   返回处理后的图片url
@@ -287,6 +301,7 @@ var customVarList = qiniu.filterParams(putExtra.params);
   ```
 
   options包含的具体缩略参数解释见[图片基本处理（imageView2）](https://developer.qiniu.com/dora/api/basic-processing-images-imageview2)
+<br><br>
 
 ### qiniu.imageMogr2(options: object, key: string, domain: string): string (图像高级处理)
   返回处理后的图片url
@@ -305,6 +320,7 @@ var customVarList = qiniu.filterParams(putExtra.params);
   ```
 
   options包含的具体高级图像处理参数解释见[图像高级处理（imageMogr2）](https://developer.qiniu.com/dora/api/the-advanced-treatment-of-images-imagemogr2)
+<br><br>
 
 ### qiniu.imageInfo(key: string, domain: string): Promise
 
@@ -313,6 +329,7 @@ var customVarList = qiniu.filterParams(putExtra.params);
   ```
 
   具体 imageInfo 解释见[图片基本信息（imageInfo）](https://developer.qiniu.com/dora/api/pictures-basic-information-imageinfo)
+<br><br>
 
 ### qiniu.exif(key: string, domain: string): Promise
 
@@ -321,6 +338,8 @@ var customVarList = qiniu.filterParams(putExtra.params);
   ```
 
   具体 exif 解释见[图片 EXIF 信息（exif）](https://developer.qiniu.com/dora/api/photo-exif-information-exif)
+<br>
+<br>
 
 ### qiniu.pipeline(fopArr:array, key: string, domain: string): string
 
