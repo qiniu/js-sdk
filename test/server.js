@@ -1,11 +1,14 @@
 var qiniu = require("qiniu");
 var express = require("express");
 var util = require("util");
-var config = require("./config.js");
+var path = require("path")
 var request = require("request");
 var app = express();
 app.use(express.static(__dirname + "/"));
 var multiparty = require("multiparty");
+
+var fs=require('fs');
+var config=JSON.parse(fs.readFileSync(path.resolve(__dirname,"config.json")));
 
 var mac = new qiniu.auth.digest.Mac(config.AccessKey, config.SecretKey);
 var config2 = new qiniu.conf.Config();
@@ -18,6 +21,7 @@ var options = {
   returnBody:
     '{"key":"$(key)","hash":"$(etag)","fsize":$(fsize),"bucket":"$(bucket)","name":"$(x:name)"}'
 };
+
 var putPolicy = new qiniu.rs.PutPolicy(options);
 var bucketManager = new qiniu.rs.BucketManager(mac, null);
 

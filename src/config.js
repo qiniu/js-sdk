@@ -16,6 +16,7 @@ export let zoneUphostMap = {
     cdnUphost: "upload-na0.qiniup.com"
   }
 };
+
 export let zones = {
   z0: "z0",
   z1: "z1",

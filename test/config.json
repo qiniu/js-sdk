@@ -1,8 +1,8 @@
 {
-  "AccessKey": "4TUDv7mcubtP5yWqzrZiI0YEVLSLEu3NlVvCxT-D", // https://portal.qiniu.com/user/key
+  "AccessKey": "4TUDv7mcubtP5yWqzrZiI0YEVLSLEu3NlVvCxT-D",
   "SecretKey": "ZWcbBtZIHxrlkcTAIAMg3wwGq9s4ItUPdnVqCOr2",
   "Bucket": "kindom",
   "Port": 9000,
   "UptokenUrl": "uptoken",
-  "Domain": "http://otxza7yo2.bkt.clouddn.com/" // bucket domain eg:http://qiniu-plupload.qiniudn.com/
+  "Domain": "http://otxza7yo2.bkt.clouddn.com/" 
 }

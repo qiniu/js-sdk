@@ -1,4 +1,4 @@
-# qiniu-JavaScript-SDK
+# Qiniu-JavaScript-SDK
 
 基于七牛 API 开发的前端 JavaScript SDK
 
