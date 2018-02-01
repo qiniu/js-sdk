@@ -194,45 +194,46 @@ export class UploadManager {
     );
   }
 
-  initChunksProgress() {
-    this.loaded.chunks = this.chunks.map(_ => 0);
-    this.notifyProgress();
-  }
-
   updateDirectProgress(loaded, total) {
     this.onData(
       {total: this.getProgressInfoItem(loaded, total)}
     )
   }
 
+  initChunksProgress() {
+    this.loaded.chunks = this.chunks.map(_ => 0);
+    this.notifyResumeProgress();
+  }
+
   updateChunkProgress(loaded, index) {
     this.loaded.chunks[index] = loaded;
-    this.notifyProgress();
+    this.notifyResumeProgress();
   }
 
   updateMkFileProgress(progress) {
     this.loaded.mkFileProgress = progress;
-    this.notifyProgress();
+    this.notifyResumeProgress();
   }
 
-  notifyProgress() {
-    this.onData(this.getProgressInfo());
-  }
-
-  getProgressInfo() {
-    return {
-      total: this.getProgressInfoItem(sum(this.loaded.chunks) + this.loaded.mkFileProgress, this.file.size + 1),
-      chunks: this.chunks.map((chunk, index) => {
-        return this.getProgressInfoItem(this.loaded.chunks[index], chunk.size);
-      })
-    };
+  notifyResumeProgress() {
+    this.onData(
+      {
+        total: this.getProgressInfoItem(
+          sum(this.loaded.chunks) + this.loaded.mkFileProgress, 
+          this.file.size + 1
+        ),
+        chunks: this.chunks.map((chunk, index) => {
+          return this.getProgressInfoItem(this.loaded.chunks[index], chunk.size);
+        })
+      }
+    );
   }
 
   getProgressInfoItem(loaded, size) {
     return {
       loaded: loaded,
       size: size,
-      percent: loaded/size * 100
+      percent: loaded / size * 100
     };
   }
 }

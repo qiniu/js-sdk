@@ -55,7 +55,11 @@ export function setLocalFileInfo(name, md5, info) {
   try {
     localStorage.setItem(createLocalKey(name, md5), JSON.stringify(info));
   } catch (err) {
-    console.warn("setLocalFileInfo failed");
+    if(window.console){
+      if(window.console.warn){
+        console.warn("setLocalFileInfo failed");
+      }
+    }
   }
 }
 
@@ -67,7 +71,11 @@ export function removeLocalFileInfo(name, md5) {
   try {
     localStorage.removeItem(createLocalKey(name, md5));
   } catch (err) {
-    console.warn("removeLocalFileInfo failed");
+    if(window.console){
+      if(window.console.warn){
+        console.warn("removeLocalFileInfo failed");
+      }
+    }
   }
 }
 
@@ -75,7 +83,11 @@ function getLocalFileInfo(name, md5) {
   try {
     return JSON.parse(localStorage.getItem(createLocalKey(name, md5))) || [];
   } catch (err) {
-    console.warn("getLocalFileInfo failed");
+    if(window.console){
+      if(window.console.warn){
+        console.warn("getLocalFileInfo failed");
+      }
+    }
     return [];
   }
 }
@@ -117,7 +129,7 @@ export function getHeadersForMkFile(token) {
   return Object.assign({ "content-type": "text/plain" }, header);
 }
 
-export let createXHR = () => {
+export function createXHR() {
   if (window.XMLHttpRequest) {
     return new XMLHttpRequest();
   }

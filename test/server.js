@@ -35,7 +35,6 @@ app.get("/api/uptoken", function(req, res, next) {
 });
 
 app.post("/api/transfer", function(req, res) {
-  console.log("receive form.....");
   var form = new multiparty.Form();
   form.parse(req, function(err, fields, files) {
     var path = files.file[0].path;

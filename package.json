@@ -3,19 +3,18 @@
   "jsName": "qiniu",
   "version": "2.0.0",
   "private": false,
-  "description": "\"Qiniu javascript sdk for upload your files\"",
-  "main": "index.js",
+  "description": "Javascript SDK for Qiniu Resource (Cloud) Storage AP",
+  "main": "dist/qiniu.min.js",
   "scripts": {
-    "build:prod": "webpack --config webpack.prod.js",
+    "build:prod": "webpack --optimize-minimize --config webpack.prod.js",
     "build:dev": "webpack-dev-server --open --config webpack.dev.js",
-    "serve": "node demo/server.js"
+    "serve": "node test/server.js"
   },
   "repository": {
     "type": "git",
     "url": "git://github.com/qiniu/js-sdk.git"
   },
   "author": "sdk@qiniu.com",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/qiniu/js-sdk/issues"
   },
@@ -41,12 +40,10 @@
     "request": "^2.83.0",
     "uglifyjs-webpack-plugin": "^1.1.6",
     "webpack": "^3.6.0",
+    "babel-runtime": "^6.26.0",
+    "spark-md5": "^3.0.0",
     "webpack-dev-server": "^2.9.1",
     "webpack-merge": "^4.1.1"
   },
-  "dependencies": {
-    "babel-runtime": "^6.26.0",
-    "console-polyfill": "^0.3.0",
-    "spark-md5": "^3.0.0"
-  }
+  "license": "MIT"
 }

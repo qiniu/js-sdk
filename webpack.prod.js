@@ -15,7 +15,7 @@ module.exports = merge(common, {
         secure: false
       }
     },
-    host: "0.0.0.0", // Use this rather than localhost so we can access from a VM for browser testing
+    host: "0.0.0.0",
     contentBase: path.join(__dirname, "./"),
     publicPath: "/dist/",
     hot: false,
@@ -23,7 +23,13 @@ module.exports = merge(common, {
   },
   plugins: [
     new UglifyJSPlugin({
-      sourceMap: true
+      sourceMap: true,
+      uglifyOptions:{
+        output: {
+          comments: false,
+          beautify: false
+        }
+      }
     }),
     new webpack.DefinePlugin({
       "process.env.NODE_ENV": JSON.stringify("production")

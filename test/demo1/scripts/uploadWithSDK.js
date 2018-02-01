@@ -1,4 +1,4 @@
-function dealWithSDK(token, putExtra, config, domain) {
+function uploadWithSDK(token, putExtra, config, domain) {
   // 切换tab后进行一些css操作
   controlTabDisplay("sdk");
   var width;
@@ -82,18 +82,12 @@ function dealWithSDK(token, putExtra, config, domain) {
       $(board)
         .find(".control-upload")
         .on("click", function() {
-          if (board.start) {
-            if (board.start == "resume") {
-              subscription = observable.subscribe(subObject);
-              $(this).text("取消上传");
-              board.start = false;
-            } else {
-              board.start = false;
-              $(this).text("取消上传");
-              subscription = observable.subscribe(subObject);
-            }
-          } else {
-            board.start = "resume";
+          if(board.start){
+            subscription = observable.subscribe(subObject);
+            $(this).text("取消上传");
+            board.start = false;
+          }else{
+            board.start = true;
             subscription.unsubscribe();
             $(this).text("开始上传");
           }

@@ -1,4 +1,4 @@
-function dealWithOthers(token, putExtra, config, domain) {
+function uploadWithOthers(token, putExtra, config, domain) {
   controlTabDisplay("others");
   var uploadUrl = qiniu.getUploadUrl(config);
   var board = {};
@@ -294,17 +294,8 @@ function dealWithOthers(token, putExtra, config, domain) {
     }
     // 设置上传的header信息
     var headers = qiniu.getHeadersForMkFile(token)
-    var xhr = createXHR()
-    xhr.open("POST",requestUrl)
-    for(var key in headers){
-      xhr.setRequestHeader(key, headers[key])
-    }
-    xhr.onreadystatechange = function(){
-      if(xhr.readyState === 4 && xhr.status === 200){
-        var responseText = xhr.responseText;
-        uploadFinish(JSON.parse(responseText), file.name,board[id]);
-      }
-    }
-    xhr.send(ctx.join(","))
+    $.ajax({url: requestUrl, headers:headers, success: function(res){
+      uploadFinish(res, file.name,board[id]);
+    }})
   }
 }

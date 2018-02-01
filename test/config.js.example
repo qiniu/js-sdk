@@ -4,5 +4,5 @@ module.exports = {
     'Bucket': '<Your Bucket Name>',
     'Port': 19110,
     'UptokenUrl': 'uptoken',
-    'Domain': '<Your Bucket Name>' // bucket domain eg:http://qiniu-plupload.qiniudn.com/
+    'Domain': '<Your Bucket Domain>' // bucket domain eg:http://qiniu-plupload.qiniudn.com/
 };

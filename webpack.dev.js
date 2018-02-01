@@ -4,7 +4,7 @@ var webpack = require("webpack");
 var common = require("./webpack.common.js");
 var OpenBrowserPlugin = require("open-browser-webpack-plugin");
 module.exports = merge(common, {
-  //devtool: "inline-source-map",
+  plugins:[new OpenBrowserPlugin({ url: 'http://0.0.0.0:8080/test/demo1/' })],
   devServer: {
     disableHostCheck: true,
     progress: true,
@@ -15,14 +15,10 @@ module.exports = merge(common, {
         secure: false
       }
     },
-    host: "0.0.0.0", // Use this rather than localhost so we can access from a VM for browser testing
+    host: "0.0.0.0", 
     contentBase: path.join(__dirname, "./"),
     publicPath: "/dist/",
     hot: false,
     inline: false
-  },
-  plugins: [
-    // new OpenBrowserPlugin({ url: "http://0.0.0.0:8080/demo" }),
-    // new webpack.HotModuleReplacementPlugin()
-  ]
+  }
 });

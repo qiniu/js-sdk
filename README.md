@@ -4,7 +4,7 @@
 
 ## 快速导航
 
-* [示例网站](http://jssdk.demo.qiniu.io/)
+* [示例网站](http://jssdk.demo.qiniu.io/) //导航补全
 * [安装与使用](#usage)
 * [运行示例](#demo)
 * [常见问题](#faq)
@@ -12,7 +12,7 @@
 ## 概述
 
 qiniu-JavaScript-SDK （下文简称为 JS-SDK）适用于 ：IE11、Edge、Chrome、Firefox、Safari 等浏览器，基于七牛云存储官方 API 构建，其中上传功能基于 H5 File API。开发者基于 JS-SDK 可以方便的从浏览器端上传文件至七牛云存储，并对上传成功后的图片进行丰富的数据处理操作。
-JS-SDK 兼容支持 H5 File API 的浏览器，在不支持 File API 的浏览器建议用插件如 plupload，JS-SDK 提供了一些接口可以结合插件来进行上传工作。
+JS-SDK 兼容支持 H5 File API 的浏览器，在低版本浏览器下，需要额外的插件如 plupload，JS-SDK 提供了一些接口可以结合插件来进行上传工作。
 
 qiniu-JavaScript-SDK 为客户端 SDK，没有包含 token 生成实现，为了安全，token 建议通过网络从服务端获取，具体生成代码可以参考以下服务端 SDK 的文档。
 
@@ -37,7 +37,7 @@ qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 
 * 上传
   * 大于 4M 时可分块上传，小于 4M 时直传
-  * 分块上传时，可以断点续上传
+  * 分块上传时，支持断点续传
 * 数据处理（图片）
   * imageView2（缩略图）
   * imageMogr2（高级处理，包含缩放、裁剪、旋转等）
@@ -45,7 +45,6 @@ qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
   * exif （获取图片 EXIF 信息）
   * watermark （文字、图片水印）
   * pipeline （管道，可对 imageView2、imageMogr2、watermark 进行链式处理）
-
 
 <a id="usage"></a>
 
@@ -58,7 +57,7 @@ qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
   * 利用[七牛服务端 SDK ](https://developer.qiniu.com/sdk#sdk)构建后端服务
   * 利用七牛底层 API 构建服务，详见七牛[上传策略](https://developer.qiniu.com/kodo/manual/put-policy)和[上传凭证](https://developer.qiniu.com/kodo/manual/upload-token)
 
-  后端服务应提供一个 URL 地址，供 JS-SDK 初始化使用，前端通过 Ajax 请求该地址后获得 uptoken。Ajax 请求成功后，服务端应返回包含 token 信息的数据。
+  前端通过接口请求以获得 token 信息
 
 ## 安装
 
@@ -78,97 +77,109 @@ qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
   npm install qiniu-js
   ```
 
-
 ## 上传功能
 
-qiniu.upload 返回一个 observable 对象用来控制上传行为，observable 对像通过 subscribe 方法可以被 observer 所订阅，订阅同时会开始触发上传，同时返回一个 subscription 对象，该对象有一个 unsubscribe 方法取消订阅，同时终止上传行为。对于不支持sdk的浏览器可以参考demo中用插件处理和form直传的方式，demo:http://jssdk.demo.qiniu.io; 一般form提交常常会导致网页跳转，demo中form直传通过加入iframe，并结合后端sdk上传来解决网页跳转问题，实现form无刷新上传。
+qiniu.upload 返回一个 observable 对象用来控制上传行为，observable 对像通过 subscribe 方法可以被 observer 所订阅，订阅同时会开始触发上传，同时返回一个 subscription 对象，该对象有一个 unsubscribe 方法取消订阅，同时终止上传行为。对于不支持 sdk 的浏览器可以参考 demo 中用插件处理和 form 直传的方式，demo:http://jssdk.demo.qiniu.io; 一般 form 提交常常会导致网页跳转，demo 中 form 直传通过加入 iframe，并结合后端 sdk 上传来解决网页跳转问题，实现 form 无刷新上传。
+
+### Example
 
 ```JavaScript
 var qiniu = require('qiniu-js')
+// or
+import * as qiniu from 'qiniu-js'
 
 var observable = qiniu.upload(file, key, token, putExtra, config);
 
 var subscription = observable.subscribe(observer)// 上传开始
-或者
+// or
 var subscription = observable.subscribe(next,error,complete)// 这样传参形式也可以
 
 subscription.unsubscribe()// 上传取消
 ```
 
-## Options
+## API Reference Interface
 
-### config
+### qiniu.upload(file: blob, key: string, token: string, putExtra: object, config: object):observable
 
-```JavaScript
-var config = {
-  useHttpsDomain: false,
-  useCdnDomain: true,
-  zone: qiniu.zones.z2
-};
-```
-* config.useHttpsDomain: 表示是否使用https协议，为布尔值，true表示使用https
-* config.useCdnDomain: 表示是否使用cdn加速域名，为布尔值，true表示使用
-* config.zone: 选择上传域名区域，z0表示华东，z1表示华北，z2表示华南，na0表示北美
+  * **observable**: 为一个带有 subscribe 方法的类实例
 
-### putExtra
+    * observable.subscribe(observer:object):subscription
 
-```JavaScript
-var putExtra = {
-  fname: "",
-  params: {},
-  mimeType: []|| null
-};
-```
-* putExtra.fname: string，文件原文件名
-* putExtra.params: object，用来放置自定义变量
-* mimeType: null || array，用来限制上传文件类型,为null时表示不对文件类型限制；限制类型放到数组里：
-["image/png", "image/jpeg", "image/gif"]
+      * observer: observer 为一个 object，用来设置上传过程的监听函数，有三个属性 next、error、complete:
 
-### observer
+      ```JavaScript
+      var observer = {
+        next: next,// 接收上传进度信息，
+        error: error,// 接收上传错误信息
+        complete: complete// 上传完成后执行
+      };
 
-observer 用来设置上传过程的监听函数，有三个属性next、error、complete
+      var next = function(res){ //res为一个包含total字段的json,vtotal里有该上传进度信息
+        ...
+      }
+      var error = function(err){
+        ...
+      }
+      var complete = function(res){
+        ...
+      }
+      ```
 
-```JavaScript
+      * subscription: 为一个带有 unsubscribe 方法的类实例，通过调用 subscription.unsubscribe()停止当前文件上传
 
-var observer = {
-  next: next,// 接收上传进度信息，
-  error: error,// 接收上传错误信息
-  complete: complete// 上传完成后执行
-};
+  * **file**: blob 对象，上传的文件
+  * **key**: 文件资源名
+  * **token**: 上传验证信息，前端通过接口请求后端获得
+  * **config**: object
 
-var next = function(res){ //res为一个包含total字段的json,total里有该上传进度信息
-  ...
-}
-var error = function(err){
-  ...
-}
-var complete = function(res){
-  ...
-}
-```
+    ```JavaScript
+    var config = {
+      useHttpsDomain: false,
+      useCdnDomain: true,
+      zone: qiniu.zones.z2
+    };
+    ```
 
-* observer.next: 接收上传进度信息
-* observer.error: 上传过程中暂停或者发生错误触发
-* observer.complete: 上传完成后执行
+    * config.useHttpsDomain: 表示是否使用 https 协议，为布尔值，true 表示使用 https
+    * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，true 表示使用
+    * config.zone: 选择上传域名区域，z0 表示华东，z1 表示华北，z2 表示华南，na0 表示北美
 
-## interface
+  * **putExtra**:
 
-### qiniu.createMkFileUrl: 
+    ```JavaScript
+    var putExtra = {
+      fname: "",
+      params: {},
+      mimeType: []|| null
+    };
+    ```
 
-返回创建文件的url; 当分片上传时，我们需要把分片返回的ctx信息拼接后通过该url上传给七牛以创建文件。
+    * putExtra.fname: string，文件原文件名
+    * putExtra.params: object，用来放置自定义变量
+    * mimeType: null || array，用来限制上传文件类型,为 null 时表示不对文件类型限制；限制类型放到数组里：
+      ["image/png", "image/jpeg", "image/gif"]
+
+### qiniu.createMkFileUrl(url: string, size: number, key: string, putExtra: object): string
+
+返回创建文件的 url; 当分片上传时，我们需要把分片返回的 ctx 信息拼接后通过该 url 上传给七牛以创建文件。
+
+  * **url**: 上传域名，可以通过qiniu.getUploadUrl()获得
+  * **size**: 文件大小
+  * **key**: 文件资源名
+  * **putExtra**: 同上
 
 ```JavaScript
 var requestUrl = qiniu.createMkFileUrl(
-   uploadUrl, // 上传域名，可以通过qiniu.getUploadUrl()获得
-   file.size, // 文件大小
-   key, // 文件资源名
+   uploadUrl, 
+   file.size,
+   key, 
    putExtra
  );
 ```
 
-### qiniu.isChunkExpired: 
+### qiniu.isChunkExpired(time: string): boolean
 
-判断当前存储的时间是否过期，如果过期代表该分片的ctx信息不能继续使用了
+判断当前存储的时间是否过期，如果过期代表该分片的 ctx 信息不能继续使用了
 
 ```JavaScript
  if(qiniu.isChunkExpired(time)){
@@ -176,41 +187,40 @@ var requestUrl = qiniu.createMkFileUrl(
  }
 ```
 
-### qiniu.zones : 
+### qiniu.zones : object
 
-* qiniu.zones.z0: 代表华东区域
-* qiniu.zones.z1: 代表华北区域
-* qiniu.zones.z2: 代表华南区域
-* qiniu.zones.na0: 代表北美区域
+* **qiniu.zones.z0**: 代表华东区域
+* **qiniu.zones.z1**: 代表华北区域
+* **qiniu.zones.z2**: 代表华南区域
+* **qiniu.zones.na0**: 代表北美区域
 
-### qiniu.getUploadUrl: 
+### qiniu.getUploadUrl(config:object): string
 
-接收参数为config对象，返回根据config里所配置信息的上传域名
+接收参数为 config 对象，返回根据 config 里所配置信息的上传域名
 
 ```JavaScript
 var requestUrl = qiniu.getUpload(config)
 ```
 
-### qiniu.getHeadersForChunkUpload: 
-
-返回object,包含用来获得分片上传设置的头信息,参数为token字符串；当分片上传时，请求需要带该函数返回的头信息
+### qiniu.getHeadersForChunkUpload(token: string):object
+返回 object,包含用来获得分片上传设置的头信息,参数为 token 字符串；当分片上传时，请求需要带该函数返回的头信息
+  * **token** : 后端返回的上传验证信息
 
 ```JavaScript
 var headers = qiniu.getHeadersForChunkUpload(token)
 ```
 
-### qiniu.getHeadersForMkFile: 
+### qiniu.getHeadersForMkFile(token: string): object
 
-返回object，包含用来获得文件创建的头信息，参数为token字符串；当分片上传完需要把ctx信息传给七牛用来创建文件时，请求需要带该函数返回的头信息
+返回 object，包含用来获得文件创建的头信息，参数为 token 字符串；当分片上传完需要把 ctx 信息传给七牛用来创建文件时，请求需要带该函数返回的头信息
 
 ```JavaScript
 var headers = qiniu.getHeadersForMkFile(token)
 ```
 
+### qiniu.filterParams(params: object): array
 
-### qiniu.filterParams: 
-
-返回[[k,v],...]格式的数组，k为自定义变量key名，v为自定义变量值，用来提取putExtra.params包含的自定义变量
+返回[[k,v],...]格式的数组，k 为自定义变量 key 名，v 为自定义变量值，用来提取 putExtra.params 包含的自定义变量
 
 ```JavaScript
 var customVarList = qiniu.filterParams(putExtra.params);
@@ -221,10 +231,11 @@ var customVarList = qiniu.filterParams(putExtra.params);
  }
 ```
 
-## 对上传成功的图片数据处理
-
-* watermark（水印）
-
+### qiniu.watermark(options: object, key: string, domain: string): string（水印）
+  返回添加水印后的图片地址
+  * **key** : 文件资源名
+  * **domain**: 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取
+  
   ```JavaScript
   // key 为每个文件上传成功后，服务端返回的json字段，即资源的最终名字，下同
   // key 可在每个文件'FileUploaded'事件被触发时获得
@@ -236,7 +247,7 @@ var customVarList = qiniu.filterParams(putExtra.params);
        gravity: 'SouthWest',  // 水印位置，为以下参数[NorthWest、North、NorthEast、West、Center、East、SouthWest、South、SouthEast]之一
        dx: 100,  // 横轴边距，单位:像素(px)
        dy: 100   // 纵轴边距，单位:像素(px)
-   }, key);      // key 为非必需参数，下同
+   }, key,domain);      // key 为非必需参数，下同
 
   // imgLink 可以赋值给 html 的 img 元素的 src 属性，下同
 
@@ -261,10 +272,10 @@ var customVarList = qiniu.filterParams(putExtra.params);
    }, key,domain);
   ```
 
-  具体水印参数解释见[水印（watermark）](https://developer.qiniu.com/dora/api/image-watermarking-processing-watermark)
+  options包含的具体水印参数解释见[水印（watermark）](https://developer.qiniu.com/dora/api/image-watermarking-processing-watermark)
 
-* imageView2
-
+### qiniu.imageView2(options: object, key: string, domain: string): string (缩略)
+  返回处理后的图片url
   ```JavaScript
   var imgLink = qiniu.imageView2({
      mode: 3,  // 缩略模式，共6种[0-5]
@@ -275,10 +286,10 @@ var customVarList = qiniu.filterParams(putExtra.params);
    }, key, domain);
   ```
 
-  具体缩略参数解释见[图片基本处理（imageView2）](https://developer.qiniu.com/dora/api/basic-processing-images-imageview2)
+  options包含的具体缩略参数解释见[图片基本处理（imageView2）](https://developer.qiniu.com/dora/api/basic-processing-images-imageview2)
 
-* imageMogr2
-
+### qiniu.imageMogr2(options: object, key: string, domain: string): string (图像高级处理)
+  返回处理后的图片url
   ```JavaScript
   var imgLink = qiniu.imageMogr2({
      auto-orient: true,       // 布尔值，是否根据原图EXIF信息自动旋正，便于后续处理，建议放在首位。
@@ -293,9 +304,9 @@ var customVarList = qiniu.filterParams(putExtra.params);
    }, key, domain);
   ```
 
-  具体高级图像处理参数解释见[图像高级处理（imageMogr2）](https://developer.qiniu.com/dora/api/the-advanced-treatment-of-images-imagemogr2)
+  options包含的具体高级图像处理参数解释见[图像高级处理（imageMogr2）](https://developer.qiniu.com/dora/api/the-advanced-treatment-of-images-imagemogr2)
 
-* imageInfo
+### qiniu.imageInfo(key: string, domain: string): Promise
 
   ```JavaScript
   qiniu.imageInfo(key, domain).then(res => {});
@@ -303,7 +314,7 @@ var customVarList = qiniu.filterParams(putExtra.params);
 
   具体 imageInfo 解释见[图片基本信息（imageInfo）](https://developer.qiniu.com/dora/api/pictures-basic-information-imageinfo)
 
-* exif
+### qiniu.exif(key: string, domain: string): Promise
 
   ```JavaScript
   qiniu.exif(key, domain).then(res => {});
@@ -311,7 +322,7 @@ var customVarList = qiniu.filterParams(putExtra.params);
 
   具体 exif 解释见[图片 EXIF 信息（exif）](https://developer.qiniu.com/dora/api/photo-exif-information-exif)
 
-* pipeline(管道操作）
+### qiniu.pipeline(fopArr:array, key: string, domain: string): string
 
   ```JavaScript
   var fopArr = [{
@@ -377,7 +388,7 @@ var customVarList = qiniu.filterParams(putExtra.params);
 
     ```
 
-    具体管道操作解释见[管道操作](https://developer.qiniu.com/dora/manual/processing-mechanism)
+    fopArr包含的具体管道操作解释见[管道操作](https://developer.qiniu.com/dora/manual/processing-mechanism)
 
 <a id="demo"></a>
 
@@ -404,13 +415,11 @@ var customVarList = qiniu.filterParams(putExtra.params);
 
 ### 说明
 
-1. JS-SDK 依赖 uptoken，可以直接设置 `uptoken` 、通过提供 Ajax 请求地址 `uptoken_url` 或者通过提供一个能够返回 uptoken 的函数 `uptoken_func` 实现。
+1. 如果您想了解更多七牛的上传策略，建议您仔细阅读 [七牛官方文档-上传](https://developer.qiniu.com/kodo/manual/upload-types)。另外，七牛的上传策略是在后端服务指定的.
 
-2. 如果您想了解更多七牛的上传策略，建议您仔细阅读 [七牛官方文档-上传](https://developer.qiniu.com/kodo/manual/upload-types)。另外，七牛的上传策略是在后端服务指定的.
+2. 如果您想了解更多七牛的图片处理，建议您仔细阅读 [七牛官方文档-图片处理](https://developer.qiniu.com/dora/api/image-processing-api)
 
-3. 如果您想了解更多七牛的图片处理，建议您仔细阅读 [七牛官方文档-图片处理](https://developer.qiniu.com/dora/api/image-processing-api)
-
-4. JS-SDK 示例生成 uptotken 时，指定的 `Bucket Name` 为公开空间，所以可以公开访问上传成功后的资源。若您生成 uptoken 时，指定的 `Bucket Name` 为私有空间，那您还需要在服务端进行额外的处理才能访问您上传的资源。具体参见[下载凭证](https://developer.qiniu.com/kodo/manual/download-token)。JS-SDK 数据处理部分功能不适用于私有空间。
+3. JS-SDK 示例生成 uptotken 时，指定的 `Bucket Name` 为公开空间，所以可以公开访问上传成功后的资源。若您生成 uptoken 时，指定的 `Bucket Name` 为私有空间，那您还需要在服务端进行额外的处理才能访问您上传的资源。具体参见[下载凭证](https://developer.qiniu.com/kodo/manual/download-token)。JS-SDK 数据处理部分功能不适用于私有空间。
 
 <a id="faq"></a>
 
@@ -418,7 +427,7 @@ var customVarList = qiniu.filterParams(putExtra.params);
 
 **1. 关于上传文件命名问题，可以参考：**
 
-1. 上传的 scope 为 bucket 的形式，上传后文件资源名以设置的key为主，如果key为null或者undefined，则文件资源名会以hash值作为资源名。
+1. 上传的 scope 为 bucket 的形式，上传后文件资源名以设置的 key 为主，如果 key 为 null 或者 undefined，则文件资源名会以 hash 值作为资源名。
 2. 上传的 scope 为 bucket:key 的形式，上传文件本地的名字需要和 scope 中的 key 是一致的，不然会报错 key doesn‘t match with scope。
 3. 上传的 scope 为 bucket，但是 token 中有设定 saveKey，这种形式下客户端的 key 如果设定为 null 或者 undefined，则会以 saveKey 作为文件资源名，否则仍然是以 key 值作为资源名，并且上传的本地文件名也是需要和这个 savekey 文件名一致的。
 
@@ -426,7 +435,7 @@ var customVarList = qiniu.filterParams(putExtra.params);
 
 这里又分为两种方法：
 
-1. 通过在 token 中设定 mimeLimit 字段限定上传文件的类型，示例
+1. 通过在 token 中设定 `mimeLimit` 字段限定上传文件的类型，示例
 
 “image/\*“ 表示只允许上传图片类型；
 “image/jpeg;image/png” 表示只允许上传 jpg 和 png 类型的图片；
