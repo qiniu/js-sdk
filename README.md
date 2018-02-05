@@ -96,6 +96,7 @@ qiniu.upload 返回一个 observable 对象用来控制上传行为，observable
 var qiniu = require('qiniu-js')
 // or
 import * as qiniu from 'qiniu-js'
+// or <script></script>标签引入的方式
 
 var observable = qiniu.upload(file, key, token, putExtra, config);
 
@@ -149,7 +150,7 @@ subscription.unsubscribe()// 上传取消
     ```
 
     * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，true 表示使用
-    * config.region: 选择上传域名区域，z0 表示华东，z1 表示华北，z2 表示华南，na0 表示北美
+    * config.region: 选择上传域名区域
 
   * **putExtra**:
 
@@ -246,11 +247,9 @@ subscription.unsubscribe()// 上传取消
 ### qiniu.watermark(options: object, key: string, domain: string): string（水印）
   返回添加水印后的图片地址
   * **key** : 文件资源名
-  * **domain**: 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取
+  * **domain**: 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取,前端可以通过接口请求后端得到
   
   ```JavaScript
-  // key 为每个文件上传成功后，服务端返回的json字段，即资源的最终名字，下同
-  // key 可在每个文件'FileUploaded'事件被触发时获得
 
   var imgLink = qiniu.watermark({
        mode: 1,  // 图片水印
