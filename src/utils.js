@@ -3,6 +3,7 @@ import { regionUphostMap, region } from "./config";
 import SparkMD5 from "spark-md5";
 
 // 对上传块本地存储时间检验是否过期
+// TODO: 最好用服务器时间来做判断
 export function isChunkExpired(time) {
   let expireAt = time + 3600 * 24* 1000;
   return new Date().getTime() > expireAt;
