@@ -409,7 +409,7 @@ subscription.unsubscribe()// 上传取消
 
 ### 运行示例
 
-1. 进入项目根目录，执行 `npm install`安装依赖库，然后`npm run serve && npm run build:dev`运行服务 demo1, demo2为测试es6语法的demo, 进入demo2目录，执行 `npm install`，然后`npm start`运行demo2，demo1和demo2都共用一个server服务
+1. 进入项目根目录，执行 `npm install`安装依赖库，然后执行`npm run serve && npm run build:dev`运行服务 demo1,或者直接make all 运行demo1; demo2为测试es6语法的demo, 进入demo2目录，执行 `npm install`，然后`npm start`运行demo2，demo1和demo2都共用一个server服务
 2. 进入 `demo` 目录，按照目录下的 `config.js.example` 示例，创建 `config.js` 文件，其中，`Access Key` 和 `Secret Key` 按如下方式获取
 
    * [开通七牛开发者帐号](https://portal.qiniu.com/signup)
