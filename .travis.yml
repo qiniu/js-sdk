@@ -7,7 +7,7 @@ cache:
 install:
 - npm install
 script:
-- make build
+- npm run dev
 deploy:
   provider: npm
   email: sdk@qiniu.com

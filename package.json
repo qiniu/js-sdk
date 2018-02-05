@@ -7,7 +7,7 @@
   "main": "dist/qiniu.min.js",
   "scripts": {
     "build:prod": "webpack --optimize-minimize --config webpack.prod.js",
-    "build:dev": "webpack-dev-server --open --config webpack.dev.js",
+    "dev": "webpack-dev-server --open --config webpack.dev.js",
     "serve": "node test/server.js"
   },
   "repository": {
