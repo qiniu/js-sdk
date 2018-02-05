@@ -127,6 +127,10 @@ export class UploadManager {
           removeLocalFileInfo(this.file.name, md5);
         },
         err => {
+          // ctx错误或者过期情况下清除本地存储数据
+          if(err.message.indexOf("701") > -1){
+            removeLocalFileInfo(this.file.name, md5);
+          }
           setLocalFileInfo(this.file.name, md5, this.ctxList);
         }
       );
