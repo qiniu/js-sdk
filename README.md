@@ -2,6 +2,8 @@
 
 基于七牛 API 开发的前端 JavaScript SDK
 
+## 如果你想看老版本的 Qiniu-Javascript-SDK，请点击[这里](https://github.com/qiniu/js-sdk/tree/1.x)
+
 ## 快速导航
 
 * [示例网站](http://jssdk.demo.qiniu.io/)
@@ -12,6 +14,7 @@
 * [运行示例](#demo)
 * [说明](#note)
 * [常见问题](#faq)
+
 
 ## 概述
 
