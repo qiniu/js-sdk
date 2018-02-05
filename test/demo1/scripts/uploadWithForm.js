@@ -12,6 +12,18 @@ function uploadWithForm(token, putExtra, config) {
     var key = this.files[0].name;
     // 添加上传dom面板
     var board = addUploadBoard(this.files[0], config, key, "3");
+    window.showRes = function(res){
+      $(board)
+      .find(".control-container")
+      .html(
+        "<p><strong>Hash：</strong>" +
+          res.hash +
+          "</p>" +
+          "<p><strong>Bucket：</strong>" +
+          res.bucket +
+          "</p>"
+      );
+    }
     $(board)
       .find("#totalBar")
       .addClass("hide");
@@ -27,25 +39,6 @@ function uploadWithForm(token, putExtra, config) {
         $(this).text("上传中...");
         $(this).attr("disabled", "disabled");
         $(this).css("backgroundColor", "#aaaaaa");
-        iframe.onload = function(e) {
-          var doc = iframe.contentWindow.document;
-          var html = $(doc)
-            .find("pre")
-            .text();
-          if (html != "") {
-            var json = JSON.parse(html);
-            $(board)
-              .find(".control-container")
-              .html(
-                "<p><strong>Hash：</strong>" +
-                  json.hash +
-                  "</p>" +
-                  "<p><strong>Bucket：</strong>" +
-                  json.bucket +
-                  "</p>"
-              );
-          }
-        };
       });
   });
 }
@@ -71,3 +64,4 @@ function disableButtonOfSelect() {
     .find("button")
     .css("backgroundColor", "#aaaaaa");
 }
+

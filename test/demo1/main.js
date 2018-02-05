@@ -3,7 +3,6 @@
     var token = res.uptoken;
     var domain = res.domain;
     var config = {
-      useHttpsDomain: false,
       useCdnDomain: true,
       zone: qiniu.zones.z2
     };

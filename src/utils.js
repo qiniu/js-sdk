@@ -55,10 +55,8 @@ export function setLocalFileInfo(name, md5, info) {
   try {
     localStorage.setItem(createLocalKey(name, md5), JSON.stringify(info));
   } catch (err) {
-    if(window.console){
-      if(window.console.warn){
-        console.warn("setLocalFileInfo failed");
-      }
+    if(window.console && window.console.warn){
+      console.warn("setLocalFileInfo failed");
     }
   }
 }
@@ -71,10 +69,8 @@ export function removeLocalFileInfo(name, md5) {
   try {
     localStorage.removeItem(createLocalKey(name, md5));
   } catch (err) {
-    if(window.console){
-      if(window.console.warn){
-        console.warn("removeLocalFileInfo failed");
-      }
+    if(window.console && window.console.warn){
+      console.warn("removeLocalFileInfo failed");
     }
   }
 }
@@ -83,10 +79,8 @@ function getLocalFileInfo(name, md5) {
   try {
     return JSON.parse(localStorage.getItem(createLocalKey(name, md5))) || [];
   } catch (err) {
-    if(window.console){
-      if(window.console.warn){
-        console.warn("getLocalFileInfo failed");
-      }
+    if(window.console && window.console.warn){
+      console.warn("getLocalFileInfo failed");
     }
     return [];
   }
@@ -95,7 +89,7 @@ function getLocalFileInfo(name, md5) {
 // 构造file上传url
 export function createMkFileUrl(url, size, key, putExtra) {
   let requestUrl = url + "/mkfile/" + size;
-  if (key !== null && key !== undefined) {
+  if (key != null) {
     requestUrl += "/key/" + urlSafeBase64Encode(key);
   }
   if (putExtra.mimeType) {
@@ -197,7 +191,7 @@ export function request(url, options) {
 // 构造区域上传url
 export function getUploadUrl(config) {
   let upHosts = zoneUphostMap[config.zone] || zoneUphostMap[Zones.z0];
-  let protocol = config.useHttpsDomain ? "https" : "http";
+  let protocol = window.location.protocol === 'https:' ?  "https" : "http";
   let host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost;
   return `${protocol}://${host}`;
 }

@@ -1,4 +1,4 @@
-import * as qiniu from './dist/qiniu.min.js'
+import * as qiniu from 'qiniu-js'
 
 $.ajax({url:"/api/uptoken",success: (res)=> initFileInput(res)})
 

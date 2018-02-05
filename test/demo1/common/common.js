@@ -79,10 +79,10 @@ function imageControl(domain) {
   $(".modal-body")
     .find(".buttonList a")
     .on("click", function() {
-      var img = $(".modal-body").find(".display img");
-      var key = img.data("key");
-      var oldUrl = img.attr("src");
-      var originHeight = img.data("h");
+      var img = document.getElementById("imgContainer").getElementsByTagName("img")[0]
+      var oldUrl = img.src;
+      var key = img.key;
+      var originHeight = img.h;
       var fopArr = [];
       var rotate = getRotate(oldUrl);
       if (!$(this).hasClass("no-disable-click")) {
@@ -173,10 +173,10 @@ function imageControl(domain) {
       var newUrl = qiniu.pipeline(fopArr, key, domain);
 
       var newImg = new Image();
-      img.attr("src", "images/loading.gif");
+      img.src = "images/loading.gif"
       newImg.onload = function() {
-        img.attr("src", newUrl);
-        img.parent("a").attr("href", newUrl);
+        img.src = newUrl
+        document.getElementById("imgContainer").href = newUrl
       };
       newImg.src = newUrl;
       return false;
@@ -185,8 +185,9 @@ function imageControl(domain) {
 
 function imageDeal(board, key, domain) {
   var fopArr = [];
-  var img = $(".modal-body").find(".display img");
-  $(img).data("key", key);
+  //var img = $(".modal-body").find(".display img");
+  var img = document.getElementById("imgContainer").getElementsByTagName("img")[0];
+  img.key = key
   fopArr.push({
     fop: "watermark",
     mode: 1,
@@ -215,11 +216,11 @@ function imageDeal(board, key, domain) {
         '<a data-toggle="modal" data-target="#myModal">查看处理效果</a>'
     );
   var newImg = new Image();
-  img.attr("src", "images/loading.gif");
+  img.src = "images/loading.gif"
   newImg.onload = function() {
-    img.attr("src", newUrl);
-    img.data("h", 450);
-    img.parent("a").attr("href", newUrl);
+    img.src = newUrl
+    img.h = 450
+    document.getElementById("imgContainer").href = newUrl
   };
   newImg.src = newUrl;
 }

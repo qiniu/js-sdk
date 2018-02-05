@@ -31,7 +31,7 @@ qiniu-JavaScript-SDK 为客户端 SDK，没有包含 token 生成实现，为了
 * [C/C++](https://developer.qiniu.com/kodo/sdk/cpp)
 * [Objective-C](https://developer.qiniu.com/kodo/sdk/objc)
 
-qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js 服务器端 SDK ](https://developer.qiniu.com/kodo/sdk/nodejs) 开发的。
+Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js 服务器端 SDK ](https://developer.qiniu.com/kodo/sdk/nodejs) 开发的。
 
 <!--
 本 SDK 可使开发者忽略上传底层实现细节，而更多的关注 UI 层的展现。
@@ -143,13 +143,11 @@ subscription.unsubscribe()// 上传取消
 
     ```JavaScript
     var config = {
-      useHttpsDomain: false,
       useCdnDomain: true,
       zone: qiniu.zones.z2
     };
     ```
 
-    * config.useHttpsDomain: 表示是否使用 https 协议，为布尔值，true 表示使用 https
     * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，true 表示使用
     * config.zone: 选择上传域名区域，z0 表示华东，z1 表示华北，z2 表示华南，na0 表示北美
 
@@ -174,10 +172,10 @@ subscription.unsubscribe()// 上传取消
 
   返回创建文件的 url; 当分片上传时，我们需要把分片返回的 ctx 信息拼接后通过该 url 上传给七牛以创建文件。
 
-    * **url**: 上传域名，可以通过qiniu.getUploadUrl()获得
-    * **size**: 文件大小
-    * **key**: 文件资源名
-    * **putExtra**: 同上
+  * **url**: 上传域名，可以通过qiniu.getUploadUrl()获得
+  * **size**: 文件大小
+  * **key**: 文件资源名
+  * **putExtra**: 同上
 
   ```JavaScript
   var requestUrl = qiniu.createMkFileUrl(
@@ -194,7 +192,7 @@ subscription.unsubscribe()// 上传取消
 
   ```JavaScript
   if(qiniu.isChunkExpired(time)){
-    ....
+    ...
   }
   ```
 <br><br>
@@ -307,7 +305,7 @@ subscription.unsubscribe()// 上传取消
   返回处理后的图片url
   ```JavaScript
   var imgLink = qiniu.imageMogr2({
-     auto-orient: true,       // 布尔值，是否根据原图EXIF信息自动旋正，便于后续处理，建议放在首位。
+     "auto-orient": true,       // 布尔值，是否根据原图EXIF信息自动旋正，便于后续处理，建议放在首位。
      strip: true,             // 布尔值，是否去除图片中的元信息
      thumbnail: '1000x1000'   // 缩放操作参数
      crop: '!300x400a10a10',  // 裁剪操作参数
@@ -364,7 +362,7 @@ subscription.unsubscribe()// 上传取消
       format: 'png'
   },{
       fop: 'imageMogr2',  // 指定imageMogr2操作
-      auto-orient: true,  // 此参数同imageMogr2函数的参数，下同。
+      "auto-orient": true,  // 此参数同imageMogr2函数的参数，下同。
       strip: true,
       thumbnail: '1000x1000'
       crop: '!300x400a10a10',
@@ -390,7 +388,7 @@ subscription.unsubscribe()// 上传取消
   //     fill: '#FFF000'
   // },{
   //    fop: 'imageMogr2',  // 指定imageMogr2操作
-  //    auto-orient: true,  // 此参数同imageMogr2函数的参数，下同。
+  //    "auto-orient": true,  // 此参数同imageMogr2函数的参数，下同。
   //    strip: true,
   //    thumbnail: '1000x1000'
   //    crop: '!300x400a10a10',
@@ -400,20 +398,17 @@ subscription.unsubscribe()// 上传取消
   //    format: 'png',
   //    blur:'3x5'
   // }];
+
+  var imgLink = qiniu.pipeline(fopArr, key, domain));
   ```
 
-
-    var imgLink = qiniu.pipeline(fopArr, key, domain));
-
-    ```
-
-    fopArr包含的具体管道操作解释见[管道操作](https://developer.qiniu.com/dora/manual/processing-mechanism)
+  fopArr包含的具体管道操作解释见[管道操作](https://developer.qiniu.com/dora/manual/processing-mechanism)
 
 <a id="demo"></a>
 
 ### 运行示例
 
-1. 进入项目根目录，执行 `npm install`安装依赖库，然后`npm run serve && npm run build:dev`运行服务 demo
+1. 进入项目根目录，执行 `npm install`安装依赖库，然后`npm run serve && npm run build:dev`运行服务 demo1, demo2为测试es6语法的demo, 进入demo2目录，执行 `npm install`，然后`npm start`运行demo2，demo1和demo2都共用一个server服务
 2. 进入 `demo` 目录，按照目录下的 `config.js.example` 示例，创建 `config.js` 文件，其中，`Access Key` 和 `Secret Key` 按如下方式获取
 
    * [开通七牛开发者帐号](https://portal.qiniu.com/signup)
@@ -455,11 +450,11 @@ subscription.unsubscribe()// 上传取消
 这里又分为两种方法：
 
 1. 通过在 token 中设定 `mimeLimit` 字段限定上传文件的类型，示例
-
-“image/\*“ 表示只允许上传图片类型；
-“image/jpeg;image/png” 表示只允许上传 jpg 和 png 类型的图片；
-“!application/json;text/plain” 表示禁止上传 json 文本和纯文本。（注意最前面的感叹号）
-
+ ```JavaScript
+"image/\*" 表示只允许上传图片类型；
+"image/jpeg;image/png" 表示只允许上传 jpg 和 png 类型的图片；
+"!application/json;text/plain" 表示禁止上传 json 文本和纯文本。（注意最前面的感叹号）
+```
 2. 通过 putExtra 的 mimeType 参数直接在 JS 前端限定
 
 ### 贡献代码

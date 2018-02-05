@@ -54,7 +54,7 @@ app.post("/api/transfer", function(req, res) {
         throw respErr;
       }
       if (respInfo.statusCode == 200) {
-        res.json(respBody);
+        res.send('<script>window.parent.showRes('+JSON.stringify(respBody)+')</script>');
       } else {
         console.log(respInfo.statusCode);
         console.log(respBody);

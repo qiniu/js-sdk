@@ -29,14 +29,14 @@ class Observer {
   }
   error(err) {
     if (!this.isStopped && this._onError) {
-      this._onError(err);
       this.isStopped = true;
+      this._onError(err);
     }
   }
   complete(res) {
     if (!this.isStopped && this._onCompleted) {
-      this._onCompleted(res);
       this.isStopped = true;
+      this._onCompleted(res);
     }
   }
 }

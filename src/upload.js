@@ -22,7 +22,6 @@ export class UploadManager {
   constructor(options, handlers) {
     this.config = Object.assign(
       {
-        useHttpsDomain: false,
         useCdnDomain: true,
         zone: null
       },
@@ -64,10 +63,10 @@ export class UploadManager {
 
     let upload =
       this.file.size > BLOCK_SIZE ? this.resumeUpload() : this.directUpload();
-    upload.then(res => this.onComplete(res)).catch(err => {
+    upload.then(res => this.onComplete(res), err => {
       this.onError(err);
       this.stop();
-    });
+    })
 
     return upload;
   }
@@ -82,7 +81,7 @@ export class UploadManager {
     let formData = new FormData();
     formData.append("file", this.file);
     formData.append("token", this.token);
-    if (this.key !== null && this.key !== undefined) {
+    if (this.key != null) {
       formData.append("key", this.key);
     }
     formData.append("fname", this.putExtra.fname);

@@ -14,6 +14,10 @@ export let zoneUphostMap = {
   na0: {
     srcUphost: "up-na0.qiniup.com",
     cdnUphost: "upload-na0.qiniup.com"
+  },
+  as0: {
+    srcUphost: "up-as0.qiniup.com",
+    cdnUphost: "upload-as0.qiniup.com"
   }
 };
 
@@ -21,5 +25,6 @@ export let zones = {
   z0: "z0",
   z1: "z1",
   z2: "z2",
-  na0: "na0"
+  na0: "na0",
+  as0: "as0"
 };

@@ -6,6 +6,10 @@ install :
 build:
 	npm run build:prod
 
+serve:
+	npm run serve
+
 dev: 
-	npm run server
 	npm run build:dev
+	
+	
