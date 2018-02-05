@@ -429,7 +429,7 @@ subscription.unsubscribe() // 上传取消
 
 这里又分为两种方法：
 
-1. 通过在 `token` 中设定 `mimeLimit` 字段限定上传文件的类型，该设定是在后端sdk设置，请查看相应的sdk文档，示例
+1. 通过在 `token` 中设定 `mimeLimit` 字段限定上传文件的类型，该设定是在后端 sdk 设置，请查看相应的 sdk 文档，示例
  ```JavaScript
 "image/\*": 表示只允许上传图片类型；
 "image/jpeg;image/png": 表示只允许上传 jpg 和 png 类型的图片；
