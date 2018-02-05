@@ -256,7 +256,7 @@ function uploadWithOthers(token, putExtra, config, domain) {
       var clearStatus = false
       for (var i = 0; i < localFileInfo.length; i++) {
           indexCount++
-        if (qiniu.isChunkExpired(localFileInfo[i].time)) {
+        if (isExpired(localFileInfo[i].time)) {
           clearStatus = true
           localStorage.removeItem(file.name);
           break;
@@ -297,5 +297,10 @@ function uploadWithOthers(token, putExtra, config, domain) {
     $.ajax({url: requestUrl, headers:headers, success: function(res){
       uploadFinish(res, file.name,board[id]);
     }})
+  }
+
+  function isExpired(time){
+    let expireAt = time + 3600 * 24* 1000;
+    return new Date().getTime() > expireAt;
   }
 }
