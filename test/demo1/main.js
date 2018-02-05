@@ -4,7 +4,7 @@
     var domain = res.domain;
     var config = {
       useCdnDomain: true,
-      zone: qiniu.zones.z2
+      region: qiniu.region.z2
     };
     var putExtra = {
       fname: "",

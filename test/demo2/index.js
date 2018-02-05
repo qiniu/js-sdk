@@ -7,9 +7,8 @@ let initFileInput = (res) =>{
   let token = res.uptoken;
 
   let config = {
-    useHttpsDomain: false,
     useCdnDomain: true,
-    zone: qiniu.zones.z2
+    region: qiniu.region.z2
   };
   let putExtra = {
     fname: "",

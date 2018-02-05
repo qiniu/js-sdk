@@ -23,7 +23,7 @@ export class UploadManager {
     this.config = Object.assign(
       {
         useCdnDomain: true,
-        zone: null
+        region: null
       },
       options.config
     );

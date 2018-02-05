@@ -144,12 +144,12 @@ subscription.unsubscribe()// 上传取消
     ```JavaScript
     var config = {
       useCdnDomain: true,
-      zone: qiniu.zones.z2
+      region: qiniu.region.z2
     };
     ```
 
     * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，true 表示使用
-    * config.zone: 选择上传域名区域，z0 表示华东，z1 表示华北，z2 表示华南，na0 表示北美
+    * config.region: 选择上传域名区域，z0 表示华东，z1 表示华北，z2 表示华南，na0 表示北美
 
   * **putExtra**:
 
@@ -196,12 +196,12 @@ subscription.unsubscribe()// 上传取消
   }
   ```
 <br><br>
-### qiniu.zones: object
+### qiniu.region: object
 
-  * **qiniu.zones.z0**: 代表华东区域
-  * **qiniu.zones.z1**: 代表华北区域
-  * **qiniu.zones.z2**: 代表华南区域
-  * **qiniu.zones.na0**: 代表北美区域
+  * **qiniu.region.z0**: 代表华东区域
+  * **qiniu.region.z1**: 代表华北区域
+  * **qiniu.region.z2**: 代表华南区域
+  * **qiniu.region.na0**: 代表北美区域
 <br>
 <br>
 

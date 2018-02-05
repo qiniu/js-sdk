@@ -1,5 +1,5 @@
 import { urlSafeBase64Encode } from "./base64";
-import { zoneUphostMap, zones } from "./config";
+import { regionUphostMap, region } from "./config";
 import SparkMD5 from "spark-md5";
 
 // 对上传块本地存储时间检验是否过期
@@ -190,7 +190,7 @@ export function request(url, options) {
 
 // 构造区域上传url
 export function getUploadUrl(config) {
-  let upHosts = zoneUphostMap[config.zone] || zoneUphostMap[Zones.z0];
+  let upHosts = regionUphostMap[config.region] || regionUphostMap[region.z0];
   let protocol = window.location.protocol === 'https:' ?  "https" : "http";
   let host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost;
   return `${protocol}://${host}`;

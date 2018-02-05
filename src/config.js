@@ -1,4 +1,4 @@
-export let zoneUphostMap = {
+export let regionUphostMap = {
   z0: {
     srcUphost: "up.qiniup.com",
     cdnUphost: "upload.qiniup.com"
@@ -21,7 +21,7 @@ export let zoneUphostMap = {
   }
 };
 
-export let zones = {
+export let region = {
   z0: "z0",
   z1: "z1",
   z2: "z2",
