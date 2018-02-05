@@ -1,7 +1,7 @@
 function uploadWithSDK(token, putExtra, config, domain) {
   // 切换tab后进行一些css操作
   controlTabDisplay("sdk");
-  $("#select2").change(function() {
+  $("#select2").unbind("change").bind("change",function(){
     var file = this.files[0];
     var observable;
     if (file) {
@@ -86,5 +86,5 @@ function uploadWithSDK(token, putExtra, config, domain) {
           }
         });
     }
-  });
+  })
 }

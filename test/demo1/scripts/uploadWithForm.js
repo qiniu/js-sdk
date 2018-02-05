@@ -6,7 +6,7 @@ function uploadWithForm(token, putExtra, config) {
   document.getElementsByName("token")[0].value = token;
   document.getElementsByName("url")[0].value = uploadUrl;
   // 当选择文件后执行的操作
-  $("#select3").change(function() {
+  $("#select3").unbind("change").bind("change",function(){
     var iframe = createIframe();
     disableButtonOfSelect();
     var key = this.files[0].name;
@@ -40,7 +40,7 @@ function uploadWithForm(token, putExtra, config) {
         $(this).attr("disabled", "disabled");
         $(this).css("backgroundColor", "#aaaaaa");
       });
-  });
+  })
 }
 
 function createIframe() {

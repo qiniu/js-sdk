@@ -1,7 +1,6 @@
 import { region } from "./config";
 import {
   createMkFileUrl,
-  isChunkExpired,
   getUploadUrl,
   getHeadersForMkFile,
   getHeadersForChunkUpload,
@@ -35,7 +34,6 @@ export {
   upload,
   region,
   createMkFileUrl,
-  isChunkExpired,
   getHeadersForChunkUpload,
   getHeadersForMkFile,
   filterParams,

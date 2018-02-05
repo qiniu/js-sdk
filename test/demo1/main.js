@@ -1,4 +1,3 @@
-  $("#box").addClass("hide");
   $.ajax({url: "/api/uptoken", success: function(res){
     var token = res.uptoken;
     var domain = res.domain;

@@ -120,13 +120,13 @@ subscription.unsubscribe() // 上传取消
 
         ```JavaScript
         var observer = {
-          next(){
+          next(res){
             // ...
-          }, // 接收上传进度信息
-          error(){
+          }, // 接收上传进度信息，res为响应信息，是一个带有total字段的object，提供上传进度信息
+          error(err){
             // ...
           }, // 接收上传错误信息
-          complete(){
+          complete(res){
             // ...
           } // 上传完成后执行
         }
@@ -145,8 +145,8 @@ subscription.unsubscribe() // 上传取消
     };
     ```
 
-    * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，`true` 表示使用
-    * config.region: 选择上传域名区域
+    * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，`true` 表示使用，默认为 `false`
+    * config.region: 选择上传域名区域，默认为(z0)华东
 
   * **putExtra**:
 
@@ -413,7 +413,7 @@ subscription.unsubscribe() // 上传取消
 
 2. 如果您想了解更多七牛的图片处理，建议您仔细阅读 [七牛官方文档-图片处理](https://developer.qiniu.com/dora/api/image-processing-api)
 
-3. JS-SDK 示例生成 `totken` 时，指定的 `Bucket Name` 为公开空间，所以可以公开访问上传成功后的资源。若您生成 `token` 时，指定的 `Bucket Name` 为私有空间，那您还需要在服务端进行额外的处理才能访问您上传的资源。具体参见[下载凭证](https://developer.qiniu.com/kodo/manual/download-token)。JS-SDK 数据处理部分功能不适用于私有空间。
+3. JS-SDK 示例生成 `token` 时，指定的 `Bucket Name` 为公开空间，所以可以公开访问上传成功后的资源。若您生成 `token` 时，指定的 `Bucket Name` 为私有空间，那您还需要在服务端进行额外的处理才能访问您上传的资源。具体参见[下载凭证](https://developer.qiniu.com/kodo/manual/download-token)。JS-SDK 数据处理部分功能不适用于私有空间。
 
 <a id="faq"></a>
 
@@ -429,7 +429,7 @@ subscription.unsubscribe() // 上传取消
 
 这里又分为两种方法：
 
-1. 通过在 `token` 中设定 `mimeLimit` 字段限定上传文件的类型，示例
+1. 通过在 `token` 中设定 `mimeLimit` 字段限定上传文件的类型，该设定是在后端sdk设置，请查看相应的sdk文档，示例
  ```JavaScript
 "image/\*": 表示只允许上传图片类型；
 "image/jpeg;image/png": 表示只允许上传 jpg 和 png 类型的图片；
