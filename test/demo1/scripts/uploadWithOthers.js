@@ -6,8 +6,6 @@ function uploadWithOthers(token, putExtra, config, domain) {
   var resume = false;
   var chunk_size;
   var blockSize;
-  var isfirstAddBoard = true;
-  var width;
   var uploader = new plupload.Uploader({
     runtimes: "html5,flash,silverlight,html4",
     url: uploadUrl,
@@ -32,11 +30,6 @@ function uploadWithOthers(token, putExtra, config, domain) {
         // 添加上传dom面板
         board[id] = addUploadBoard(files[0], config, files[0].name, "2");
         board[id].start = true;
-        // 拿到初始宽度来为后面方便进度计算
-        if (isfirstAddBoard) {
-          width = getBoardWidth(board[id]);
-          isfirstAddBoard = false;
-        }
         // 绑定上传按钮开始事件
         $(board[id])
           .find(".control-upload")
@@ -111,7 +104,7 @@ function uploadWithOthers(token, putExtra, config, domain) {
       }
       dom_total.css(
         "width",
-        Math.floor(file.percent / 100 * width.totalWidth - 2) + "px"
+        file.percent + "%"
       );
       // 初始化已上传的chunk进度
       for (var i = 0; i < index; i++) {
@@ -119,7 +112,7 @@ function uploadWithOthers(token, putExtra, config, domain) {
           .find(".fragment-group li")
           .eq(i)
           .find("#childBarColor");
-        dom_finished.css("width", Math.floor(width.childWidth - 2) + "px");
+        dom_finished.css("width", "100%");
       }
       var headers = qiniu.getHeadersForChunkUpload(token)
       uploader.setOption({
@@ -188,7 +181,7 @@ function uploadWithOthers(token, putExtra, config, domain) {
     var percent = file.percent + "%";
     dom_total.css(
       "width",
-      Math.floor(file.percent / 100 * width.totalWidth - 2) + "px"
+      file.percent + "%"
     );
     $(board[id])
       .find(".speed")
@@ -222,7 +215,7 @@ function uploadWithOthers(token, putExtra, config, domain) {
       .find("#childBarColor");
     dom.css(
       "width",
-      Math.floor(leftSize / chunk_size * width.childWidth - 2) + "px"
+      leftSize / chunk_size *100 + "%"
     );
   }
 

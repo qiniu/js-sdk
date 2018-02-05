@@ -1,8 +1,6 @@
 function uploadWithSDK(token, putExtra, config, domain) {
   // 切换tab后进行一些css操作
   controlTabDisplay("sdk");
-  var width;
-  var isfirstAddBoard = true;
   $("#select2").change(function() {
     var file = this.files[0];
     var observable;
@@ -12,11 +10,6 @@ function uploadWithSDK(token, putExtra, config, domain) {
       var board = addUploadBoard(file, config, key, "");
       if (!board) {
         return;
-      }
-       // 判断是否是第一次增加，这里主要是获得dom上传面板的初始宽度
-       if (isfirstAddBoard) {
-        width = getBoardWidth(board);
-        isfirstAddBoard = false;
       }
       putExtra.params["x:name"] = key.split(".")[0];
       board.start = true;
@@ -58,7 +51,7 @@ function uploadWithSDK(token, putExtra, config, domain) {
             .find("#childBarColor")
             .css(
               "width",
-              Math.floor(chunks[i].percent / 100 * width.childWidth - 2) + "px"
+              chunks[i].percent + "%"
             );
         }
         $(board)
@@ -66,7 +59,7 @@ function uploadWithSDK(token, putExtra, config, domain) {
           .text("进度：" + total.percent + "% ");
         dom_total.css(
           "width",
-          Math.floor(total.percent / 100 * width.totalWidth - 2) + "px"
+          total.percent + "%"
         );
       };
 
