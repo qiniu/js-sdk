@@ -1,4 +1,4 @@
-module.exports = {
+{
     'AccessKey': '<Your Access Key>',  // https://portal.qiniu.com/user/key
     'SecretKey': '<Your Secret Key>',
     'Bucket': '<Your Bucket Name>',
