@@ -2,11 +2,10 @@
 
 基于七牛 API 开发的前端 JavaScript SDK
 
-## 如果你想看老版本的 Qiniu-Javascript-SDK，请点击[这里](https://github.com/qiniu/js-sdk/tree/1.x)
+## 如果你想看1.x版本的 Qiniu-Javascript-SDK，请点击[这里](https://github.com/qiniu/js-sdk/tree/1.x)
 
 ## 快速导航
 
-* [示例网站](http://jssdk.demo.qiniu.io/)
 * [功能简介](#summary)
 * [准备](#ready)
 * [引用](#install)
@@ -96,7 +95,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 
 ## 使用
 
-`qiniu.upload` 返回一个 `observable` 对象用来控制上传行为，`observable` 对像通过 `subscribe` 方法可以被 `observer` 所订阅，订阅同时会开始触发上传，同时返回一个 `subscription` 对象，该对象有一个 `unsubscribe` 方法取消订阅，同时终止上传行为。对于不支持 sdk 的浏览器可以参考 [ demo ](http://jssdk.demo.qiniu.io/) 中用插件处理和 form 直传的方式； 一般 form 提交常常会导致网页跳转，[ demo ](http://jssdk.demo.qiniu.io/) 中 form 直传通过加入 iframe，并结合后端 sdk 上传来解决网页跳转问题，实现 form 无刷新上传。分片上传时，JS-SDK支持断点续传功能，会把已上传片的后端返回值ctx信息存储到本地，有效期为一天，超过一天后，当继续上传该文件时会清除掉本地存储信息重新上传。
+`qiniu.upload` 返回一个 `observable` 对象用来控制上传行为，`observable` 对像通过 `subscribe` 方法可以被 `observer` 所订阅，订阅同时会开始触发上传，同时返回一个 `subscription` 对象，该对象有一个 `unsubscribe` 方法取消订阅，同时终止上传行为。对于不支持 sdk 的浏览器可以参考 demo1 中用插件处理和 form 直传的方式； 一般 form 提交常常会导致网页跳转，demo1 中 form 直传通过加入 iframe，并结合后端 sdk 上传来解决网页跳转问题，实现 form 无刷新上传。分片上传时，JS-SDK支持断点续传功能，会把已上传片的后端返回值ctx信息存储到本地，有效期为一天，超过一天后，当继续上传该文件时会清除掉本地存储信息重新上传。
 
 ### Examplea
 
@@ -125,7 +124,7 @@ subscription.unsubscribe() // 上传取消
         var observer = {
           next(res){
             // ...
-          }, // 接收上传进度信息，res为响应信息，是一个带有total字段的object，提供上传进度信息
+          },
           error(err){
             // ...
           }, // 接收上传错误信息
@@ -134,12 +133,16 @@ subscription.unsubscribe() // 上传取消
           } // 上传完成后执行
         }
         ```
+        * next: 接收上传进度信息，res 参数是一个带有 `total` 字段的 `object`，提供上传进度信息。
+        * error: 当上传错误后触发，err 参数为一个 `Error` 对象，可以通过`err.message`查看具体的错误信息
+        * complete: 接收上传完成后的后端返回信息，res 参数为上传成功后后端返回的信息
+
       * subscription: 为一个带有 `unsubscribe` 方法的类实例，通过调用 `subscription.unsubscribe()` 停止当前文件上传
 
-  * **file**: blob 对象，上传的文件
+  * **file**: `Blob` 对象，上传的文件
   * **key**: 文件资源名
   * **token**: 上传验证信息，前端通过接口请求后端获得
-  * **config**: object
+  * **config**: `object`
 
     ```JavaScript
     var config = {
@@ -161,9 +164,9 @@ subscription.unsubscribe() // 上传取消
     };
     ```
 
-    * fname: string，文件原文件名
-    * params: object，用来放置自定义变量
-    * mimeType: null || array，用来限制上传文件类型，为 null 时表示不对文件类型限制；限制类型放到数组里：
+    * fname: `string`，文件原文件名
+    * params: `object`，用来放置自定义变量
+    * mimeType: `null || array`，用来限制上传文件类型，为 `null` 时表示不对文件类型限制；限制类型放到数组里：
     `["image/png", "image/jpeg", "image/gif"]`
  
 ### qiniu.createMkFileUrl(url: string, size: number, key: string, putExtra: object): string
