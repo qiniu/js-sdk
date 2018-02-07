@@ -175,7 +175,7 @@ export function request(url, options) {
         if (responseText) {
           message = message + ` response: ${responseText}`;
         }
-        reject(new Error(message));
+        reject({code: xhr.status, message: message, isRequestError: true});
         return;
       }
       try {
