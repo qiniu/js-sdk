@@ -417,7 +417,7 @@ subscription.unsubscribe() // 上传取消
      Domain: "<Your Bucket Domain>" // Bucket 的外链默认域名，在 Bucket 的内容管理里查看，如：'http://xxx.bkt.clouddn.com/'
    }
    ```
-2. 进入项目根目录，执行 `npm install` 安装依赖库，然后打开两个终端，一个执行 `npm run serve` 跑 server， 一个执行 `npm run dev` 运行服务 demo1； demo2 为测试es6语法的 demo，进入 demo2 目录，执行 `npm install`，然后 `npm start` 运行 demo2，demo1 和 demo2 都共用一个 server。
+2. 进入项目根目录，执行 `npm install` 安装依赖库，然后打开两个终端，一个执行 `npm run serve` 跑 server， 一个执行 `npm run dev` 运行服务 demo1； demo2 为测试es6语法的 demo，进入 demo2 目录，执行 `npm install`，然后 `npm start` 运行 demo2，demo1 和 demo2 都共用一个 server 服务
 
 
 <a id="note"></a>
