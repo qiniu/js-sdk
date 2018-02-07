@@ -127,15 +127,15 @@ subscription.unsubscribe() // 上传取消
           },
           error(err){
             // ...
-          }, // 接收上传错误信息
+          }, 
           complete(res){
             // ...
-          } // 上传完成后执行
+          }
         }
         ```
-        * next: 接收上传进度信息，res 参数是一个带有 `total` 字段的 `object`，提供上传进度信息。
-        * error: 当上传错误后触发，err 参数为一个 `Error` 对象，可以通过`err.message`查看具体的错误信息
-        * complete: 接收上传完成后的后端返回信息，res 参数为上传成功后后端返回的信息
+        * next: 接收上传进度信息，res 参数是一个带有 `total` 字段的 `object`，包含`loaded`（已上传大小）、`total`（上传总量）、`percent`（当前上传进度）三个属性，提供上传进度信息。
+        * error: 当上传错误后触发，err 参数为一个 `Error` 对象，可以通过 `err.message` 查看具体的错误信息
+        * complete: 接收上传完成后的后端返回信息，res 参数为一个 `object`， 为上传成功后后端返回的信息，具体返回结构取决于后端sdk的配置。
 
       * subscription: 为一个带有 `unsubscribe` 方法的类实例，通过调用 `subscription.unsubscribe()` 停止当前文件上传
 
