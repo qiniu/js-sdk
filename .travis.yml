@@ -8,6 +8,7 @@ install:
 - npm install
 script:
 - npm run build:prod
+before_deploy: "npm run build:prod"
 deploy:
   provider: npm
   email: sdk@qiniu.com
