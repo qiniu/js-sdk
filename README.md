@@ -135,13 +135,13 @@ subscription.unsubscribe() // 上传取消
         ```
         * next: 接收上传进度信息，res 参数是一个带有 `total` 字段的 `object`，包含`loaded`、`total`、`percent`三个属性，提供上传进度信息。
           * total.loaded: `number`，已上传大小，单位为字节。
-          * total.total: `number`，本次上传的总量控制信息，单位为字节，注意这里的total跟文件大小并不一致。
+          * total.total: `number`，本次上传的总量控制信息，单位为字节，注意这里的 total 跟文件大小并不一致。
           * total.percent: `number`，当前上传进度，范围：0～100。
 
-        * error: 上传错误后触发，当不是xhr请求错误时，会把当前错误产生原因直接抛出，诸如JSON解析异常等；当产生xhr请求错误时，参数 err 为一个包含 `code`、`message`、`isRequestError` 三个属性的 `object`：
+        * error: 上传错误后触发，当不是 xhr 请求错误时，会把当前错误产生原因直接抛出，诸如 JSON 解析异常等；当产生 xhr 请求错误时，参数 err 为一个包含 `code`、`message`、`isRequestError` 三个属性的 `object`：
+          * err.isRequestError: 用于区分是否 xhr 请求错误；当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 `true`；否则为 `undefined` 。
           * err.code: `number`，请求错误状态码，只有在 `err.isRequestError` 为 true 的时候才有效，可查阅码值对应[说明](https://developer.qiniu.com/kodo/api/3928/error-responses)。
           * err.message: `string`，错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。
-          * err.isRequestError: 当 err 不是 xhr 请求错误所产生时，该参数为 `undefined`；当 xhr 请求出现错误并且后端通过HTTP状态码返回了错误信息时，该参数为 `true` 。
 
         * complete: 接收上传完成后的后端返回信息，res 参数为一个 `object`， 为上传成功后后端返回的信息，具体返回结构取决于后端sdk的配置，可参考[上传策略](https://developer.qiniu.com/kodo/manual/1206/put-policy)。
 
