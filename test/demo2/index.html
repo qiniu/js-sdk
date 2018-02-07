@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+  <meta charset="UTF-8">
+  <title>七牛云 - JavaScript SDK</title>
+  <link href="images/favicon.ico" rel="shortcut icon">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+  <nav class="navbar navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">七牛云存储 - JavaScript SDK</a>
+      </div>
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-6">
+        <ul class="nav navbar-nav">
+          <li class="active">
+            <a href="#">上传示例</a>
+          </li>
+          <li>
+            <a href="http://developer.qiniu.com/code/v6/sdk/javascript.html">SDK 文档</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="mainContainer">
+    <div class="row" style="margin-top: 20px;">
+      <ul class="tip col-md-12 text-mute">
+        <li>
+          <small>
+            JavaScript SDK 基于 h5 file api 开发，可以上传文件至七牛云存储。
+          </small>
+        </li>
+      </ul>
+    </div>
+    <div id="box">
+      <button class="select-button">选择文件</button>
+      <input class="file-input" type="file" id="select" />
+    </div>
+    <div style='overflow:hidden'><div id='totalBar' style='width:60%;margin-top:50px;'>
+      <p class='speed'></p>
+    </div>
+  </div>
+</body>
+<style>
+</style>
+<script src="http://cdn.static.runoob.com/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+<script type="text/javascript" src='/dist/boundle.js'></script>
+
+</html>

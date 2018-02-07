@@ -1,0 +1,107 @@
+body {
+  background-color: rgb(249, 249, 249);
+}
+.navbar {
+  background-color: #fff;
+}
+.mainContainer {
+  position: relative;
+  top: 52px;
+}
+.mainContainer {
+  width: 1170px;
+  margin: 0 auto;
+  padding: 15px 15px;
+}
+.mainContainer .row .tip li {
+  list-style: none;
+}
+.mainContainer .nav-box ul li a {
+  color: #777;
+}
+#box,
+#box2 {
+  margin-top: 20px;
+  height: 46px;
+}
+.fragment-group {
+  overflow: hidden;
+  padding-left: 0;
+}
+.hide {
+  visibility: hidden;
+}
+.fragment-group .fragment {
+  float: left;
+  width: 30%;
+  padding-right: 10px;
+  list-style: none;
+  margin-top: 10px;
+}
+.file-input {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 130px;
+  height: 46px;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.mainContainer .select-button {
+  position: absolute;
+  background-color: #00b7ee;
+  color: #fff;
+  font-size: 18px;
+  padding: 0 30px;
+  line-height: 44px;
+  font-weight: 100;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+}
+.speed {
+  margin-top: 15px;
+}
+.control-upload {
+  line-height: 14px;
+  margin-left: 10px;
+}
+.control-container {
+  float: left;
+  width: 20%;
+}
+#totalBar {
+  margin-bottom: 40px;
+  float: left;
+  width: 80%;
+  height: 30px;
+  border: 1px solid;
+  border-radius: 3px;
+}
+.linkWrapper img {
+  width: 100px;
+  height: 100px;
+}
+.modal-body {
+  text-align: center;
+}
+.buttonList a {
+  padding: 5px 10px;
+  background: #fff;
+  border-radius: 5px;
+  color: #000;
+  margin-left: 10px;
+  cursor: pointer;
+}
+.buttonList ul {
+  text-align: left;
+}
+.buttonList li {
+  list-style: none;
+  margin-top: 15px;
+}
+.disabled {
+  background: #ccc;
+}
+.display a {
+  display: block;
+  background: #fff;
+}

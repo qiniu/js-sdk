@@ -4,12 +4,10 @@ node_js:
 cache:
   directories:
   - node_modules
-  - bower_components
 install:
 - npm install
-- bower install
 script:
-- make build
+- npm run build:prod
 deploy:
   provider: npm
   email: sdk@qiniu.com

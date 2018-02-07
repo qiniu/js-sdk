@@ -1,818 +1,455 @@
-Qiniu-JavaScript-SDK
-============
+# Qiniu-JavaScript-SDK
 
-基于七牛 API 及 Plupload 开发的前端 JavaScript SDK
+基于七牛 API 开发的前端 JavaScript SDK
 
-### 快速导航
+## 当前版本为 2.x，查看 1.x 的文档请点击[这里](https://github.com/qiniu/js-sdk/tree/1.x)
 
-- [示例网站](http://jssdk.demo.qiniu.io/)
-- [安装与使用](#usage)
-- [运行示例](#demo)
-- [常见问题](#faq)
+## 快速导航
 
-### 概述
+* [功能简介](#summary)
+* [准备](#ready)
+* [引入](#install)
+* [使用](#usage)
+* [运行示例](#demo)
+* [说明](#note)
+* [常见问题](#faq)
 
-Qiniu-JavaScript-SDK （下文简称为 JS-SDK）适用于 IE8+、Chrome、Firefox、Safari 等浏览器，基于七牛云存储官方 API 构建，其中上传功能基于 [Plupload](http://www.plupload.com/) 插件封装。开发者基于 JS-SDK 可以方便的从浏览器端上传文件至七牛云存储，并对上传成功后的图片进行丰富的数据处理操作。
 
-不考虑兼容性的情况下，如手机端，建议直接使用 Formdata 结合七牛[表单上传](https://developer.qiniu.com/kodo/manual/form-upload)的方式上传文件。
+## 概述
 
-[ Formdata 上传 demo ](http://jssdk.demo.qiniu.io/formdata)
+Qiniu-JavaScript-SDK （下文简称为 JS-SDK）适用于 ：IE11、Edge、Chrome、Firefox、Safari 等浏览器，基于七牛云存储官方 API 构建，其中上传功能基于 H5 File API。开发者基于 JS-SDK 可以方便的从浏览器端上传文件至七牛云存储，并对上传成功后的图片进行丰富的数据处理操作。
+JS-SDK 兼容支持 H5 File API 的浏览器，在低版本浏览器下，需要额外的插件如 plupload，JS-SDK 提供了一些接口可以结合插件来进行上传工作。
 
-![ Formdata ](http://oky1vwhqm.bkt.clouddn.com/1486368013.png)
+Qiniu-JavaScript-SDK 为客户端 SDK，没有包含 `token` 生成实现，为了安全，`token` 建议通过网络从服务端获取，具体生成代码可以参考以下服务端 SDK 的文档。
 
-Qiniu-JavaScript-SDK  为客户端 SDK，没有包含 token 生成实现，为了安全，token 建议通过网络从服务端获取，具体生成代码可以参考以下服务端 SDK 的文档。
-
-- [Android](https://developer.qiniu.com/kodo/sdk/android)
-- [Java](https://developer.qiniu.com/kodo/sdk/java)
-- [PHP](https://developer.qiniu.com/kodo/sdk/php)
-- [Python](https://developer.qiniu.com/kodo/sdk/python)
-- [Ruby](https://developer.qiniu.com/kodo/sdk/ruby)
-- [Go](https://developer.qiniu.com/kodo/sdk/go)
-- [Node.js](https://developer.qiniu.com/kodo/sdk/nodejs)
-- [C#](https://developer.qiniu.com/kodo/sdk/csharp)
-- [C/C++](https://developer.qiniu.com/kodo/sdk/cpp)
-- [Objective-C](https://developer.qiniu.com/kodo/sdk/objc)
+* [Android](https://developer.qiniu.com/kodo/sdk/android)
+* [Java](https://developer.qiniu.com/kodo/sdk/java)
+* [PHP](https://developer.qiniu.com/kodo/sdk/php)
+* [Python](https://developer.qiniu.com/kodo/sdk/python)
+* [Ruby](https://developer.qiniu.com/kodo/sdk/ruby)
+* [Go](https://developer.qiniu.com/kodo/sdk/go)
+* [Node.js](https://developer.qiniu.com/kodo/sdk/nodejs)
+* [C#](https://developer.qiniu.com/kodo/sdk/csharp)
+* [C/C++](https://developer.qiniu.com/kodo/sdk/cpp)
+* [Objective-C](https://developer.qiniu.com/kodo/sdk/objc)
 
 Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js 服务器端 SDK ](https://developer.qiniu.com/kodo/sdk/nodejs) 开发的。
 
 <!--
 本 SDK 可使开发者忽略上传底层实现细节，而更多的关注 UI 层的展现。
  -->
+<a id="summary"></a>
 
-### 功能简介
+## 功能简介
 
-- 上传
-    - html5 模式大于 4M 时可分块上传，小于4M时直传
-    - 分块上传时，可以断点续上传
-    - flash、html4 模式直接上传
-    - 继承了 plupload 的功能，可筛选文件上传、拖曳上传等
-- 下载（公开资源）
-- 数据处理（图片）
-    - imageView2（缩略图）
-    - imageMogr2（高级处理，包含缩放、裁剪、旋转等）
-    - imageInfo （获取基本信息）
-    - exif （获取图片 EXIF 信息）
-    - watermark （文字、图片水印）
-    - pipeline  （管道，可对 imageView2、imageMogr2、watermark 进行链式处理）
+* 上传
+  * 大于 4M 时可分块上传，小于 4M 时直传
+  * 分块上传时，支持断点续传
+* 数据处理（图片）
+  * imageView2（缩略图）
+  * imageMogr2（高级处理，包含缩放、裁剪、旋转等）
+  * imageInfo （获取基本信息）
+  * exif （获取图片 EXIF 信息）
+  * watermark （文字、图片水印）
+  * pipeline （管道，可对 imageView2、imageMogr2、watermark 进行链式处理）
 
-### 项目构成介绍
+<a id="ready"></a>
 
-```
-├── demo             // 示例 Demo
-│   ├── images
-│   │   └── ...
-│   ├── scripts
-│   │   └── ...
-│   ├── styles
-│   │   └── ...
-│   ├── views
-│   │   └── ...
-│   ├── config.js.example
-│   └── server.js         // 示例 Demo 的服务器端程序
-├── dist              // SDK 输出目录
-│   ├── qiniu.js          // 非压缩版
-│   ├── qiniu.min.js      // 压缩版
-│   └── qiniu.min.map     // 压缩版的 source map 文件
-├── src               // SDK 源目录
-│   └── qiniu.js          // 源文件
-├── Gruntfile.js
-├── Makefile
-├── README.md
-├── bower.json
-└── package.json
-```
+## 准备
 
-<a id="usage"></a>
-### 准备
+* 在使用 JS-SDK 之前，您必须先注册一个七牛帐号，并登录控制台获取一对有效的 `AccessKey` 和 `SecretKey`，您可以阅读[ 快速入门 ](https://developer.qiniu.com/kodo/manual/console-quickstart)和[ 安全机制 ](https://developer.qiniu.com/kodo/manual/security#security) 以进一步了解如何正确使用和管理密钥 。
 
-- JS-SDK 的上传功能基于 [Plupload](http://www.plupload.com/) 插件封装的，所以需要[下载 Plupload](http://plupload.com/download)。
-    您也可以访问[ 开放静态文件 CDN ](http://staticfile.org/)，搜索 plupload，使用 CDN 加速的静态文件地址。
+* JS-SDK 依赖服务端颁发 `token`，可以通过以下二种方式实现：
 
-- 在使用 JS-SDK 之前，您必须先注册一个七牛帐号，并登录控制台获取一对有效的 AccessKey 和 SecretKey，您可以阅读[ 快速入门 ](https://developer.qiniu.com/kodo/manual/console-quickstart)和[ 安全机制 ](https://developer.qiniu.com/kodo/manual/security#security) 以进一步了解如何正确使用和管理密钥 。
+  * 利用[七牛服务端 SDK ](https://developer.qiniu.com/sdk#sdk)构建后端服务
+  * 利用七牛底层 API 构建服务，详见七牛[上传策略](https://developer.qiniu.com/kodo/manual/put-policy)和[上传凭证](https://developer.qiniu.com/kodo/manual/upload-token)
 
-- JS-SDK 依赖服务端颁发 uptoken，可以通过以下二种方式实现：
-    - 利用[七牛服务端 SDK ](https://developer.qiniu.com/sdk#sdk)构建后端服务
-    - 利用七牛底层 API 构建服务，详见七牛[上传策略](https://developer.qiniu.com/kodo/manual/put-policy)和[上传凭证](https://developer.qiniu.com/kodo/manual/upload-token)
+  前端通过接口请求以获得 `token` 信息
 
-    后端服务应提供一个 URL 地址，供 JS-SDK 初始化使用，前端通过 Ajax 请求该地址后获得 uptoken。Ajax 请求成功后，服务端应返回如下格式的 json：
+<a id="install"></a>
 
-    ```
-    {
-        "uptoken": "0MLvWPnyya1WtPnXFy9KLyGHyFPNdZceomL..."
-    }
-    ```
-
-
-### 安装
+## 引入
 
 支持以下几种安装方式
 
-- 直接使用CDN 加速的静态文件地址，访问[ 开放静态文件 CDN ](http://staticfile.org/)，搜索  qiniu
+* 直接使用 CDN 加速的静态文件地址，访问[ 开放静态文件 CDN ](http://staticfile.org/)，搜索 qiniu
 
-    ```
-    https://cdn.staticfile.org/qiniu-JS-SDK/<version>/qiniu.min.js
-    ```
+  ```
+  https://cdn.staticfile.org/qiniu-JS-SDK/<version>/qiniu.min.js
+  ```
+  通过sctipt标签引入该文件，会在全局生成名为 `qiniu` 的对象
 
-- 使用 Bower 安装
+* 使用 NPM 安装
 
-    Bower 是一个客户端技术的软件包管理器，它可用于搜索、安装和卸载如 JavaScript、HTML、CSS 之类的网络资源。如果需要更详细的关于 Bower 的使用说明，您可以访问[ Bower 官方网站](http://bower.io/)。
+  NPM 的全称是 Node Package Manager，是一个[ NodeJS ](https://nodejs.org)包管理和分发工具，已经成为了非官方的发布 Node 模块（包）的标准。如果需要更详细的关于 NPM 的使用说明，您可以访问[ NPM 官方网站](https://www.npmjs.com)，或对应的[中文网站](http://www.npmjs.com.cn/)
 
-    通过 Bower 安装会将 JS-SDK 依赖的 plupload 也一起安装在 `bower_components` 中：
+  ```
+  npm install qiniu-js
+  ```
+  ```Javascript
+  var qiniu = require('qiniu-js')
+  // or
+  import * as qiniu from 'qiniu-js'
+  ```
+<a id="usage"></a>
 
-    ```
-    bower install qiniu
-    ```
+## 使用
 
-    执行之后，JS-SDK 和 plupload 分别在以下位置
+`qiniu.upload` 返回一个 `observable` 对象用来控制上传行为，`observable` 对像通过 `subscribe` 方法可以被 `observer` 所订阅，订阅同时会开始触发上传，同时返回一个 `subscription` 对象，该对象有一个 `unsubscribe` 方法取消订阅，同时终止上传行为。对于不支持 sdk 的浏览器可以参考 demo1 中用插件处理和 form 直传的方式； 一般 form 提交常常会导致网页跳转，demo1 中 form 直传通过加入 iframe，并结合后端 sdk 上传来解决网页跳转问题，实现 form 无刷新上传。分片上传时，JS-SDK支持断点续传功能，会把已上传片的后端返回值ctx信息存储到本地，有效期为一天，超过一天后，当继续上传该文件时会清除掉本地存储信息重新上传。
 
-    ```
-    bower_components
-    ├── plupload
-    │   └── js
-    │       ├── moxie.js
-    │       ├── moxie.min.js
-    │       ├── plupload.dev.js
-    │       ├── plupload.full.min.js
-    │       └── plupload.min.js
-    └── qiniu
-        └── dist
-            ├── qiniu.js
-            ├── qiniu.min.js
-            └── qiniu.min.map
-    ```
+### Example
 
-- 使用 NPM 安装
+```JavaScript
 
-    NPM 的全称是 Node Package Manager，是一个[ NodeJS ](https://nodejs.org)包管理和分发工具，已经成为了非官方的发布 Node 模块（包）的标准。如果需要更详细的关于 NPM 的使用说明，您可以访问[ NPM 官方网站](https://www.npmjs.com)，或对应的[中文网站](http://www.npmjs.com.cn/)
+var observable = qiniu.upload(file, key, token, putExtra, config)
 
-    ```
-    npm install qiniu-js
-    ```
+var subscription = observable.subscribe(observer) // 上传开始
+// or
+var subscription = observable.subscribe(next, error, complete) // 这样传参形式也可以
 
-    执行之后，JS-SDK 在以下位置
+subscription.unsubscribe() // 上传取消
+```
 
-    ```
-    node_modules
-    └── qiniu-js
-        └── dist
-            ├── qiniu.js
-            ├── qiniu.min.js
-            └── qiniu.min.map
-    ```
+## API Reference Interface
 
-- 通过 Github 上的 qiniu/js-sdk 仓库获取
+### qiniu.upload(file: blob, key: string, token: string, putExtra: object, config: object): observable
 
-    下载最新的[ 发布版本 ](https://github.com/qiniu/js-sdk/releases)并解压 或 直接克隆仓库
+  * **observable**: 为一个带有 subscribe 方法的类实例
 
-    ```
-    git clone https://github.com/qiniu/js-sdk.git
-    ```
+    * observable.subscribe(observer: object): subscription
 
-    JS-SDK 在  `dist` 目录中
+      * observer: `observer` 为一个 `object`，用来设置上传过程的监听函数，有三个属性 `next`、`error`、`complete`:
 
-### 使用
-
-#### 上传功能
-
-1. 在页面中引入 plupload，`plupload.full.min.js`（生产环境）或 引入`plupload.dev.js`和`moxie.js`（开发调试）
-
-2. 在页面中引入 `qiniu.min.js`（生产环境）或 `qiniu.js`（开发调试）
-
-3. 初始化 uploader，**请确保在执行初始化时，页面已经引入 plupload**
-
-    ```JavaScript
-    var uploader = Qiniu.uploader({
-        disable_statistics_report: false,   // 禁止自动发送上传统计信息到七牛，默认允许发送
-        runtimes: 'html5,flash,html4',      // 上传模式,依次退化
-        browse_button: 'pickfiles',         // 上传选择的点选按钮，**必需**
-        // 在初始化时，uptoken, uptoken_url, uptoken_func 三个参数中必须有一个被设置
-        // 切如果提供了多个，其优先级为 uptoken > uptoken_url > uptoken_func
-        // 其中 uptoken 是直接提供上传凭证，uptoken_url 是提供了获取上传凭证的地址，如果需要定制获取 uptoken 的过程则可以设置 uptoken_func
-        // uptoken : '<Your upload token>', // uptoken 是上传凭证，由其他程序生成
-        // uptoken_url: '/uptoken',         // Ajax 请求 uptoken 的 Url，**强烈建议设置**（服务端提供）
-        // uptoken_func: function(file){    // 在需要获取 uptoken 时，该方法会被调用
-        //    // do something
-        //    return uptoken;
-        // },
-        get_new_uptoken: false,             // 设置上传文件的时候是否每次都重新获取新的 uptoken
-        // downtoken_url: '/downtoken',
-        // Ajax请求downToken的Url，私有空间时使用,JS-SDK 将向该地址POST文件的key和domain,服务端返回的JSON必须包含`url`字段，`url`值为该文件的下载地址
-        // unique_names: true,              // 默认 false，key 为文件名。若开启该选项，JS-SDK 会为每个文件自动生成key（文件名）
-        // save_key: true,                  // 默认 false。若在服务端生成 uptoken 的上传策略中指定了 `save_key`，则开启，SDK在前端将不对key进行任何处理
-        domain: '<Your bucket domain>',     // bucket 域名，下载资源时用到，如：'http://xxx.bkt.clouddn.com/' **必需**
-        container: 'container',             // 上传区域 DOM ID，默认是 browser_button 的父元素，
-        max_file_size: '100mb',             // 最大文件体积限制
-        flash_swf_url: 'path/of/plupload/Moxie.swf',  //引入 flash,相对路径
-        max_retries: 3,                     // 上传失败最大重试次数
-        dragdrop: true,                     // 开启可拖曳上传
-        drop_element: 'container',          // 拖曳上传区域元素的 ID，拖曳文件或文件夹后可触发上传
-        chunk_size: '4mb',                  // 分块上传时，每块的体积
-        auto_start: true,                   // 选择文件后自动上传，若关闭需要自己绑定事件触发上传,
-        //x_vars : {
-        //    自定义变量，参考http://developer.qiniu.com/docs/v6/api/overview/up/response/vars.html
-        //    'time' : function(up,file) {
-        //        var time = (new Date()).getTime();
-                  // do something with 'time'
-        //        return time;
-        //    },
-        //    'size' : function(up,file) {
-        //        var size = file.size;
-                  // do something with 'size'
-        //        return size;
-        //    }
-        //},
-        init: {
-            'FilesAdded': function(up, files) {
-                plupload.each(files, function(file) {
-                    // 文件添加进队列后,处理相关的事情
-                });
-            },
-            'BeforeUpload': function(up, file) {
-                   // 每个文件上传前,处理相关的事情
-            },
-            'UploadProgress': function(up, file) {
-                   // 每个文件上传时,处理相关的事情
-            },
-            'FileUploaded': function(up, file, info) {
-                   // 每个文件上传成功后,处理相关的事情
-                   // 其中 info.response 是文件上传成功后，服务端返回的json，形式如
-                   // {
-                   //    "hash": "Fh8xVqod2MQ1mocfI4S4KpRL6D98",
-                   //    "key": "gogopher.jpg"
-                   //  }
-                   // 参考http://developer.qiniu.com/docs/v6/api/overview/up/response/simple-response.html
-
-                   // var domain = up.getOption('domain');
-                   // var res = parseJSON(info.response);
-                   // var sourceLink = domain + res.key; 获取上传成功后的文件的Url
-            },
-            'Error': function(up, err, errTip) {
-                   //上传出错时,处理相关的事情
-            },
-            'UploadComplete': function() {
-                   //队列文件处理完毕后,处理相关的事情
-            },
-            'Key': function(up, file) {
-                // 若想在前端对每个文件的key进行个性化处理，可以配置该函数
-                // 该配置必须要在 unique_names: false , save_key: false 时才生效
-
-                var key = "";
-                // do something with key here
-                return key
-            }
+        ```JavaScript
+        var observer = {
+          next(res){
+            // ...
+          },
+          error(err){
+            // ...
+          }, 
+          complete(res){
+            // ...
+          }
         }
-    });
+        ```
+        * next: 接收上传进度信息，res 参数是一个带有 `total` 字段的 `object`，包含`loaded`、`total`、`percent`三个属性，提供上传进度信息。
+          * total.loaded: `number`，已上传大小，单位为字节。
+          * total.total: `number`，本次上传的总量控制信息，单位为字节，注意这里的 total 跟文件大小并不一致。
+          * total.percent: `number`，当前上传进度，范围：0～100。
 
-    // domain 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取
+        * error: 上传错误后触发，当不是 xhr 请求错误时，会把当前错误产生原因直接抛出，诸如 JSON 解析异常等；当产生 xhr 请求错误时，参数 err 为一个包含 `code`、`message`、`isRequestError` 三个属性的 `object`：
+          * err.isRequestError: 用于区分是否 xhr 请求错误；当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 `true`；否则为 `undefined` 。
+          * err.code: `number`，请求错误状态码，只有在 `err.isRequestError` 为 true 的时候才有效，可查阅码值对应[说明](https://developer.qiniu.com/kodo/api/3928/error-responses)。
+          * err.message: `string`，错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。
 
-    // uploader 为一个 plupload 对象，继承了所有 plupload 的方法，参考http://plupload.com/docs
+        * complete: 接收上传完成后的后端返回信息，res 参数为一个 `object`， 为上传成功后后端返回的信息，具体返回结构取决于后端sdk的配置，可参考[上传策略](https://developer.qiniu.com/kodo/manual/1206/put-policy)。
 
-    ```
+      * subscription: 为一个带有 `unsubscribe` 方法的类实例，通过调用 `subscription.unsubscribe()` 停止当前文件上传
 
-- 如果一个页面中有多个上传实例，可以如下操作
+  * **file**: `Blob` 对象，上传的文件
+  * **key**: 文件资源名
+  * **token**: 上传验证信息，前端通过接口请求后端获得
+  * **config**: `object`
 
     ```JavaScript
-    var option1 = {
-        key : val ,
-        ……
+    var config = {
+      useCdnDomain: true,
+      region: qiniu.region.z2
     };
-    var uploader = Qiniu.uploader(option1);
+    ```
 
-    var Qiniu2 = new QiniuJsSDK();
-    var option2 = {
-        key : val ,
-        ……
+    * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，`true` 表示使用，默认为 `false`
+    * config.region: 选择上传域名区域，默认为(z0)华东
+
+  * **putExtra**:
+
+    ```JavaScript
+    var putExtra = {
+      fname: "",
+      params: {},
+      mimeType: [] || null
     };
-    var uploader2 = Qiniu2.uploader(option2);
-
     ```
 
-#### 对上传成功的图片进行数据处理
+    * fname: `string`，文件原文件名
+    * params: `object`，用来放置自定义变量
+    * mimeType: `null || array`，用来限制上传文件类型，为 `null` 时表示不对文件类型限制；限制类型放到数组里：
+    `["image/png", "image/jpeg", "image/gif"]`
+ 
+### qiniu.createMkFileUrl(url: string, size: number, key: string, putExtra: object): string
 
-- watermark（水印）
+  返回创建文件的 url；当分片上传时，我们需要把分片返回的 ctx 信息拼接后通过该 url 上传给七牛以创建文件。
 
-    ```JavaScript
+  * **url**: 上传域名，可以通过qiniu.getUploadUrl()获得
+  * **size**: 文件大小
+  * **key**: 文件资源名
+  * **putExtra**: 同上
 
-    // key 为每个文件上传成功后，服务端返回的json字段，即资源的最终名字，下同
-    // key 可在每个文件'FileUploaded'事件被触发时获得
+  ```JavaScript
+  var requestUrl = qiniu.createMkFileUrl(
+    uploadUrl,
+    file.size,
+    key,
+    putExtra
+  );
+  ```
 
-    var imgLink = Qiniu.watermark({
-         mode: 1,  // 图片水印
-         image: 'http://www.b1.qiniudn.com/images/logo-2.png', // 图片水印的Url，mode = 1 时 **必需**
-         dissolve: 50,          // 透明度，取值范围1-100，非必需，下同
-         gravity: 'SouthWest',  // 水印位置，为以下参数[NorthWest、North、NorthEast、West、Center、East、SouthWest、South、SouthEast]之一
-         dx: 100,  // 横轴边距，单位:像素(px)
-         dy: 100   // 纵轴边距，单位:像素(px)
-     }, key);      // key 为非必需参数，下同
+### qiniu.region: object
 
-    // imgLink 可以赋值给 html 的 img 元素的 src 属性，下同
+  * **qiniu.region.z0**: 代表华东区域
+  * **qiniu.region.z1**: 代表华北区域
+  * **qiniu.region.z2**: 代表华南区域
+  * **qiniu.region.na0**: 代表北美区域
+  * **qiniu.region.as0**: 代表新加坡区域
 
-    // 若未指定key，可以通过以下方式获得完整的 imgLink，下同
-    // imgLink  =  '<domain>/<key>?' +  imgLink
-    // <domain> 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取
+### qiniu.getUploadUrl(config: object): string
 
-    ```
+  接收参数为 `config` 对象，返回根据 `config` 里所配置信息的上传域名
 
-    或
+  ```JavaScript
+  var requestUrl = qiniu.getUploadUrl(config)
+  ```
 
-    ```JavaScript
+### qiniu.getHeadersForChunkUpload(token: string): object
 
-    var imgLink = Qiniu.watermark({
-         mode: 2,  // 文字水印
-         text: 'hello world !', // 水印文字，mode = 2 时 **必需**
-         dissolve: 50,          // 透明度，取值范围1-100，非必需，下同
-         gravity: 'SouthWest',  // 水印位置，同上
-         fontsize: 500,         // 字体大小，单位: 缇
-         font: '黑体',           // 水印文字字体
-         dx: 100,               // 横轴边距，单位:像素(px)
-         dy: 100,               // 纵轴边距，单位:像素(px)
-         fill: '#FFF000'        // 水印文字颜色，RGB格式，可以是颜色名称
-     }, key);
+  返回 `object`，包含用来获得分片上传设置的头信息，参数为 `token` 字符串；当分片上传时，请求需要带该函数返回的头信息
+  * **token**: 后端返回的上传验证信息
 
-    ```
+  ```JavaScript
+  var headers = qiniu.getHeadersForChunkUpload(token)
+  ```
 
-    具体水印参数解释见[水印（watermark）](https://developer.qiniu.com/dora/api/image-watermarking-processing-watermark)
+### qiniu.getHeadersForMkFile(token: string): object
 
-- imageView2
+  返回 `object`，包含用来获得文件创建的头信息，参数为 `token` 字符串；当分片上传完需要把 ctx 信息传给七牛用来创建文件时，请求需要带该函数返回的头信息
 
-    ```JavaScript
+  ```JavaScript
+  var headers = qiniu.getHeadersForMkFile(token)
+  ```
 
-    var imgLink = Qiniu.imageView2({
-       mode: 3,  // 缩略模式，共6种[0-5]
-       w: 100,   // 具体含义由缩略模式决定
-       h: 100,   // 具体含义由缩略模式决定
-       q: 100,   // 新图的图像质量，取值范围：1-100
-       format: 'png'  // 新图的输出格式，取值范围：jpg，gif，png，webp等
-     }, key);
+### qiniu.filterParams(params: object): array
 
-    ```
-    具体缩略参数解释见[图片基本处理（imageView2）](https://developer.qiniu.com/dora/api/basic-processing-images-imageview2)
+  返回[[k, v],...]格式的数组，k 为自定义变量 `key` 名，v 为自定义变量值，用来提取 `putExtra.params` 包含的自定义变量
 
-- imageMogr2
+  ```JavaScript
+  var customVarList = qiniu.filterParams(putExtra.params)
 
-    ```JavaScript
+  for (var i = 0; i < customVarList.length; i++) {
+    var k = customVarList[i]
+    multipart_params_obj[k[0]] = k[1]
+  }
+  ```
 
-    var imgLink = Qiniu.imageMogr2({
-       auto-orient: true,       // 布尔值，是否根据原图EXIF信息自动旋正，便于后续处理，建议放在首位。
-       strip: true,             // 布尔值，是否去除图片中的元信息
-       thumbnail: '1000x1000'   // 缩放操作参数
-       crop: '!300x400a10a10',  // 裁剪操作参数
-       gravity: 'NorthWest',    // 裁剪锚点参数
-       quality: 40,             // 图片质量，取值范围1-100
-       rotate: 20,              // 旋转角度，取值范围1-360，缺省为不旋转。
-       format: 'png',           // 新图的输出格式，取值范围：jpg，gif，png，webp等
-       blur:'3x5'               // 高斯模糊参数
-     }, key);
+### qiniu.watermark(options: object, key: string, domain: string): string（水印）
 
-    ```
+  返回添加水印后的图片地址
+  * **key** : 文件资源名
+  * **domain**: 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取，前端可以通过接口请求后端得到
+  
+  ```JavaScript
 
-    具体高级图像处理参数解释见[图像高级处理（imageMogr2）](https://developer.qiniu.com/dora/api/the-advanced-treatment-of-images-imagemogr2)
+  var imgLink = qiniu.watermark({
+       mode: 1, // 图片水印
+       image: 'http://www.b1.qiniudn.com/images/logo-2.png', // 图片水印的Url，mode = 1 时 **必需**
+       dissolve: 50, // 透明度，取值范围1-100，非必需，下同
+       gravity: 'SouthWest', // 水印位置，为以下参数[NorthWest、North、NorthEast、West、Center、East、SouthWest、South、SouthEast]之一
+       dx: 100,  // 横轴边距，单位:像素(px)
+       dy: 100 // 纵轴边距，单位:像素(px)
+   }, key, domain) // key 为非必需参数，下同
 
-- imageInfo
+  // imgLink 可以赋值给 html 的 img 元素的 src 属性，下同
 
-    ```JavaScript
-    var imageInfoObj = Qiniu.imageInfo(key);
-    ```
-    具体 imageInfo 解释见[图片基本信息（imageInfo）](https://developer.qiniu.com/dora/api/pictures-basic-information-imageinfo)
+  // 若未指定key，可以通过以下方式获得完整的 imgLink，下同
+  // imgLink  =  '<domain>/<key>?' +  imgLink
+  // <domain> 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取
+  
+  // 或者
 
-    Ajax跨域限制，IE系列此函数只支持IE10+
+  var imgLink = qiniu.watermark({
+       mode: 2,  // 文字水印
+       text: 'hello world !', // 水印文字，mode = 2 时 **必需**
+       dissolve: 50,          // 透明度，取值范围1-100，非必需，下同
+       gravity: 'SouthWest',  // 水印位置，同上
+       fontsize: 500,         // 字体大小，单位: 缇
+       font: '黑体',           // 水印文字字体
+       dx: 100,               // 横轴边距，单位:像素(px)
+       dy: 100,               // 纵轴边距，单位:像素(px)
+       fill: '#FFF000'        // 水印文字颜色，RGB格式，可以是颜色名称
+   }, key,domain)
+  ```
 
-- exif
+  options包含的具体水印参数解释见[水印（watermark）](https://developer.qiniu.com/dora/api/image-watermarking-processing-watermark)
 
-    ```JavaScript
-    var exifOjb = Qiniu.exif(key);
-    ```
+### qiniu.imageView2(options: object, key: string, domain: string): string (缩略)
 
-    具体 exif 解释见[图片EXIF信息（exif）](https://developer.qiniu.com/dora/api/photo-exif-information-exif)
+  返回处理后的图片url
 
-    Ajax跨域限制，IE系列此函数只支持IE10+
+  ```JavaScript
+  var imgLink = qiniu.imageView2({
+     mode: 3,       // 缩略模式，共6种[0-5]
+     w: 100,        // 具体含义由缩略模式决定
+     h: 100,        // 具体含义由缩略模式决定
+     q: 100,        // 新图的图像质量，取值范围：1-100
+     format: 'png'  // 新图的输出格式，取值范围：jpg，gif，png，webp等
+   }, key, domain)
+  ```
 
-- pipeline(管道操作）
+  options包含的具体缩略参数解释见[图片基本处理（imageView2）](https://developer.qiniu.com/dora/api/basic-processing-images-imageview2)
 
-    ```JavaScript
+### qiniu.imageMogr2(options: object, key: string, domain: string): string (图像高级处理)
 
-    var fopArr = [{
-        fop: 'watermark', // 指定watermark操作
-        mode: 2,          // 此参数同watermark函数的参数，下同。
-        text: 'hello world !',
-        dissolve: 50,
-        gravity: 'SouthWest',
-        fontsize: 500,
-        font : '黑体',
-        dx: 100,
-        dy: 100,
-        fill: '#FFF000'
-    },{
-        fop: 'imageView2', // 指定imageView2操作
-        mode: 3,           // 此参数同imageView2函数的参数，下同
-        w: 100,
-        h: 100,
-        q: 100,
-        format: 'png'
-    },{
-        fop: 'imageMogr2',  // 指定imageMogr2操作
-        auto-orient: true,  // 此参数同imageMogr2函数的参数，下同。
-        strip: true,
-        thumbnail: '1000x1000'
-        crop: '!300x400a10a10',
-        gravity: 'NorthWest',
-        quality: 40,
-        rotate: 20,
-        format: 'png',
-        blur:'3x5'
-    }];
+  返回处理后的图片url
 
-    // fopArr 可以为三种类型'watermark'、'imageMogr2'、'imageView2'中的任意1-3个
-    // 例如只对'watermark'、'imageMogr2'进行管道操作，则如下即可
-    // var fopArr = [{
-    //    fop: 'watermark', // 指定watermark操作
-    //    mode: 2, // 此参数同watermark函数的参数，下同。
-    //    text: 'hello world !',
-    //    dissolve: 50,
-    //     gravity: 'SouthWest',
-    //     fontsize: 500,
-    //     font : '黑体',
-    //     dx: 100,
-    //     dy: 100,
-    //     fill: '#FFF000'
-    // },{
-    //    fop: 'imageMogr2',  // 指定imageMogr2操作
-    //    auto-orient: true,  // 此参数同imageMogr2函数的参数，下同。
-    //    strip: true,
-    //    thumbnail: '1000x1000'
-    //    crop: '!300x400a10a10',
-    //    gravity: 'NorthWest',
-    //    quality: 40,
-    //    rotate: 20,
-    //    format: 'png',
-    //    blur:'3x5'
-    // }];
+  ```JavaScript
+  var imgLink = qiniu.imageMogr2({
+     "auto-orient": true,      // 布尔值，是否根据原图EXIF信息自动旋正，便于后续处理，建议放在首位。
+     strip: true,              // 布尔值，是否去除图片中的元信息
+     thumbnail: '1000x1000'    // 缩放操作参数
+     crop: '!300x400a10a10',   // 裁剪操作参数
+     gravity: 'NorthWest',     // 裁剪锚点参数
+     quality: 40,              // 图片质量，取值范围1-100
+     rotate: 20,               // 旋转角度，取值范围1-360，缺省为不旋转。
+     format: 'png',            // 新图的输出格式，取值范围：jpg，gif，png，webp等
+     blur: '3x5'               // 高斯模糊参数
+   }, key, domain)
+  ```
 
+  options包含的具体高级图像处理参数解释见[图像高级处理（imageMogr2）](https://developer.qiniu.com/dora/api/the-advanced-treatment-of-images-imagemogr2)
 
-    var imgLink = Qiniu.pipeline(fopArr, key));
+### qiniu.imageInfo(key: string, domain: string): Promise
 
-    ```
+  ```JavaScript
+  qiniu.imageInfo(key, domain).then(res => {})
+  ```
 
-    具体管道操作解释见[管道操作](https://developer.qiniu.com/dora/manual/processing-mechanism)
+  具体 imageInfo 解释见[图片基本信息（imageInfo）](https://developer.qiniu.com/dora/api/pictures-basic-information-imageinfo)
+
+### qiniu.exif(key: string, domain: string): Promise
+
+  ```JavaScript
+  qiniu.exif(key, domain).then(res => {})
+  ```
+
+  具体 exif 解释见[图片 EXIF 信息（exif）](https://developer.qiniu.com/dora/api/photo-exif-information-exif)
+
+### qiniu.pipeline(fopArr: array, key: string, domain: string): string
+
+  ```JavaScript
+  var fopArr = [{
+      fop: 'watermark', // 指定watermark操作
+      mode: 2,          // 此参数同watermark函数的参数，下同。
+      text: 'hello world !',
+      dissolve: 50,
+      gravity: 'SouthWest',
+      fontsize: 500,
+      font : '黑体',
+      dx: 100,
+      dy: 100,
+      fill: '#FFF000'
+  },{
+      fop: 'imageView2', // 指定imageView2操作
+      mode: 3,           // 此参数同imageView2函数的参数，下同
+      w: 100,
+      h: 100,
+      q: 100,
+      format: 'png'
+  },{
+      fop: 'imageMogr2',  // 指定imageMogr2操作
+      "auto-orient": true,  // 此参数同imageMogr2函数的参数，下同。
+      strip: true,
+      thumbnail: '1000x1000'
+      crop: '!300x400a10a10',
+      gravity: 'NorthWest',
+      quality: 40,
+      rotate: 20,
+      format: 'png',
+      blur:'3x5'
+  }]
+
+  // fopArr 可以为三种类型'watermark'、'imageMogr2'、'imageView2'中的任意1-3个
+  // 例如只对'watermark'、'imageMogr2'进行管道操作，则如下即可
+  // var fopArr = [{
+  //    fop: 'watermark', // 指定watermark操作
+  //    mode: 2, // 此参数同watermark函数的参数，下同。
+  //    text: 'hello world !',
+  //    dissolve: 50,
+  //     gravity: 'SouthWest',
+  //     fontsize: 500,
+  //     font : '黑体',
+  //     dx: 100,
+  //     dy: 100,
+  //     fill: '#FFF000'
+  // },{
+  //    fop: 'imageMogr2',  // 指定imageMogr2操作
+  //    "auto-orient": true,  // 此参数同imageMogr2函数的参数，下同。
+  //    strip: true,
+  //    thumbnail: '1000x1000'
+  //    crop: '!300x400a10a10',
+  //    gravity: 'NorthWest',
+  //    quality: 40,
+  //    rotate: 20,
+  //    format: 'png',
+  //    blur:'3x5'
+  // }];
+
+  var imgLink = qiniu.pipeline(fopArr, key, domain))
+  ```
+
+  fopArr包含的具体管道操作解释见[管道操作](https://developer.qiniu.com/dora/manual/processing-mechanism)
 
 <a id="demo"></a>
+
 ### 运行示例
 
-1. 进入项目根目录，执行 `make install` 或 `npm install & bower install` 安装依赖第三方库
-2. 进入 `demo` 目录，按照目录下的 `config.example` 示例，创建 `config.js` 文件，其中，`Access Key` 和 `Secret Key` 按如下方式获取
+1. 进入项目根目录，执行 `npm install` 安装依赖库，然后打开两个终端，一个执行 `npm run serve` 跑 server， 一个执行 `npm run dev` 运行服务 demo1； demo2 为测试es6语法的 demo，进入 demo2 目录，执行 `npm install`，然后 `npm start` 运行 demo2，demo1 和 demo2 都共用一个 server 服务
+2. 进入 demo 目录，按照目录下的 `config.json.example` 示例，创建 `config.json` 文件，其中，`Access Key` 和 `Secret Key` 按如下方式获取
 
-    * [开通七牛开发者帐号](https://portal.qiniu.com/signup)
-    * [登录七牛开发者自助平台，查看 AccessKey 和 SecretKey](https://portal.qiniu.com/user/key) 。
+   * [开通七牛开发者帐号](https://portal.qiniu.com/signup)
+   * [登录七牛开发者自助平台，查看 AccessKey 和 SecretKey](https://portal.qiniu.com/user/key) 。
 
-    ```javascript
-
-    module.exports = {
-        'AccessKey': '<Your Access Key>',
-        'SecretKey': '<Your Secret Key>',
-        'Bucket': '<Your Bucket Name>',
-        'Port': 19110,
-        'UptokenUrl': '<Your Uptoken_Url>', // demo 启动后会在本地 /uptoken 上提供获取 uptoken 的接口，所以这里可以填 'uptoken'
-        'Domain': '<Your Bucket Domain>' // Bucket 的外链默认域名，在 Bucket 的内容管理里查看，如：'http://xxx.bkt.clouddn.com/'
-    }
-
-    ```
-3. 进入项目根目录，执行 `make dev` 或 `node demo/server.js` 访问命令行打印出的 demo 地址。
+   ```javascript
+   module.exports = {
+     AccessKey: "<Your Access Key>",
+     SecretKey: "<Your Secret Key>",
+     Bucket: "<Your Bucket Name>",
+     Port: 19110,
+     UptokenUrl: "<Your Uptoken_Url>", // demo 启动后会在本地 /uptoken 上提供获取 uptoken 的接口，所以这里可以填 'token'
+     Domain: "<Your Bucket Domain>" // Bucket 的外链默认域名，在 Bucket 的内容管理里查看，如：'http://xxx.bkt.clouddn.com/'
+   }
+   ```
 
 <a id="note"></a>
+
 ### 说明
 
-1. JS-SDK 依赖 Plupload，初始化之前请引入 Plupload。
+1. 如果您想了解更多七牛的上传策略，建议您仔细阅读 [七牛官方文档-上传](https://developer.qiniu.com/kodo/manual/upload-types)。另外，七牛的上传策略是在后端服务指定的.
 
-2. JS-SDK 依赖 uptoken，可以直接设置 `uptoken`  、通过提供 Ajax 请求地址 `uptoken_url` 或者通过提供一个能够返回 uptoken 的函数 `uptoken_func` 实现。
+2. 如果您想了解更多七牛的图片处理，建议您仔细阅读 [七牛官方文档-图片处理](https://developer.qiniu.com/dora/api/image-processing-api)
 
-3. 如果您想了解更多七牛的上传策略，建议您仔细阅读 [七牛官方文档-上传](https://developer.qiniu.com/kodo/manual/upload-types)。
-   另外，七牛的上传策略是在后端服务指定的，JS-SDK 的 setOption API 只是设置 Plupload 的初始化参数，和上传策略无关。
-
-4. 如果您想了解更多七牛的图片处理，建议您仔细阅读 [七牛官方文档-图片处理](https://developer.qiniu.com/dora/api/image-processing-api)
-
-5. 如果是 https 网站，上传地址为 https://up.qbox.me 否则使用 http://upload.qiniu.com
-
-6. JS-SDK 示例生成 uptotken 时，指定的 `Bucket Name` 为公开空间，所以可以公开访问上传成功后的资源。若您生成 uptoken 时，指定的 `Bucket Name` 为私有空间，那您还需要在服务端进行额外的处理才能访问您上传的资源。具体参见[下载凭证](https://developer.qiniu.com/kodo/manual/download-token)。JS-SDK 数据处理部分功能不适用于私有空间。
+3. JS-SDK 示例生成 `token` 时，指定的 `Bucket Name` 为公开空间，所以可以公开访问上传成功后的资源。若您生成 `token` 时，指定的 `Bucket Name` 为私有空间，那您还需要在服务端进行额外的处理才能访问您上传的资源。具体参见[下载凭证](https://developer.qiniu.com/kodo/manual/download-token)。JS-SDK 数据处理部分功能不适用于私有空间。
 
 <a id="faq"></a>
-### 常见问题
 
-七牛提供基于 plupload 插件封装上传的 demo `http://jssdk.demo.qiniu.io/`，如果不需要 plupload 插件可以参考 `https://github.com/iwillwen/qiniu.js/tree/develop`,这里主要针对基于 plupload 插件的方式讲解遇到的一些问题，通过参考 plupload 文档资料，可以对七牛的 demo 进行修改，以满足自己的业务需求，plupload 插件的使用文档可以参考 `http://www.cnblogs.com/2050/p/3913184.html`
+### 常见问题
 
 **1. 关于上传文件命名问题，可以参考：**
 
-在 main.js 里面，unique_names 是 plupload 插件下面的一个参数，当值为 true 时会为每个上传的文件生成一个唯一的文件名，这个是 plupload 插件自动生成的，如果设置成 false，七牛这边是会以上传的原始名进行命名的。
+1. 上传的 scope 为 `bucket` 的形式，上传后文件资源名以设置的 `key` 为主，如果 `key` 为 `null` 或者 `undefined`，则文件资源名会以 hash 值作为资源名。
+2. 上传的 scope 为 `bucket:key` 的形式，上传文件本地的名字需要和 scope 中的 `key` 是一致的，不然会报错 key doesn‘t match with scope。
+3. 上传的 scope 为 `bucket`，但是 `token` 中有设定 `saveKey`，这种形式下客户端的 `key` 如果设定为 `null` 或者 `undefined`，则会以 `saveKey` 作为文件资源名，否则仍然是以 `key` 值作为资源名，并且上传的本地文件名也是需要和这个 `savekey` 文件名一致的。
 
-1. 上传的 scope 为 bucket 的形式，unique_names 参数设置为false，上传后文件的 key 是本地的文件名 abc.txt
-2. 上传的 scope 为 bucket 的形式，unique_names 参数设置为 true，plupload 插件会忽略本地文件名，而且这个命名也是没有规律的，上传后文件的 key 是 plupload 插件生成的，比如 Yc7DZRS1m73o.txt。
-3. 上传的 scope 为 bucket:key 的形式，上传文件本地的名字需要和 scope 中的 key 是一致的，不然会报错 key doesn‘t match with scope, 注意，这种形式是不能设置 unique_names 为 true 的，因为即使上传文件本地名字为 abc.txt,但是 plupload 会给这个文件赋值另外一个文件名。
-4. 上传的 scope 为 bucket，但是 token 中有设定 saveKey，这种形式 save_key 是应该设置为 true，并且上传的本地文件名也是需要和这个 savekey 文件名一致的。
-5. 通过 JS 前端设置上传的 key，在 main.js 文件里面设置如下：
-
-```
-'Key': function(up, file) {
-    var key = "";
-    // do something with key
-    return key
-}
-```
-
-这个默认是注释的，若想在前端对每个文件的 key 进行个性化处理，可以配置该函数
-该配置必须要在 unique_names: false , save_key: false 时才生效
-取消注释后，其优先级要高于：qiniu.js 文件中 getFileKey。
-
-**2. 设置自定义预览样式**
-
-```
-// 该设置在ui.js 文件里，默认为
-var imageView =‘?imageView2/1/w/100/h/100’
-// 可修改成
-var imageView = ‘样式符+样式名’
-```
-
-**3. 关于设置取消上传可以参考：**
-
-http://stackoverflow.com/questions/11014384/cancel-file-upload-listener
-(文件 plupload.dev.js 1950行 removeFile : function(file) 方法)
-
-**4. 限制上传文件的类型：**
+**2. 限制上传文件的类型：**
 
 这里又分为两种方法：
 
-1. 通过在 token 中设定 mimeLimit 字段限定上传文件的类型，示例
-
-“image/*“ 表示只允许上传图片类型；
-“image/jpeg;image/png” 表示只允许上传 jpg 和 png 类型的图片；
-“!application/json;text/plain” 表示禁止上传 json 文本和纯文本。（注意最前面的感叹号）
-
-2. 通过 plupload 中设定 filter 参数直接在 JS 前端限定，如下
-
+1. 通过在 `token` 中设定 `mimeLimit` 字段限定上传文件的类型，该设定是在后端 sdk 设置，请查看相应的 sdk 文档，示例
+ ```JavaScript
+"image/\*": 表示只允许上传图片类型；
+"image/jpeg;image/png": 表示只允许上传 jpg 和 png 类型的图片；
+"!application/json;text/plain": 表示禁止上传 json 文本和纯文本。（注意最前面的感叹号）
 ```
-// 可以使用该参数来限制上传文件的类型，大小等，该参数以对象的形式传入，它包括三个属性：
-filters : {
-    max_file_size : '100mb',
-    prevent_duplicates: true,
-    // Specify what files to browse for
-    mime_types: [
-        {title : "flv files", extensions : "flv"} // 限定flv后缀上传格式上传
-        {title : "Video files", extensions : "flv,mpg,mpeg,avi,wmv,mov,asf,rm,rmvb,mkv,m4v,mp4"}, // 限定flv,mpg,mpeg,avi,wmv,mov,asf,rm,rmvb,mkv,m4v,mp4后缀格式上传
-        {title : "Image files", extensions : "jpg,gif,png"}, // 限定jpg,gif,png后缀上传
-        {title : "Zip files", extensions : "zip"} // 限定zip后缀上传
-    ]
-},
-```
-
-**5. 设置每次只能选择一个文件**
-
-通过 plupload 插件中的 multi_selection 参数控制，如下
-
-```
-// 设置一次只能选择一个文件
-multi_selection: false,
-```
-
-**6. 设置取消上传，暂停上传**
-
-在 index.html 中加入者两个控制按钮：
-
-```
-<a class="btn btn-default btn-lg " id="up_load"  href="#" >
-     <span>确认上传</span>
-</a>
-<a class="btn btn-default btn-lg " id="stop_load"  href="#" >
-     <span>暂停上传</span>
-</a>
-```
-
-然后在 main.js 文件里面绑定这两个按钮，添加代码如下：
-
-```
-$('#up_load').on('click', function(){
-   uploader.start();
-});
-$('#stop_load').on('click', function(){
-   uploader.stop();
-});
-```
-
-**7. 取消分片上传**
-
-将 main.js 里面 `chunk_size: '4mb'` 设置 `chunk_size: '0mb'`，注意分片上传默认也只能是 4M，如果设置一个别的分片的大小会出现上传失败。
-
-**8. 取消自动上传**
-
-将 main.js 文件 `auto_start` 参数改成 `auto_start: false`
-
-**9. 关于请求 token 出现跨域**
-
-因为都是建议用户从后端 SDK 获取 token，然后在 main.js 设置参数 uptoken_url: '获取uptoken的url',  这里就有可能出现跨域的现象，此时在服务端添加 response.setHeader("Access-Control-Allow-Origin","*"); 相应头字段即可。
-
-推荐一个关于 [CORS](http://enable-cors.org/) 的网站
-
-<a id="contribute-code"></a>
-
-**10.Android自带的Webview对JS SDK不支持 **
-在Android自带的Webview里面引用JS SDK的demo(http://jssdk.demo.qiniu.io/) :
-```
-public class MainActivity extends Activity {
-    private WebView webview;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        webview = (WebView) findViewById(R.id.wv);
-        webview.getSettings().setJavaScriptEnabled(true);
-        webview.setWebViewClient(new WebViewClient(){
-            public boolean shouldOverrideUrlLoading(WebView view, String url){
-                view.loadUrl(url);
-                return true;
-            }
-        });
-        webview.loadUrl("http://demos.qiniu.com/demo/simpleuploader/");
-    }
-
-}
-```
-但是点击选择文件按钮没有反应，这个是Webview对JS不是很支持造成的，解决方法可以引入这个Webview,jar包地址如下:
-https://github.com/delight-im/Android-AdvancedWebView/blob/master/JARs/Android-AdvancedWebView.jar
-使用的方法文档上都有写，比较简单：
-```
-private AdvancedWebView mWebView;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        mWebView = (AdvancedWebView) findViewById(R.id.webview);
-        mWebView.setListener(this, this);
-        mWebView.loadUrl("http://jssdk.demo.qiniu.io/");
-    }
-```
-
-**11.关于多个按钮选择文件的Demo **
-
-很多用户都在问JSSDK多文件选择的Demo，其实比较简单，只需要在main.js文件里面多new几个Uploader对象就可以了，然后在主页面上里面写好对应的上传的按钮就可以了
-这里直接给出main.js和indxe.html里面需要改动的地方:
-main.js里面多new几个uploader对象
-```
-$(function() {
-    var uploader = Qiniu.uploader({
-        runtimes: 'html5,flash,html4',
-        browse_button: 'pickfiles',
-        container: 'container',
-        drop_element: 'container',
-        max_file_size: '100mb',
-        flash_swf_url: 'js/plupload/Moxie.swf',
-        dragdrop: true,
-        chunk_size: '4mb',
-        uptoken:'um6IEH7mtwnwkGpjImD08JdxlvViuELhI4mFfoeL:79ApUIePTtKIdVGDHJ9D9BfBnhE=:eyJzY29wZSI6ImphdmFkZW1vIiwiZGVhZGxpbmUiOjE0NTk4ODMyMzV9Cg==',
-        // uptoken_url: $('#uptoken_url').val(),  //当然建议这种通过url的方式获取token
-        domain: $('#domain').val(),
-        auto_start: false,
-        init: {
-            'FilesAdded': function(up, files) {
-                $('table').show();
-                $('#success').hide();
-                plupload.each(files, function(file) {
-                    var progress = new FileProgress(file, 'fsUploadProgress');
-                    progress.setStatus("等待...");
-                });
-            },
-            'BeforeUpload': function(up, file) {
-                var progress = new FileProgress(file, 'fsUploadProgress');
-                var chunk_size = plupload.parseSize(this.getOption('chunk_size'));
-                if (up.runtime === 'html5' && chunk_size) {
-                    progress.setChunkProgess(chunk_size);
-                }
-            },
-            'UploadProgress': function(up, file) {
-                var progress = new FileProgress(file, 'fsUploadProgress');
-                var chunk_size = plupload.parseSize(this.getOption('chunk_size'));
-
-                progress.setProgress(file.percent + "%", file.speed, chunk_size);
-            },
-            'UploadComplete': function() {
-                $('#success').show();
-            },
-            'FileUploaded': function(up, file, info) {
-                var progress = new FileProgress(file, 'fsUploadProgress');
-                progress.setComplete(up, info);
-            },
-            'Error': function(up, err, errTip) {
-                $('table').show();
-                var progress = new FileProgress(err.file, 'fsUploadProgress');
-                progress.setError();
-                progress.setStatus(errTip);
-            }
-        }
-    });
-
-    uploader.bind('FileUploaded', function() {
-        console.log('hello man,a file is uploaded');
-    });
-
-    $('#up_load').on('click', function(){
-        uploader.start();
-    });
-    $('#stop_load').on('click', function(){
-        uploader.stop();
-    });
-
-    var Q2 = new QiniuJsSDK();
-    var uploader2 = Q2.uploader({
-        runtimes: 'html5,flash,html4',
-        browse_button: 'pickfiles2',
-        container: 'container2',
-        drop_element: 'container2',
-        max_file_size: '100mb',
-        flash_swf_url: 'js/plupload/Moxie.swf',
-        dragdrop: true,
-        chunk_size: '4mb',
-        uptoken:'um6IEH7mtwnwkGpjImD08JdxlvViuELhI4mFfoeL:79ApUIePTtKIdVGDHJ9D9BfBnhE=:eyJzY29wZSI6ImphdmFkZW1vIiwiZGVhZGxpbmUiOjE0NTk4ODMyMzV9Cg==',
-        // uptoken_url: $('#uptoken_url').val(),  //当然建议这种通过url的方式获取token
-        domain: $('#domain').val(),
-        auto_start: false,
-        init: {
-            'FilesAdded': function(up, files) {
-                $('table').show();
-                $('#success').hide();
-                plupload.each(files, function(file) {
-                    var progress = new FileProgress(file, 'fsUploadProgress');
-                    progress.setStatus("等待...");
-                });
-            },
-            'BeforeUpload': function(up, file) {
-                var progress = new FileProgress(file, 'fsUploadProgress');
-                var chunk_size = plupload.parseSize(this.getOption('chunk_size'));
-                if (up.runtime === 'html5' && chunk_size) {
-                    progress.setChunkProgess(chunk_size);
-                }
-            },
-            'UploadProgress': function(up, file) {
-                var progress = new FileProgress(file, 'fsUploadProgress');
-                var chunk_size = plupload.parseSize(this.getOption('chunk_size'));
-
-                progress.setProgress(file.percent + "%", file.speed, chunk_size);
-            },
-            'UploadComplete': function() {
-                $('#success').show();
-            },
-            'FileUploaded': function(up, file, info) {
-                var progress = new FileProgress(file, 'fsUploadProgress');
-                progress.setComplete(up, info);
-            },
-            'Error': function(up, err, errTip) {
-                $('table').show();
-                var progress = new FileProgress(err.file, 'fsUploadProgress');
-                progress.setError();
-                progress.setStatus(errTip);
-            }
-        }
-    });
-
-    uploader2.bind('FileUploaded', function() {
-        console.log('hello man 2,a file is uploaded');
-    });
-    $('#up_load2').on('click', function(){
-        uploader2.start();
-    });
-    $('#stop_load2').on('click', function(){
-        uploader2.stop();
-    });
-```
-相应的index.html文件加入相关按钮:
-```
-  <div id="container">
-        <a class="btn btn-default btn-lg " id="pickfiles" style="width:160px" href="#" >
-            <i class="glyphicon glyphicon-plus"></i>
-            <span>选择文件</span>
-        </a>
-
-        <a class="btn btn-default btn-lg " id="up_load" style="width:160px" href="#" >
-            <span>确认上传</span>
-        </a>
-
-        <a class="btn btn-default btn-lg " id="stop_load" style="width:160px" href="#" >
-            <span>暂停上传</span>
-        </a>
-  </div>
-
-  <div id="container2">
-        <a class="btn btn-default btn-lg " id="pickfiles2" style="width:160px" href="#" >
-            <i class="glyphicon glyphicon-plus"></i>
-            <span>选择文件</span>
-        </a>
-
-        <a class="btn btn-default btn-lg " id="up_load2" style="width:160px" href="#" >
-            <span>确认上传</span>
-        </a>
-
-        <a class="btn btn-default btn-lg " id="stop_load2" style="width:160px" href="#" >
-            <span>暂停上传</span>
-        </a>
-  </div>
-```
-
+2. 通过 `putExtra` 的 `mimeType` 参数直接在前端限定
 
 ### 贡献代码
 
@@ -829,8 +466,9 @@ $(function() {
 6. 然后到 github 网站的该 git 远程仓库的 new-feature 分支下发起 Pull Request
 
 <a id="license"></a>
+
 ### 许可证
 
-> Copyright (c) 2017 qiniu.com
+> Copyright (c) 2018 qiniu.com
 
 ### 基于 MIT 协议发布

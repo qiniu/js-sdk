@@ -1,59 +1,54 @@
 {
   "name": "qiniu-js",
   "jsName": "qiniu",
-  "version": "1.0.24",
+  "version": "2.0.0",
   "private": false,
-  "scripts": {
-    "start": "node demo/server.js",
-    "watch": "webpack --watch",
-    "build": "webpack"
-  },
-  "description": "Javascript SDK for Qiniu Resource (Cloud) Storage API",
+  "description": "Javascript SDK for Qiniu Resource (Cloud) Storage AP",
   "main": "dist/qiniu.min.js",
+  "scripts": {
+    "build:prod": "webpack --optimize-minimize --config webpack.prod.js",
+    "dev": "webpack-dev-server --open --config webpack.dev.js",
+    "serve": "node test/server.js"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/qiniu/js-sdk.git"
   },
+  "author": "sdk@qiniu.com",
   "bugs": {
     "url": "https://github.com/qiniu/js-sdk/issues"
   },
-  "keywords": [
-    "cloud",
-    "storage",
-    "s3",
-    "qiniu",
-    "web-service"
-  ],
-  "author": "sdk@qiniu.com",
   "contributors": [
-    {
-      "name": "luoyeshu0507",
-      "email": "lizhiwei@qiniu.com"
-    },
-    {
-      "name": "codedogfish",
-      "email": "jackyu@qiniu.com"
-    },
     {
       "name": "jinxinxin",
       "email": "jinxinxin@qiniu.com"
+    },
+    {
+      "name": "winddies",
+      "email": "zhangheng01@qiniu.com"
     }
   ],
   "devDependencies": {
-    "bower": "^1.6.8",
-    "ejs": "~2.5.5",
-    "express": "^3.4.8",
-    "grunt": "~0.4.2",
-    "grunt-cli": "~0.1.13",
-    "grunt-contrib-concat": "^0.5.1",
-    "grunt-contrib-copy": "~0.5.0",
-    "grunt-contrib-jshint": "~0.7.2",
-    "grunt-contrib-uglify": "~0.2.2",
-    "grunt-contrib-watch": "~0.5.3",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-syntax-flow": "^6.18.0",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.6.0",
+    "babel-runtime": "^6.26.0",
+    "body-parser": "^1.18.2",
+    "connect-multiparty": "^2.1.0",
+    "es3ify-loader": "^0.2.0",
+    "express": "^4.16.2",
+    "multiparty": "^4.1.3",
     "open-browser-webpack-plugin": "0.0.5",
-    "qiniu": "~7.0.5",
-    "webpack": "^3.8.1",
-    "webpack-dev-middleware": "^1.12.0"
+    "qiniu": "^7.1.1",
+    "request": "^2.83.0",
+    "spark-md5": "^3.0.0",
+    "transform-runtime": "0.0.0",
+    "uglifyjs-webpack-plugin": "^1.1.6",
+    "webpack": "^3.6.0",
+    "webpack-dev-server": "^2.9.1",
+    "webpack-merge": "^4.1.1"
   },
   "license": "MIT"
 }
