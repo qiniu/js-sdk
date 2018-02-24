@@ -170,16 +170,17 @@ export function request(url, options) {
       if (xhr.readyState !== 4) {
         return;
       }
+      let reqId = xhr.getResponseHeader("x-reqId")|| "";
       if (xhr.status !== 200) {
         let message = `xhr request failed, code: ${xhr.status};`;
         if (responseText) {
           message = message + ` response: ${responseText}`;
         }
-        reject({code: xhr.status, message: message, isRequestError: true});
+        reject({code: xhr.status, message: message,reqId: reqId, isRequestError: true});
         return;
       }
       try {
-        resolve(JSON.parse(responseText))
+        resolve({data: JSON.parse(responseText), reqId: reqId})
       } catch (err) {
         reject(err)
       }
@@ -187,6 +188,33 @@ export function request(url, options) {
 
     xhr.send(options.body);
   });
+}
+
+export function getPortFromUrl(url) {
+  if (url && url.match) {
+    let groups = url.match(/(^https?)/);
+    if (!groups) {
+        return "";
+    }
+    let type = groups[1];
+    groups = url.match(/^https?:\/\/([^:^/]*):(\d*)/);
+    if (groups) {
+      return groups[2];
+    } 
+    if (type === "http") {
+      return "80";
+    }
+    return "443"
+  }
+  return "";
+}
+
+export function getDomainFromUrl (url) {
+  if (url && url.match) {
+      let groups = url.match(/^https?:\/\/([^:^/]*)/);
+      return groups ? groups[1] : "";
+  }
+  return "";
 }
 
 // 构造区域上传url

@@ -8,6 +8,8 @@ import {
   removeLocalFileInfo,
   isContainFileMimeType,
   sum,
+  getDomainFromUrl,
+  getPortFromUrl,
   getHeadersForChunkUpload,
   getHeadersForMkFile,
   request,
@@ -19,10 +21,11 @@ import {
 let BLOCK_SIZE = 4 * 1024 * 1024;
 
 export class UploadManager {
-  constructor(options, handlers) {
+  constructor(options, handlers, statisticsLogger) {
     this.config = Object.assign(
       {
         useCdnDomain: true,
+        disableStatisticsReport: false,
         region: null
       },
       options.config
@@ -35,6 +38,9 @@ export class UploadManager {
       },
       options.putExtra
     );
+    this.statisticsLogger = statisticsLogger;
+    this.log = {};
+    this.progress = null;
     this.xhrList = [];
     this.xhrHandler = xhr => this.xhrList.push(xhr);
     this.file = options.file;
@@ -60,11 +66,37 @@ export class UploadManager {
     }
 
     this.uploadUrl = getUploadUrl(this.config);
+    this.log ={
+      code: 0,
+      reqId: "",
+      host: getDomainFromUrl(this.uploadUrl),
+      remoteIp: "",
+      port: getPortFromUrl(this.uploadUrl),
+      duration:0,
+      time: new Date().getTime()/1000,
+      bytesSent:0,
+      upType: "jssdk-h5",
+      size: this.file.size
+    };
 
-    let upload =
-      this.file.size > BLOCK_SIZE ? this.resumeUpload() : this.directUpload();
-    upload.then(res => this.onComplete(res), err => {
+    let upload = this.file.size > BLOCK_SIZE ? this.resumeUpload() : this.directUpload();
+    upload.then(res => {
+      this.onComplete(res);
+      if(!this.config.disableStatisticsReport){
+        this.sendLog(res.reqId);
+      }
+    }, err => {
       this.onError(err);
+      if(err.isRequestError && !this.config.disableStatisticsReport){
+        if(err.code !== 0){
+          this.log.code = err.code;
+          this.sendLog(err.reqId);
+        }else{
+          this.log.code = -2;
+          this.sendLog();
+        }
+
+      }
       this.stop();
     })
 
@@ -76,8 +108,16 @@ export class UploadManager {
     this.xhrList = [];
   }
 
+  sendLog(reqId){
+    this.log.duration = (new Date().getTime() - this.log.time)/1000;
+    this.log.bytesSent = this.progress ? this.progress.total.loaded : 0;
+    this.log.reqId = reqId;
+    this.statisticsLogger.log(this.log, this.token)
+  }
+
   // 直传
   directUpload() {
+    this.loaded = 0;
     let formData = new FormData();
     formData.append("file", this.file);
     formData.append("token", this.token);
@@ -185,8 +225,7 @@ export class UploadManager {
     let headers = getHeadersForMkFile(this.token);
     let onCreate = this.xhrHandler;
     let method = "POST";
-
-    return request(requestUrL, { method, body, headers, onCreate }).then(
+    return request(requestUrL, { method, body, headers, onCreate}).then(
       res => {
         this.updateMkFileProgress(1);
         return Promise.resolve(res);
@@ -195,9 +234,8 @@ export class UploadManager {
   }
 
   updateDirectProgress(loaded, total) {
-    this.onData(
-      {total: this.getProgressInfoItem(loaded, total)}
-    )
+    this.progress = {total: this.getProgressInfoItem(loaded, total)}
+    this.onData(this.progress)
   }
 
   initChunksProgress() {
@@ -216,17 +254,16 @@ export class UploadManager {
   }
 
   notifyResumeProgress() {
-    this.onData(
-      {
-        total: this.getProgressInfoItem(
-          sum(this.loaded.chunks) + this.loaded.mkFileProgress, 
-          this.file.size + 1
-        ),
-        chunks: this.chunks.map((chunk, index) => {
-          return this.getProgressInfoItem(this.loaded.chunks[index], chunk.size);
-        })
-      }
-    );
+    this.progress = {
+      total: this.getProgressInfoItem(
+        sum(this.loaded.chunks) + this.loaded.mkFileProgress, 
+        this.file.size + 1
+      ),
+      chunks: this.chunks.map((chunk, index) => {
+        return this.getProgressInfoItem(this.loaded.chunks[index], chunk.size);
+      })
+    };
+    this.onData(this.progress);
   }
 
   getProgressInfoItem(loaded, size) {

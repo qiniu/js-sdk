@@ -133,19 +133,20 @@ subscription.unsubscribe() // 上传取消
           }
         }
         ```
-        * next: 接收上传进度信息，res 参数是一个带有 `total` 字段的 `object`，包含`loaded`、`total`、`percent`三个属性，提供上传进度信息。
+        * next: 接收上传进度信息，res 参数包含 `data` 和 `reqId` 两个字段，`reqId` 为上传过程完成最后一次请求的 `X-Reqid`值，`data` 是一个带有 `total` 字段的 `object`，包含`loaded`、`total`、`percent`三个属性，提供上传进度信息。
           * total.loaded: `number`，已上传大小，单位为字节。
           * total.total: `number`，本次上传的总量控制信息，单位为字节，注意这里的 total 跟文件大小并不一致。
           * total.percent: `number`，当前上传进度，范围：0～100。
 
         * error: 上传错误后触发，当不是 xhr 请求错误时，会把当前错误产生原因直接抛出，诸如 JSON 解析异常等；当产生 xhr 请求错误时，参数 err 为一个包含 `code`、`message`、`isRequestError` 三个属性的 `object`：
           * err.isRequestError: 用于区分是否 xhr 请求错误；当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 `true`；否则为 `undefined` 。
+          * err.reqId: `string`，xhr请求错误的 `X-Reqid`。
           * err.code: `number`，请求错误状态码，只有在 `err.isRequestError` 为 true 的时候才有效，可查阅码值对应[说明](https://developer.qiniu.com/kodo/api/3928/error-responses)。
           * err.message: `string`，错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。
 
         * complete: 接收上传完成后的后端返回信息，res 参数为一个 `object`， 为上传成功后后端返回的信息，具体返回结构取决于后端sdk的配置，可参考[上传策略](https://developer.qiniu.com/kodo/manual/1206/put-policy)。
 
-      * subscription: 为一个带有 `unsubscribe` 方法的类实例，通过调用 `subscription.unsubscribe()` 停止当前文件上传
+      * subscription: 为一个带有 `unsubscribe` 方法的类实例，通过调用 `subscription.unsubscribe()` 停止当前文件上传。
 
   * **file**: `Blob` 对象，上传的文件
   * **key**: 文件资源名
@@ -159,8 +160,9 @@ subscription.unsubscribe() // 上传取消
     };
     ```
 
-    * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，`true` 表示使用，默认为 `false`
-    * config.region: 选择上传域名区域，默认为(z0)华东
+    * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，`true` 表示使用，默认为 `false`。
+    * config.disableStatisticsReport: 是否禁用日志报告，为布尔值，默认为`false`。
+    * config.region: 选择上传域名区域，默认为(z0)华东。
 
   * **putExtra**:
 
