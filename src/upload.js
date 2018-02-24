@@ -39,7 +39,6 @@ export class UploadManager {
       options.putExtra
     );
     this.statisticsLogger = statisticsLogger;
-    this.log = {};
     this.progress = null;
     this.xhrList = [];
     this.xhrHandler = xhr => this.xhrList.push(xhr);
