@@ -133,7 +133,7 @@ subscription.unsubscribe() // 上传取消
           }
         }
         ```
-        * next: 接收上传进度信息，res 参数包含 `data` 和 `reqId` 两个字段，`reqId` 为上传过程完成最后一次请求的 `X-Reqid`值，`data` 是一个带有 `total` 字段的 `object`，包含`loaded`、`total`、`percent`三个属性，提供上传进度信息。
+        * next: 接收上传进度信息，res是一个带有 `total` 字段的 `object`，包含`loaded`、`total`、`percent`三个属性，提供上传进度信息。
           * total.loaded: `number`，已上传大小，单位为字节。
           * total.total: `number`，本次上传的总量控制信息，单位为字节，注意这里的 total 跟文件大小并不一致。
           * total.percent: `number`，当前上传进度，范围：0～100。
@@ -144,7 +144,7 @@ subscription.unsubscribe() // 上传取消
           * err.code: `number`，请求错误状态码，只有在 `err.isRequestError` 为 true 的时候才有效，可查阅码值对应[说明](https://developer.qiniu.com/kodo/api/3928/error-responses)。
           * err.message: `string`，错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。
 
-        * complete: 接收上传完成后的后端返回信息，res 参数为一个 `object`， 为上传成功后后端返回的信息，具体返回结构取决于后端sdk的配置，可参考[上传策略](https://developer.qiniu.com/kodo/manual/1206/put-policy)。
+        * complete: 接收上传完成后的后端返回信息，res 参数为一个 `object`，res 参数包含 `data` 和 `reqId` 两个字段，`reqId` 为上传过程完成最后一次请求的 `X-Reqid` 值，`data` 为上传成功后后端返回的信息，`data` 具体返回结构取决于后端sdk的配置，可参考[上传策略](https://developer.qiniu.com/kodo/manual/1206/put-policy)。
 
       * subscription: 为一个带有 `unsubscribe` 方法的类实例，通过调用 `subscription.unsubscribe()` 停止当前文件上传。
 
