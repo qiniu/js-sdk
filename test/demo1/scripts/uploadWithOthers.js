@@ -230,14 +230,14 @@ function uploadWithOthers(token, putExtra, config, domain) {
       .find(".control-container")
       .html(
         "<p><strong>Hash：</strong>" +
-          res.data.hash +
+          res.hash +
           "</p>" +
           "<p><strong>Bucket：</strong>" +
-          res.data.bucket +
+          res.bucket +
           "</p>"
       );
-    if (res.data.key && res.data.key.match(/\.(jpg|jpeg|png|gif)$/)) {
-      imageDeal(board, res.data.key, domain);
+    if (res.key && res.key.match(/\.(jpg|jpeg|png|gif)$/)) {
+      imageDeal(board, res.key, domain);
     }
   }
 

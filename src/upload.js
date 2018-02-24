@@ -71,16 +71,16 @@ export class UploadManager {
       host: getDomainFromUrl(this.uploadUrl),
       remoteIp: "",
       port: getPortFromUrl(this.uploadUrl),
-      duration:0,
+      duration: 0,
       time: new Date().getTime()/1000,
-      bytesSent:0,
+      bytesSent: 0,
       upType: "jssdk-h5",
       size: this.file.size
     };
 
     let upload = this.file.size > BLOCK_SIZE ? this.resumeUpload() : this.directUpload();
     upload.then(res => {
-      this.onComplete(res);
+      this.onComplete(res.data);
       if(!this.config.disableStatisticsReport){
         this.sendLog(res.reqId);
       }

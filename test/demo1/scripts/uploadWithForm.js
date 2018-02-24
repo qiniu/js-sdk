@@ -17,10 +17,10 @@ function uploadWithForm(token, putExtra, config) {
       .find(".control-container")
       .html(
         "<p><strong>Hash：</strong>" +
-          res.data.hash +
+          res.hash +
           "</p>" +
           "<p><strong>Bucket：</strong>" +
-          res.data.bucket +
+          res.bucket +
           "</p>"
       );
     }
