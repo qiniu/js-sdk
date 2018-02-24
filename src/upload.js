@@ -116,7 +116,6 @@ export class UploadManager {
 
   // 直传
   directUpload() {
-    this.loaded = 0;
     let formData = new FormData();
     formData.append("file", this.file);
     formData.append("token", this.token);
