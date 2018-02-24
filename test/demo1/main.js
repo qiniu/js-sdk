@@ -3,6 +3,7 @@
     var domain = res.domain;
     var config = {
       useCdnDomain: true,
+      disableStatisticsReport: false,
       region: qiniu.region.z2
     };
     var putExtra = {
