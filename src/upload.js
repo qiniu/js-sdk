@@ -65,40 +65,25 @@ export class UploadManager {
     }
 
     this.uploadUrl = getUploadUrl(this.config);
-    this.log ={
-      code: 0,
-      reqId: "",
-      host: getDomainFromUrl(this.uploadUrl),
-      remoteIp: "",
-      port: getPortFromUrl(this.uploadUrl),
-      duration: 0,
-      time: new Date().getTime()/1000,
-      bytesSent: 0,
-      upType: "jssdk-h5",
-      size: this.file.size
-    };
+    this.uploadAt = new Date().getTime();
 
     let upload = this.file.size > BLOCK_SIZE ? this.resumeUpload() : this.directUpload();
     upload.then(res => {
       this.onComplete(res.data);
       if(!this.config.disableStatisticsReport){
-        this.sendLog(res.reqId);
+        this.sendLog(res.reqId, 200);
       }
     }, err => {
       this.onError(err);
       if(err.isRequestError && !this.config.disableStatisticsReport){
         if(err.code !== 0){
-          this.log.code = err.code;
-          this.sendLog(err.reqId);
+          this.sendLog(err.reqId, err.code);
         }else{
-          this.log.code = -2;
-          this.sendLog();
+          this.sendLog("", -2);
         }
-
       }
       this.stop();
     })
-
     return upload;
   }
 
@@ -107,11 +92,19 @@ export class UploadManager {
     this.xhrList = [];
   }
 
-  sendLog(reqId){
-    this.log.duration = (new Date().getTime() - this.log.time)/1000;
-    this.log.bytesSent = this.progress ? this.progress.total.loaded : 0;
-    this.log.reqId = reqId;
-    this.statisticsLogger.log(this.log, this.token)
+  sendLog(reqId, code){
+    this.statisticsLogger.log({
+      code: code,
+      reqId: reqId,
+      host: getDomainFromUrl(this.uploadUrl),
+      remoteIp: "",
+      port: getPortFromUrl(this.uploadUrl),
+      duration: (new Date().getTime() - this.uploadAt)/1000,
+      time: parseInt(this.uploadAt/1000),
+      bytesSent: this.progress ? this.progress.total.loaded : 0,
+      upType: "jssdk-h5",
+      size: this.file.size
+    }, this.token)
   }
 
   // 直传

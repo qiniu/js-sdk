@@ -4,12 +4,12 @@ export class StatisticsLogger{
 
   log(info, token) {
     this.token = token;
-    this.info = "";
-    Object.keys(info).forEach(k => this.info += info[k] + ",");
-    this.send();
+    let logString = "";
+    Object.keys(info).forEach(k => logString += info[k] + ",");
+    this.send(logString);
   }
 
-  send(){
+  send(logString){
     let xhr = createXHR();
     let count = 0;
     let that = this;
@@ -20,11 +20,11 @@ export class StatisticsLogger{
       if (xhr.readyState === 4) {
         if (xhr.status !== 200) {
             count++;
-            count <=3 ? xhr.send(this.info) : "";
+            count <=3 ? xhr.send(logString) : "";
         } 
       }
     };
-    xhr.send(this.info);
+    xhr.send(logString);
   }
-  
+
 }

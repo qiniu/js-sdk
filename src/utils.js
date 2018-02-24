@@ -204,7 +204,7 @@ export function getPortFromUrl(url) {
     if (type === "http") {
       return "80";
     }
-    return "443"
+    return "443";
   }
   return "";
 }
