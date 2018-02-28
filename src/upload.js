@@ -193,7 +193,7 @@ export class UploadManager {
       }).then(response => {
         this.ctxList[index] = {
           time: new Date().getTime(),
-          ctx: response.ctx
+          ctx: response.data.ctx,
         };
       });
     });
