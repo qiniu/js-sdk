@@ -226,5 +226,5 @@ export function getUploadUrl(config) {
 }
 
 export function isContainFileMimeType(fileType, mimeType){
-  return mimeTyp.indexOf(fileType) > -1
+  return mimeType.indexOf(fileType) > -1
 }
