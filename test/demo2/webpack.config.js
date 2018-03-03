@@ -24,14 +24,14 @@ module.exports = {
     ]
   },
   plugins:[
-    new OpenBrowserPlugin({ url: 'http://0.0.0.0:8000/' })
+    new OpenBrowserPlugin({ url: 'http://localhost:8000/' })
   ],
   devServer: {
     disableHostCheck: true,
     progress: true,
     proxy: {
       "/api/*": {
-        target: "http://0.0.0.0:9000",
+        target: "http://localhost:9000",
         changeOrigin: true,
         secure: false
       }
