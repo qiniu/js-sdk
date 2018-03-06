@@ -72,7 +72,7 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 
 支持以下几种安装方式
 
-* 直接使用 CDN 加速的静态文件地址：
+* 直接使用静态文件地址：
 
   ```
   https://unpkg.com/qiniu-js@<version>/dist/qiniu.min.js
