@@ -245,7 +245,6 @@ function getPutPolicy(token) {
     putPolicy.ak = ak;
     if (putPolicy.scope.indexOf(":") >= 0) {
       putPolicy.bucket = putPolicy.scope.split(":")[0];
-      putPolicy.key = putPolicy.scope.split(":")[1];
     } else {
       putPolicy.bucket = putPolicy.scope;
     }
