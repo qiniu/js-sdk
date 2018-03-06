@@ -63,17 +63,19 @@ export class UploadManager {
         return Promise.reject(err);
       }
     }
-
-    this.uploadUrl = getUploadUrl(this.config);
-    this.uploadAt = new Date().getTime();
-
-    let upload = this.file.size > BLOCK_SIZE ? this.resumeUpload() : this.directUpload();
-    upload.then(res => {
-      this.onComplete(res.data);
-      if(!this.config.disableStatisticsReport){
-        this.sendLog(res.reqId, 200);
-      }
-    }, err => {
+    let result = getUploadUrl(this.config, this.token)
+    result.then(res => {
+      this.uploadUrl = res;
+      this.uploadAt = new Date().getTime();
+      let upload = this.file.size > BLOCK_SIZE ? this.resumeUpload() : this.directUpload();
+      upload.then(res => {
+        this.onComplete(res.data);
+        if(!this.config.disableStatisticsReport){
+          this.sendLog(res.reqId, 200);
+        }
+      }, err => {})
+      return upload;
+    }).catch(err => {
       this.onError(err);
       if(err.isRequestError && !this.config.disableStatisticsReport){
         if(err.code !== 0){
@@ -84,7 +86,7 @@ export class UploadManager {
       }
       this.stop();
     })
-    return upload;
+    return result
   }
 
   stop() {

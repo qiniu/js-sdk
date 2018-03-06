@@ -98,6 +98,8 @@ Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服�
 
 <a id="usage"></a>
 
+
+
 ## 使用
 
 `qiniu.upload` 返回一个 `observable` 对象用来控制上传行为，`observable` 对像通过 `subscribe` 方法可以被 `observer` 所订阅，订阅同时会开始触发上传，同时返回一个 `subscription` 对象，该对象有一个 `unsubscribe` 方法取消订阅，同时终止上传行为。对于不支持 sdk 的浏览器可以参考 demo1 中用插件处理和 form 直传的方式； 一般 form 提交常常会导致网页跳转，demo1 中 form 直传通过加入 iframe，并结合后端 sdk 上传来解决网页跳转问题，实现 form 无刷新上传。分片上传时，JS-SDK支持断点续传功能，会把已上传片的后端返回值ctx信息存储到本地，有效期为一天，超过一天后，当继续上传该文件时会清除掉本地存储信息重新上传。
@@ -167,7 +169,7 @@ subscription.unsubscribe() // 上传取消
 
     * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，`true` 表示使用，默认为 `false`。
     * config.disableStatisticsReport: 是否禁用日志报告，为布尔值，默认为 `false`。
-    * config.region: 选择上传域名区域，默认为(z0)华东。
+    * config.region: 选择上传域名区域；当为 `null` 或 `undefined` 时，自动分析上传域名区域。
 
   * **putExtra**:
 

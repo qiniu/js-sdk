@@ -1,4 +1,4 @@
-import { urlSafeBase64Encode } from "./base64";
+import { urlSafeBase64Encode, urlSafeBase64Decode } from "./base64";
 import { regionUphostMap, region } from "./config";
 import SparkMD5 from "spark-md5";
 
@@ -218,12 +218,52 @@ export function getDomainFromUrl (url) {
 }
 
 // 构造区域上传url
-export function getUploadUrl(config) {
-  let upHosts = regionUphostMap[config.region] || regionUphostMap[region.z0];
-  let protocol = window.location.protocol === 'https:' ?  "https" : "http";
-  let host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost;
-  return `${protocol}://${host}`;
+export function getUploadUrl(config, token) {
+  return new Promise((resolve, reject) => {
+    if(config.region != null){
+      let upHosts = regionUphostMap[config.region];
+      let protocol = window.location.protocol === 'https:' ?  "https" : "http";
+      let host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost;
+      resolve(`${protocol}://${host}`);
+    }
+    getUpHosts(token)
+    .then(res => {
+      let hosts = res.data.up.acc.main;
+      let url = window.location.protocol === 'https:' ? "https://" + hosts[0] : "http://" + hosts[0];
+      resolve(url);
+    }).catch(err => {
+      reject(err)
+    })
+  })
 }
+
+function getPutPolicy(token) {
+  let segments = token.split(":");
+  let ak = segments[0];
+  try {
+    let putPolicy = JSON.parse(urlSafeBase64Decode(segments[2]));
+    putPolicy.ak = ak;
+    if (putPolicy.scope.indexOf(":") >= 0) {
+      putPolicy.bucket = putPolicy.scope.split(":")[0];
+      putPolicy.key = putPolicy.scope.split(":")[1];
+    } else {
+      putPolicy.bucket = putPolicy.scope;
+    }
+    return putPolicy;
+  } catch(err) {
+    return err
+  }
+};
+
+function getUpHosts(token) {
+  let putPolicy = getPutPolicy(token);
+  if(putPolicy.bucket){
+    let uphosts_url = window.location.protocol + "//api.qiniu.com/v2/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket;
+    return request(uphosts_url, { method: "GET" })
+  }
+  return Promise.reject(err)
+};
+
 
 export function isContainFileMimeType(fileType, mimeType){
   return mimeType.indexOf(fileType) > -1
