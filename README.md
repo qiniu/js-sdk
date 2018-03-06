@@ -72,10 +72,10 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
 
 支持以下几种安装方式
 
-* 直接使用 CDN 加速的静态文件地址，访问[ 开放静态文件 CDN ](http://staticfile.org/)，搜索 qiniu
+* 直接使用静态文件地址：
 
   ```
-  https://cdn.staticfile.org/qiniu-JS-SDK/<version>/qiniu.min.js
+  https://unpkg.com/qiniu-js@<version>/dist/qiniu.min.js
   ```
   通过sctipt标签引入该文件，会在全局生成名为 `qiniu` 的对象
 
@@ -410,13 +410,13 @@ subscription.unsubscribe() // 上传取消
    * [登录七牛开发者自助平台，查看 AccessKey 和 SecretKey](https://portal.qiniu.com/user/key) 。
 
    ```javascript
-   module.exports = {
-     AccessKey: "<Your Access Key>",
-     SecretKey: "<Your Secret Key>",
-     Bucket: "<Your Bucket Name>",
-     Port: 19110,
-     UptokenUrl: "<Your Uptoken_Url>", // demo 启动后会在本地 /uptoken 上提供获取 uptoken 的接口，所以这里可以填 'token'
-     Domain: "<Your Bucket Domain>" // Bucket 的外链默认域名，在 Bucket 的内容管理里查看，如：'http://xxx.bkt.clouddn.com/'
+   {
+     "AccessKey": "<Your Access Key>",
+     "SecretKey": "<Your Secret Key>",
+     "Bucket": "<Your Bucket Name>",
+     "Port": 9000,
+     "UptokenUrl": "<Your Uptoken_Url>", // demo 启动后会在本地 /uptoken 上提供获取 uptoken 的接口，所以这里可以填 'token'
+     "Domain": "<Your Bucket Domain>" // Bucket 的外链默认域名，在 Bucket 的内容管理里查看，如：'http://xxx.bkt.clouddn.com/'
    }
    ```
 2. 进入项目根目录，执行 `npm install` 安装依赖库，然后打开两个终端，一个执行 `npm run serve` 跑 server， 一个执行 `npm run dev` 运行服务 demo1； demo2 为测试es6语法的 demo，进入 demo2 目录，执行 `npm install`，然后 `npm start` 运行 demo2，demo1 和 demo2 都共用一个 server。
