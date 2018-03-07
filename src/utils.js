@@ -220,17 +220,16 @@ export function getDomainFromUrl (url) {
 // 构造区域上传url
 export function getUploadUrl(config, token) {
   return new Promise((resolve, reject) => {
+    let protocol = window.location.protocol;
     if(config.region != null){
       let upHosts = regionUphostMap[config.region];
-      let protocol = window.location.protocol === 'https:' ?  "https" : "http";
       let host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost;
-      resolve(`${protocol}://${host}`);
+      resolve(`${protocol}//${host}`);
     }
     getUpHosts(token)
     .then(res => {
       let hosts = res.data.up.acc.main;
-      let url = window.location.protocol === 'https:' ? "https://" + hosts[0] : "http://" + hosts[0];
-      resolve(url);
+      resolve(`${protocol}//${hosts[0]}`);
     }).catch(err => {
       reject(err)
     })
