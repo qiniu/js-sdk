@@ -21,4 +21,5 @@ module.exports = merge(common, {
     hot: false,
     inline: false
   }
+//just test for using git
 });
