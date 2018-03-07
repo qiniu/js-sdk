@@ -33,7 +33,7 @@ Qiniu-JavaScript-SDK 为客户端 SDK，没有包含 `token` 生成实现，为�
 * [C/C++](https://developer.qiniu.com/kodo/sdk/cpp)
 * [Objective-C](https://developer.qiniu.com/kodo/sdk/objc)
 
-Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js 服务器端 SDK ](https://developer.qiniu.com/kodo/sdk/nodejs) 开发的。
+Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服务器端部分是基于[ Node.js 服务器端 SDK ](https://developer.qiniu.com/kodo/sdk/nodejs) 开发的。
 
 <!--
 本 SDK 可使开发者忽略上传底层实现细节，而更多的关注 UI 层的展现。
@@ -91,6 +91,11 @@ Qiniu-JavaScript-SDK 的示例 Demo 中的服务器端部分是基于[ Node.js �
   // or
   import * as qiniu from 'qiniu-js'
   ```
+
+* 通过源码编译
+
+`·git clone git@github.com:qiniu/js-sdk.git`，进入项目根目录执行`npm install`，执行`npm run build`，即可在dist目录生成qiniu.min.js
+
 <a id="usage"></a>
 
 ## 使用
@@ -419,7 +424,7 @@ subscription.unsubscribe() // 上传取消
      "Domain": "<Your Bucket Domain>" // Bucket 的外链默认域名，在 Bucket 的内容管理里查看，如：'http://xxx.bkt.clouddn.com/'
    }
    ```
-2. 进入项目根目录，执行 `npm install` 安装依赖库，然后打开两个终端，一个执行 `npm run serve` 跑 server， 一个执行 `npm run dev` 运行服务 demo1； demo2 为测试es6语法的 demo，进入 demo2 目录，执行 `npm install`，然后 `npm start` 运行 demo2，demo1 和 demo2 都共用一个 server。
+2. 进入项目根目录，执行 `npm install` 安装依赖库，然后打开两个终端，一个执行 `npm run serve` 跑 server， 一个执行 `npm run dev` 运行服务 demo1； demo2 为测试es6语法的 demo，进入 demo2 目录，执行 `npm install`，然后 `npm start` 运行 demo2，demo1 和 demo2 都共用一个 server，请注意server文件里的`region`设置跟`config`里的`region`设置要保持一致。
 
 
 <a id="note"></a>
