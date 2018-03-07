@@ -94,7 +94,7 @@ Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服�
 
 * 通过源码编译
 
-`·git clone git@github.com:qiniu/js-sdk.git`，进入项目根目录执行`npm install`，执行`npm run build`，即可在dist目录生成qiniu.min.js
+`git clone git@github.com:qiniu/js-sdk.git`，进入项目根目录执行 `npm install` ，执行 `npm run build`，即可在dist 目录生成 `qiniu.min.js`。
 
 <a id="usage"></a>
 
