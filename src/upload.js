@@ -122,7 +122,7 @@ export class UploadManager {
       formData.append(item[0], item[1])
     );
 
-    return request(this.uploadUrl, {
+    let result = request(this.uploadUrl, {
       method: "POST",
       body: formData,
       onProgress: (data) => {
@@ -130,6 +130,8 @@ export class UploadManager {
       },
       onCreate: this.xhrHandler
     });
+    result.then(() => {this.finishDirectProgress()}, err => {});
+    return result
   }
 
   // 分片上传
@@ -227,8 +229,14 @@ export class UploadManager {
   }
 
   updateDirectProgress(loaded, total) {
-    this.progress = {total: this.getProgressInfoItem(loaded, total)}
-    this.onData(this.progress)
+    this.progress = {total: this.getProgressInfoItem(loaded, total + 1)};
+    this.onData(this.progress);
+  }
+
+  finishDirectProgress(){
+    let total = this.progress.total;
+    this.progress.total = this.getProgressInfoItem(total.loaded + 1, total.size);
+    this.onData(this.progress);
   }
 
   initChunksProgress() {
