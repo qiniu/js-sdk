@@ -35,6 +35,7 @@ Qiniu-JavaScript-SDK 为客户端 SDK，没有包含 `token` 生成实现，为�
 
 Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服务器端部分是基于[ Node.js 服务器端 SDK ](https://developer.qiniu.com/kodo/sdk/nodejs) 开发的。
 
+- [JavaScript SDK 在线示例](http://jssdk-v2.demo.qiniu.io/)
 <!--
 本 SDK 可使开发者忽略上传底层实现细节，而更多的关注 UI 层的展现。
  -->
