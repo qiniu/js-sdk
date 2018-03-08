@@ -227,6 +227,7 @@ export class UploadManager {
   }
 
   updateDirectProgress(loaded, total) {
+    // 当请求未完成时可能进度会达到100，所以total + 1来防止这种情况出现
     this.progress = {total: this.getProgressInfoItem(loaded, total + 1)};
     this.onData(this.progress);
   }
