@@ -4,7 +4,7 @@
     var config = {
       useCdnDomain: true,
       disableStatisticsReport: false,
-      region: qiniu.region.z2,
+      region: qiniu.region.z2
     };
     var putExtra = {
       fname: "",

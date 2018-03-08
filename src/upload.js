@@ -63,19 +63,17 @@ export class UploadManager {
         return Promise.reject(err);
       }
     }
-    let result = getUploadUrl(this.config, this.token)
-    result.then(res => {
+    let upload = getUploadUrl(this.config, this.token).then(res =>{
       this.uploadUrl = res;
       this.uploadAt = new Date().getTime();
-      let upload = this.file.size > BLOCK_SIZE ? this.resumeUpload() : this.directUpload();
-      upload.then(res => {
-        this.onComplete(res.data);
-        if(!this.config.disableStatisticsReport){
-          this.sendLog(res.reqId, 200);
-        }
-      }, err => {})
-      return upload;
-    }).catch(err => {
+      return this.file.size > BLOCK_SIZE ? this.resumeUpload() : this.directUpload();
+    })
+    upload.then(res => {
+      this.onComplete(res.data);
+      if(!this.config.disableStatisticsReport){
+        this.sendLog(res.reqId, 200);
+      }
+    }, err => {
       this.onError(err);
       if(err.isRequestError && !this.config.disableStatisticsReport){
         if(err.code !== 0){
@@ -86,7 +84,7 @@ export class UploadManager {
       }
       this.stop();
     })
-    return result
+    return upload;
   }
 
   stop() {
@@ -130,8 +128,10 @@ export class UploadManager {
       },
       onCreate: this.xhrHandler
     });
-    result.then(() => {this.finishDirectProgress()}, err => {});
-    return result
+    return result.then(res => {
+      this.finishDirectProgress();
+      return res;
+    });
   }
 
   // 分片上传

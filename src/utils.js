@@ -219,21 +219,17 @@ export function getDomainFromUrl (url) {
 
 // 构造区域上传url
 export function getUploadUrl(config, token) {
-  return new Promise((resolve, reject) => {
-    let protocol = window.location.protocol;
-    if(config.region != null){
-      let upHosts = regionUphostMap[config.region];
-      let host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost;
-      resolve(`${protocol}//${host}`);
-    }
-    getUpHosts(token)
+  let protocol = window.location.protocol;
+  if(config.region != null){
+    let upHosts = regionUphostMap[config.region];
+    let host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost;
+    return Promise.resolve(`${protocol}//${host}`);
+  }  
+  return getUpHosts(token)
     .then(res => {
       let hosts = res.data.up.acc.main;
-      resolve(`${protocol}//${hosts[0]}`);
-    }).catch(err => {
-      reject(err)
+      return (`${protocol}//${hosts[0]}`);
     })
-  })
 }
 
 function getPutPolicy(token) {
@@ -249,18 +245,18 @@ function getPutPolicy(token) {
     }
     return putPolicy;
   } catch(err) {
-    return err
+    return err;
   }
-};
+}
 
 function getUpHosts(token) {
   let putPolicy = getPutPolicy(token);
   if(putPolicy.bucket){
-    let uphosts_url = window.location.protocol + "//api.qiniu.com/v2/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket;
-    return request(uphosts_url, { method: "GET" })
+    let url = window.location.protocol + "//api.qiniu.com/v2/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket;
+    return request(url, { method: "GET" })
   }
-  return Promise.reject(err)
-};
+  return Promise.reject(putPolicy);
+}
 
 
 export function isContainFileMimeType(fileType, mimeType){
