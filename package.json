@@ -6,8 +6,8 @@
   "description": "Javascript SDK for Qiniu Resource (Cloud) Storage AP",
   "main": "dist/qiniu.min.js",
   "scripts": {
-    "build:prod": "webpack --optimize-minimize --config webpack.prod.js",
-    "dev": "webpack-dev-server --open --config webpack.dev.js",
+    "build": "eslint src && webpack --optimize-minimize --config webpack.prod.js",
+    "dev": "eslint src && webpack-dev-server --open --config webpack.dev.js",
     "serve": "node test/server.js"
   },
   "repository": {
@@ -38,6 +38,7 @@
     "body-parser": "^1.18.2",
     "connect-multiparty": "^2.1.0",
     "es3ify-loader": "^0.2.0",
+    "eslint": "^4.18.2",
     "express": "^4.16.2",
     "multiparty": "^4.1.3",
     "open-browser-webpack-plugin": "0.0.5",

@@ -1,4 +1,4 @@
-import { createXHR, request } from "./utils";
+import { request } from "./utils";
 import { urlSafeBase64Encode } from "./base64";
 
 function getImageUrl(key, domain) {

@@ -1,7 +1,6 @@
 import {
   getChunks,
   isChunkExpired,
-  createXHR,
   createMkFileUrl,
   getLocalFileInfoAndMd5,
   setLocalFileInfo,
@@ -57,33 +56,33 @@ export class UploadManager {
       this.putExtra.fname = this.file.name;
     }
     if (this.putExtra.mimeType && this.putExtra.mimeType.length) {
-      if(!isContainFileMimeType(this.file.type, this.putExtra.mimeType)){
+      if (!isContainFileMimeType(this.file.type, this.putExtra.mimeType)){
         let err = new Error("file type doesn't match with what you specify");
         this.onError(err);
         return Promise.reject(err);
       }
     }
-    let upload = getUploadUrl(this.config, this.token).then(res =>{
+    let upload = getUploadUrl(this.config, this.token).then(res => {
       this.uploadUrl = res;
       this.uploadAt = new Date().getTime();
       return this.file.size > BLOCK_SIZE ? this.resumeUpload() : this.directUpload();
-    })
+    });
     upload.then(res => {
       this.onComplete(res.data);
-      if(!this.config.disableStatisticsReport){
+      if (!this.config.disableStatisticsReport){
         this.sendLog(res.reqId, 200);
       }
     }, err => {
       this.onError(err);
-      if(err.isRequestError && !this.config.disableStatisticsReport){
-        if(err.code !== 0){
+      if (err.isRequestError && !this.config.disableStatisticsReport){
+        if (err.code !== 0){
           this.sendLog(err.reqId, err.code);
-        }else{
+        } else {
           this.sendLog("", -2);
         }
       }
       this.stop();
-    })
+    });
     return upload;
   }
 
@@ -99,12 +98,12 @@ export class UploadManager {
       host: getDomainFromUrl(this.uploadUrl),
       remoteIp: "",
       port: getPortFromUrl(this.uploadUrl),
-      duration: (new Date().getTime() - this.uploadAt)/1000,
-      time: Math.floor(this.uploadAt/1000),
+      duration: (new Date().getTime() - this.uploadAt) / 1000,
+      time: Math.floor(this.uploadAt / 1000),
       bytesSent: this.progress ? this.progress.total.loaded : 0,
       upType: "jssdk-h5",
       size: this.file.size
-    }, this.token)
+    }, this.token);
   }
 
   // 直传
@@ -120,15 +119,14 @@ export class UploadManager {
       formData.append(item[0], item[1])
     );
 
-    let result = request(this.uploadUrl, {
+    return request(this.uploadUrl, {
       method: "POST",
       body: formData,
       onProgress: (data) => {
         this.updateDirectProgress(data.loaded, data.total);
       },
       onCreate: this.xhrHandler
-    });
-    return result.then(res => {
+    }).then(res => {
       this.finishDirectProgress();
       return res;
     });
@@ -163,7 +161,7 @@ export class UploadManager {
         },
         err => {
           // ctx错误或者过期情况下清除本地存储数据
-          err.code === 701 ? removeLocalFileInfo(this.file.name, md5) : setLocalFileInfo(this.file.name, md5, this.ctxList)
+          err.code === 701 ? removeLocalFileInfo(this.file.name, md5) : setLocalFileInfo(this.file.name, md5, this.ctxList);
         }
       );
       return result;

@@ -7,8 +7,8 @@ cache:
 install:
 - npm install
 script:
-- npm run build:prod
-before_deploy: "npm run build:prod"
+- npm run build
+before_deploy: "npm run build"
 deploy:
   provider: npm
   email: sdk@qiniu.com

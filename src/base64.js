@@ -86,9 +86,9 @@ function base64Encode(data) {
   // *     returns 1: 'S2V2aW4gdmFuIFpvbm5ldmVsZA=='
   // mozilla has this native
   // - but breaks in 2.0.0.12!
-  //if (typeof this.window['atob'] == 'function') {
+  // if (typeof this.window['atob'] == 'function') {
   //    return atob(data);
-  //}
+  // }
   let b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
   let o1,
     o2,
@@ -156,9 +156,9 @@ function base64Decode(data) {
   // *     returns 1: 'Kevin van Zonneveld'
   // mozilla has this native
   // - but breaks in 2.0.0.12!
-  //if (typeof this.window['atob'] == 'function') {
+  // if (typeof this.window['atob'] == 'function') {
   //    return atob(data);
-  //}
+  // }
   let b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
   let o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
       ac = 0,
@@ -169,7 +169,7 @@ function base64Decode(data) {
       return data;
   }
 
-  data += '';
+  data += "";
 
   do { // unpack four hexets into three octets using index points in b64
       h1 = b64.indexOf(data.charAt(i++));
@@ -192,10 +192,10 @@ function base64Decode(data) {
       }
   } while (i < data.length);
 
-  dec = tmp_arr.join('');
+  dec = tmp_arr.join("");
 
   return dec;
-};
+}
 
 export function urlSafeBase64Encode(v) {
   v = base64Encode(v);
@@ -203,6 +203,6 @@ export function urlSafeBase64Encode(v) {
 }
 
 export function urlSafeBase64Decode(v){
-  v = v.replace(/_/g, '/').replace(/-/g, '+');
+  v = v.replace(/_/g, "/").replace(/-/g, "+");
   return base64Decode(v);
 }
