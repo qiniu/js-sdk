@@ -238,11 +238,7 @@ function getPutPolicy(token) {
   try {
     let putPolicy = JSON.parse(urlSafeBase64Decode(segments[2]));
     putPolicy.ak = ak;
-    if (putPolicy.scope.indexOf(":") >= 0) {
-      putPolicy.bucket = putPolicy.scope.split(":")[0];
-    } else {
-      putPolicy.bucket = putPolicy.scope;
-    }
+    putPolicy.bucket = putPolicy.scope.split(":")[0];
     return putPolicy;
   } catch(err) {
     return err;
