@@ -211,12 +211,12 @@ subscription.unsubscribe() // 上传取消
   * **qiniu.region.na0**: 代表北美区域
   * **qiniu.region.as0**: 代表新加坡区域
 
-### qiniu.getUploadUrl(config: object): string
+### qiniu.getUploadUrl(config: object, token: string): Promise
 
   接收参数为 `config` 对象，返回根据 `config` 里所配置信息的上传域名
 
   ```JavaScript
-  var requestUrl = qiniu.getUploadUrl(config)
+  qiniu.getUploadUrl(config, token).then(res => {}) // res 即为上传的 url
   ```
 
 ### qiniu.getHeadersForChunkUpload(token: string): object
