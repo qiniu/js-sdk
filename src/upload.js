@@ -47,6 +47,7 @@ export class UploadManager {
     this.onData = () => {};
     this.onError = () => {};
     this.onComplete = () => {};
+    this.retryCount = 0;
     Object.assign(this, handlers);
   }
 
@@ -74,14 +75,16 @@ export class UploadManager {
       }
     }, err => {
       this.onError(err);
-      if (err.isRequestError && !this.config.disableStatisticsReport){
-        if (err.code !== 0){
-          this.sendLog(err.reqId, err.code);
-        } else {
-          this.sendLog("", -2);
-        }
-      }
       this.stop();
+      if (err.isRequestError){
+        if (err.code === 599){
+          this.retryCount++;
+          this.retryCount > 3 ? "" : this.putFile();
+        }
+        if (!this.config.disableStatisticsReport){
+          err.code === 0 ? this.sendLog("", -2) : this.sendLog(err.reqId, err.code);
+        } 
+      }
     });
     return upload;
   }
