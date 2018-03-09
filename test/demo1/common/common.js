@@ -206,6 +206,7 @@ function imageDeal(board, key, domain) {
     .html(
       '<img src="' +
         domain +
+        "/" +
         key +
         '"/>' +
         '<a data-toggle="modal" data-target="#myModal">查看处理效果</a>'
