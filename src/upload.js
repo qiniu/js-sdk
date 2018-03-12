@@ -78,7 +78,7 @@ export class UploadManager {
       if (err.isRequestError){
         if (!this.config.disableStatisticsReport){
           if (err.code === 0){
-            this.sendLog("", -2)
+            this.sendLog("", -2);
           } else {
             this.sendLog(err.reqId, err.code);
           }
@@ -91,7 +91,7 @@ export class UploadManager {
             return;
           }
           // 重试过程中遇到 599 不需要 onError,当超过最大次数后再 onError
-          this.onError(err)
+          this.onError(err);
           return;
         }
       }
