@@ -19,7 +19,9 @@ function uploadWithSDK(token, putExtra, config, domain) {
 
       // 设置next,error,complete对应的操作，分别处理相应的进度信息，错误信息，以及完成后的操作
       var error = function(err) {
-        console.log(err);
+        board.start = true;
+        $(board).find(".control-upload").text("继续上传");
+        alert("上传出错")
       };
 
       var complete = function(res) {
@@ -77,12 +79,12 @@ function uploadWithSDK(token, putExtra, config, domain) {
         .on("click", function() {
           if(board.start){
             subscription = observable.subscribe(subObject);
-            $(this).text("取消上传");
+            $(this).text("暂停上传");
             board.start = false;
           }else{
             board.start = true;
             subscription.unsubscribe();
-            $(this).text("开始上传");
+            $(this).text("继续上传");
           }
         });
     }
