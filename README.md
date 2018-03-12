@@ -169,6 +169,7 @@ subscription.unsubscribe() // 上传取消
     * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，`true` 表示使用，默认为 `false`。
     * config.disableStatisticsReport: 是否禁用日志报告，为布尔值，默认为 `false`。
     * config.region: 选择上传域名区域；当为 `null` 或 `undefined` 时，自动分析上传域名区域。
+    * config.retryCount: 当上传过程中出现 `599` 内部错误时，上传自动重试次数，默认三次。
 
   * **putExtra**:
 
