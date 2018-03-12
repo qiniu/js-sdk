@@ -35,6 +35,7 @@ Qiniu-JavaScript-SDK 为客户端 SDK，没有包含 `token` 生成实现，为�
 
 Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服务器端部分是基于[ Node.js 服务器端 SDK ](https://developer.qiniu.com/kodo/sdk/nodejs) 开发的。
 
+- [JavaScript SDK 在线示例](http://jssdk-v2.demo.qiniu.io/)
 <!--
 本 SDK 可使开发者忽略上传底层实现细节，而更多的关注 UI 层的展现。
  -->
@@ -146,7 +147,7 @@ subscription.unsubscribe() // 上传取消
         * error: 上传错误后触发，当不是 xhr 请求错误时，会把当前错误产生原因直接抛出，诸如 JSON 解析异常等；当产生 xhr 请求错误时，参数 err 为一个包含 `code`、`message`、`isRequestError` 三个属性的 `object`：
           * err.isRequestError: 用于区分是否 xhr 请求错误；当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 `true`；否则为 `undefined` 。
           * err.reqId: `string`，xhr请求错误的 `X-Reqid`。
-          * err.code: `number`，请求错误状态码，只有在 `err.isRequestError` 为 true 的时候才有效，可查阅码值对应[说明](https://developer.qiniu.com/kodo/api/3928/error-responses)。
+          * err.code: `number`，请求错误状态码，只有在 `err.isRequestError` 为 true 的时候才有效，当出现 `599` 错误上传会自动重试，整个上传过程中出现 `599` 次数最多6次，否则会停止当前上传并输出错误信息。可查阅码值对应[说明](https://developer.qiniu.com/kodo/api/3928/error-responses)。
           * err.message: `string`，错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。
 
         * complete: 接收上传完成后的后端返回信息，具体返回结构取决于后端sdk的配置，可参考[上传策略](https://developer.qiniu.com/kodo/manual/1206/put-policy)。
@@ -167,7 +168,8 @@ subscription.unsubscribe() // 上传取消
 
     * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，`true` 表示使用，默认为 `false`。
     * config.disableStatisticsReport: 是否禁用日志报告，为布尔值，默认为 `false`。
-    * config.region: 选择上传域名区域，默认为(z0)华东。
+    * config.region: 选择上传域名区域；当为 `null` 或 `undefined` 时，自动分析上传域名区域。
+    * config.retryCount: 当上传过程中出现 `599` 内部错误时，上传自动重试次数，默认三次。
 
   * **putExtra**:
 
@@ -210,12 +212,12 @@ subscription.unsubscribe() // 上传取消
   * **qiniu.region.na0**: 代表北美区域
   * **qiniu.region.as0**: 代表新加坡区域
 
-### qiniu.getUploadUrl(config: object): string
+### qiniu.getUploadUrl(config: object, token: string): Promise
 
   接收参数为 `config` 对象，返回根据 `config` 里所配置信息的上传域名
 
   ```JavaScript
-  var requestUrl = qiniu.getUploadUrl(config)
+  qiniu.getUploadUrl(config, token).then(res => {}) // res 即为上传的 url
   ```
 
 ### qiniu.getHeadersForChunkUpload(token: string): object
@@ -424,7 +426,7 @@ subscription.unsubscribe() // 上传取消
      "Domain": "<Your Bucket Domain>" // Bucket 的外链默认域名，在 Bucket 的内容管理里查看，如：'http://xxx.bkt.clouddn.com/'
    }
    ```
-2. 进入项目根目录，执行 `npm install` 安装依赖库，然后打开两个终端，一个执行 `npm run serve` 跑 server， 一个执行 `npm run dev` 运行服务 demo1； demo2 为测试es6语法的 demo，进入 demo2 目录，执行 `npm install`，然后 `npm start` 运行 demo2，demo1 和 demo2 都共用一个 server，请注意 server 文件里的 `region` 设置跟 `config` 里的` region`设置要保持一致。
+2. 进入项目根目录，执行 `npm install` 安装依赖库，然后打开两个终端，一个执行 `npm run serve` 跑 server， 一个执行 `npm run dev` 运行服务 demo1； demo2 为测试es6语法的 demo，进入 demo2 目录，执行 `npm install`，然后 `npm start` 运行 demo2，demo1 和 demo2 都共用一个 server，请注意 server 文件里的 `region` 设置跟 `config` 里的` region` 设置要保持一致。
 
 
 <a id="note"></a>

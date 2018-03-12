@@ -95,8 +95,7 @@ function imageControl(domain) {
             fop: "imageMogr2",
             "auto-orient": true,
             strip: true,
-            rotate: rotate,
-            format: "png"
+            rotate: rotate
           });
         }
       } else {
@@ -113,8 +112,7 @@ function imageControl(domain) {
           fop: "imageMogr2",
           "auto-orient": true,
           strip: true,
-          rotate: rotate,
-          format: "png"
+          rotate: rotate
         });
       }
       $(".modal-body")
@@ -155,8 +153,7 @@ function imageControl(domain) {
               fop: "imageView2",
               mode: 3,
               h: parseInt(height, 10),
-              q: 100,
-              format: "png"
+              q: 100
             });
           }
 
@@ -165,8 +162,7 @@ function imageControl(domain) {
               fop: "imageMogr2",
               "auto-orient": true,
               strip: true,
-              rotate: 0,
-              format: "png"
+              rotate: 0
             });
           }
         });
@@ -202,8 +198,7 @@ function imageDeal(board, key, domain) {
     fop: "imageView2",
     mode: 2,
     h: 450,
-    q: 100,
-    format: "png"
+    q: 100
   });
   var newUrl = qiniu.pipeline(fopArr, key, domain);
   $(board)
@@ -211,6 +206,7 @@ function imageDeal(board, key, domain) {
     .html(
       '<img src="' +
         domain +
+        "/" +
         key +
         '"/>' +
         '<a data-toggle="modal" data-target="#myModal">查看处理效果</a>'

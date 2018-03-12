@@ -1,7 +1,6 @@
 import {
   getChunks,
   isChunkExpired,
-  createXHR,
   createMkFileUrl,
   getLocalFileInfoAndMd5,
   setLocalFileInfo,
@@ -26,6 +25,7 @@ export class UploadManager {
       {
         useCdnDomain: true,
         disableStatisticsReport: false,
+        retryCount: 3,
         region: null
       },
       options.config
@@ -57,33 +57,41 @@ export class UploadManager {
       this.putExtra.fname = this.file.name;
     }
     if (this.putExtra.mimeType && this.putExtra.mimeType.length) {
-      if(!isContainFileMimeType(this.file.type, this.putExtra.mimeType)){
+      if (!isContainFileMimeType(this.file.type, this.putExtra.mimeType)){
         let err = new Error("file type doesn't match with what you specify");
         this.onError(err);
         return Promise.reject(err);
       }
     }
-
-    this.uploadUrl = getUploadUrl(this.config);
-    this.uploadAt = new Date().getTime();
-
-    let upload = this.file.size > BLOCK_SIZE ? this.resumeUpload() : this.directUpload();
+    let upload = getUploadUrl(this.config, this.token).then(res => {
+      this.uploadUrl = res;
+      this.uploadAt = new Date().getTime();
+      return this.file.size > BLOCK_SIZE ? this.resumeUpload() : this.directUpload();
+    });
     upload.then(res => {
       this.onComplete(res.data);
-      if(!this.config.disableStatisticsReport){
+      if (!this.config.disableStatisticsReport){
         this.sendLog(res.reqId, 200);
       }
     }, err => {
-      this.onError(err);
-      if(err.isRequestError && !this.config.disableStatisticsReport){
-        if(err.code !== 0){
-          this.sendLog(err.reqId, err.code);
-        }else{
-          this.sendLog("", -2);
+      this.stop();
+      if (err.isRequestError){
+        if (!this.config.disableStatisticsReport){
+          if (err.code === 0){
+            this.sendLog("", -2);
+          } else {
+            this.sendLog(err.reqId, err.code);
+          }
+        } 
+        if (err.code === 599){
+          if (this.config.retryCount-- > 0){
+            this.putFile();
+            return;
+          }
         }
       }
-      this.stop();
-    })
+      this.onError(err);
+    });
     return upload;
   }
 
@@ -99,12 +107,12 @@ export class UploadManager {
       host: getDomainFromUrl(this.uploadUrl),
       remoteIp: "",
       port: getPortFromUrl(this.uploadUrl),
-      duration: (new Date().getTime() - this.uploadAt)/1000,
-      time: Math.floor(this.uploadAt/1000),
+      duration: (new Date().getTime() - this.uploadAt) / 1000,
+      time: Math.floor(this.uploadAt / 1000),
       bytesSent: this.progress ? this.progress.total.loaded : 0,
       upType: "jssdk-h5",
       size: this.file.size
-    }, this.token)
+    }, this.token);
   }
 
   // 直传
@@ -127,6 +135,9 @@ export class UploadManager {
         this.updateDirectProgress(data.loaded, data.total);
       },
       onCreate: this.xhrHandler
+    }).then(res => {
+      this.finishDirectProgress();
+      return res;
     });
   }
 
@@ -159,7 +170,7 @@ export class UploadManager {
         },
         err => {
           // ctx错误或者过期情况下清除本地存储数据
-          err.code === 701 ? removeLocalFileInfo(this.file.name, md5) : setLocalFileInfo(this.file.name, md5, this.ctxList)
+          err.code === 701 ? removeLocalFileInfo(this.file.name, md5) : setLocalFileInfo(this.file.name, md5, this.ctxList);
         }
       );
       return result;
@@ -225,8 +236,15 @@ export class UploadManager {
   }
 
   updateDirectProgress(loaded, total) {
-    this.progress = {total: this.getProgressInfoItem(loaded, total)}
-    this.onData(this.progress)
+    // 当请求未完成时可能进度会达到100，所以total + 1来防止这种情况出现
+    this.progress = {total: this.getProgressInfoItem(loaded, total + 1)};
+    this.onData(this.progress);
+  }
+
+  finishDirectProgress(){
+    let total = this.progress.total;
+    this.progress.total = this.getProgressInfoItem(total.loaded + 1, total.size);
+    this.onData(this.progress);
   }
 
   initChunksProgress() {

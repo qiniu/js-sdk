@@ -1,11 +1,11 @@
-import { urlSafeBase64Encode } from "./base64";
-import { regionUphostMap, region } from "./config";
+import { urlSafeBase64Encode, urlSafeBase64Decode } from "./base64";
+import { regionUphostMap } from "./config";
 import SparkMD5 from "spark-md5";
 
 // 对上传块本地存储时间检验是否过期
 // TODO: 最好用服务器时间来做判断
 export function isChunkExpired(time) {
-  let expireAt = time + 3600 * 24* 1000;
+  let expireAt = time + 3600 * 24 * 1000;
   return new Date().getTime() > expireAt;
 }
 
@@ -49,28 +49,28 @@ export function getLocalFileInfoAndMd5(file) {
 export function sum(list){
   return list.reduce((sum, loaded) => {
     return sum + loaded;
-  },0)
+  }, 0);
 }
 
 export function setLocalFileInfo(name, md5, info) {
   try {
     localStorage.setItem(createLocalKey(name, md5), JSON.stringify(info));
   } catch (err) {
-    if(window.console && window.console.warn){
+    if (window.console && window.console.warn){
       console.warn("setLocalFileInfo failed");
     }
   }
 }
 
 function createLocalKey(name, md5){
-  return "qiniu_js_sdk_upload_file_md5_" + md5 + "_" + name
+  return "qiniu_js_sdk_upload_file_md5_" + md5 + "_" + name;
 }
 
 export function removeLocalFileInfo(name, md5) {
   try {
     localStorage.removeItem(createLocalKey(name, md5));
   } catch (err) {
-    if(window.console && window.console.warn){
+    if (window.console && window.console.warn){
       console.warn("removeLocalFileInfo failed");
     }
   }
@@ -80,7 +80,7 @@ function getLocalFileInfo(name, md5) {
   try {
     return JSON.parse(localStorage.getItem(createLocalKey(name, md5))) || [];
   } catch (err) {
-    if(window.console && window.console.warn){
+    if (window.console && window.console.warn){
       console.warn("getLocalFileInfo failed");
     }
     return [];
@@ -128,8 +128,8 @@ export function createXHR() {
   if (window.XMLHttpRequest) {
     return new XMLHttpRequest();
   }
-  return new ActiveXObject("Microsoft.XMLHTTP");
-};
+  return new window.ActiveXObject("Microsoft.XMLHTTP");
+}
 
 export function readAsArrayBuffer(data) {
   return new Promise((resolve, reject) => {
@@ -170,19 +170,19 @@ export function request(url, options) {
       if (xhr.readyState !== 4) {
         return;
       }
-      let reqId = xhr.getResponseHeader("x-reqId")|| "";
+      let reqId = xhr.getResponseHeader("x-reqId") || "";
       if (xhr.status !== 200) {
         let message = `xhr request failed, code: ${xhr.status};`;
         if (responseText) {
           message = message + ` response: ${responseText}`;
         }
-        reject({code: xhr.status, message: message,reqId: reqId, isRequestError: true});
+        reject({code: xhr.status, message: message, reqId: reqId, isRequestError: true});
         return;
       }
       try {
-        resolve({data: JSON.parse(responseText), reqId: reqId})
+        resolve({data: JSON.parse(responseText), reqId: reqId});
       } catch (err) {
-        reject(err)
+        reject(err);
       }
     };
 
@@ -218,13 +218,40 @@ export function getDomainFromUrl (url) {
 }
 
 // 构造区域上传url
-export function getUploadUrl(config) {
-  let upHosts = regionUphostMap[config.region] || regionUphostMap[region.z0];
-  let protocol = window.location.protocol === 'https:' ?  "https" : "http";
-  let host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost;
-  return `${protocol}://${host}`;
+export function getUploadUrl(config, token) {
+  let protocol = window.location.protocol;
+  if (config.region != null){
+    let upHosts = regionUphostMap[config.region];
+    let host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost;
+    return Promise.resolve(`${protocol}//${host}`);
+  }  
+  return getUpHosts(token)
+    .then(res => {
+      let hosts = res.data.up.acc.main;
+      return (`${protocol}//${hosts[0]}`);
+    });
 }
 
+function getPutPolicy(token) {
+  let segments = token.split(":");
+  let ak = segments[0];
+  let putPolicy = JSON.parse(urlSafeBase64Decode(segments[2]));
+  putPolicy.ak = ak;
+  putPolicy.bucket = putPolicy.scope.split(":")[0];
+  return putPolicy;
+}
+
+function getUpHosts(token) {
+  try {
+    let putPolicy = getPutPolicy(token);
+    let url = window.location.protocol + "//api.qiniu.com/v2/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket;
+    return request(url, { method: "GET" });
+  } catch (e) {
+    return Promise.reject(e);
+  }
+}
+
+
 export function isContainFileMimeType(fileType, mimeType){
-  return mimeType.indexOf(fileType) > -1
+  return mimeType.indexOf(fileType) > -1;
 }
