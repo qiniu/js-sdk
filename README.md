@@ -133,7 +133,7 @@ subscription.unsubscribe() // 上传取消
           },
           error(err){
             // ...
-          }, 
+          },
           complete(res){
             // ...
           }
@@ -144,10 +144,10 @@ subscription.unsubscribe() // 上传取消
           * total.total: `number`，本次上传的总量控制信息，单位为字节，注意这里的 total 跟文件大小并不一致。
           * total.percent: `number`，当前上传进度，范围：0～100。
 
-        * error: 上传错误后触发，当不是 xhr 请求错误时，会把当前错误产生原因直接抛出，诸如 JSON 解析异常等；当产生 xhr 请求错误时，参数 err 为一个包含 `code`、`message`、`isRequestError` 三个属性的 `object`：
+        * error: 上传错误后触发；自动重试本身并不会触发该错误，而当重试次数到达上限后则可以触发。当不是 xhr 请求错误时，会把当前错误产生原因直接抛出，诸如 JSON 解析异常等；当产生 xhr 请求错误时，参数 err 为一个包含 `code`、`message`、`isRequestError` 三个属性的 `object`：
           * err.isRequestError: 用于区分是否 xhr 请求错误；当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 `true`；否则为 `undefined` 。
           * err.reqId: `string`，xhr请求错误的 `X-Reqid`。
-          * err.code: `number`，请求错误状态码，只有在 `err.isRequestError` 为 true 的时候才有效，当出现 `599` 错误上传会自动重试，整个上传过程中出现 `599` 次数最多6次，否则会停止当前上传并输出错误信息。可查阅码值对应[说明](https://developer.qiniu.com/kodo/api/3928/error-responses)。
+          * err.code: `number`，请求错误状态码，只有在 `err.isRequestError` 为 true 的时候才有效。可查阅码值对应[说明](https://developer.qiniu.com/kodo/api/3928/error-responses)。
           * err.message: `string`，错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。
 
         * complete: 接收上传完成后的后端返回信息，具体返回结构取决于后端sdk的配置，可参考[上传策略](https://developer.qiniu.com/kodo/manual/1206/put-policy)。
@@ -169,7 +169,7 @@ subscription.unsubscribe() // 上传取消
     * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，`true` 表示使用，默认为 `false`。
     * config.disableStatisticsReport: 是否禁用日志报告，为布尔值，默认为 `false`。
     * config.region: 选择上传域名区域；当为 `null` 或 `undefined` 时，自动分析上传域名区域。
-    * config.retryCount: 当上传过程中出现 `599` 内部错误时，上传自动重试次数，默认三次。
+    * config.retryCount: 上传自动重试次数（整体重试次数，而不是某个分片的重试次数）；默认 3 次（即上传失败后最多重试两次）；**目前仅在上传过程中产生 `599` 内部错误时生效**，**但是未来很可能会扩展为支持更多的情况**。
 
   * **putExtra**:
 
@@ -185,7 +185,7 @@ subscription.unsubscribe() // 上传取消
     * params: `object`，用来放置自定义变量
     * mimeType: `null || array`，用来限制上传文件类型，为 `null` 时表示不对文件类型限制；限制类型放到数组里：
     `["image/png", "image/jpeg", "image/gif"]`
- 
+
 ### qiniu.createMkFileUrl(url: string, size: number, key: string, putExtra: object): string
 
   返回创建文件的 url；当分片上传时，我们需要把分片返回的 ctx 信息拼接后通过该 url 上传给七牛以创建文件。
@@ -255,7 +255,7 @@ subscription.unsubscribe() // 上传取消
   返回添加水印后的图片地址
   * **key** : 文件资源名
   * **domain**: 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取，前端可以通过接口请求后端得到
-  
+
   ```JavaScript
 
   var imgLink = qiniu.watermark({
@@ -272,7 +272,7 @@ subscription.unsubscribe() // 上传取消
   // 若未指定key，可以通过以下方式获得完整的 imgLink，下同
   // imgLink  =  '<domain>/<key>?' +  imgLink
   // <domain> 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取
-  
+
   // 或者
 
   var imgLink = qiniu.watermark({
