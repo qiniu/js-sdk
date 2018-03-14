@@ -48,6 +48,7 @@ export class UploadManager {
     this.onData = () => {};
     this.onError = () => {};
     this.onComplete = () => {};
+    this.retryCount = 0;
     Object.assign(this, handlers);
   }
 
@@ -75,19 +76,17 @@ export class UploadManager {
       }
     }, err => {
       this.stop();
-      if (err.isRequestError){
-        if (!this.config.disableStatisticsReport){
-          if (err.code === 0){
+      if (err.isRequestError) {
+        if (!this.config.disableStatisticsReport) {
+          if (err.code === 0) {
             this.sendLog("", -2);
           } else {
             this.sendLog(err.reqId, err.code);
           }
-        } 
-        if (err.code === 599){
-          if (this.config.retryCount-- > 0){
-            this.putFile();
-            return;
-          }
+        }
+        if (err.code === 599 && ++this.retryCount < this.config.retryCount) {
+          this.putFile();
+          return;
         }
       }
       this.onError(err);
@@ -265,7 +264,7 @@ export class UploadManager {
   notifyResumeProgress() {
     this.progress = {
       total: this.getProgressInfoItem(
-        sum(this.loaded.chunks) + this.loaded.mkFileProgress, 
+        sum(this.loaded.chunks) + this.loaded.mkFileProgress,
         this.file.size + 1
       ),
       chunks: this.chunks.map((chunk, index) => {
