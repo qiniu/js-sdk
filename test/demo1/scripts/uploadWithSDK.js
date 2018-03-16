@@ -6,6 +6,7 @@ function uploadWithSDK(token, putExtra, config, domain) {
     var observable;
     if (file) {
       var key = file.name;
+      var finishedAttr = [];
       // 添加上传dom面板
       var board = addUploadBoard(file, config, key, "");
       if (!board) {
@@ -42,11 +43,18 @@ function uploadWithSDK(token, putExtra, config, domain) {
           imageDeal(board, res.key, domain);
         }
       };
-
+      
       var next = function(response) {
         var chunks = response.chunks||[];
         var total = response.total;
+        // 这里对每个chunk更新进度，并记录已经更新好的避免重复更新，同时对未开始更新的跳过
         for (var i = 0; i < chunks.length; i++) {
+          if(chunks[i].percent === 0 || finishedAttr[i]){
+            continue;
+          }
+          if(chunks[i].percent === 100){
+            finishedAttr[i] = true
+          }
           $(board)
             .find(".fragment-group li")
             .eq(i)
@@ -78,13 +86,15 @@ function uploadWithSDK(token, putExtra, config, domain) {
         .find(".control-upload")
         .on("click", function() {
           if(board.start){
-            subscription = observable.subscribe(subObject);
             $(this).text("暂停上传");
             board.start = false;
+            setTimeout(function(){
+              subscription = observable.subscribe(subObject)
+            }, 0)
           }else{
             board.start = true;
-            subscription.unsubscribe();
             $(this).text("继续上传");
+            subscription.unsubscribe();
           }
         });
     }

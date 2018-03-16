@@ -2,9 +2,9 @@ import {
   getChunks,
   isChunkExpired,
   createMkFileUrl,
-  getLocalFileInfoAndMd5,
   setLocalFileInfo,
   removeLocalFileInfo,
+  getLocalFileInfo,
   isContainFileMimeType,
   sum,
   getDomainFromUrl,
@@ -17,6 +17,9 @@ import {
   filterParams
 } from "./utils";
 
+import { Pool } from "./pool";
+import SparkMD5 from "spark-md5";
+
 let BLOCK_SIZE = 4 * 1024 * 1024;
 
 export class UploadManager {
@@ -25,7 +28,9 @@ export class UploadManager {
       {
         useCdnDomain: true,
         disableStatisticsReport: false,
-        retryCount: 3,
+        retryCount: 6,
+        md5: false,
+        thread: 3,
         region: null
       },
       options.config
@@ -42,6 +47,7 @@ export class UploadManager {
     this.progress = null;
     this.xhrList = [];
     this.xhrHandler = xhr => this.xhrList.push(xhr);
+    this.abort = false;
     this.file = options.file;
     this.key = options.key;
     this.token = options.token;
@@ -53,7 +59,7 @@ export class UploadManager {
   }
 
   putFile() {
-
+    this.abort = false;
     if (!this.putExtra.fname) {
       this.putExtra.fname = this.file.name;
     }
@@ -75,19 +81,28 @@ export class UploadManager {
         this.sendLog(res.reqId, 200);
       }
     }, err => {
-      this.stop();
-      if (err.isRequestError) {
-        if (!this.config.disableStatisticsReport) {
-          if (err.code === 0) {
+      if (err.isRequestError){
+        if (!this.config.disableStatisticsReport){
+          if (this.abort){
             this.sendLog("", -2);
+            return;
           } else {
             this.sendLog(err.reqId, err.code);
           }
+        } 
+        if (err.code === 0 && !this.abort) {
+          this.stop();
+          if (--this.config.retryCount >= 0){
+            console.log("retry...");
+            this.putFile();
+            return;
+          }
         }
-        if (err.code === 599 && ++this.retryCount < this.config.retryCount) {
-          this.putFile();
-          return;
-        }
+      }
+      this.stop();
+      if (err.code === 701 || (err.message && err.message === "md5不一致")) {
+        this.putFile();
+        return;
       }
       this.onError(err);
     });
@@ -97,6 +112,7 @@ export class UploadManager {
   stop() {
     this.xhrList.forEach(xhr => xhr.abort());
     this.xhrList = [];
+    this.abort = true;
   }
 
   sendLog(reqId, code){
@@ -148,45 +164,55 @@ export class UploadManager {
       chunks: null
     };
 
-    return getLocalFileInfoAndMd5(this.file).then(res => {
-      this.ctxList = [];
-      let md5 = res.md5;
-      this.localInfo = res.info;
+    this.ctxList = [];
+    this.localInfo = getLocalFileInfo(this.file);
+    this.chunks = getChunks(this.file, BLOCK_SIZE);
+    this.initChunksProgress();
 
-      this.chunks = getChunks(this.file, BLOCK_SIZE);
-      this.initChunksProgress();
-      let uploadChunks = this.chunks.map((chunk, index) => {
-        return this.uploadChunk(chunk, index);
-      });
-
-      let result = Promise.all(uploadChunks).then(() => {
-        return this.mkFileReq();
-      });
-
-      result.then(
-        res => {
-          removeLocalFileInfo(this.file.name, md5);
-        },
-        err => {
-          // ctx错误或者过期情况下清除本地存储数据
-          err.code === 701 ? removeLocalFileInfo(this.file.name, md5) : setLocalFileInfo(this.file.name, md5, this.ctxList);
-        }
-      );
-      return result;
+    let pool = new Pool((chunkInfo) => this.uploadChunk(chunkInfo), this.config.thread);
+    let uploadChunks = this.chunks.map((chunk, index) => {
+      return pool.insertQueue({chunk, index});
     });
+    let result = Promise.all(uploadChunks).then(() => {
+      return this.mkFileReq();
+    });
+    result.then(
+      res => {
+        removeLocalFileInfo(this.file);
+      },
+      err => {
+        // ctx错误或者过期情况下，或者md5不匹配时，清除本地存储数据
+        if (err.code === 701 || (err.message && err.message === "md5不一致")) {
+          removeLocalFileInfo(this.file);
+          return;
+        }
+         setLocalFileInfo(this.file, this.ctxList);
+      }
+    );
+    return result;
   }
 
-  uploadChunk(chunk, index) {
+  uploadChunk(chunkInfo) {
+    let {index, chunk} = chunkInfo;
     let info = this.localInfo[index];
     if (info && !isChunkExpired(info.time)) {
       this.updateChunkProgress(chunk.size, index);
       this.ctxList[index] = { ctx: info.ctx, time: info.time };
-      return Promise.resolve();
+      if (!this.config.md5) {
+        return Promise.resolve();
+      }
     }
 
     let requestUrl = this.uploadUrl + "/mkblk/" + chunk.size;
 
     return readAsArrayBuffer(chunk).then(body => {
+      let spark = new SparkMD5.ArrayBuffer();
+      spark.append(body);
+      let md5 = spark.end();
+      if (info && info.md5 !== md5 && this.config.md5) {
+        return Promise.reject(new Error("md5不一致"));
+      }
+
       let headers = getHeadersForChunkUpload(this.token);
       let onProgress = data => {
         this.updateChunkProgress(data.loaded, index);
@@ -203,7 +229,8 @@ export class UploadManager {
       }).then(response => {
         this.ctxList[index] = {
           time: new Date().getTime(),
-          ctx: response.data.ctx
+          ctx: response.data.ctx,
+          md5: md5
         };
       });
     });
