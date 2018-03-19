@@ -31,7 +31,7 @@ module.exports = {
     ],
     "array-bracket-spacing": [1, "never"],
     "comma-spacing": [1, { "before": false, "after": true }],
-    "no-var": 0,
+    "no-var": 1,
     "eqeqeq": 0,
     "brace-style": 1,
     "camelcase": 0,
