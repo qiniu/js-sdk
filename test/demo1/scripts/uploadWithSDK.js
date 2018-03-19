@@ -51,14 +51,14 @@ function uploadWithSDK(token, putExtra, config, domain) {
         var total = response.total;
         // 这里对每个chunk更新进度，并记录已经更新好的避免重复更新，同时对未开始更新的跳过
         for (var i = 0; i < chunks.length; i++) {
-          if(chunks[i].percent === 0 || finishedAttr[i]){
+          if (chunks[i].percent === 0 || finishedAttr[i]){
             continue;
           }
-          if(compareChunks[i].percent === chunks[i].percent){
-            continue
+          if (compareChunks[i].percent === chunks[i].percent){
+            continue;
           }
-          if(chunks[i].percent === 100){
-            finishedAttr[i] = true
+          if (chunks[i].percent === 100){
+            finishedAttr[i] = true;
           }
           $(board)
             .find(".fragment-group li")
@@ -94,7 +94,7 @@ function uploadWithSDK(token, putExtra, config, domain) {
           if(board.start){
             $(this).text("暂停上传");
             board.start = false;
-            subscription = observable.subscribe(subObject)
+            subscription = observable.subscribe(subObject);
           }else{
             board.start = true;
             $(this).text("继续上传");
