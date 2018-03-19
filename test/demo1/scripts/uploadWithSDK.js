@@ -94,9 +94,7 @@ function uploadWithSDK(token, putExtra, config, domain) {
           if(board.start){
             $(this).text("暂停上传");
             board.start = false;
-            setTimeout(function(){
-              subscription = observable.subscribe(subObject)
-            }, 0)
+            subscription = observable.subscribe(subObject)
           }else{
             board.start = true;
             $(this).text("继续上传");
