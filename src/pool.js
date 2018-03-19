@@ -2,38 +2,40 @@ export class Pool {
   constructor(doTask, limit) {
     this.doTask = doTask;
     this.queue = [];
-    this.onDoing = [];
+    this.processing = [];
     this.limit = limit;
+    this.abort = false;
   }
 
   insertQueue(task){
     return new Promise((resolve, reject) => {
       this.queue.push({
-        ...task,
+        task,
         resolve,
         reject
       });
       this.toDo();
     });
   }
-  start(task){
-    this.onDoing.push(task);
-    this.doTask(task).then(
+  start(item){
+    this.queue = this.queue.filter(v => v !== item);
+    this.processing.push(item);
+    this.doTask(item.task).then(
       () => {
-        this.onDoing = this.onDoing.filter(item => item !== task);
-        this.queue = this.queue.filter(item => item !== task);
-        task.resolve();
-        this.toDo();
+        this.processing = this.processing.filter(v => v !== item);
+        item.resolve();
+        if(!this.abort){
+          this.toDo();
+        } 
       },
-      (err) => task.reject(err)
+      (err) => item.reject(err)
     );
   }
   toDo(){
-    let onDoingNum = this.onDoing.length;
-    let availableNum = this.limit - onDoingNum;
-    this.onDoing.forEach(task => this.queue = this.queue.filter(item => item !== task));
-    this.queue.slice(0, availableNum).forEach((task, index) => {
-      this.start(task);
+    let processingNum = this.processing.length;
+    let availableNum = this.limit - processingNum;
+    this.queue.slice(0, availableNum).forEach((item, index) => {
+      this.start(item);
     });
   }
 }

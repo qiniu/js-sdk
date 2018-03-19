@@ -91,19 +91,13 @@ export class UploadManager {
             this.sendLog(err.reqId, err.code);
           }
         }
-
+        // 请求 599 时拿到的code实际为0，而暂停操作的code也为0，这里通过this.abort区分开
         if (err.code === 0 && !this.abort){
-          if (--this.config.retryCount >= 0){
+          if (++this.retryCount <= this.config.retryCount){
             this.stop();
             this.putFile();
             return;
           }
-        }
-
-        if (err.code === 701 || (err.message && err.message === "md5不一致")) {
-          this.stop();
-          this.putFile();
-          return;
         }
       }
       this.stop();
@@ -116,6 +110,7 @@ export class UploadManager {
     this.xhrList.forEach(xhr => xhr.abort());
     this.xhrList = [];
     this.abort = true;
+    this.pool ? (this.pool.abort = true) : "";
   }
 
   sendLog(reqId, code){
@@ -172,9 +167,9 @@ export class UploadManager {
     this.chunks = getChunks(this.file, BLOCK_SIZE);
     this.initChunksProgress();
 
-    let pool = new Pool((chunkInfo) => this.uploadChunk(chunkInfo), this.config.thread);
+    this.pool = new Pool((chunkInfo) => this.uploadChunk(chunkInfo), this.config.thread);
     let uploadChunks = this.chunks.map((chunk, index) => {
-      return pool.insertQueue({chunk, index});
+      return this.pool.insertQueue({chunk, index});
     });
     let result = Promise.all(uploadChunks).then(() => {
       return this.mkFileReq();
@@ -185,7 +180,7 @@ export class UploadManager {
       },
       err => {
         // ctx错误或者过期情况下，或者md5不匹配时，清除本地存储数据
-        if (err.code === 701 || (err.message && err.message === "md5不一致")) {
+        if (err.code === 701) {
           removeLocalFileInfo(this.file);
           return;
         }
@@ -198,12 +193,10 @@ export class UploadManager {
   uploadChunk(chunkInfo) {
     let {index, chunk} = chunkInfo;
     let info = this.localInfo[index];
-    if (info && !isChunkExpired(info.time)) {
+    if (info && !isChunkExpired(info.time) && !this.config.md5) {
       this.updateChunkProgress(chunk.size, index);
-      this.ctxList[index] = { ctx: info.ctx, time: info.time };
-      if (!this.config.md5) {
-        return Promise.resolve();
-      }
+      this.ctxList[index] = {ctx: info.ctx, time: info.time, md5: info.md5};
+      return Promise.resolve();
     }
 
     let requestUrl = this.uploadUrl + "/mkblk/" + chunk.size;
@@ -212,8 +205,10 @@ export class UploadManager {
       let spark = new SparkMD5.ArrayBuffer();
       spark.append(body);
       let md5 = spark.end();
-      if (info && info.md5 !== md5 && this.config.md5) {
-        return Promise.reject(new Error("md5不一致"));
+      if (info && info.md5 === md5 && !isChunkExpired(info.time) && this.config.md5) {
+        this.updateChunkProgress(chunk.size, index);
+        this.ctxList[index] = {ctx: info.ctx, time: info.time, md5: info.md5};
+        return Promise.resolve();
       }
 
       let headers = getHeadersForChunkUpload(this.token);
