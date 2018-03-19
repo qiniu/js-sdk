@@ -3,10 +3,11 @@ function uploadWithSDK(token, putExtra, config, domain) {
   controlTabDisplay("sdk");
   $("#select2").unbind("change").bind("change",function(){
     var file = this.files[0];
+    var finishedAttr = [];
+    var compareChunks = [];
     var observable;
     if (file) {
       var key = file.name;
-      var finishedAttr = [];
       // 添加上传dom面板
       var board = addUploadBoard(file, config, key, "");
       if (!board) {
@@ -22,6 +23,7 @@ function uploadWithSDK(token, putExtra, config, domain) {
       var error = function(err) {
         board.start = true;
         $(board).find(".control-upload").text("继续上传");
+        console.log(err);
         alert("上传出错")
       };
 
@@ -52,6 +54,9 @@ function uploadWithSDK(token, putExtra, config, domain) {
           if(chunks[i].percent === 0 || finishedAttr[i]){
             continue;
           }
+          if(compareChunks[i].percent === chunks[i].percent){
+            continue
+          }
           if(chunks[i].percent === 100){
             finishedAttr[i] = true
           }
@@ -71,6 +76,7 @@ function uploadWithSDK(token, putExtra, config, domain) {
           "width",
           total.percent + "%"
         );
+        compareChunks = chunks;
       };
 
       var subObject = { 

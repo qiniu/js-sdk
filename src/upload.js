@@ -28,7 +28,7 @@ export class UploadManager {
       {
         useCdnDomain: true,
         disableStatisticsReport: false,
-        retryCount: 6,
+        retryCount: 3,
         md5: false,
         thread: 3,
         region: null
@@ -81,6 +81,7 @@ export class UploadManager {
         this.sendLog(res.reqId, 200);
       }
     }, err => {
+      
       if (err.isRequestError){
         if (!this.config.disableStatisticsReport){
           if (this.abort){
@@ -89,21 +90,23 @@ export class UploadManager {
           } else {
             this.sendLog(err.reqId, err.code);
           }
-        } 
-        if (err.code === 0 && !this.abort) {
-          this.stop();
+        }
+
+        if (err.code === 0 && !this.abort){
           if (--this.config.retryCount >= 0){
-            console.log("retry...");
+            this.stop();
             this.putFile();
             return;
           }
         }
+
+        if (err.code === 701 || (err.message && err.message === "md5不一致")) {
+          this.stop();
+          this.putFile();
+          return;
+        }
       }
       this.stop();
-      if (err.code === 701 || (err.message && err.message === "md5不一致")) {
-        this.putFile();
-        return;
-      }
       this.onError(err);
     });
     return upload;
