@@ -3,7 +3,9 @@ function uploadWithSDK(token, putExtra, config, domain) {
   controlTabDisplay("sdk");
   $("#select2").unbind("change").bind("change",function(){
     var file = this.files[0];
+    // eslint-disable-next-line
     var finishedAttr = [];
+    // eslint-disable-next-line
     var compareChunks = [];
     var observable;
     if (file) {
