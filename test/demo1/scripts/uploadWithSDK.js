@@ -47,7 +47,7 @@ function uploadWithSDK(token, putExtra, config, domain) {
           imageDeal(board, res.key, domain);
         }
       };
-      
+
       var next = function(response) {
         var chunks = response.chunks||[];
         var total = response.total;

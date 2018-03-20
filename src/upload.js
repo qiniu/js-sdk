@@ -30,7 +30,7 @@ export class UploadManager {
         disableStatisticsReport: false,
         retryCount: 3,
         checkByMD5: false,
-        currentRequestLimit: 3,
+        concurrentRequestLimit: 3,
         region: null
       },
       options.config
@@ -90,8 +90,8 @@ export class UploadManager {
       }
 
       let needRetry = err.isRequestError && err.code === 0 && !this.aborted;
-      let reachRetryCount = ++this.retryCount <= this.config.retryCount;
-      if (needRetry && reachRetryCount) {
+      let notReachRetryCount = ++this.retryCount <= this.config.retryCount;
+      if (needRetry && notReachRetryCount) {
         this.putFile();
         return;
       }
@@ -165,7 +165,7 @@ export class UploadManager {
     this.chunks = getChunks(this.file, BLOCK_SIZE);
     this.initChunksProgress();
 
-    let pool = new Pool((chunkInfo) => this.uploadChunk(chunkInfo), this.config.currentRequestLimit);
+    let pool = new Pool((chunkInfo) => this.uploadChunk(chunkInfo), this.config.concurrentRequestLimit);
     let uploadChunks = this.chunks.map((chunk, index) => {
       return pool.enqueue({chunk, index});
     });
@@ -177,7 +177,7 @@ export class UploadManager {
         removeLocalFileInfo(this.file);
       },
       err => {
-        // ctx错误或者过期情况下，或者md5不匹配时，清除本地存储数据
+        // ctx错误或者过期情况下
         if (err.code === 701) {
           removeLocalFileInfo(this.file);
           return;
