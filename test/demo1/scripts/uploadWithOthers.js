@@ -14,6 +14,7 @@ function uploadWithOthers(token, putExtra, config, domain) {
       flash_swf_url: "./js/Moxie.swf", // swf文件，当需要使用swf方式进行上传时需要配置该参数
       silverlight_xap_url: "./js/Moxie.xap",
       chunk_size: 4 * 1024 * 1024,
+      max_retries: 3,
       multipart_params: {
         // token从服务端获取，没有token无法上传
         token: token
@@ -54,12 +55,14 @@ function uploadWithOthers(token, putExtra, config, domain) {
           console.log("[完成]");
         },
         Error: function(up, err) {
-          alert(err.response);
+          console.log(err.response);
         }
       }
     });
     uploader.init();
-
+    uploader.bind('Error',function(){
+      console.log(1234)
+    })
     uploader.bind("BeforeUpload", function(uploader, file) {
       key = file.name;
       putExtra.params["x:name"] = key.split(".")[0];

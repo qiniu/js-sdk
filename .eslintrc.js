@@ -16,13 +16,15 @@ module.exports = {
       // 允许在全局作用域下使用 return 语句
       "globalReturn":true,
       // impliedStric
-      "impliedStrict":true
+      "impliedStrict":true,
+      "experimentalObjectRestSpread": true
     }
   },
   "rules": {
     "no-console": "off",
     "no-redeclare": 2,
     "keyword-spacing": 1,
+    "prefer-spread": 0,
     "indent":[
       0, 
       2

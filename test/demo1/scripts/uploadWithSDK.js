@@ -3,6 +3,10 @@ function uploadWithSDK(token, putExtra, config, domain) {
   controlTabDisplay("sdk");
   $("#select2").unbind("change").bind("change",function(){
     var file = this.files[0];
+    // eslint-disable-next-line
+    var finishedAttr = [];
+    // eslint-disable-next-line
+    var compareChunks = [];
     var observable;
     if (file) {
       var key = file.name;
@@ -21,6 +25,7 @@ function uploadWithSDK(token, putExtra, config, domain) {
       var error = function(err) {
         board.start = true;
         $(board).find(".control-upload").text("继续上传");
+        console.log(err);
         alert("上传出错")
       };
 
@@ -46,7 +51,17 @@ function uploadWithSDK(token, putExtra, config, domain) {
       var next = function(response) {
         var chunks = response.chunks||[];
         var total = response.total;
+        // 这里对每个chunk更新进度，并记录已经更新好的避免重复更新，同时对未开始更新的跳过
         for (var i = 0; i < chunks.length; i++) {
+          if (chunks[i].percent === 0 || finishedAttr[i]){
+            continue;
+          }
+          if (compareChunks[i].percent === chunks[i].percent){
+            continue;
+          }
+          if (chunks[i].percent === 100){
+            finishedAttr[i] = true;
+          }
           $(board)
             .find(".fragment-group li")
             .eq(i)
@@ -63,6 +78,7 @@ function uploadWithSDK(token, putExtra, config, domain) {
           "width",
           total.percent + "%"
         );
+        compareChunks = chunks;
       };
 
       var subObject = { 
@@ -78,13 +94,13 @@ function uploadWithSDK(token, putExtra, config, domain) {
         .find(".control-upload")
         .on("click", function() {
           if(board.start){
-            subscription = observable.subscribe(subObject);
             $(this).text("暂停上传");
             board.start = false;
+            subscription = observable.subscribe(subObject);
           }else{
             board.start = true;
-            subscription.unsubscribe();
             $(this).text("继续上传");
+            subscription.unsubscribe();
           }
         });
     }

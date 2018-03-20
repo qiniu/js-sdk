@@ -1,6 +1,5 @@
 import { urlSafeBase64Encode, urlSafeBase64Decode } from "./base64";
 import { regionUphostMap } from "./config";
-import SparkMD5 from "spark-md5";
 
 // 对上传块本地存储时间检验是否过期
 // TODO: 最好用服务器时间来做判断
@@ -29,32 +28,15 @@ export function filterParams(params) {
     .map(k => [k, params[k].toString()]);
 }
 
-// check本地存储的信息
-export function getLocalFileInfoAndMd5(file) {
-  return new Promise((resolve, reject) => {
-    readAsArrayBuffer(file)
-      .then(body => {
-        let spark = new SparkMD5.ArrayBuffer();
-        spark.append(body);
-        let md5 = spark.end();
-        let localFileInfo = getLocalFileInfo(file.name, md5);
-        resolve({ md5: md5, info: localFileInfo });
-      })
-      .catch(err => {
-        resolve({ md5: "", info: [] });
-      });
-  });
-}
-
 export function sum(list){
   return list.reduce((sum, loaded) => {
     return sum + loaded;
   }, 0);
 }
 
-export function setLocalFileInfo(name, md5, info) {
+export function setLocalFileInfo(file, info) {
   try {
-    localStorage.setItem(createLocalKey(name, md5), JSON.stringify(info));
+    localStorage.setItem(createLocalKey(file), JSON.stringify(info));
   } catch (err) {
     if (window.console && window.console.warn){
       console.warn("setLocalFileInfo failed");
@@ -62,13 +44,13 @@ export function setLocalFileInfo(name, md5, info) {
   }
 }
 
-function createLocalKey(name, md5){
-  return "qiniu_js_sdk_upload_file_md5_" + md5 + "_" + name;
+function createLocalKey(file){
+  return "qiniu_js_sdk_upload_file_" + file.name + "_size_" + file.size;
 }
 
-export function removeLocalFileInfo(name, md5) {
+export function removeLocalFileInfo(file) {
   try {
-    localStorage.removeItem(createLocalKey(name, md5));
+    localStorage.removeItem(createLocalKey(file));
   } catch (err) {
     if (window.console && window.console.warn){
       console.warn("removeLocalFileInfo failed");
@@ -76,9 +58,9 @@ export function removeLocalFileInfo(name, md5) {
   }
 }
 
-function getLocalFileInfo(name, md5) {
+export function getLocalFileInfo(file) {
   try {
-    return JSON.parse(localStorage.getItem(createLocalKey(name, md5))) || [];
+    return JSON.parse(localStorage.getItem(createLocalKey(file))) || [];
   } catch (err) {
     if (window.console && window.console.warn){
       console.warn("getLocalFileInfo failed");
