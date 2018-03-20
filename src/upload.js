@@ -29,8 +29,8 @@ export class UploadManager {
         useCdnDomain: true,
         disableStatisticsReport: false,
         retryCount: 3,
-        md5: false,
-        thread: 3,
+        checkByMD5: false,
+        currentRequestLimit: 3,
         region: null
       },
       options.config
@@ -47,7 +47,7 @@ export class UploadManager {
     this.progress = null;
     this.xhrList = [];
     this.xhrHandler = xhr => this.xhrList.push(xhr);
-    this.abort = false;
+    this.aborted = false;
     this.file = options.file;
     this.key = options.key;
     this.token = options.token;
@@ -59,7 +59,7 @@ export class UploadManager {
   }
 
   putFile() {
-    this.abort = false;
+    this.aborted = false;
     if (!this.putExtra.fname) {
       this.putExtra.fname = this.file.name;
     }
@@ -82,35 +82,33 @@ export class UploadManager {
       }
     }, err => {
       
-      if (err.isRequestError){
-        if (!this.config.disableStatisticsReport){
-          if (this.abort){
-            this.sendLog("", -2);
-            return;
-          } else {
-            this.sendLog(err.reqId, err.code);
-          }
-        }
-        // 请求 599 时拿到的code实际为0，而暂停操作的code也为0，这里通过this.abort区分开
-        if (err.code === 0 && !this.abort){
-          if (++this.retryCount <= this.config.retryCount){
-            this.stop();
-            this.putFile();
-            return;
-          }
-        }
+      this.clear()
+      if (err.isRequestError && !this.config.disableStatisticsReport) {
+        let reqId = this.aborted ? '' : err.reqId;
+        let code = this.aborted ? -2 : err.code;
+        this.sendLog(reqId, code);
       }
-      this.stop();
+
+      let needRetry = err.isRequestError && err.code === 0 && !this.aborted;
+      let reachRetryCount = ++this.retryCount <= this.config.retryCount;
+      if (needRetry && reachRetryCount) {
+        this.putFile();
+        return;
+      }
+
       this.onError(err);
     });
     return upload;
   }
 
-  stop() {
+  clear() {
     this.xhrList.forEach(xhr => xhr.abort());
-    this.xhrList = [];
-    this.abort = true;
-    this.pool ? (this.pool.abort = true) : "";
+    this.xhrList = []
+  }
+
+  stop() {
+    this.clear()
+    this.aborted = true
   }
 
   sendLog(reqId, code){
@@ -167,9 +165,9 @@ export class UploadManager {
     this.chunks = getChunks(this.file, BLOCK_SIZE);
     this.initChunksProgress();
 
-    this.pool = new Pool((chunkInfo) => this.uploadChunk(chunkInfo), this.config.thread);
+    let pool = new Pool((chunkInfo) => this.uploadChunk(chunkInfo), this.config.currentRequestLimit);
     let uploadChunks = this.chunks.map((chunk, index) => {
-      return this.pool.insertQueue({chunk, index});
+      return pool.enqueue({chunk, index});
     });
     let result = Promise.all(uploadChunks).then(() => {
       return this.mkFileReq();
@@ -193,24 +191,29 @@ export class UploadManager {
   uploadChunk(chunkInfo) {
     let {index, chunk} = chunkInfo;
     let info = this.localInfo[index];
-    if (info && !isChunkExpired(info.time) && !this.config.md5) {
-      this.updateChunkProgress(chunk.size, index);
-      this.ctxList[index] = {ctx: info.ctx, time: info.time, md5: info.md5};
-      return Promise.resolve();
-    }
-
     let requestUrl = this.uploadUrl + "/mkblk/" + chunk.size;
 
+    let savedReusable = info && !isChunkExpired(info.time);
+    let shouldCheckMD5 = this.config.checkByMD5;
+    let reuseSaved = () => {
+      this.updateChunkProgress(chunk.size, index);
+      this.ctxList[index] = {ctx: info.ctx, time: info.time, md5: info.md5};
+      return Promise.resolve(null);
+    }
+
+    if (savedReusable && !shouldCheckMD5) {
+      return reuseSaved();
+    }
+    
     return readAsArrayBuffer(chunk).then(body => {
+
       let spark = new SparkMD5.ArrayBuffer();
       spark.append(body);
       let md5 = spark.end();
-      if (info && info.md5 === md5 && !isChunkExpired(info.time) && this.config.md5) {
-        this.updateChunkProgress(chunk.size, index);
-        this.ctxList[index] = {ctx: info.ctx, time: info.time, md5: info.md5};
-        return Promise.resolve();
+      if (savedReusable && md5 === info.md5) {
+        return reuseSaved();
       }
-
+      
       let headers = getHeadersForChunkUpload(this.token);
       let onProgress = data => {
         this.updateChunkProgress(data.loaded, index);
