@@ -24,7 +24,7 @@ export class Pool {
       () => {
         this.processing = this.processing.filter(v => v !== item);
         item.resolve();
-        if(!this.abort){
+        if (!this.abort){
           this.toDo();
         } 
       },

@@ -13,7 +13,7 @@ describe("test Pool for control concurrency", () => {
   test("pool.js", () => {
     return Promise.all([1,2,3,4,5,6].map(value => {
       pool.insertQueue(value)
-      expect(pool.onDoing.length).toBeLessThanOrEqual(2)
+      expect(pool.processing.length).toBeLessThanOrEqual(2)
     })).then(()=> {
       expect(m.mock.calls.length).toBe(6)
     })
