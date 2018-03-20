@@ -82,9 +82,9 @@ export class UploadManager {
       }
     }, err => {
       
-      this.clear()
+      this.clear();
       if (err.isRequestError && !this.config.disableStatisticsReport) {
-        let reqId = this.aborted ? '' : err.reqId;
+        let reqId = this.aborted ? "" : err.reqId;
         let code = this.aborted ? -2 : err.code;
         this.sendLog(reqId, code);
       }
@@ -103,12 +103,12 @@ export class UploadManager {
 
   clear() {
     this.xhrList.forEach(xhr => xhr.abort());
-    this.xhrList = []
+    this.xhrList = [];
   }
 
   stop() {
-    this.clear()
-    this.aborted = true
+    this.clear();
+    this.aborted = true;
   }
 
   sendLog(reqId, code){
@@ -199,7 +199,7 @@ export class UploadManager {
       this.updateChunkProgress(chunk.size, index);
       this.ctxList[index] = {ctx: info.ctx, time: info.time, md5: info.md5};
       return Promise.resolve(null);
-    }
+    };
 
     if (savedReusable && !shouldCheckMD5) {
       return reuseSaved();
