@@ -6,7 +6,7 @@
   "description": "Javascript SDK for Qiniu Resource (Cloud) Storage AP",
   "main": "dist/qiniu.min.js",
   "scripts": {
-    "test": "jest --watch --coverage",
+    "test": "jest --coverage",
     "build": "eslint src && jest && webpack --optimize-minimize --config webpack.prod.js",
     "dev": "eslint src && webpack-dev-server --open --config webpack.dev.js",
     "serve": "node test/server.js"

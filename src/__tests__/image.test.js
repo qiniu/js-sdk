@@ -2,7 +2,7 @@ import { imageView2, imageMogr2, watermark, imageInfo, exif, pipeline } from '..
 import { urlSafeBase64Encode } from "../base64";
 
 import { request } from "../utils";
-jest.mock("../utils")
+jest.mock("../utils");
 describe("image func test", () => {
   let domain = "http://otxza7yo2.bkt.clouddn.com";
   let key = "test.png";
@@ -13,14 +13,14 @@ describe("image func test", () => {
       "mode": 2,
       "h": 450,
       "q": 100
-    }
-    let url = imageView2(m, key, domain)
+    };
+    let url = imageView2(m, key, domain);
     expect(url).toBe(
       "http://otxza7yo2.bkt.clouddn.com/" + key + "?" + 
       "imageView2/" + encodeURIComponent(m.mode) +
       "/h" + "/" + encodeURIComponent(m.h) +
       "/q" + "/" + encodeURIComponent(m.q)
-    )
+    );
   });
 
   test("imageMogr2", () => {
@@ -39,7 +39,7 @@ describe("image func test", () => {
     expect(url).toBe(
       "http://otxza7yo2.bkt.clouddn.com/" + key + "?imageMogr2/" + 
       "thumbnail/1/strip/gravity/1/quality/1/crop/1/rotate/1/format/1/blur/1"
-    )
+    );
   });
 
   test("watermark", () => {
@@ -59,8 +59,8 @@ describe("image func test", () => {
     );
     m.mode = 3;
     expect(()=> {
-      watermark(m, key, domain)
-    }).toThrow("mode is wrong")
+      watermark(m, key, domain);
+    }).toThrow("mode is wrong");
   });
 
   test("pipeline", () => {
@@ -84,24 +84,24 @@ describe("image func test", () => {
         dy: 100
       }
     ];
-    let url = pipeline(info, key, domain)
+    let url = pipeline(info, key, domain);
     expect(url).toBe(
       "http://otxza7yo2.bkt.clouddn.com/" + key + "?imageMogr2/" + 
       "thumbnail/1/strip/gravity/1/quality/1/crop/1/rotate/1/format/1/blur/1" + "|" +
       "watermark/1/image/" + urlSafeBase64Encode(info[1].image) +
       "/dissolve/100/dx/100/dy/100"
-    )
+    );
  })
 
   test("imageInfo", () => {
-     let info = imageInfo(key, domain)
+     let info = imageInfo(key, domain);
      let url = domain + "/" + key + "?imageInfo";
-     expect(request.mock.calls[0]).toEqual([url, { method: "GET" }])
+     expect(request.mock.calls[0]).toEqual([url, { method: "GET" }]);
   })
 
   test("exif", () => {
-    let info = exif(key, domain)
+    let info = exif(key, domain);
     let url = domain + "/" + key + "?exif";
-    expect(request.mock.calls[1]).toEqual([url, { method: "GET" }])
+    expect(request.mock.calls[1]).toEqual([url, { method: "GET" }]);
  })
 })
