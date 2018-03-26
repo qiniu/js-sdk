@@ -201,17 +201,24 @@ export function getDomainFromUrl (url) {
 
 // 构造区域上传url
 export function getUploadUrl(config, token) {
-  let protocol = window.location.protocol.indexOf("http") > -1 ? window.location.protocol : "https";
+  let protocol = getAPIProtocol();
   if (config.region != null){
     let upHosts = regionUphostMap[config.region];
     let host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost;
     return Promise.resolve(`${protocol}//${host}`);
   }  
-  return getUpHosts(token, protocol)
+  return getUpHosts(token)
     .then(res => {
       let hosts = res.data.up.acc.main;
       return (`${protocol}//${hosts[0]}`);
     });
+}
+
+function getAPIProtocol() {
+  if (window.location.protocol === 'http') {
+    return 'http'
+  }
+  return 'https'
 }
 
 function getPutPolicy(token) {
@@ -223,10 +230,10 @@ function getPutPolicy(token) {
   return putPolicy;
 }
 
-function getUpHosts(token, protocol) {
+function getUpHosts(token) {
   try {
     let putPolicy = getPutPolicy(token);
-    let url = protocol + "//api.qiniu.com/v2/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket;
+    let url = getAPIProtocol() + "//api.qiniu.com/v2/query?ak=" + putPolicy.ak + "&bucket=" + putPolicy.bucket;
     return request(url, { method: "GET" });
   } catch (e) {
     return Promise.reject(e);
