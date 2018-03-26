@@ -1,12 +1,12 @@
 {
   "name": "qiniu-js",
   "jsName": "qiniu",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "private": false,
   "description": "Javascript SDK for Qiniu Resource (Cloud) Storage AP",
   "main": "dist/qiniu.min.js",
   "scripts": {
-    "test": "jest --coverage",
+    "test": "jest --watch --coverage",
     "build": "eslint src && jest && webpack --optimize-minimize --config webpack.prod.js",
     "dev": "eslint src && webpack-dev-server --open --config webpack.dev.js",
     "serve": "node test/server.js"

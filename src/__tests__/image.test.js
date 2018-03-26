@@ -1,4 +1,4 @@
-import { imageView2, imageMogr2, watermark, imageInfo } from '../image';
+import { imageView2, imageMogr2, watermark, imageInfo, exif, pipeline } from '../image';
 import { urlSafeBase64Encode } from "../base64";
 
 import { request } from "../utils";
@@ -63,9 +63,45 @@ describe("image func test", () => {
     }).toThrow("mode is wrong")
   });
 
+  test("pipeline", () => {
+    let info = [
+      {
+        fop: "imageMogr2",
+        thumbnail: 1,
+        strip: true,
+        gravity: 1,
+        crop: 1,
+        quality: 1,
+        rotate: 1,
+        format: 1,
+        blur: 1
+      },{
+        fop: "watermark",
+        mode: 1,
+        image: "http://www.b1.qiniudn.com/images/logo-2.png",
+        dissolve: 100,
+        dx: 100,
+        dy: 100
+      }
+    ];
+    let url = pipeline(info, key, domain)
+    expect(url).toBe(
+      "http://otxza7yo2.bkt.clouddn.com/" + key + "?imageMogr2/" + 
+      "thumbnail/1/strip/gravity/1/quality/1/crop/1/rotate/1/format/1/blur/1" + "|" +
+      "watermark/1/image/" + urlSafeBase64Encode(info[1].image) +
+      "/dissolve/100/dx/100/dy/100"
+    )
+ })
+
   test("imageInfo", () => {
      let info = imageInfo(key, domain)
      let url = domain + "/" + key + "?imageInfo";
      expect(request.mock.calls[0]).toEqual([url, { method: "GET" }])
   })
+
+  test("exif", () => {
+    let info = exif(key, domain)
+    let url = domain + "/" + key + "?exif";
+    expect(request.mock.calls[1]).toEqual([url, { method: "GET" }])
+ })
 })
