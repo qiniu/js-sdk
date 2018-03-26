@@ -215,10 +215,10 @@ export function getUploadUrl(config, token) {
 }
 
 function getAPIProtocol() {
-  if (window.location.protocol === "http") {
-    return "http";
+  if (window.location.protocol === "http:") {
+    return "http:";
   }
-  return "https";
+  return "https:";
 }
 
 function getPutPolicy(token) {
