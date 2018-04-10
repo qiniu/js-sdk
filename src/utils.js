@@ -1,5 +1,6 @@
 import { urlSafeBase64Encode, urlSafeBase64Decode } from "./base64";
 import { regionUphostMap } from "./config";
+import SparkMD5 from "spark-md5";
 
 // 对上传块本地存储时间检验是否过期
 // TODO: 最好用服务器时间来做判断
@@ -111,6 +112,14 @@ export function createXHR() {
     return new XMLHttpRequest();
   }
   return new window.ActiveXObject("Microsoft.XMLHTTP");
+}
+
+export function computeMd5(data) {
+  return readAsArrayBuffer(data).then(buffer => {
+    let spark = new SparkMD5.ArrayBuffer();
+    spark.append(buffer);
+    return spark.end();
+  });
 }
 
 export function readAsArrayBuffer(data) {
