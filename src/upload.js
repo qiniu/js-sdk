@@ -18,7 +18,6 @@ import {
 } from "./utils";
 
 import { Pool } from "./pool";
-import SparkMD5 from "spark-md5";
 
 let BLOCK_SIZE = 4 * 1024 * 1024;
 
@@ -205,11 +204,8 @@ export class UploadManager {
       return reuseSaved();
     }
     
-    return readAsArrayBuffer(chunk).then(body => {
+    return readAsArrayBuffer(chunk).then(md5 => {
 
-      let spark = new SparkMD5.ArrayBuffer();
-      spark.append(body);
-      let md5 = spark.end();
       if (savedReusable && md5 === info.md5) {
         return reuseSaved();
       }

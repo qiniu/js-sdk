@@ -1,5 +1,6 @@
 import { urlSafeBase64Encode, urlSafeBase64Decode } from "./base64";
 import { regionUphostMap } from "./config";
+import SparkMD5 from "spark-md5";
 
 // 对上传块本地存储时间检验是否过期
 // TODO: 最好用服务器时间来做判断
@@ -119,7 +120,9 @@ export function readAsArrayBuffer(data) {
     reader.readAsArrayBuffer(data);
     reader.onload = evt => {
       let body = evt.target.result;
-      resolve(body);
+      let spark = new SparkMD5.ArrayBuffer();
+      spark.append(body);
+      resolve(spark.end());
     };
     reader.onerror = () => {
       reject(new Error("fileReader 读取错误"));
