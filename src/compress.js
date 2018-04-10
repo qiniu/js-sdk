@@ -16,8 +16,8 @@ function isSupportedType(type) {
   return SUPPORT_MIME_TYPES.includes(type);
 }
 
-export class Compress {
-  constructor(option){
+class Compress {
+  constructor(file, option){
     this.config = Object.assign(
       {
         maxWidth: 1600,
@@ -26,30 +26,31 @@ export class Compress {
       },
       option
     );
+    this.file = file;
   }
 
-  process(file){
-    this.outputType = file.type;
-    let srcDimension = {};
-    let distDimension = {};
-
-    if (!file.type.match(/^image/)) {
-      return Promise.reject(new Error(`unsupport file type: ${file.type}`));
+  process(){
+    console.log(this.config)
+    console.log(this.file)
+    this.outputType = this.file.type;
+    let distDimension = {}, srcDimension = {};
+    if (!this.outputType.match(/^image/)) {
+      return Promise.reject(new Error(`unsupport file type: ${this.outputType}`));
     } 
-    if (!isSupportedType(file.type)) {
+    if (!isSupportedType(this.outputType)) {
       this.outputType = DEFAULT_TYPE;
-      console.warn(`unsupported MIME type ${file.type}, will fallback to default ${DEFAULT_TYPE}`);
+      console.warn(`unsupported MIME type ${this.outputType}, will fallback to default ${DEFAULT_TYPE}`);
     }
 
-    return this.getOriginImage(file)
+    return this.getOriginImage()
     .then(img => {
-      srcDimension.width = img.width;
-      srcDimension.height = img.height;
       return this.getOriginInfo(img);
     })
     .then(canvas => {
       // 计算图片缩小比例，取最小值，如果大于1则保持图片原尺寸
       let scale = Math.min(1, this.config.maxWidth / canvas.width, this.config.maxHeight / canvas.height);
+      srcDimension.width = canvas.width;
+      srcDimension.height = canvas.height;
       return this.drawImage(canvas, scale);
     })
     .then(result => {
@@ -57,19 +58,13 @@ export class Compress {
       let distBlob = this.dataURLToBlob(newImageURL);
       distDimension.width = result.width;
       distDimension.height = result.height;
-      if (distBlob.size > file.size){
-        distBlob = file;
+      if (distBlob.size > this.file.size){
+        distBlob = this.file;
         distDimension = srcDimension;
       }
       return ({
-        dist: {
-          blob: distBlob,
-          ...distDimension
-        },
-        source: {
-          blob: file,
-          ...srcDimension
-        }
+        dist: distBlob,
+        ...distDimension
       });
     });
   }
@@ -84,9 +79,9 @@ export class Compress {
     }
   }
   // 通过 file 初始化 image 对象
-  getOriginImage(file){
+  getOriginImage(){
     return new Promise((resolve, reject) => {
-      let url = createObjectURL(file);
+      let url = createObjectURL(this.file);
       let img = new Image();
       img.src = url;
       img.onload = () => {
@@ -183,3 +178,8 @@ export class Compress {
     return blob;
   }
 }
+
+let compressOutPut = (file, options) => {
+  return new Compress(file, options).process();
+}
+export default compressOutPut;

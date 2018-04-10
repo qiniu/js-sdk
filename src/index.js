@@ -10,7 +10,7 @@ import { UploadManager } from "./upload";
 import { imageMogr2, watermark, imageInfo, exif, pipeline } from "./image";
 import { Observable } from "./observable";
 import { StatisticsLogger } from "./statisticsLog";
-import { Compress } from "./compress.js";
+import  compressImage  from "./compress.js";
 let statisticsLogger = new StatisticsLogger();
 
 function upload(file, key, token, putExtra, config) {
@@ -46,6 +46,6 @@ export {
   watermark,
   imageInfo,
   exif,
-  Compress,
+  compressImage,
   pipeline
 };
