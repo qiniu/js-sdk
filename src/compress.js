@@ -30,8 +30,6 @@ class Compress {
   }
 
   process(){
-    console.log(this.config)
-    console.log(this.file)
     this.outputType = this.file.type;
     let distDimension = {}, srcDimension = {};
     if (!this.outputType.match(/^image/)) {
@@ -181,5 +179,6 @@ class Compress {
 
 let compressOutPut = (file, options) => {
   return new Compress(file, options).process();
-}
+};
+
 export default compressOutPut;

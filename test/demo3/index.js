@@ -1,16 +1,15 @@
 
-var lastFile = null;
-var sourceImage;
-var options = {
+let lastFile = null;
+let sourceImage;
+let options = {
   quality: 0.92,
   maxWidth: 1000,
   maxHeight: 618
 }
 $("#select").change(function(){
   options.outputType = this.files[0].type;
-  console.log(options)
   sourceImage = new Image();
-  var sourceUrl = URL.createObjectURL(this.files[0]);
+  let sourceUrl = URL.createObjectURL(this.files[0]);
   sourceImage.src = sourceUrl;
   sourceImage.onload = () => {
     compress(this.files[0],sourceImage);
@@ -18,7 +17,7 @@ $("#select").change(function(){
 })
  
 $('input[type="range"]').each(function() {
-  var name = $(this).attr("name");
+  let name = $(this).attr("name");
   $(this).val(options[name])
   $(this).next().text(options[name])
   $(this).on("change", function(){
