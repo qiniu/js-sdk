@@ -224,7 +224,7 @@ export class UploadManager {
       return request(requestUrl, {
         method,
         headers,
-        body,
+        body: chunk,
         onProgress,
         onCreate
       }).then(response => {
