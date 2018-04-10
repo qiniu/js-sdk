@@ -114,15 +114,21 @@ export function createXHR() {
   return new window.ActiveXObject("Microsoft.XMLHTTP");
 }
 
+export function computeMd5(data) {
+  return readAsArrayBuffer(data).then(buffer => {
+    let spark = new SparkMD5.ArrayBuffer();
+    spark.append(buffer);
+    return spark.end();
+  });
+}
+
 export function readAsArrayBuffer(data) {
   return new Promise((resolve, reject) => {
     let reader = new FileReader();
     reader.readAsArrayBuffer(data);
     reader.onload = evt => {
       let body = evt.target.result;
-      let spark = new SparkMD5.ArrayBuffer();
-      spark.append(body);
-      resolve(spark.end());
+      resolve(body);
     };
     reader.onerror = () => {
       reject(new Error("fileReader 读取错误"));

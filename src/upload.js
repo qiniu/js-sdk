@@ -12,7 +12,7 @@ import {
   getHeadersForChunkUpload,
   getHeadersForMkFile,
   request,
-  readAsArrayBuffer,
+  computeMd5,
   getUploadUrl,
   filterParams
 } from "./utils";
@@ -204,7 +204,7 @@ export class UploadManager {
       return reuseSaved();
     }
     
-    return readAsArrayBuffer(chunk).then(md5 => {
+    return computeMd5(chunk).then(md5 => {
 
       if (savedReusable && md5 === info.md5) {
         return reuseSaved();
