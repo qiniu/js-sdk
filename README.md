@@ -251,6 +251,31 @@ subscription.unsubscribe() // 上传取消
     multipart_params_obj[k[0]] = k[1]
   }
   ```
+### qiniu.compressImage(file: blob, options: object) : Promise (图片压缩)
+
+  ```JavaScript
+  var imgLink = qiniu.compressImage(file, options).then(res => {
+    // res : {
+    //   dist: 压缩后的 blob 对象，图片压缩后的文件如果比原来还大则默认返回源文件
+    //   width: 压缩后的图片宽度
+    //   height: 压缩后的图片高度
+    // }
+    }
+  })
+  ```
+  * file: 要压缩的源图片，为 `blob` 对象
+  * options: `object`
+
+    ```JavaScript
+      var options = {
+        quality: 0.92,
+        maxWidth: 1000,
+        maxHeight: 618
+      }
+    ```
+    * options.quality: `number`，图片压缩质量，在指定图片格式为 `image/jpeg` 或 `image/webp` 的情况下，可以从 0 到 1 的区间内选择图片的质量。如果超出取值范围，将会使用默认值 0.92
+    * options.maxWidh: `number`，压缩图片的最大宽度值
+    * options.maxHeight: `number`，压缩图片的最大高度值
 
 ### qiniu.watermark(options: object, key: string, domain: string): string（水印）
 
