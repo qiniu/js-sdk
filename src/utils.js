@@ -256,7 +256,7 @@ export function isContainFileMimeType(fileType, mimeType){
 
 export function createObjectURL(file) {
   let URL = window.URL || window.webkitURL || window.mozURL;
-  return URL.createObjectURL(file) 
+  return URL.createObjectURL(file);
 }
 
 export function getTransform(image, orientation) {

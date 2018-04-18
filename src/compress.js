@@ -49,7 +49,7 @@ class Compress {
       if (this.config.maxWidth) {
         scale = Math.min(1, this.config.maxWidth / canvas.width);
       }
-      if(this.config.maxHeight) {
+      if (this.config.maxHeight) {
         scale = Math.min(1, scale, this.config.maxHeight / canvas.height);
       }
       srcDimension.width = canvas.width;
@@ -135,7 +135,7 @@ class Compress {
     mirror.height = height;
     let src, context;
 
-    for(let i = 0; i< steps; i++) {
+    for (let i = 0; i < steps; i++) {
 
       let dw = width * factor | 0;
       let dh = height * factor | 0;
