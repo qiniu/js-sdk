@@ -255,10 +255,8 @@ export function isContainFileMimeType(fileType, mimeType){
 }
 
 export function createObjectURL(file) {
-  if (window.navigator.userAgent.indexOf("Chrome") >= 1 || window.navigator.userAgent.indexOf("Safari") >= 1) { 
-    return window.webkitURL.createObjectURL(file); 
-  } 
-  return window.URL.createObjectURL(file); 
+  let URL = window.URL || window.webkitURL || window.mozURL;
+  return URL.createObjectURL(file) 
 }
 
 export function getTransform(image, orientation) {

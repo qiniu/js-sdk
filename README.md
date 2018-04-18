@@ -265,17 +265,11 @@ subscription.unsubscribe() // 上传取消
   ```
   * file: 要压缩的源图片，为 `blob` 对象
   * options: `object`
-
-    ```JavaScript
-      var options = {
-        quality: 0.92,
-        maxWidth: 1000,
-        maxHeight: 618
-      }
-    ```
-    * options.quality: `number`，图片压缩质量，在指定图片格式为 `image/jpeg` 或 `image/webp` 的情况下，可以从 0 到 1 的区间内选择图片的质量。如果超出取值范围，将会使用默认值 0.92
+    * options.quality: `number`，图片压缩质量，在指定图片格式为 `image/jpeg` 或 `image/webp` 的情况下，可以从 0 到 1 的区间内选择图片的质量。默认值 0.92
     * options.maxWidh: `number`，压缩图片的最大宽度值
     * options.maxHeight: `number`，压缩图片的最大高度值
+    （注意：当 `maxWidth` 和 `maxHeight` 都不设置时，则采用原图尺寸大小）
+    * options.noCompressIfLarger: `boolean`，为 `true` 时如果发现压缩后文件大小比原来还大，则使用原来图片，默认 `false`
 
 ### qiniu.watermark(options: object, key: string, domain: string): string（水印）
 
