@@ -256,20 +256,20 @@ subscription.unsubscribe() // 上传取消
   ```JavaScript
   var imgLink = qiniu.compressImage(file, options).then(res => {
     // res : {
-    //   dist: 压缩后的 blob 对象，图片压缩后的文件如果比原来还大则默认返回源文件
+    //   dist: 压缩后的 blob 对象，设置 noCompressIfLarger 为 true 时， 如果发现压缩后图片大小比原来还大，则返回源图片
     //   width: 压缩后的图片宽度
     //   height: 压缩后的图片高度
     // }
     }
   })
   ```
-  * file: 要压缩的源图片，为 `blob` 对象，支持 `image/png`、`image/jpeg`、`image/bmp`、`mage/webp` 等图片类型
+  * file: 要压缩的源图片，为 `blob` 对象，支持 `image/png`、`image/jpeg`、`image/bmp`、`image/webp` 这几种图片类型
   * options: `object`
-    * options.quality: `number`，图片压缩质量，在指定图片格式为 `image/jpeg` 或 `image/webp` 的情况下，可以从 0 到 1 的区间内选择图片的质量。默认值 0.92
+    * options.quality: `number`，图片压缩质量，在图片格式为 `image/jpeg` 或 `image/webp` 的情况下生效，其他格式不会生效，可以从 0 到 1 的区间内选择图片的质量。默认值 0.92
     * options.maxWidh: `number`，压缩图片的最大宽度值
     * options.maxHeight: `number`，压缩图片的最大高度值
     （注意：当 `maxWidth` 和 `maxHeight` 都不设置时，则采用原图尺寸大小）
-    * options.noCompressIfLarger: `boolean`，为 `true` 时如果发现压缩后文件大小比原来还大，则使用原来图片，默认 `false`
+    * options.noCompressIfLarger: `boolean`，为 `true` 时如果发现压缩后图片大小比原来还大，则返回源图片，并不会改变尺寸大小，默认 `false`
 
 ### qiniu.watermark(options: object, key: string, domain: string): string（水印）
 

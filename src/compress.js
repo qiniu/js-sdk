@@ -20,10 +20,10 @@ function isSupportedType(type) {
 class Compress {
   constructor(file, option){
     this.config = Object.assign(
-      { 
+      {
         quality:0.92,
         noCompressIfLarger:false
-      }, 
+      },
       option
     );
     this.file = file;
@@ -32,9 +32,6 @@ class Compress {
   process(){
     this.outputType = this.file.type;
     let distDimension = {}, srcDimension = {};
-    if (!this.outputType.match(/^image/)) {
-      return Promise.reject(new Error(`unsupport file type: ${this.outputType}`));
-    } 
     if (!isSupportedType(this.outputType)) {
       return Promise.reject(new Error(`unsupport file type: ${this.outputType}`));
     }
@@ -101,7 +98,7 @@ class Compress {
       // 通过得到图片的信息来调整显示方向以正确显示图片，主要解决 ios 系统上的图片会有旋转的问题
       EXIF.getData(img, () => {
         let orientation = EXIF.getTag(img, "Orientation") || 1;
-  
+
         let { width, height, matrix } = getTransform(img, orientation);
         let canvas = document.createElement("canvas");
         let context = canvas.getContext("2d");
@@ -140,7 +137,7 @@ class Compress {
       let dw = width * factor | 0;
       let dh = height * factor | 0;
       // 到最后一步的时候 dw, dh 用 目标缩放尺寸，否则会出现最后尺寸偏小的情况
-      if (i === (steps - 1)) {
+      if (i === steps - 1) {
         dw = originWidth * scale;
         dh = originHeight * scale;
       }
@@ -152,24 +149,25 @@ class Compress {
         src = mirror;
         context = sctx;
       }
+      // 每次画前都清空，避免图像重叠
       this.clear(context, width, height);
       context.drawImage(src, 0, 0, width, height, 0, 0, dw, dh);
       width = dw;
       height = dh;
     }
-      let canvas = src === source ? mirror : source;
 
-      // save data
-      let data = context.getImageData(0, 0, width, height);
+    let canvas = src === source ? mirror : source;
+    // save data
+    let data = context.getImageData(0, 0, width, height);
 
-      // resize
-      canvas.width = width;
-      canvas.height = height;
+    // resize
+    canvas.width = width;
+    canvas.height = height;
 
-      // store image data
-      context.putImageData(data, 0, 0);
+    // store image data
+    context.putImageData(data, 0, 0);
 
-      return Promise.resolve(canvas);
+    return Promise.resolve(canvas);
   }
 
   // 这里把 base64 字符串转为 blob 对象
