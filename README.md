@@ -256,7 +256,7 @@ subscription.unsubscribe() // 上传取消
   ```JavaScript
   var imgLink = qiniu.compressImage(file, options).then(res => {
     // res : {
-    //   dist: 压缩后的 blob 对象，设置 noCompressIfLarger 为 true 时， 如果发现压缩后图片大小比原来还大，则返回源图片
+    //   dist: 压缩后输出的 blob 对象，或原始的 file，具体看下面的 options 配置
     //   width: 压缩后的图片宽度
     //   height: 压缩后的图片高度
     // }
@@ -269,7 +269,7 @@ subscription.unsubscribe() // 上传取消
     * options.maxWidh: `number`，压缩图片的最大宽度值
     * options.maxHeight: `number`，压缩图片的最大高度值
     （注意：当 `maxWidth` 和 `maxHeight` 都不设置时，则采用原图尺寸大小）
-    * options.noCompressIfLarger: `boolean`，为 `true` 时如果发现压缩后图片大小比原来还大，则返回源图片，并不会改变尺寸大小，默认 `false`
+    * options.noCompressIfLarger: `boolean`，为 `true` 时如果发现压缩后图片大小比原来还大，则返回源图片（即输出的 dist 直接返回了输入的 file）；默认 `false`，即保证图片尺寸符合要求，但不保证压缩后的图片体积一定变小
 
 ### qiniu.watermark(options: object, key: string, domain: string): string（水印）
 
