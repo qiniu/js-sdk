@@ -1,6 +1,6 @@
 # Qiniu-JavaScript-SDK
 
-基于七牛 API 开发的前端 JavaScript SDK
+基于七牛 API 开发的前端 JavaScript SDK good
 
 ## 当前版本为 2.x，查看 1.x 的文档请点击[这里](https://github.com/qiniu/js-sdk/tree/1.x)
 
