@@ -3,6 +3,7 @@ let lastFile = null;
 let sourceImage;
 let options = {
   quality: 0.92,
+  noCompressIfLarger: true
   // maxWidth: 1000,
   // maxHeight: 618
 }
@@ -15,7 +16,7 @@ $("#select").change(function(){
     compress(this.files[0]);
   }
 })
- 
+
 $('input[type="range"]').each(function() {
   let name = $(this).attr("name");
   $(this).val(options[name])
@@ -36,10 +37,10 @@ function compress(file){
   $(".sourceImage img").attr("src", "");
   $(".distImage pre").text("");
   $(".sourceImage pre").text("");
-  
+
   qiniu.compressImage(file, options).then(data => {
     $(".distImage img").attr("src", URL.createObjectURL(data.dist))
-    $(".sourceImage img").attr("src", URL.createObjectURL(file));    
+    $(".sourceImage img").attr("src", URL.createObjectURL(file));
     $(".distImage pre").text("File size:" + (data.dist.size / 1024).toFixed(2) + "KB" + "\n" + "File type:" + data.dist.type + "\n" + "Dimensions:" + data.width + "*" + data.height + "\n" + "ratio:" + (data.dist.size / file.size).toFixed(2) * 100 + "%")
     $(".sourceImage pre").text("File size:" + (file.size / 1024).toFixed(2) + "KB" + "\n" + "File type:" + file.type + "\n" + "Dimensions:" + sourceImage.width + "*" + sourceImage.height)
   }).catch(res => {

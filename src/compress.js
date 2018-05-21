@@ -18,7 +18,7 @@ function isSupportedType(type) {
 }
 
 class Compress {
-  constructor(file, option){
+  constructor(file, option) {
     this.config = Object.assign(
       {
         quality:0.92,
@@ -29,16 +29,16 @@ class Compress {
     this.file = file;
   }
 
-  process(){
+  process() {
     this.outputType = this.file.type;
-    let distDimension = {}, srcDimension = {};
-    if (!isSupportedType(this.outputType)) {
-      return Promise.reject(new Error(`unsupport file type: ${this.outputType}`));
+    let srcDimension = {};
+    if (!isSupportedType(this.file.type)) {
+      return Promise.reject(new Error(`unsupported file type: ${this.file.type}`));
     }
 
     return this.getOriginImage()
     .then(img => {
-      return this.getOriginInfo(img);
+      return this.getCanvas(img);
     })
     .then(canvas => {
       // 计算图片缩小比例，取最小值，如果大于1则保持图片原尺寸
@@ -51,20 +51,22 @@ class Compress {
       }
       srcDimension.width = canvas.width;
       srcDimension.height = canvas.height;
-      return this.drawImage(canvas, scale);
+      return this.doScale(canvas, scale);
     })
     .then(result => {
       let newImageURL = result.toDataURL(this.outputType, this.config.quality);
-      let distBlob = this.dataURLToBlob(newImageURL);
-      distDimension.width = result.width;
-      distDimension.height = result.height;
+      let distBlob = this.toBlob(result);
       if (distBlob.size > this.file.size && this.config.noCompressIfLarger){
-        distBlob = this.file;
-        distDimension = srcDimension;
+        return {
+          dist: this.file,
+          width: srcDimension.width,
+          height: srcDimension.height
+        }
       }
       return ({
         dist: distBlob,
-        ...distDimension
+        width: result.width,
+        height: result.height
       });
     });
   }
@@ -79,7 +81,7 @@ class Compress {
     }
   }
   // 通过 file 初始化 image 对象
-  getOriginImage(){
+  getOriginImage() {
     return new Promise((resolve, reject) => {
       let url = createObjectURL(this.file);
       let img = new Image();
@@ -93,7 +95,7 @@ class Compress {
     });
   }
 
-  getOriginInfo(img){
+  getCanvas(img) {
     return new Promise((resolve, reject) => {
       // 通过得到图片的信息来调整显示方向以正确显示图片，主要解决 ios 系统上的图片会有旋转的问题
       EXIF.getData(img, () => {
@@ -112,7 +114,7 @@ class Compress {
     });
   }
 
-  drawImage(source, scale){
+  doScale(source, scale) {
     if (scale === 1) {
       return Promise.resolve(source);
     }
@@ -171,15 +173,16 @@ class Compress {
   }
 
   // 这里把 base64 字符串转为 blob 对象
-  dataURLToBlob(dataURL){
+  toBlob(result) {
+    let dataURL = result.toDataURL(this.outputType, this.config.quality);
     let buffer = atob(dataURL.split(",")[1]).split("").map(char => char.charCodeAt(0));
     let blob = new Blob([new Uint8Array(buffer)], { type: this.outputType });
     return blob;
   }
 }
 
-let compressOutPut = (file, options) => {
+let compressImage = (file, options) => {
   return new Compress(file, options).process();
 };
 
-export default compressOutPut;
+export default compressImage;
