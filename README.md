@@ -105,6 +105,8 @@ Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服�
 
 ### Example
 
+文件上传：
+
 ```JavaScript
 
 var observable = qiniu.upload(file, key, token, putExtra, config)
@@ -115,7 +117,20 @@ var subscription = observable.subscribe(next, error, complete) // 这样传参�
 
 subscription.unsubscribe() // 上传取消
 ```
+图片上传前压缩：
 
+```JavaScript
+let options = {
+  quality: 0.92,
+  noCompressIfLarger: true
+  // maxWidth: 1000,
+  // maxHeight: 618
+}
+qiniu.compressImage(file, options).then(data => {
+  var observable = qiniu.upload(data.dist, key, token, putExtra, config)
+  var subscription = observable.subscribe(observer) // 上传开始
+})
+```
 ## API Reference Interface
 
 ### qiniu.upload(file: blob, key: string, token: string, putExtra: object, config: object): observable
@@ -251,7 +266,7 @@ subscription.unsubscribe() // 上传取消
     multipart_params_obj[k[0]] = k[1]
   }
   ```
-### qiniu.compressImage(file: blob, options: object) : Promise (图片压缩)
+### qiniu.compressImage(file: blob, options: object) : Promise (上传前图片压缩)
 
   ```JavaScript
   var imgLink = qiniu.compressImage(file, options).then(res => {

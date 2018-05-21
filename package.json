@@ -1,7 +1,7 @@
 {
   "name": "qiniu-js",
   "jsName": "qiniu",
-  "version": "2.2.3",
+  "version": "2.3.0",
   "private": false,
   "description": "Javascript SDK for Qiniu Resource (Cloud) Storage AP",
   "main": "dist/qiniu.min.js",

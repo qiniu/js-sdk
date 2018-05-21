@@ -54,14 +54,13 @@ class Compress {
       return this.doScale(canvas, scale);
     })
     .then(result => {
-      let newImageURL = result.toDataURL(this.outputType, this.config.quality);
       let distBlob = this.toBlob(result);
       if (distBlob.size > this.file.size && this.config.noCompressIfLarger){
         return {
           dist: this.file,
           width: srcDimension.width,
           height: srcDimension.height
-        }
+        };
       }
       return ({
         dist: distBlob,
@@ -100,7 +99,6 @@ class Compress {
       // 通过得到图片的信息来调整显示方向以正确显示图片，主要解决 ios 系统上的图片会有旋转的问题
       EXIF.getData(img, () => {
         let orientation = EXIF.getTag(img, "Orientation") || 1;
-
         let { width, height, matrix } = getTransform(img, orientation);
         let canvas = document.createElement("canvas");
         let context = canvas.getContext("2d");
