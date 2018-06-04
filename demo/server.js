@@ -18,7 +18,7 @@ app.use('/dist', express.static(__dirname + '/../dist'));
 var mac = new qiniu.auth.digest.Mac(config.AccessKey, config.SecretKey);
 var options = {
   scope: config.Bucket,
-  deleteAfterDays: 7,
+  deleteAfterDays: 1,
 };
 var putPolicy = new qiniu.rs.PutPolicy(options);
 var bucketManager = new qiniu.rs.BucketManager(mac, null);
