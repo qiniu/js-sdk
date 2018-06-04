@@ -18,7 +18,7 @@ var formUploader = new qiniu.form_up.FormUploader(config2);
 var putExtra = new qiniu.form_up.PutExtra();
 var options = {
   scope: config.Bucket,
-  deleteAfterDays: 7,
+  deleteAfterDays: 1,
   returnBody:
     '{"key":"$(key)","hash":"$(etag)","fsize":$(fsize),"bucket":"$(bucket)","name":"$(x:name)"}'
 };
