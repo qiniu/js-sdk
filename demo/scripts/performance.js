@@ -36,7 +36,7 @@ var app = new Vue({
       {
         zone: 'z0',
         zoneZh: '华东',
-        token: 'xozWSPMxkMjIVoHg2JyXq4-7-oJaEADLOKHVR0vU:ImkQNYuzXd7mj_MJ-Ez3f0ojFhs=:eyJzY29wZSI6Impzc2RrOmEuanBnIiwiZGVhZGxpbmUiOjIxMTQzODA4MDAsImZzaXplTWluIjo4MDAwMDAsImZzaXplTGltaXQiOjEwMDAwMDB9',
+        token: 'anEC5u_72gw1kZPSy3Dsq1lo_DPXyvuPDaj4ePkN:IygENu1FEguSNOeie8-r-rRyf5U=:eyJzY29wZSI6InNkay16MDphLmpwZyIsImZzaXplTGltaXQiOjEwMDAwMDAsImZzaXplTWluIjo4MDAwMDAsImRlYWRsaW5lIjo0NjgxODYyNDk2fQ==',
         uphosts: [
           'http://up.qiniu.com',
           'http://upload.qiniu.com',
@@ -47,7 +47,7 @@ var app = new Vue({
       {
         zone: 'z1',
         zoneZh: '华北',
-        token: 'xozWSPMxkMjIVoHg2JyXq4-7-oJaEADLOKHVR0vU:mU26SwShCB0I-B1yCsO9-3bK82g=:eyJzY29wZSI6Impzc2RrLXoxOmEuanBnIiwiZGVhZGxpbmUiOjIxMTQzODA4MDAsImZzaXplTWluIjo4MDAwMDAsImZzaXplTGltaXQiOjEwMDAwMDB9',
+        token: 'anEC5u_72gw1kZPSy3Dsq1lo_DPXyvuPDaj4ePkN:peuYR2ETrDO1KAV_z_IU-58Y038=:eyJzY29wZSI6InNkay16MTphLmpwZyIsImZzaXplTGltaXQiOjEwMDAwMDAsImZzaXplTWluIjo4MDAwMDAsImRlYWRsaW5lIjo0NjgxODYyNDk3fQ==',
         uphosts: [
           'http://up-z1.qiniu.com',
           'http://upload-z1.qiniu.com',
@@ -58,7 +58,7 @@ var app = new Vue({
       {
         zone: 'z2',
         zoneZh: '华南',
-        token: 'xozWSPMxkMjIVoHg2JyXq4-7-oJaEADLOKHVR0vU:iEkyIA0yoFKYS-SAihuyR3jPo50=:eyJzY29wZSI6Impzc2RrLXoyOmEuanBnIiwiZGVhZGxpbmUiOjIxMTQzODA4MDAsImZzaXplTWluIjo4MDAwMDAsImZzaXplTGltaXQiOjEwMDAwMDB9',
+        token: 'anEC5u_72gw1kZPSy3Dsq1lo_DPXyvuPDaj4ePkN:d8g77lJqYHhHDkv1tJA0gXMf04s=:eyJzY29wZSI6InNkay16MjphLmpwZyIsImZzaXplTGltaXQiOjEwMDAwMDAsImZzaXplTWluIjo4MDAwMDAsImRlYWRsaW5lIjo0NjgxODYyNDk3fQ==',
         uphosts: [
           'http://up-z2.qiniu.com',
           'http://upload-z2.qiniu.com',
@@ -69,7 +69,7 @@ var app = new Vue({
       {
         zone: 'na0',
         zoneZh: '北美',
-        token: 'xozWSPMxkMjIVoHg2JyXq4-7-oJaEADLOKHVR0vU:4iTbAdFUN_fV0IQdN5vJReR9fx0=:eyJzY29wZSI6Impzc2RrLW5hMDphLmpwZyIsImRlYWRsaW5lIjoyMTE0MzgwODAwLCJmc2l6ZU1pbiI6ODAwMDAwLCJmc2l6ZUxpbWl0IjoxMDAwMDAwfQ==',
+        token: 'anEC5u_72gw1kZPSy3Dsq1lo_DPXyvuPDaj4ePkN:-RsLz4FoCQ2u-lY-4uXR466vq20=:eyJzY29wZSI6InNkay1uYTA6YS5qcGciLCJmc2l6ZUxpbWl0IjoxMDAwMDAwLCJmc2l6ZU1pbiI6ODAwMDAwLCJkZWFkbGluZSI6NDY4MTg2MjQ5N30=',
         uphosts: [
           'http://up-na0.qiniu.com',
           'http://upload-na0.qiniu.com',
@@ -230,7 +230,7 @@ var app = new Vue({
         url: 'https://uplog.qbox.me/log/2',
         data: log.join(','),
         headers: {
-          'Authorization': 'UpToken xozWSPMxkMjIVoHg2JyXq4-7-oJaEADLOKHVR0vU:iEkyIA0yoFKYS-SAihuyR3jPo50=:eyJzY29wZSI6Impzc2RrLXoyOmEuanBnIiwiZGVhZGxpbmUiOjIxMTQzODA4MDAsImZzaXplTWluIjo4MDAwMDAsImZzaXplTGltaXQiOjEwMDAwMDB9'
+          'Authorization': 'UpToken anEC5u_72gw1kZPSy3Dsq1lo_DPXyvuPDaj4ePkN:-RsLz4FoCQ2u-lY-4uXR466vq20=:eyJzY29wZSI6InNkay1uYTA6YS5qcGciLCJmc2l6ZUxpbWl0IjoxMDAwMDAwLCJmc2l6ZU1pbiI6ODAwMDAwLCJkZWFkbGluZSI6NDY4MTg2MjQ5N30='
         }
       });
     }
