@@ -105,6 +105,8 @@ Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服�
 
 ### Example
 
+文件上传：
+
 ```JavaScript
 
 var observable = qiniu.upload(file, key, token, putExtra, config)
@@ -115,7 +117,20 @@ var subscription = observable.subscribe(next, error, complete) // 这样传参�
 
 subscription.unsubscribe() // 上传取消
 ```
+图片上传前压缩：
 
+```JavaScript
+let options = {
+  quality: 0.92,
+  noCompressIfLarger: true
+  // maxWidth: 1000,
+  // maxHeight: 618
+}
+qiniu.compressImage(file, options).then(data => {
+  var observable = qiniu.upload(data.dist, key, token, putExtra, config)
+  var subscription = observable.subscribe(observer) // 上传开始
+})
+```
 ## API Reference Interface
 
 ### qiniu.upload(file: blob, key: string, token: string, putExtra: object, config: object): observable
@@ -251,6 +266,25 @@ subscription.unsubscribe() // 上传取消
     multipart_params_obj[k[0]] = k[1]
   }
   ```
+### qiniu.compressImage(file: blob, options: object) : Promise (上传前图片压缩)
+
+  ```JavaScript
+  var imgLink = qiniu.compressImage(file, options).then(res => {
+    // res : {
+    //   dist: 压缩后输出的 blob 对象，或原始的 file，具体看下面的 options 配置
+    //   width: 压缩后的图片宽度
+    //   height: 压缩后的图片高度
+    // }
+    }
+  })
+  ```
+  * file: 要压缩的源图片，为 `blob` 对象，支持 `image/png`、`image/jpeg`、`image/bmp`、`image/webp` 这几种图片类型
+  * options: `object`
+    * options.quality: `number`，图片压缩质量，在图片格式为 `image/jpeg` 或 `image/webp` 的情况下生效，其他格式不会生效，可以从 0 到 1 的区间内选择图片的质量。默认值 0.92
+    * options.maxWidh: `number`，压缩图片的最大宽度值
+    * options.maxHeight: `number`，压缩图片的最大高度值
+    （注意：当 `maxWidth` 和 `maxHeight` 都不设置时，则采用原图尺寸大小）
+    * options.noCompressIfLarger: `boolean`，为 `true` 时如果发现压缩后图片大小比原来还大，则返回源图片（即输出的 dist 直接返回了输入的 file）；默认 `false`，即保证图片尺寸符合要求，但不保证压缩后的图片体积一定变小
 
 ### qiniu.watermark(options: object, key: string, domain: string): string（水印）
 
@@ -428,7 +462,7 @@ subscription.unsubscribe() // 上传取消
      "Domain": "<Your Bucket Domain>" // Bucket 的外链默认域名，在 Bucket 的内容管理里查看，如：'http://xxx.bkt.clouddn.com/'
    }
    ```
-2. 进入项目根目录，执行 `npm install` 安装依赖库，然后打开两个终端，一个执行 `npm run serve` 跑 server， 一个执行 `npm run dev` 运行服务 demo1； demo2 为测试es6语法的 demo，进入 demo2 目录，执行 `npm install`，然后 `npm start` 运行 demo2，demo1 和 demo2 都共用一个 server，请注意 server 文件里的 `region` 设置跟 `config` 里的` region` 设置要保持一致。
+2. 进入项目根目录，执行 `npm install` 安装依赖库，然后打开两个终端，一个执行 `npm run serve` 跑 server， 一个执行 `npm run dev` 运行服务；demo1：`http://0.0.0.0:8080/test/demo1`；demo3：`http://0.0.0.0:8080/test/demo3`；demo1为测试上传功能的示例，demo3为测试图片压缩功能的示例；demo2 为测试 es6 语法的示例，进入 demo2 目录，执行 `npm install`，然后 `npm start` 运行 demo2；demo1、demo2 和 demo3 都共用一个 server，请注意 server 文件里的 `region` 设置跟 `config` 里的` region` 设置要保持一致。
 
 
 <a id="note"></a>

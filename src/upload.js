@@ -66,7 +66,7 @@ export class UploadManager {
       if (!isContainFileMimeType(this.file.type, this.putExtra.mimeType)){
         let err = new Error("file type doesn't match with what you specify");
         this.onError(err);
-        return Promise.reject(err);
+        return;
       }
     }
     let upload = getUploadUrl(this.config, this.token).then(res => {
@@ -80,7 +80,7 @@ export class UploadManager {
         this.sendLog(res.reqId, 200);
       }
     }, err => {
-      
+
       this.clear();
       if (err.isRequestError && !this.config.disableStatisticsReport) {
         let reqId = this.aborted ? "" : err.reqId;
@@ -203,13 +203,13 @@ export class UploadManager {
     if (savedReusable && !shouldCheckMD5) {
       return reuseSaved();
     }
-    
+
     return computeMd5(chunk).then(md5 => {
 
       if (savedReusable && md5 === info.md5) {
         return reuseSaved();
       }
-      
+
       let headers = getHeadersForChunkUpload(this.token);
       let onProgress = data => {
         this.updateChunkProgress(data.loaded, index);

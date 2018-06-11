@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+  <meta charset="UTF-8">
+  <title>七牛云 - JavaScript SDK</title>
+  <link href="images/favicon.ico" rel="shortcut icon">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.3/css/bootstrap.min.css">
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+  <div class="mainContainer">
+    <div class="row" style="margin-top: 20px;">
+      <ul class="tip col-md-12 text-mute">
+        <li>
+          <small>
+            JavaScript SDK 基于 h5 file api 开发，可以上传文件至七牛云存储。
+          </small>
+        </li>
+      </ul>
+    </div>
+    <div id="box">
+      <button class="select-button">选择文件</button>
+      <input class="file-input" type="file" id="select" />
+    </div>
+    <p style="margin-top:30px">
+        <label for="quality">quality: </label>
+        <input type="range" name="quality" id="quality" min="0" max="1" step="0.01">
+        <span class="option-value"></span>
+    </p>
+    <p>
+        <label for="width">max width: </label>
+        <input type="range" name="maxWidth" id="width" min="100" max="1600">
+        <span class="option-value"></span>
+    </p>
+    <p>
+        <label for="height">max height: </label>
+        <input type="range" name="maxHeight" id="height" min="100" max="1600">
+        <span class="option-value"></span>
+    </p>
+    <div class= "imageContainer">
+      <div class="sourceImage">
+        <pre></pre>
+        <img>
+      </div>
+      <div class="distImage">
+        <pre></pre>
+        <img>
+      </div>
+    </div>
+  </div>
+</body>
+<style>
+</style>
+<script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
+<script src="http://cdn.static.runoob.com/libs/jquery/1.10.2/jquery.min.js"></script>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+<script type="text/javascript" src='/dist/qiniu.min.js'></script>
+<script type="text/javascript" src="./index.js"></script>
+
+</html>
