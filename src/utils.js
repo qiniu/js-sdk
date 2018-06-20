@@ -191,7 +191,7 @@ export function getPortFromUrl(url) {
     groups = url.match(/^https?:\/\/([^:^/]*):(\d*)/);
     if (groups) {
       return groups[2];
-    } 
+    }
     if (type === "http") {
       return "80";
     }
@@ -211,11 +211,17 @@ export function getDomainFromUrl (url) {
 // 构造区域上传url
 export function getUploadUrl(config, token) {
   let protocol = getAPIProtocol();
-  if (config.region != null){
+
+  if (config.uphost != null) {
+    return Promise.resolve(`${protocol}//${config.uphost}`);
+  }
+
+  if (config.region != null) {
     let upHosts = regionUphostMap[config.region];
     let host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost;
     return Promise.resolve(`${protocol}//${host}`);
-  }  
+  }
+
   return getUpHosts(token)
     .then(res => {
       let hosts = res.data.up.acc.main;
