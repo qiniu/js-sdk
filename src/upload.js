@@ -29,6 +29,7 @@ export class UploadManager {
         disableStatisticsReport: false,
         retryCount: 3,
         checkByMD5: false,
+        uphost: null,
         concurrentRequestLimit: 3,
         region: null
       },
