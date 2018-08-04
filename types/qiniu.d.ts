@@ -1,128 +1,291 @@
-declare namespace Qiniu {
-	interface File {
-		completeTimestamp: number;
-		destroy(): void;
-		getNative(): void;
-		getSource(): string;
-		id: string;
-		lastModifiedDate: Date;
-		loaded: number;
-		name: string;
-		origSize: number;
-		percent: number;
-		size: number;
-		speed: string;
-		status: number;
-		type: string;
-	}
-	interface UploadOptions extends plupload_settings {
-		disable_statistics_report: boolean;   // 禁止自动发送上传统计信息到七牛，默认允许发送
-		// 在初始化时，uptoken, uptoken_url, uptoken_func 三个参数中必须有一个被设置
-		// 切如果提供了多个，其优先级为 uptoken > uptoken_url > uptoken_func
-		// 其中 uptoken 是直接提供上传凭证，uptoken_url 是提供了获取上传凭证的地址，如果需要定制获取 uptoken 的过程则可以设置 uptoken_func
-		uptoken: string; // uptoken 是上传凭证，由其他程序生成
-		uptoken_url: string;         // Ajax 请求 uptoken 的 Url，**强烈建议设置**（服务端提供）
-		uptoken_func: (file: string) => string | Promise<string>;    // 在需要获取 uptoken 时，该方法会被调用
-		get_new_uptoken: boolean;             // 设置上传文件的时候是否每次都重新获取新的 uptoken
-		downtoken_url: string;			// Ajax请求downToken的Url，私有空间时使用,JS-SDK 将向该地址POST文件的key和domain,服务端返回的JSON必须包含`url`字段，`url`值为该文件的下载地址
-		save_key: boolean;                  // 默认 false。若在服务端生成 uptoken 的上传策略中指定了 `save_key`，则开启，SDK在前端将不对key进行任何处理
-		domain: string;     // bucket 域名，下载资源时用到，如：'http://xxx.bkt.clouddn.com/' **必需**
-		max_file_size: string;             // 最大文件体积限制
-		dragdrop: boolean;                     // 开启可拖曳上传
-		auto_start: boolean;                   // 选择文件后自动上传，若关闭需要自己绑定事件触发上传,
-		filters: Partial<{
-			max_file_size: string,
-			prevent_duplicates: boolean;
-			// Specify what files to browse for
-			mime_types: Array<{
-				title: string;
-				extensions: string;
-			}>;
-		}>,
-		x_vars: {
-			[key: string]: (up: plupload, file: File) => any;
-			//    自定义变量，参考http://developer.qiniu.com/docs/v6/api/overview/up/response/vars.html
+declare namespace qiniu {
+	interface Next {
+		total: {
+			loaded: number;	// 已上传大小，单位为字节。
+			total: number;	// 本次上传的总量控制信息，单位为字节，注意这里的 total 跟文件大小并不一致。
+			percent: number;	// 当前上传进度，范围：0～100。
 		};
-		init?: Partial<{
-			// 文件添加进队列后,处理相关的事情
-			FilesAdded(up: plupload, files: File[]): void;
-			// 删除文件事件
-			FilesRemoved(up: plupload, files: File[]): void;
-			// 每个文件上传前,处理相关的事情
-			BeforeUpload(up: plupload, file: File): void;
-			// 每个文件上传时,处理相关的事情
-			UploadProgress(up: plupload, file: File): void;
-			// 分片上传信息
-			ChunkUploaded(up: plupload, file: File, info: {
-				offset: number;
-				response: string;
-				responseHeaders: string;
-				status: number;
-				total: number;
-			}): void;
-			// 每个文件上传成功后,处理相关的事情
-			// 其中 info.response 是文件上传成功后，服务端返回的json，形式如
-			// {
-			//    "hash": "Fh8xVqod2MQ1mocfI4S4KpRL6D98",
-			//    "key": "gogopher.jpg"
-			//  }
-			// 参考http://developer.qiniu.com/docs/v6/api/overview/up/response/simple-response.html
-			FileUploaded(up: plupload, file: File, info: { response: string; }): void;
-			//上传出错时,处理相关的事情
-			Error(up: plupload, err: any): void;
-			//队列文件处理完毕后,处理相关的事情
-			UploadComplete(up: plupload, uploaded_files: File[]): void;
-			// 若想在前端对每个文件的key进行个性化处理，可以配置该函数
-			// 该配置必须要在 unique_names: false , save_key: false 时才生效
-			Key(up: plupload, file: File): string;
-		}>;
 	}
-	function uploader<Uploader extends plupload>(options: Partial<UploadOptions>): Uploader;
+
+	interface Error {
+		code: number;	// 请求错误状态码，只有在 err.isRequestError 为 true 的时候才有效。可查阅码值对应说明。
+		message: string;	// 错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。
+		isRequestError: true | undefined;	// 用于区分是否 xhr 请求错误；当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 true；否则为 undefined 。
+		reqId: string;	// xhr请求错误的 X-Reqid。
+	}
+
+	interface AudioInfo {
+		bit_rate: string;
+		channels: number;
+		codec_name: string;
+		codec_type: string;
+		duration: string;
+		index: number;
+		nb_frames: string;
+		r_frame_rate: string;
+		sample_fmt: string;
+		sample_rate: string;
+		start_time: string;
+		tags: {
+			creation_time: string;
+			[key: string]: string;
+		};
+	}
+
+	interface AvFormat {
+		bit_rate: string;
+		duration: string;
+		format_long_name: string;
+		format_name: string;
+		nb_streams: number;
+		size: string;
+		start_time: string;
+		tags: {
+			creation_time: string;
+			[key: string]: string;
+		};
+	}
+
+	interface VideoInfo {
+		bit_rate: string;
+		codec_name: string;
+		codec_type: string;
+		display_aspect_ratio: string;
+		duration: string;
+		height: number;
+		index: number;
+		nb_frames: string;
+		pix_fmt: string;
+		r_frame_rate: string;
+		sample_aspect_ratio: string;
+		start_time: string;
+		tags: {
+			creation_time: string;
+			[key: string]: string;
+		};
+		width: number;
+	}
+
+	interface AvAudioInfo {
+		audio: AudioInfo;
+		format: AvFormat;
+		video: VideoInfo;
+	}
+
+	interface AvImageInfo {
+		format: string;
+		width: number;
+		height: number;
+		colorModel: string;
+	}
+
+	interface CompletedResult {
+		avinfo?: AvAudioInfo;
+		imageInfo?: AvImageInfo;
+		key: string;
+		name: string;
+		size: number;
+		persistentid: string;
+		sec: string;
+		ext: string;
+		bucket: string;
+	}
+
+	interface Observer {
+		next(res: Next): void;
+		error(err: Error | string): void;
+		complete(res: CompletedResult): void;
+	}
+
+	interface Subscription {
+		unsubscribe(): void;
+	}
+
+	interface Observable {
+		subscribe(options: Observer): Subscription;
+		/**
+		 * 订阅
+		 *
+		 * @param next 接收上传进度信息
+		 * @param error 上传错误后触发；自动重试本身并不会触发该错误，而当重试次数到达上限后则可以触发。当不是 xhr 请求错误时，会把当前错误产生原因直接抛出，诸如 JSON 解析异常等；当产生 xhr 请求错误时，参数 err 为一个包含 code、message、isRequestError 三个属性的 object
+		 * @param complete 接收上传完成后的后端返回信息，具体返回结构取决于后端sdk的配置，可参考[上传策略](https://developer.qiniu.com/kodo/manual/1206/put-policy)。
+		 * @returns
+		 * @memberof Observable
+		 */
+		subscribe(next: (obj: Next) => void, error: (err: Error | string) => void, complete: (obj: CompletedResult) => void): Subscription;
+	}
+
+	interface Extra {
+		fname: string;	// 文件原文件名
+		params: any;	// 用来放置自定义变量
+		mimeType: string[] | null;	// 用来限制上传文件类型，为 null 时表示不对文件类型限制；限制类型放到数组里： ["image/png", "image/jpeg", "image/gif"]
+	}
+
+	interface Config {
+		useCdnDomain: boolean;
+		region: Region | string;
+	}
+
+	/**
+	 * 上传文件
+	 * @param file Blob 对象，上传的文件
+	 * @param key 文件资源名
+	 * @param token 上传验证信息，前端通过接口请求后端获得
+	 * @param putExtra
+	 * @param config
+	 */
+	function upload(file: Blob, key: string | null | undefined, token: string, putExtra: Partial<Extra>, config: Partial<Config>): Observable;
+
+	/**
+	 * 返回创建文件的 url；当分片上传时，我们需要把分片返回的 ctx 信息拼接后通过该 url 上传给七牛以创建文件。
+	 *
+	 * @param url 上传域名，可以通过qiniu.getUploadUrl()获得
+	 * @param size 文件大小
+	 * @param key 文件资源名
+	 * @param putExtra
+	 * @returns
+	 */
+	function createMkFileUrl(url: string, size: number, key: string, putExtra: Partial<Extra>): string;
+
+	enum Region {
+		z0,	// 代表华东区域
+		z1,		// 代表华北区域
+		z2,		// 代表华南区域
+		na0,		// 代表北美区域
+		as0		// 代表新加坡区域
+	}
+
+	const region: Region;
+
+	/**
+	 * 接收参数为 config 对象，返回根据 config 里所配置信息的上传域名
+	 *
+	 * @param config
+	 * @param token
+	 * @returns
+	 */
+	function getUploadUrl(config: Partial<Config>, token: string): Promise<string>;
+
+	interface Headers {
+		[key: string]: string;
+	}
+
+	/**
+	 * 返回 object，包含用来获得分片上传设置的头信息，参数为 token 字符串；当分片上传时，请求需要带该函数返回的头信息
+	 *
+	 * @param token
+	 * @returns
+	 */
+	function getHeadersForChunkUpload(token: string): Headers;
+
+	/**
+	 * 返回 object，包含用来获得文件创建的头信息，参数为 token 字符串；当分片上传完需要把 ctx 信息传给七牛用来创建文件时，请求需要带该函数返回的头信息
+	 *
+	 * @param token
+	 * @returns
+	 */
+	function getHeadersForMkFile(token: string): Headers;
+
+	/**
+	 * 返回[[k, v],...]格式的数组，k 为自定义变量 key 名，v 为自定义变量值，用来提取 putExtra.params 包含的自定义变量
+	 *
+	 * @param params
+	 * @returns
+	 */
+	function filterParams(params: any): Array<[string, any]>;
+
+	interface CompressOptions {
+		quality: number;	// 图片压缩质量，在图片格式为 image/jpeg 或 image/webp 的情况下生效，其他格式不会生效，可以从 0 到 1 的区间内选择图片的质量。默认值 0.92
+		maxWidh: number;	// 压缩图片的最大宽度值
+		maxHeight: number;	// 压缩图片的最大高度值 （注意：当 maxWidth 和 maxHeight 都不设置时，则采用原图尺寸大小）
+		noCompressIfLarger: boolean;	// 为 true 时如果发现压缩后图片大小比原来还大，则返回源图片（即输出的 dist 直接返回了输入的 file）；默认 false，即保证图片尺寸符合要求，但不保证压缩后的图片体积一定变小
+	}
+
+	/**
+	 * 上传前图片压缩
+	 *
+	 * @param file 要压缩的源图片，为 blob 对象，支持 image/png、image/jpeg、image/bmp、image/webp 这几种图片类型
+	 * @param options
+	 * @returns
+	 */
+	function compressImage(file: Blob, options: Partial<CompressOptions>): Promise<{
+		dist: Blob;	// 压缩后输出的 blob 对象，或原始的 file，具体看下面的 options 配置
+		width: number;	// 压缩后的图片宽度
+		height: number;	// 压缩后的图片高度
+	}>;
 
 	interface WaterMarkOptions1 {
-		mode: 1;			// 图片水印
-		image: string;		// 图片水印的Url，mode = 1 时 **必需**
-		dissolve?: number;	// 透明度，取值范围1-100，非必需，下同
-		gravity?: string;	// 水印位置，为以下参数[NorthWest、North、NorthEast、West、Center、East、SouthWest、South、SouthEast]之一
-		dx: number;			// 横轴边距，单位:像素(px)
-		dy: number;			// 纵轴边距，单位:像素(px)
+		mode: 1; // 图片水印
+		image: string; // 图片水印的Url，mode = 1 时 **必需**
+		dissolve: number; // 透明度，取值范围1-100，非必需，下同
+		gravity: 'NorthWest' | 'North' | 'NorthEast' | 'West' | 'Center' | 'East' | 'SouthWest' | 'South' | 'SouthEast'; // 水印位置
+		dx: 100,  // 横轴边距，单位:像素(px)
+		dy: 100 // 纵轴边距，单位:像素(px)
 	}
+
 	interface WaterMarkOptions2 {
-		mode: 2;			// 图片水印
-		text: string;		// 水印文字，mode = 2 时 **必需**
-		dissolve?: number;	// 透明度，取值范围1-100，非必需，下同
-		gravity?: string;	// 水印位置，为以下参数[NorthWest、North、NorthEast、West、Center、East、SouthWest、South、SouthEast]之一
-		fontsize: number;	// 字体大小，单位: 缇
-		font: string;		// 水印文字字体
-		dx: number;			// 横轴边距，单位:像素(px)
-		dy: number;			// 纵轴边距，单位:像素(px)
-		fill: string;		// 水印文字颜色，RGB格式，可以是颜色名称
+		mode: 2;  // 文字水印
+		text: string; // 水印文字，mode = 2 时 **必需**
+		dissolve: number;          // 透明度，取值范围1-100，非必需，下同
+		gravity: 'NorthWest' | 'North' | 'NorthEast' | 'West' | 'Center' | 'East' | 'SouthWest' | 'South' | 'SouthEast'; // 水印位置
+		fontsize: number;         // 字体大小，单位: 缇
+		font: string;           // 水印文字字体
+		dx: number;               // 横轴边距，单位:像素(px)
+		dy: number;               // 纵轴边距，单位:像素(px)
+		fill: string;        // 水印文字颜色，RGB格式，可以是颜色名称
 	}
-	function watermark(options: WaterMarkOptions1 | WaterMarkOptions2, key: string): string;
+
+	/**
+	 * 水印
+	 *
+	 * @param options 包含的具体水印参数解释见水印（[watermark](https://developer.qiniu.com/dora/manual/1316/image-watermarking-processing-watermark)）
+	 * @param key 文件资源名
+	 * @param domain 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取，前端可以通过接口请求后端得到
+	 * @returns 返回添加水印后的图片地址,可以赋值给 html 的 img 元素的 src 属性, 若未指定key，可以通过以下方式获得完整的 imgLink
+	 * `imgLink  =  '<domain>/<key>?' +  imgLink`
+	 * <domain> 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取
+	 */
+	function watermark(options: WaterMarkOptions1 | WaterMarkOptions2, key?: string, domain?: string): string;
 
 	interface ImageView2Options {
 		mode: 0 | 1 | 2 | 3 | 4 | 5;	// 缩略模式，共6种[0-5]
-		w: number;						// 具体含义由缩略模式决定
-		h: number;						// 具体含义由缩略模式决定
-		q: number;						// 新图的图像质量，取值范围：1-100
-		format: 'png'  // 新图的输出格式，取值范围：jpg，gif，png，webp等
+		w: number;	// 具体含义由缩略模式决定
+		h: number;	// 具体含义由缩略模式决定
+		q: number;	// 新图的图像质量，取值范围：1-100
+		format: 'jpg' | 'gif' | 'png' | 'webp' | string;	// 新图的输出格式，取值范围：jpg，gif，png，webp等
 	}
 
-	function imageView2(optoins: ImageView2Options, key: string): string;
+	/**
+	 * 缩略
+	 *
+	 * @param options 具体缩略参数解释见[图片基本处理（imageView2）](https://developer.qiniu.com/dora/manual/1279/basic-processing-images-imageview2)
+	 * @param key
+	 * @param domain
+	 * @returns 返回处理后的图片url
+	 */
+	function imageView2(options: Partial<ImageView2Options>, key: string, domain: string): string;
 
 	interface ImageMogr2Options {
-		'auto-orient'?: boolean;		// 布尔值，是否根据原图EXIF信息自动旋正，便于后续处理，建议放在首位。
-		strip?: boolean;				// 布尔值，是否去除图片中的元信息
-		thumbnail?: string;			// 缩放操作参数
-		crop?: string;				// 裁剪操作参数
-		gravity?: string;			// 裁剪锚点参数
-		quality?: number;			// 图片质量，取值范围1-100
-		rotate?: number;			// 旋转角度，取值范围1-360，缺省为不旋转。
-		format?: string;				// 新图的输出格式，取值范围：jpg，gif，png，webp等
-		blur?: string;				// 高斯模糊参数
+		'auto-orient': boolean;		// 布尔值，是否根据原图EXIF信息自动旋正，便于后续处理，建议放在首位。
+		strip: boolean;				// 布尔值，是否去除图片中的元信息
+		thumbnail: string;			// 缩放操作参数
+		crop: string;				// 裁剪操作参数
+		gravity: string;			// 裁剪锚点参数
+		quality: number;			// 图片质量，取值范围1-100
+		rotate: number;			// 旋转角度，取值范围1-360，缺省为不旋转。
+		format: string;				// 新图的输出格式，取值范围：jpg，gif，png，webp等
+		blur: string;				// 高斯模糊参数
 	}
 
-	function imageMogr2(optoins: ImageMogr2Options, key: string): string;
+	/**
+	 * 返回处理后的图片url
+	 *
+	 * @param optoins 具体高级图像处理参数解释见[图像高级处理（imageMogr2）](https://developer.qiniu.com/dora/manual/1270/the-advanced-treatment-of-images-imagemogr2)
+	 * @param key
+	 * @param domain
+	 * @returns 返回处理后的图片url
+	 */
+	function imageMogr2(optoins: Partial<ImageMogr2Options>, key: string, domain: string): string;
 
 	interface ImageInfo {
 		size: number;							// 文件大小，单位：Bytes
@@ -130,10 +293,19 @@ declare namespace Qiniu {
 		width: number;							// 图片宽度，单位：像素(px) 。
 		height: number;							// 图片高度，单位：像素(px) 。
 		colorModel: string;						// 彩色空间，如palette16、ycbcr等。
-		frameNumber?: number;					// 帧数，gif 图片会返回此项。
+		frameNumber: number;					// 帧数，gif 图片会返回此项。
 	}
 
-	function imageInfo(key: string): ImageInfo;
+	/**
+	 *
+	 * 图片基本信息
+	 * 具体 imageInfo 解释见[图片基本信息（imageInfo）](https://developer.qiniu.com/dora/manual/1269/pictures-basic-information-imageinfo)
+	 *
+	 * @param key
+	 * @param domain
+	 * @returns
+	 */
+	function imageInfo(key: string, domain: string): Promise<ImageInfo>;
 
 	interface ExtendedInfo {
 		code: number;
@@ -144,28 +316,50 @@ declare namespace Qiniu {
 		} | number | string;
 	}
 
-	function exif(key: string): ImageInfo;
+	interface ExtentInfoValue {
+		type: number;
+		val: string;
+	}
+
+	interface ExtentInfo {
+		[key: string]: ExtentInfoValue;
+		DateTime: ExtentInfoValue;
+		ExposureBiasValue: ExtentInfoValue;
+		ExposureTime: ExtentInfoValue;
+		Model: ExtentInfoValue;
+		ISOSpeedRatings: ExtentInfoValue;
+		ResolutionUnit: ExtentInfoValue;
+	}
+
+	/**
+	 * EXIF 信息
+	 * 具体 exif 解释见[图片 EXIF 信息（exif）](https://developer.qiniu.com/dora/manual/1260/photo-exif-information-exif)
+	 * @param key
+	 * @param domain
+	 * @returns
+	 */
+	function exif(key: string, domain: string): Promise<ExtentInfo>;
 
 	interface WaterMarkFopOptions1 extends WaterMarkOptions1 {
-		fop: 'watermark' | string; // 指定watermark操作
+		fop: 'watermark';
 	}
 
 	interface WaterMarkFopOptions2 extends WaterMarkOptions2 {
-		fop: 'watermark' | string; // 指定watermark操作
+		fop: 'watermark';
 	}
 
-	interface ImageViewFopOptions extends ImageView2Options {
-		fop: 'imageView2' | string; // 指定watermark操作
+	interface ImageView2FopOptions extends ImageView2Options {
+		fop: 'imageView2';
 	}
 
-	interface ImageMogrFopOptions extends ImageMogr2Options {
-		fop: 'imageMogr2' | string; // 指定watermark操作
+	interface ImageMogr2FopOptions extends ImageMogr2Options {
+		fop: 'imageMogr2';
 	}
 
-	function pipeline(fos: (WaterMarkFopOptions1 | WaterMarkFopOptions2 | ImageViewFopOptions | ImageMogrFopOptions)[], key: string): string;
+	function pipeline(fos: (WaterMarkFopOptions1 | WaterMarkFopOptions2 | ImageView2FopOptions | ImageMogr2FopOptions)[], key: string, domain: string): string;
 }
 
 declare module 'qiniu-js' {
 	import 'plupload';
-	export = Qiniu;
+	export = qiniu;
 }
