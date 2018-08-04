@@ -1,0 +1,8 @@
+{
+    "AccessKey": "<Your Access Key>",  // https://portal.qiniu.com/user/key
+    "SecretKey": "<Your Secret Key>",
+    "Bucket": "<Your Bucket Name>",
+    "Port": 9000,
+    "UptokenUrl": "uptoken",
+    "Domain": "<Your Bucket Domain>" // bucket domain eg:http://qiniu-plupload.qiniudn.com/
+}

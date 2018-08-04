@@ -1,0 +1,14 @@
+{
+  "presets": [
+    [
+      "env",
+      {
+        "loose": true,
+        "targets": {
+          "browsers": ["last 2 versions", "ie >= 8"]
+        }
+      }
+    ]
+  ],
+  "plugins": ["transform-runtime", "transform-object-rest-spread"]
+}
