@@ -30,6 +30,7 @@ export class UploadManager {
         retryCount: 3,
         checkByMD5: false,
         uphost: null,
+        forceDirect: false,
         concurrentRequestLimit: 3,
         region: null
       },
@@ -73,6 +74,11 @@ export class UploadManager {
     let upload = getUploadUrl(this.config, this.token).then(res => {
       this.uploadUrl = res;
       this.uploadAt = new Date().getTime();
+
+      if (this.config.forceDirect) {
+        return this.directUpload();
+      }
+
       return this.file.size > BLOCK_SIZE ? this.resumeUpload() : this.directUpload();
     });
     upload.then(res => {
