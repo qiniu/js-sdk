@@ -8,12 +8,13 @@ install:
 - npm install
 script:
 - npm run build
-before_deploy: "npm run build"
+before_deploy: npm run build
 deploy:
   provider: npm
   email: sdk@qiniu.com
   skip_cleanup: true
   api_key:
-    secure: d06l6wsuv/YFeY3E0TRGemGjtQ7LZdN9WxiFnseT2exTFkDgMw9EV2uOUWllXNrbxXUY+2ZpDswtYrgZ4exQGfKKQRGFy6/g8oxPgyylVwBz98vlie8NvXXmANoyt7mwQwjninf5/XUiY3cwn9YCaU1jyxcayFdQTex05T++qvc=
+    secure: L9V1k9Y6CFC5fIBRbGbpvhpb004kI9Z/Wvwp5xGnVuGO3n6OfEVoaX7gSLpOkyx4kZfzEEh+R9xriJAeXBfLjiigP1FrKm+EQ92VlkjGh+Dlc4NDwEO00RczfUxI4bQG/HVaVTsQs+EqCnkfsp403wECwuBS68zYtsJZldREmDo=
   on:
     tags: true
+    repo: qiniu/js-sdk
