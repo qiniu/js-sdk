@@ -38,10 +38,10 @@ var app = new Vue({
         zoneZh: '华东',
         token: 'anEC5u_72gw1kZPSy3Dsq1lo_DPXyvuPDaj4ePkN:IygENu1FEguSNOeie8-r-rRyf5U=:eyJzY29wZSI6InNkay16MDphLmpwZyIsImZzaXplTGltaXQiOjEwMDAwMDAsImZzaXplTWluIjo4MDAwMDAsImRlYWRsaW5lIjo0NjgxODYyNDk2fQ==',
         uphosts: [
-          'http://up.qiniu.com',
-          'http://upload.qiniu.com',
-          'https://up.qbox.me',
-          'https://upload.qbox.me'
+          'http://up.qiniup.com',
+          'http://upload.qiniup.com',
+          'https://up.qiniup.com',
+          'https://upload.qiniup.com'
         ]
       },
       {
@@ -49,10 +49,10 @@ var app = new Vue({
         zoneZh: '华北',
         token: 'anEC5u_72gw1kZPSy3Dsq1lo_DPXyvuPDaj4ePkN:peuYR2ETrDO1KAV_z_IU-58Y038=:eyJzY29wZSI6InNkay16MTphLmpwZyIsImZzaXplTGltaXQiOjEwMDAwMDAsImZzaXplTWluIjo4MDAwMDAsImRlYWRsaW5lIjo0NjgxODYyNDk3fQ==',
         uphosts: [
-          'http://up-z1.qiniu.com',
-          'http://upload-z1.qiniu.com',
-          'https://up-z1.qbox.me',
-          'https://upload-z1.qbox.me'
+          'http://up-z1.qiniup.com',
+          'http://upload-z1.qiniup.com',
+          'https://up-z1.qiniup.com',
+          'https://upload-z1.qiniup.com'
         ]
       },
       {
@@ -60,10 +60,10 @@ var app = new Vue({
         zoneZh: '华南',
         token: 'anEC5u_72gw1kZPSy3Dsq1lo_DPXyvuPDaj4ePkN:d8g77lJqYHhHDkv1tJA0gXMf04s=:eyJzY29wZSI6InNkay16MjphLmpwZyIsImZzaXplTGltaXQiOjEwMDAwMDAsImZzaXplTWluIjo4MDAwMDAsImRlYWRsaW5lIjo0NjgxODYyNDk3fQ==',
         uphosts: [
-          'http://up-z2.qiniu.com',
-          'http://upload-z2.qiniu.com',
-          'https://up-z2.qbox.me',
-          'https://upload-z2.qbox.me'
+          'http://up-z2.qiniup.com',
+          'http://upload-z2.qiniup.com',
+          'https://up-z2.qiniup.com',
+          'https://upload-z2.qiniup.com'
         ]
       },
       {
@@ -71,10 +71,21 @@ var app = new Vue({
         zoneZh: '北美',
         token: 'anEC5u_72gw1kZPSy3Dsq1lo_DPXyvuPDaj4ePkN:-RsLz4FoCQ2u-lY-4uXR466vq20=:eyJzY29wZSI6InNkay1uYTA6YS5qcGciLCJmc2l6ZUxpbWl0IjoxMDAwMDAwLCJmc2l6ZU1pbiI6ODAwMDAwLCJkZWFkbGluZSI6NDY4MTg2MjQ5N30=',
         uphosts: [
-          'http://up-na0.qiniu.com',
-          'http://upload-na0.qiniu.com',
-          'https://up-na0.qbox.me',
-          'https://upload-na0.qbox.me'
+          'http://up-na0.qiniup.com',
+          'http://upload-na0.qiniup.com',
+          'https://up-na0.qiniup.com',
+          'https://upload-na0.qiniup.com'
+        ]
+      },
+      {
+        zone: 'as0',
+        zoneZh: '东南亚',
+        token: 'anEC5u_72gw1kZPSy3Dsq1lo_DPXyvuPDaj4ePkN:3aGthekW5L_3YO9VmSJEoqgDa2c=:eyJzY29wZSI6InNkay1hczA6YS5qcGciLCJkZWFkbGluZSI6MTYzMDU2ODIyNCwiZnNpemVMaW1pdCI6MTAwMDAwMCwidXBob3N0cyI6WyJodHRwOi8vdXAtYXMwLnFpbml1LmNvbSIsImh0dHA6Ly91cGxvYWQtYXMwLnFpbml1LmNvbSIsIi1IIHVwLWFzMC5xaW5pdS5jb20gaHR0cDovLzIzLjI0OC4xNzMuNyJdfQ==',
+        uphosts: [
+          'http://up-as0.qiniup.com',
+          'http://upload-as0.qiniup.com',
+          'https://up-as0.qiniup.com',
+          'https://upload-as0.qiniup.com'
         ]
       },
     ],
