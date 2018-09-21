@@ -1434,7 +1434,13 @@
                                     }
                                 }
                             };
-                            ajax_downtoken.send('key=' + that.parseJSON(info.response).key + '&domain=' + op.domain);
+                            var sendData = 'domain=' + op.domain;
+                            var responseData = jQuery.parseJSON(info.response);
+                            for( i in responseData){
+                                sendData += '&'+i+'='+responseData[i];
+                            }
+                            ajax_downtoken.send(sendData);
+                            // ajax_downtoken.send('key=' + that.parseJSON(info.response).key + '&domain=' + op.domain);
                         } else if (_FileUploaded_Handler) {
                             _FileUploaded_Handler(up, file, info);
                         }
