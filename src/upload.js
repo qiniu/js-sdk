@@ -234,7 +234,7 @@ export class UploadManager {
         onCreate
       }).then(response => {
         if (this.isAndroidBrowser) {
-          console.log("android..."); // 对于低版本安卓浏览器，因为无法触发 xhr 的 progress 事件，这里 fake 下
+          // 对于低版本安卓浏览器，因为无法触发 xhr 的 progress 事件，这里 fake 下
           onProgress({ loaded: chunk.size });
         }
         this.ctxList[index] = {
