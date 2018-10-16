@@ -14,6 +14,7 @@ import {
   request,
   computeMd5,
   getUploadUrl,
+  isAndroidBrowser,
   filterParams
 } from "./utils";
 
@@ -56,6 +57,7 @@ export class UploadManager {
     this.onError = () => {};
     this.onComplete = () => {};
     this.retryCount = 0;
+    this.isAndroidBrowser = isAndroidBrowser();
     Object.assign(this, handlers);
   }
 
@@ -231,6 +233,10 @@ export class UploadManager {
         onProgress,
         onCreate
       }).then(response => {
+        if (this.isAndroidBrowser) {
+          console.log("android..."); // 对于低版本安卓浏览器，因为无法触发 xhr 的 progress 事件，这里 fake 下
+          onProgress({ loaded: chunk.size });
+        }
         this.ctxList[index] = {
           time: new Date().getTime(),
           ctx: response.data.ctx,
@@ -272,8 +278,15 @@ export class UploadManager {
   }
 
   finishDirectProgress(){
+    // 对于低版本安卓浏览器，progress 为 null， 这里 fake 下
+    if (this.isAndroidBrowser) {
+      this.progress = { total: this.getProgressInfoItem(this.file.size, this.file.size) };
+      this.onData(this.progress);
+      return;
+    }
+
     let total = this.progress.total;
-    this.progress.total = this.getProgressInfoItem(total.loaded + 1, total.size);
+    this.progress = { total: this.getProgressInfoItem(total.loaded + 1, total.size) };
     this.onData(this.progress);
   }
 
