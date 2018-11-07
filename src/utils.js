@@ -71,10 +71,12 @@ export function getLocalFileInfo(file) {
 }
 
 export function getResumeUploadedSize(file) {
-  return getLocalFileInfo(file).filter(Boolean).reduce(
-    (result, value) => result + (isChunkExpired(value.time) ? 0 : value.size),
-    0
-  )
+  return getLocalFileInfo(file).filter(
+      value => value && !isChunkExpired(value.time)
+    ).reduce(
+      (result, value) => result + value.size,
+      0
+    );
 }
 
 // 构造file上传url
