@@ -2,6 +2,7 @@ import { region } from "./config";
 import {
   createMkFileUrl,
   getUploadUrl,
+  getLocalFileInfo,
   getHeadersForMkFile,
   getHeadersForChunkUpload,
   filterParams
@@ -39,6 +40,7 @@ export {
   region,
   createMkFileUrl,
   getHeadersForChunkUpload,
+  getLocalFileInfo,
   getHeadersForMkFile,
   filterParams,
   getUploadUrl,
