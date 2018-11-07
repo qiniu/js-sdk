@@ -70,7 +70,7 @@ export function getLocalFileInfo(file) {
   }
 }
 
-export function getUploadedSize(file) {
+export function getResumeUploadedSize(file) {
   return getLocalFileInfo(file).filter(Boolean).reduce(
     (result, value) => result + (isChunkExpired(value.time) ? 0 : value.size),
     0
