@@ -76,7 +76,7 @@ export function getResumeUploadedSize(file) {
     ).reduce(
       (result, value) => result + value.size,
       0
-    );
+    )
 }
 
 // 构造file上传url
