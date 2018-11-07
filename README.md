@@ -256,6 +256,9 @@ qiniu.compressImage(file, options).then(data => {
   var headers = qiniu.getHeadersForMkFile(token)
   ```
 
+### qiniu.getLocalFileInfo(file: blob): array
+  返回文件的断点信息，数组里每一项为对应索引的 chunk 上传完成的返回信息，如果该索引为 `undefined` 说明该索引对应 chunk 并未上传完成或者未开始上传；如果没有该文件的断点信息则返回空数组
+
 ### qiniu.filterParams(params: object): array
 
   返回[[k, v],...]格式的数组，k 为自定义变量 `key` 名，v 为自定义变量值，用来提取 `putExtra.params` 包含的自定义变量
