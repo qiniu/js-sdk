@@ -203,7 +203,7 @@ export class UploadManager {
     let shouldCheckMD5 = this.config.checkByMD5;
     let reuseSaved = () => {
       this.updateChunkProgress(chunk.size, index);
-      this.ctxList[index] = {ctx: info.ctx, time: info.time, md5: info.md5};
+      this.ctxList[index] = {ctx: info.ctx, size: info.size, time: info.time, md5: info.md5};
       return Promise.resolve(null);
     };
 
