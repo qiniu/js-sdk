@@ -256,6 +256,9 @@ qiniu.compressImage(file, options).then(data => {
   var headers = qiniu.getHeadersForMkFile(token)
   ```
 
+### qiniu.getResumeUploadedSize(file: blob): number
+  断点续传时返回文件之前已上传的字节数，为 0 代表当前并无该文件的断点信息
+
 ### qiniu.filterParams(params: object): array
 
   返回[[k, v],...]格式的数组，k 为自定义变量 `key` 名，v 为自定义变量值，用来提取 `putExtra.params` 包含的自定义变量

@@ -240,6 +240,7 @@ export class UploadManager {
         this.ctxList[index] = {
           time: new Date().getTime(),
           ctx: response.data.ctx,
+          size: chunk.size,
           md5: md5
         };
       });

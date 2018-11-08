@@ -70,6 +70,15 @@ export function getLocalFileInfo(file) {
   }
 }
 
+export function getResumeUploadedSize(file) {
+  return getLocalFileInfo(file).filter(
+      value => value && !isChunkExpired(value.time)
+    ).reduce(
+      (result, value) => result + value.size,
+      0
+    );
+}
+
 // 构造file上传url
 export function createMkFileUrl(url, size, key, putExtra) {
   let requestUrl = url + "/mkfile/" + size;
