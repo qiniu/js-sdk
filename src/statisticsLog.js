@@ -8,7 +8,7 @@ export class StatisticsLogger{
     this.send(logString, token, 0);
   }
 
-  send(logString, token, retryCount){
+  send(logString, token, retryCount) {
     let xhr = createXHR();
     let self = this;
     xhr.open("POST", "https://uplog.qbox.me/log/3");
@@ -17,8 +17,7 @@ export class StatisticsLogger{
     xhr.onreadystatechange = function () {
       if (xhr.readyState === 4) {
         if (xhr.status !== 200) {
-          retryCount++;
-          retryCount <= 3 ? self.send(logString, token, retryCount) : "";
+          ++retryCount <= 3 && self.send(logString, token, retryCount);
         }
       }
     };
