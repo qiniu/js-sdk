@@ -188,7 +188,6 @@ export class UploadManager {
           removeLocalFileInfo(this.file);
           return;
         }
-         setLocalFileInfo(this.file, this.ctxList);
       }
     );
     return result;
@@ -231,12 +230,16 @@ export class UploadManager {
         onProgress,
         onCreate
       }).then(response => {
+        // 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null，这里在每次分片上传完成后都手动更新下 progress
+        onProgress({ loaded: chunk.size });
+
         this.ctxList[index] = {
           time: new Date().getTime(),
           ctx: response.data.ctx,
           size: chunk.size,
           md5: md5
         };
+        setLocalFileInfo(this.file, this.ctxList);
       });
     });
   }
@@ -272,9 +275,16 @@ export class UploadManager {
     this.onData(this.progress);
   }
 
-  finishDirectProgress(){
+  finishDirectProgress() {
+    // 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null， 这里 fake 下
+    if (!this.progress) {
+      this.progress = { total: this.getProgressInfoItem(this.file.size, this.file.size) };
+      this.onData(this.progress);
+      return;
+    }
+
     let total = this.progress.total;
-    this.progress.total = this.getProgressInfoItem(total.loaded + 1, total.size);
+    this.progress = { total: this.getProgressInfoItem(total.loaded + 1, total.size) };
     this.onData(this.progress);
   }
 
