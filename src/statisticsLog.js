@@ -5,12 +5,11 @@ export class StatisticsLogger{
   log(info, token) {
     let logString = "";
     Object.keys(info).forEach(k => logString += info[k] + ",");
-    this.send(logString, token);
+    this.send(logString, token, 0);
   }
 
-  send(logString, token){
+  send(logString, token, retryCount){
     let xhr = createXHR();
-    let count = 0;
     let self = this;
     xhr.open("POST", "https://uplog.qbox.me/log/3");
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -18,8 +17,8 @@ export class StatisticsLogger{
     xhr.onreadystatechange = function () {
       if (xhr.readyState === 4) {
         if (xhr.status !== 200) {
-            count++;
-            count <= 3 ? self.send(logString, token) : "";
+          retryCount++;
+          retryCount <= 3 ? self.send(logString, token, retryCount) : "";
         }
       }
     };
