@@ -19,7 +19,7 @@ export class StatisticsLogger{
       if (xhr.readyState === 4) {
         if (xhr.status !== 200) {
             count++;
-            count <= 3 ? self.send(logString) : "";
+            count <= 3 ? self.send(logString, token) : "";
         }
       }
     };

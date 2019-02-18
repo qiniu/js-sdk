@@ -202,7 +202,7 @@ export class UploadManager {
     let shouldCheckMD5 = this.config.checkByMD5;
     let reuseSaved = () => {
       this.updateChunkProgress(chunk.size, index);
-      this.ctxList[index] = {ctx: info.ctx, size: info.size, time: info.time, md5: info.md5};
+      this.ctxList[index] = { ctx: info.ctx, time: info.time, md5: info.md5 };
       return Promise.resolve(null);
     };
 
@@ -274,7 +274,7 @@ export class UploadManager {
   }
 
   finishDirectProgress(){
-    // 对于低版本安卓浏览器，progress 为 null， 这里 fake 下
+    // 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null， 这里 fake 下
     if (!this.progress) {
       this.progress = { total: this.getProgressInfoItem(this.file.size, this.file.size) };
       this.onData(this.progress);
