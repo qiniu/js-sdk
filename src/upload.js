@@ -230,7 +230,9 @@ export class UploadManager {
         onProgress,
         onCreate
       }).then(response => {
+        // 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null，这里在每次分片上传完成后都手动更新下 progress
         onProgress({ loaded: chunk.size });
+
         this.ctxList[index] = {
           time: new Date().getTime(),
           ctx: response.data.ctx,
