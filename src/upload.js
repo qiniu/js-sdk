@@ -188,7 +188,6 @@ export class UploadManager {
           removeLocalFileInfo(this.file);
           return;
         }
-        setLocalFileInfo(this.file, this.ctxList);
       }
     );
     return result;
@@ -238,6 +237,7 @@ export class UploadManager {
           size: chunk.size,
           md5: md5
         };
+        setLocalFileInfo(this.file, this.ctxList);
       });
     });
   }
