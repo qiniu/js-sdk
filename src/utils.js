@@ -332,17 +332,3 @@ export function getTransform(image, orientation) {
         };
   }
 }
-
-// 检查低版本浏览器的措施
-export function isAndroidBrowser() {
-  let navU = navigator.userAgent;
-  // Android Mobile
-  let isAndroidMobile = navU.indexOf("Android") > -1
-    && navU.indexOf("Mozilla/5.0") > -1 && navU.indexOf("AppleWebKit") > -1;
-  // Android Browser (not Chrome)
-  let regExAppleWebKit = new RegExp(/AppleWebKit\/([\d.]+)/);
-  let resultAppleWebKitRegEx = regExAppleWebKit.exec(navU);
-  let appleWebKitVersion = (resultAppleWebKitRegEx === null ? null : parseFloat(regExAppleWebKit.exec(navU)[1]));
-  let isAndroidBrowser = isAndroidMobile && appleWebKitVersion !== null && appleWebKitVersion < 537;
-  return isAndroidBrowser;
-}

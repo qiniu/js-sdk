@@ -11,6 +11,7 @@ export class StatisticsLogger{
   send(logString, token){
     let xhr = createXHR();
     let count = 0;
+    let self = this;
     xhr.open("POST", "https://uplog.qbox.me/log/3");
     xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhr.setRequestHeader("Authorization", "UpToken " + token);
@@ -18,8 +19,8 @@ export class StatisticsLogger{
       if (xhr.readyState === 4) {
         if (xhr.status !== 200) {
             count++;
-            count <= 3 ? xhr.send(logString) : "";
-        } 
+            count <= 3 ? self.send(logString) : "";
+        }
       }
     };
     xhr.send(logString);
