@@ -18,7 +18,8 @@ var formUploader = new qiniu.form_up.FormUploader(config2);
 var putExtra = new qiniu.form_up.PutExtra();
 var options = {
   scope: config.Bucket,
-  deleteAfterDays: 1,
+// 上传策略设置文件过期时间，正式环境中要谨慎使用，文件在存储空间保存一天后删除
+  deleteAfterDays: 1, 
   returnBody:
     '{"key":"$(key)","hash":"$(etag)","fsize":$(fsize),"bucket":"$(bucket)","name":"$(x:name)"}'
 };
