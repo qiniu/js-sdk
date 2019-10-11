@@ -65,10 +65,13 @@ export class UploadManager {
       this.putExtra.fname = this.file.name;
     }
     if (this.putExtra.mimeType && this.putExtra.mimeType.length) {
-      if (!isContainFileMimeType(this.file.type, this.putExtra.mimeType)){
+      var compareMimeType = isContainFileMimeType(this.file.type, this.putExtra.mimeType);
+      if (compareMimeType == null){
         let err = new Error("file type doesn't match with what you specify");
         this.onError(err);
         return;
+      }else{
+        this.putExtra.mimeType = [compareMimeType];
       }
     }
     let upload = getUploadUrl(this.config, this.token).then(res => {
