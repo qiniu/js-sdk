@@ -5,7 +5,7 @@ import {
   setLocalFileInfo,
   removeLocalFileInfo,
   getLocalFileInfo,
-  isContainFileMimeType,
+  findMimeType,
   sum,
   getDomainFromUrl,
   getPortFromUrl,
@@ -65,14 +65,14 @@ export class UploadManager {
       this.putExtra.fname = this.file.name;
     }
     if (this.putExtra.mimeType && this.putExtra.mimeType.length) {
-      var compareMimeType = isContainFileMimeType(this.file.type, this.putExtra.mimeType);
-      if (compareMimeType == null){
-        let err = new Error("file type doesn't match with what you specify");
-        this.onError(err);
-        return;
-      }else{
-        this.putExtra.mimeType = [compareMimeType];
-      }
+      var compareMimeType = findMimeType(this.file.type, this.putExtra.mimeType);
+      if (compareMimeType == null || compareMimeType == undefined) {
+         let err = new Error("file type doesn't match with what you specify");
+         this.onError(err);
+         return;
+       } else {
+         this.putExtra.mimeType = [compareMimeType];
+       }
     }
     let upload = getUploadUrl(this.config, this.token).then(res => {
       this.uploadUrl = res;
