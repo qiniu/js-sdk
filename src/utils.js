@@ -264,9 +264,10 @@ function getUpHosts(token) {
   }
 }
 
-
-export function isContainFileMimeType(fileType, mimeType){
-  return mimeType.indexOf(fileType) > -1;
+export function findMimeType(fileType, mimeType) {
+  return mimeType.find((elem) => {
+      return fileType == elem;
+  });
 }
 
 export function createObjectURL(file) {
