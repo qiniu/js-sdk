@@ -129,7 +129,7 @@ export class UploadManager {
       port: getPortFromUrl(this.uploadUrl),
       duration: (new Date().getTime() - this.uploadAt) / 1000,
       time: Math.floor(this.uploadAt / 1000),
-      bytesSent: this.progress ? this.progress.total.loaded : 0,
+      bytesSent: this.progress == null ? this.progress.total.loaded : 0,
       upType: "jssdk-h5",
       size: this.file.size
     }, this.token);
@@ -276,9 +276,12 @@ export class UploadManager {
   }
 
   finishDirectProgress(){
-    let total = this.progress.total;
-    this.progress.total = this.getProgressInfoItem(total.loaded + 1, total.size);
-    this.onData(this.progress);
+      //qq和uc浏览器不支持为null的对象直接赋值,会报TypeError:null is not an object
+    if(this.progress != null){
+        let total = this.progress.total;
+        this.progress.total = this.getProgressInfoItem(total.loaded + 1, total.size);
+        this.onData(this.progress);
+    }
   }
 
   initChunksProgress() {
