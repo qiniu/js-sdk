@@ -80,13 +80,13 @@ export function getResumeUploadedSize(file) {
 }
 
 // 构造file上传url
-export function createMkFileUrl(url, size, key, putExtra) {
-  let requestUrl = url + "/mkfile/" + size;
+export function createMkFileUrl(url, file, key, putExtra) {
+  let requestUrl = url + "/mkfile/" + file.size;
   if (key != null) {
     requestUrl += "/key/" + urlSafeBase64Encode(key);
   }
   if (putExtra.mimeType) {
-    requestUrl += "/mimeType/" + urlSafeBase64Encode(putExtra.mimeType);
+    requestUrl += "/mimeType/" + urlSafeBase64Encode(file.type);
   }
   let fname = putExtra.fname;
   if (fname) {
@@ -264,14 +264,8 @@ function getUpHosts(token) {
   }
 }
 
-export function findMimeType(fileType, mimeType) {
-   var rtType = null;
-   mimeType.forEach(elem => {
-       if(fileType == elem){
-           rtType = fileType;
-       }
-   });
-   return rtType;
+export function isContainFileMimeType(fileType, mimeType) {
+  return mimeType.indexOf(fileType) > -1;
 }
 
 export function createObjectURL(file) {
