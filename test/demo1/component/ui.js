@@ -33,7 +33,6 @@
       "<p class='speed'></p>" +
       "</div>" +
       "<div class='control-container'>" +
-      '<button class="btn btn-default control-upload">开始上传</button>' +
       "</div></div>" +
       "<div><button class='btn btn-default resume'>查看分块进度</button></div>" +
       "<ul class='fragment-group hide'>" +

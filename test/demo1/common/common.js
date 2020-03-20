@@ -6,8 +6,8 @@ function addUploadBoard(file, config, key, type) {
     data: { num: count, name: key, size: file.size },
     node: $("#fsUploadProgress" + type)
   });
-  if (file.size > 100 * 1024 * 1024) {
-    $(board).html("本实例最大上传文件100M");
+  if (file.size > 20 * 1024 * 1024) {
+    $(board).html("本实例最大上传文件20M");
     return "";
   }
   count > 1 && type != "3"
