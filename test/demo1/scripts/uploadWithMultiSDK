@@ -1,0 +1,146 @@
+function uploadWithMultiSDK(token, putExtra, config, domain) {
+  // 切换tab后进行一些css操作
+  controlTabDisplay("sdk");
+  $("#select2").unbind("change").bind("change",function(){
+    console.log(this.files)
+    upload(this.files,0,token, putExtra, config, domain)
+  })
+}
+
+function upload(files,i,token, putExtra, config, domain){
+  var file = files[i];
+  // eslint-disable-next-line
+  var finishedAttr = [];
+  // eslint-disable-next-line
+  var compareChunks = [];
+  var observable;
+  if (file) {
+    var key = file.name;
+    // 添加上传dom面板
+    var board = addUploadBoard(file, config, key, "");
+    if (!board) {
+      i++
+      token = checkToken(token)
+      if(!token){
+        $.ajax({url: "/api/uptoken", success: function(res){
+          upload(files,i,res.uptoken, putExtra, config, domain)
+        }})
+      }else{
+        upload(files,i,token, putExtra, config, domain)
+      }
+    }else{
+      putExtra.params["x:name"] = key.split(".")[0];
+      var dom_total = $(board)
+        .find("#totalBar")
+        .children("#totalBarColor");
+
+      // 设置next,error,complete对应的操作，分别处理相应的进度信息，错误信息，以及完成后的操作
+      var error = function(err) {
+        if(err.code==614){
+          $(board)
+          .find("#totalBar")
+          .addClass("hide");
+          $(board)
+          .find(".control-container")
+          .html(
+            "<p>文件已存在，不能重复上传</p>"
+          );
+        } 
+        i++
+        token = checkToken(token)
+        if(!token){
+          $.ajax({url: "/api/uptoken", success: function(res){
+            upload(files,i,res.uptoken, putExtra, config, domain)
+          }})
+        }else{
+          upload(files,i,token, putExtra, config, domain)
+        }
+      };
+
+      var complete = function(res) {
+        $(board)
+          .find("#totalBar")
+          .addClass("hide");
+        $(board)
+          .find(".control-container")
+          .html(
+            "<p><strong>Hash：</strong>" +
+              res.hash +
+              "</p>" +
+              "<p><strong>Bucket：</strong>" +
+              res.bucket +
+              "</p>"
+          );
+        if (res.key && res.key.match(/\.(jpg|jpeg|png|gif)$/)) {
+          imageDeal(board, res.key, domain);
+        }
+        i++
+        token = checkToken(token)
+        if(!token){
+          $.ajax({url: "/api/uptoken", success: function(res){
+            upload(files,i,res.uptoken, putExtra, config, domain)
+          }})
+        }else{
+          upload(files,i,token, putExtra, config, domain)
+        }
+      };
+
+      var next = function(response) {
+        var chunks = response.chunks||[];
+        var total = response.total;
+        // 这里对每个chunk更新进度，并记录已经更新好的避免重复更新，同时对未开始更新的跳过
+        for (var i = 0; i < chunks.length; i++) {
+          if (chunks[i].percent === 0 || finishedAttr[i]){
+            continue;
+          }
+          if (compareChunks[i].percent === chunks[i].percent){
+            continue;
+          }
+          if (chunks[i].percent === 100){
+            finishedAttr[i] = true;
+          }
+          $(board)
+            .find(".fragment-group li")
+            .eq(i)
+            .find("#childBarColor")
+            .css(
+              "width",
+              chunks[i].percent + "%"
+            );
+        }
+        $(board)
+          .find(".speed")
+          .text("进度：" + total.percent + "% ");
+        dom_total.css(
+          "width",
+          total.percent + "%"
+        );
+        compareChunks = chunks;
+      };
+
+      var subObject = { 
+        next: next,
+        error: error,
+        complete: complete
+      };
+      var subscription;
+      // 调用sdk上传接口获得相应的observable，控制上传和暂停
+      observable = qiniu.upload(file, key, token, putExtra, config);
+      subscription = observable.subscribe(subObject);
+    }
+  }
+}
+
+function checkToken(token){
+  var token_arr = token.split(":");
+  var token_obj = eval('(' + window.atob(token_arr[2]) + ')')
+  var deadline = token_obj.deadline
+  datetime = Math.round(new Date().getTime()/1000).toString();
+  if(datetime>deadline){
+    return false
+  }else{
+    return token
+  }
+}
+
+
