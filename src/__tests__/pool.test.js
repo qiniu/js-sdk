@@ -1,7 +1,7 @@
 import { Pool } from "../pool"
 
-var m = jest.fn()
-var t = jest.fn(() => {
+const m = jest.fn()
+const t = jest.fn(() => {
   return new Promise((resolve, reject) => {
     m()
     resolve("123")

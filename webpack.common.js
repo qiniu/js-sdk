@@ -1,27 +1,23 @@
 var path = require("path");
 module.exports = {
-  entry: "./src/index.js",
+  entry: "./src/index.ts",
   output: {
     filename: "qiniu.min.js",
     library: "qiniu",
     libraryTarget: "umd",
     path: path.resolve(__dirname, "dist"),
-    publicPath: "/dist/"
+    publicPath: __dirname + "/dist/"
   },
   module: {
     rules: [
       {
-        test: /\.js$/,
-        include: [path.resolve(__dirname, "src")],
-        use: {
-          loader: "babel-loader"
-        }
-      },
-      {
-        test: /\.js$/,
-        enforce: "post",
-        loader: "es3ify-loader"
+        test: /\.ts?$/,
+        use: 'ts-loader',
+        exclude: /node_modules/
       }
     ]
+  },
+  resolve: {
+    extensions: ['.ts', '.js']
   }
-};
+}

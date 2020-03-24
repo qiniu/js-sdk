@@ -1,3 +1,7 @@
 /src/__mock__
 /src/__tests__
 /test/*
+/dist/*
+webpack.dev.js
+webpack.prod.js
+webpack.common.js

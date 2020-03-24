@@ -1,14 +1,15 @@
 language: node_js
 node_js:
-- '6'
+- '8'
 cache:
+  yarn: true
   directories:
   - node_modules
 install:
-- npm install
+- yarn install
 script:
-- npm run build
-before_deploy: npm run build
+- yarn run build
+before_deploy: yarn run build
 deploy:
   provider: npm
   email: sdk@qiniu.com

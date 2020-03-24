@@ -3,7 +3,6 @@ var path = require("path")
 var webpack = require("webpack")
 var common = require("./webpack.common.js")
 var OpenBrowserPlugin = require("open-browser-webpack-plugin")
-console.log(123)
 module.exports = merge(common, {
   plugins:[new OpenBrowserPlugin({ url: 'http://0.0.0.0:8080/test/demo1/' })],
   devServer: {
