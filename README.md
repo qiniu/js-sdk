@@ -76,7 +76,7 @@ Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服�
 * 直接使用静态文件地址：
 
   ```
-  https://unpkg.com/qiniu-js@<version>/dist/qiniu.min.js
+  https://cdnjs.cloudflare.com/ajax/libs/qiniu-js/<version>/qiniu.min.js
   ```
   通过sctipt标签引入该文件，会在全局生成名为 `qiniu` 的对象
 
