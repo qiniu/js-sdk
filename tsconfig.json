@@ -1,0 +1,31 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    /* Basic Options */
+    "outDir": "./dist/",
+    "target": "es3",
+    "module": "commonjs",
+    "lib": ["dom", "es2015", "es2016", "es2017"],
+    "allowJs": false,
+    "declaration": true,
+    "declarationDir": "./dist/types/",
+    "sourceMap": true,
+    "downlevelIteration": true,
+    "strict": true,
+    "strictNullChecks": false,
+    "strictPropertyInitialization": false,
+    "noImplicitThis": true,
+    "baseUrl": "./src",
+    "esModuleInterop": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types"
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "coverage",
+    "test",
+  ]
+}

@@ -1,4 +1,4 @@
-import { region } from "./config";
+import { region } from './config'
 import {
   createMkFileUrl,
   getUploadUrl,
@@ -6,33 +6,37 @@ import {
   getHeadersForMkFile,
   getHeadersForChunkUpload,
   filterParams
-} from "./utils";
-import { UploadManager } from "./upload";
-import { imageMogr2, watermark, imageInfo, exif, pipeline } from "./image";
-import { Observable } from "./observable";
-import { StatisticsLogger } from "./statisticsLog";
-import compressImage from "./compress";
-let statisticsLogger = new StatisticsLogger();
+} from './utils'
+import { UploadManager, IExtra, IConfig, IUploadOptions } from './upload'
+import { imageMogr2, watermark, imageInfo, exif, pipeline } from './image'
+import { Observable, Observer } from './observable'
+import compressImage from './compress'
 
-function upload(file, key, token, putExtra, config) {
+function upload(
+  file: File,
+  key: string,
+  token: string,
+  putExtra: Partial<IExtra>,
+  config: Partial<IConfig>
+): Observable {
 
-  let options = {
+  const options: IUploadOptions = {
     file,
     key,
     token,
     putExtra,
     config
-  };
+  }
 
-  return new Observable(observer => {
-    let uploadManager = new UploadManager(options, {
+  return new Observable((observer: Observer) => {
+    const uploadManager = new UploadManager(options, {
       onData: e => observer.next(e),
       onError: e => observer.error(e),
-      onComplete: e => observer.complete(e)
-    }, statisticsLogger);
-    uploadManager.putFile();
-    return uploadManager.stop.bind(uploadManager);
-  });
+      onComplete: () => observer.complete()
+    })
+    uploadManager.putFile()
+    return uploadManager.stop.bind(uploadManager)
+  })
 }
 
 export {
@@ -50,4 +54,4 @@ export {
   exif,
   compressImage,
   pipeline
-};
+}

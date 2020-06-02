@@ -6,3 +6,5 @@ deploy.sh
 npm-debug.log
 dist
 test/config.json
+coverage
+.tmp

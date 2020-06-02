@@ -1,17 +1,26 @@
 import { Pool } from "../pool"
 
-var m = jest.fn()
-var t = jest.fn(() => {
-  return new Promise((resolve, reject) => {
+const m = jest.fn()
+const task = (): Promise<void> => {
+  return new Promise((resolve, _) => {
     m()
-    resolve("123")
+    resolve()
   })
-})
+}
 
 describe("test Pool for control concurrency", () => {
-  var pool = new Pool(t, 2)
+  var pool = new Pool(task, 2)
   test("pool.js", () => {
-    return Promise.all([1,2,3,4,5,6].map(value => {
+    const chunk = new Blob()
+    const data = [
+      { chunk, index: 0 },
+      { chunk, index: 1 },
+      { chunk, index: 2 },
+      { chunk, index: 3 },
+      { chunk, index: 4 },
+      { chunk, index: 5 }
+    ]
+    return Promise.all(data.map(value => {
       pool.enqueue(value)
       expect(pool.processing.length).toBeLessThanOrEqual(2)
     })).then(()=> {
