@@ -1,7 +1,7 @@
 {
   "presets": [
     [
-      "env",
+      "@babel/preset-env",
       {
         "loose": true,
         "targets": {
@@ -10,5 +10,5 @@
       }
     ]
   ],
-  "plugins": ["transform-runtime", "transform-object-rest-spread"]
+  "plugins": ["@babel/transform-runtime", "@babel/plugin-proposal-object-rest-spread"]
 }
