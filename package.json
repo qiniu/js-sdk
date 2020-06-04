@@ -36,7 +36,6 @@
     "@babel/preset-env": "^7.10.2",
     "babel-loader": "^8.1.0",
     "babel-plugin-syntax-flow": "^6.18.0",
-    "babel-runtime": "^6.26.0",
     "body-parser": "^1.18.2",
     "connect-multiparty": "^2.1.0",
     "es3ify-webpack-plugin": "^0.1.0",
@@ -56,5 +55,8 @@
     "webpack-dev-server": "^3.11.0",
     "webpack-merge": "^4.2.2"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@babel/runtime-corejs2": "^7.10.2"
+  }
 }
