@@ -1,4 +1,6 @@
 var path = require("path");
+var es3ifyPlugin = require("es3ify-webpack-plugin");
+
 module.exports = {
   entry: "./src/index.js",
   output: {
@@ -12,16 +14,12 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
-        include: [path.resolve(__dirname, "src")],
+        exclude: /node_modules/,
         use: {
           loader: "babel-loader"
         }
-      },
-      {
-        test: /\.js$/,
-        enforce: "post",
-        loader: "es3ify-loader"
       }
     ]
-  }
+  },
+  plugins: [new es3ifyPlugin()]
 };
