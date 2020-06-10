@@ -205,12 +205,12 @@ qiniu.compressImage(file, options).then(data => {
     * mimeType: `null || array`，用来限制上传文件类型，为 `null` 时表示不对文件类型限制；限制类型放到数组里：
     `["image/png", "image/jpeg", "image/gif"]`
 
-### qiniu.createMkFileUrl(url: string, size: number, key: string, putExtra: object): string
+### qiniu.createMkFileUrl(url: string, file: File, key: string, putExtra: object): string
 
   返回创建文件的 url；当分片上传时，我们需要把分片返回的 ctx 信息拼接后通过该 url 上传给七牛以创建文件。
 
   * **url**: 上传域名，可以通过qiniu.getUploadUrl()获得
-  * **size**: 文件大小
+  * **file**: 文件对象
   * **key**: 文件资源名
   * **putExtra**: 同上
 

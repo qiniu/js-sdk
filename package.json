@@ -10,7 +10,7 @@
     "test": "jest --coverage",
     "build": "npm run lint && webpack --optimize-minimize --config webpack.prod.js",
     "dev": "npm run lint && webpack-dev-server --open --config webpack.dev.js",
-    "lint": "tsc && eslint --ext .ts",
+    "lint": "tsc --noEmit && eslint --ext .ts",
     "server": "node test/server.js"
   },
   "repository": {
@@ -63,7 +63,7 @@
     "spark-md5": "^3.0.0",
     "transform-runtime": "0.0.0",
     "ts-loader": "^6.2.1",
-    "typescript": "^3.5.3",
+    "typescript": "^3.9.5",
     "uglifyjs-webpack-plugin": "^1.1.6",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10",

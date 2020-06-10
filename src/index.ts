@@ -1,4 +1,4 @@
-import { region } from './config'
+import { RegionType } from './config'
 import {
   createMkFileUrl,
   getUploadUrl,
@@ -7,20 +7,20 @@ import {
   getHeadersForChunkUpload,
   filterParams
 } from './utils'
-import { UploadManager, IExtra, IConfig, IUploadOptions } from './upload'
+import { UploadManager, Extra, Config, UploadOptions, UploadProgress, CustomError } from './upload'
 import { imageMogr2, watermark, imageInfo, exif, pipeline } from './image'
-import { Observable, Observer } from './observable'
+import { Observable, IObserver } from './observable'
 import compressImage from './compress'
 
 function upload(
   file: File,
   key: string,
   token: string,
-  putExtra: Partial<IExtra>,
-  config: Partial<IConfig>
-): Observable {
+  putExtra: Partial<Extra>,
+  config: Partial<Config>
+): Observable<UploadProgress, CustomError> {
 
-  const options: IUploadOptions = {
+  const options: UploadOptions = {
     file,
     key,
     token,
@@ -28,11 +28,11 @@ function upload(
     config
   }
 
-  return new Observable((observer: Observer) => {
+  return new Observable((observer: IObserver<UploadProgress, CustomError>) => {
     const uploadManager = new UploadManager(options, {
-      onData: e => observer.next(e),
-      onError: e => observer.error(e),
-      onComplete: () => observer.complete()
+      onData: (data: UploadProgress) => observer.next(data),
+      onError: (err: CustomError) => observer.error(err),
+      onComplete: (res: any) => observer.complete(res)
     })
     uploadManager.putFile()
     return uploadManager.stop.bind(uploadManager)
@@ -41,7 +41,7 @@ function upload(
 
 export {
   upload,
-  region,
+  RegionType,
   createMkFileUrl,
   getHeadersForChunkUpload,
   getResumeUploadedSize,

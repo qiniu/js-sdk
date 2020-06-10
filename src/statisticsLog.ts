@@ -1,6 +1,6 @@
 import { createXHR } from './utils'
 
-interface ILogInfo {
+interface LogInfo {
   code: number
   reqId: string
   host: string
@@ -13,11 +13,10 @@ interface ILogInfo {
   size: number
 }
 
-export default class StatisticsLogger {
+class StatisticsLogger {
 
-  log(info: ILogInfo, token: string) {
-    let logString = ''
-    Object.keys(info).forEach(k => { logString += info[k] + ',' })
+  log(info: LogInfo, token: string) {
+    const logString = Object.values(info).join(',')
     this.send(logString, token, 0)
   }
 
@@ -27,13 +26,13 @@ export default class StatisticsLogger {
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded')
     xhr.setRequestHeader('Authorization', 'UpToken ' + token)
     xhr.onreadystatechange = () => {
-      if (xhr.readyState === 4) {
-        if (xhr.status !== 200 && ++retryCount <= 3) {
-          this.send(logString, token, retryCount)
-        }
+      if (xhr.readyState === 4 && xhr.status !== 200 && ++retryCount <= 3) {
+        this.send(logString, token, retryCount)
       }
     }
     xhr.send(logString)
   }
 
 }
+
+export default new StatisticsLogger()

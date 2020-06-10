@@ -1,6 +1,5 @@
 interface Window {
-  webkitURL?: any
-  mozURL?: any
-  XMLHttpRequest?: XMLHttpRequest
+  webkitURL?: typeof URL
+  mozURL?:  typeof URL
   ActiveXObject?: any
 }

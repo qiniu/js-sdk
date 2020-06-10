@@ -1,14 +1,14 @@
 import { EXIF } from 'exif-js'
 import { createObjectURL, getTransform } from './utils'
 
-interface ICompressOptions {
-  quality: number
-  noCompressIfLarger: boolean
-  maxWidth: number
-  maxHeight: number
+export interface CompressOptions {
+  quality?: number
+  noCompressIfLarger?: boolean
+  maxWidth?: number
+  maxHeight?: number
 }
 
-interface IDimension {
+export interface Dimension {
   width?: number
   height?: number
 }
@@ -18,70 +18,65 @@ const mimeTypes = {
   JPEG: 'image/jpeg',
   WEBP: 'image/webp',
   BMP: 'image/bmp'
-}
+} as const
 
 const maxSteps = 4
 const scaleFactor = Math.log(2)
 const supportMimeTypes = Object.keys(mimeTypes).map(type => mimeTypes[type])
 const defaultType = mimeTypes.JPEG
 
-function isSupportedType(type: string) {
+type MimeKey = keyof typeof mimeTypes
+
+function isSupportedType(type: string): type is typeof mimeTypes[MimeKey] {
   return supportMimeTypes.includes(type)
 }
 
 class Compress {
-  private file: File
-  private config: ICompressOptions
+  // private config: ICompressOptions
   private outputType: string
 
-  constructor(file: File, option: ICompressOptions) {
+  constructor(private file: File, private config: CompressOptions) {
     this.config = {
       quality: 0.92,
       noCompressIfLarger: false,
-      ...option
+      ...this.config
     }
-    this.file = file
   }
 
   async process() {
     this.outputType = this.file.type
-    const srcDimension: IDimension = {}
+    const srcDimension: Dimension = {}
     if (!isSupportedType(this.file.type)) {
-      return Promise.reject(new Error(`unsupported file type: ${this.file.type}`))
+      throw new Error(`unsupported file type: ${this.file.type}`)
     }
 
-    const result = await this.getOriginImage()
-      .then(img => this.getCanvas(img))
-      .then(canvas => {
-        // 计算图片缩小比例，取最小值，如果大于1则保持图片原尺寸
-        let scale = 1
-        if (this.config.maxWidth) {
-          scale = Math.min(1, this.config.maxWidth / canvas.width)
-        }
-        if (this.config.maxHeight) {
-          scale = Math.min(1, scale, this.config.maxHeight / canvas.height)
-        }
-        srcDimension.width = canvas.width
-        srcDimension.height = canvas.height
-        return this.doScale(canvas, scale)
-      })
-      .then(data => {
-        const distBlob = this.toBlob(data)
-        if (distBlob.size > this.file.size && this.config.noCompressIfLarger) {
-          return {
-            dist: this.file,
-            width: srcDimension.width,
-            height: srcDimension.height
-          }
-        }
-        return ({
-          dist: distBlob,
-          width: data.width,
-          height: data.height
-        })
-      })
+    const originImage = await this.getOriginImage()
+    const canvas = await this.getCanvas(originImage)
+    let scale = 1
+    if (this.config.maxWidth) {
+      scale = Math.min(1, this.config.maxWidth / canvas.width)
+    }
+    if (this.config.maxHeight) {
+      scale = Math.min(1, scale, this.config.maxHeight / canvas.height)
+    }
+    srcDimension.width = canvas.width
+    srcDimension.height = canvas.height
 
-    return result
+    const scaleCanvas = await this.doScale(canvas, scale)
+    const distBlob = this.toBlob(scaleCanvas)
+    if (distBlob.size > this.file.size && this.config.noCompressIfLarger) {
+      return {
+        dist: this.file,
+        width: srcDimension.width,
+        height: srcDimension.height
+      }
+    }
+
+    return {
+      dist: distBlob,
+      width: scaleCanvas.width,
+      height: scaleCanvas.height
+    }
   }
 
   clear(ctx: CanvasRenderingContext2D, width: number, height: number) {
@@ -118,10 +113,14 @@ class Compress {
         const context = canvas.getContext('2d')
         canvas.width = width
         canvas.height = height
-        this.clear(context, width, height)
-        context.transform(...matrix)
-        context.drawImage(img, 0, 0)
-        resolve(canvas)
+        if (context) {
+          this.clear(context, width, height)
+          context.transform(...matrix)
+          context.drawImage(img, 0, 0)
+          resolve(canvas)
+        } else {
+          throw new Error('context is null')
+        }
       })
     })
   }
@@ -144,45 +143,47 @@ class Compress {
     const originHeight = height
     mirror.width = width
     mirror.height = height
-    let src: CanvasImageSource
-    let context: CanvasRenderingContext2D
+    if (mctx && sctx) {
+      let src!: CanvasImageSource
+      let context!: CanvasRenderingContext2D
+      for (let i = 0; i < steps; i++) {
 
-    for (let i = 0; i < steps; i++) {
+        let dw = width * factor || 0
+        let dh = height * factor || 0
+        // 到最后一步的时候 dw, dh 用目标缩放尺寸，否则会出现最后尺寸偏小的情况
+        if (i === steps - 1) {
+          dw = originWidth * scale
+          dh = originHeight * scale
+        }
 
-      let dw = width * factor
-      let dh = height * factor
-      // 到最后一步的时候 dw, dh 用 目标缩放尺寸，否则会出现最后尺寸偏小的情况
-      if (i === steps - 1) {
-        dw = originWidth * scale
-        dh = originHeight * scale
+        if (i % 2 === 0) {
+          src = source
+          context = mctx
+        } else {
+          src = mirror
+          context = sctx
+        }
+        // 每次画前都清空，避免图像重叠
+        this.clear(context, width, height)
+        context.drawImage(src, 0, 0, width, height, 0, 0, dw, dh)
+        width = dw
+        height = dh
       }
 
-      if (i % 2 === 0) {
-        src = source
-        context = mctx
-      } else {
-        src = mirror
-        context = sctx
-      }
-      // 每次画前都清空，避免图像重叠
-      this.clear(context, width, height)
-      context.drawImage(src, 0, 0, width, height, 0, 0, dw, dh)
-      width = dw
-      height = dh
+      const canvas = src === source ? mirror : source
+      // save data
+      const data = context.getImageData(0, 0, width, height)
+
+      // resize
+      canvas.width = width
+      canvas.height = height
+
+      // store image data
+      context.putImageData(data, 0, 0)
+
+      return Promise.resolve(canvas)
     }
-
-    const canvas = src === source ? mirror : source
-    // save data
-    const data = context.getImageData(0, 0, width, height)
-
-    // resize
-    canvas.width = width
-    canvas.height = height
-
-    // store image data
-    context.putImageData(data, 0, 0)
-
-    return Promise.resolve(canvas)
+    throw new Error("mctx or sctx can't be null")
   }
 
   // 这里把 base64 字符串转为 blob 对象
@@ -194,6 +195,6 @@ class Compress {
   }
 }
 
-const compressImage = (file: File, options: ICompressOptions) => new Compress(file, options).process()
+const compressImage = (file: File, options: CompressOptions) => new Compress(file, options).process()
 
 export default compressImage

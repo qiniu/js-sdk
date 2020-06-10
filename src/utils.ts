@@ -1,7 +1,7 @@
 import SparkMD5 from 'spark-md5'
 import { urlSafeBase64Encode, urlSafeBase64Decode } from './base64'
 import { regionUphostMap } from './config'
-import { IConfig, IExtra, IProgress, XHRHandler, ICtxInfo } from './upload'
+import { Config, Extra, Progress, XHRHandler, CtxInfo } from './upload'
 
 // 对上传块本地存储时间检验是否过期
 // TODO: 最好用服务器时间来做判断
@@ -11,8 +11,8 @@ export function isChunkExpired(time: number) {
 }
 
 // 文件分块
-export function getChunks(file: File, blockSize: number) {
-  const chunks = []
+export function getChunks(file: File, blockSize: number): Blob[] {
+  const chunks: Blob[] = []
   const count = Math.ceil(file.size / blockSize)
   for (let i = 0; i < count; i++) {
     const chunk = file.slice(
@@ -26,7 +26,7 @@ export function getChunks(file: File, blockSize: number) {
 
 export function filterParams(params: { [key: string]: string }) {
   return Object.keys(params)
-    .filter(value => value.startsWith('x:'))
+    .filter(value => value.indexOf('x:') === 0)
     .map(k => [k, params[k].toString()])
 }
 
@@ -34,7 +34,7 @@ export function sum(list: number[]) {
   return list.reduce((data, loaded) => data + loaded, 0)
 }
 
-export function setLocalFileInfo(file: File, info: ICtxInfo[]) {
+export function setLocalFileInfo(file: File, info: CtxInfo[]) {
   try {
     localStorage.setItem(createLocalKey(file), JSON.stringify(info))
   } catch (err) {
@@ -60,9 +60,10 @@ export function removeLocalFileInfo(file: File) {
   }
 }
 
-export function getLocalFileInfo(file: File): ICtxInfo[] {
+export function getLocalFileInfo(file: File): CtxInfo[] {
   try {
-    return JSON.parse(localStorage.getItem(createLocalKey(file))) || []
+    const localInfo = localStorage.getItem(createLocalKey(file))
+    return localInfo ? JSON.parse(localInfo) : []
   } catch (err) {
     if (window.console && window.console.warn) {
       // eslint-disable-next-line no-console
@@ -82,14 +83,14 @@ export function getResumeUploadedSize(file: File) {
 }
 
 // 构造file上传url
-export function createMkFileUrl(url: string, size: number, key: string, putExtra: IExtra) {
-  let requestUrl = url + '/mkfile/' + size
+export function createMkFileUrl(url: string, file: File, key: string, putExtra: Extra) {
+  let requestUrl = url + '/mkfile/' + file.size
   if (key != null) {
     requestUrl += '/key/' + urlSafeBase64Encode(key)
   }
 
   if (putExtra.mimeType) {
-    requestUrl += '/mimeType/' + urlSafeBase64Encode(putExtra.mimeType)
+    requestUrl += '/mimeType/' + urlSafeBase64Encode(file.type)
   }
 
   const fname = putExtra.fname
@@ -113,15 +114,21 @@ function getAuthHeaders(token: string) {
 
 export function getHeadersForChunkUpload(token: string) {
   const header = getAuthHeaders(token)
-  return { 'content-type': 'application/octet-stream', ...header }
+  return {
+    'content-type': 'application/octet-stream',
+    ...header
+  }
 }
 
 export function getHeadersForMkFile(token: string) {
   const header = getAuthHeaders(token)
-  return { 'content-type': 'text/plain', ...header }
+  return {
+    'content-type': 'text/plain',
+    ...header
+  }
 }
 
-export function createXHR() {
+export function createXHR(): XMLHttpRequest {
   if (window.XMLHttpRequest) {
     return new XMLHttpRequest()
   }
@@ -129,20 +136,24 @@ export function createXHR() {
   return window.ActiveXObject('Microsoft.XMLHTTP')
 }
 
-export async function computeMd5(data: Blob) {
+export async function computeMd5(data: Blob): Promise<string> {
   const buffer = await readAsArrayBuffer(data)
   const spark = new SparkMD5.ArrayBuffer()
   spark.append(buffer)
   return spark.end()
 }
 
-export function readAsArrayBuffer(data: Blob): Promise<any> {
+export function readAsArrayBuffer(data: Blob): Promise<ArrayBuffer> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     // evt 类型目前存在问题 https://github.com/Microsoft/TypeScript/issues/4163
-    reader.onload = (evt: any) => {
-      const body = evt.target.result
-      resolve(body)
+    reader.onload = (evt: ProgressEvent<FileReader>) => {
+      if (evt.target) {
+        const body = evt.target.result
+        resolve(body as ArrayBuffer)
+      } else {
+        reject(new Error('progress event target is null'))
+      }
     }
 
     reader.onerror = () => {
@@ -160,15 +171,15 @@ export interface IRequestResponse<T> {
 
 export interface IRequestOptions {
   method: string
-  body?: Document | BodyInit | null
-  headers?: { [key: string]: string | number }
-  onProgress?: (data: IProgress) => void
+  onProgress?: (data: Progress) => void
   onCreate?: XHRHandler
+  body?: BodyInit | null
+  headers?: { [key: string]: string }
 }
 
 export type Response<T> = Promise<IRequestResponse<T>>
 
-export function request<T>(url: string, options: IRequestOptions): Response<T> {
+export function request<T extends object>(url: string, options: IRequestOptions): Response<T> {
   return new Promise((resolve, reject) => {
     const xhr = createXHR()
     xhr.open(options.method, url)
@@ -178,14 +189,18 @@ export function request<T>(url: string, options: IRequestOptions): Response<T> {
     }
 
     if (options.headers) {
-      Object.keys(options.headers).forEach(k => {
-        xhr.setRequestHeader(k, options.headers[k])
+      const headers = options.headers
+      Object.keys(headers).forEach(k => {
+        xhr.setRequestHeader(k, headers[k])
       })
     }
 
     xhr.upload.addEventListener('progress', (evt: ProgressEvent) => {
       if (evt.lengthComputable && options.onProgress) {
-        options.onProgress({ loaded: evt.loaded, total: evt.total })
+        options.onProgress({
+          loaded: evt.loaded,
+          total: evt.total
+        })
       }
     })
 
@@ -201,12 +216,20 @@ export function request<T>(url: string, options: IRequestOptions): Response<T> {
         if (responseText) {
           message += `response: ${responseText}`
         }
-        reject({ code: xhr.status, message, reqId, isRequestError: true })
+        reject({
+          code: xhr.status,
+          message,
+          reqId,
+          isRequestError: true
+        })
         return
       }
 
       try {
-        resolve({ data: JSON.parse(responseText), reqId })
+        resolve({
+          data: JSON.parse(responseText),
+          reqId
+        })
       } catch (err) {
         reject(err)
       }
@@ -251,22 +274,22 @@ export function getDomainFromUrl(url: string): string {
 }
 
 // 构造区域上传url
-export async function getUploadUrl(config: IConfig, token: string): Promise<string> {
+export async function getUploadUrl(config: Config, token: string): Promise<string> {
   const protocol = getAPIProtocol()
 
-  if (config.uphost != null) {
-    return Promise.resolve(`${protocol}//${config.uphost}`)
+  if (config.uphost) {
+    return `${protocol}//${config.uphost}`
   }
 
-  if (config.region != null) {
+  if (config.region) {
     const upHosts = regionUphostMap[config.region]
     const host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost
-    return Promise.resolve(`${protocol}//${host}`)
+    return `${protocol}//${host}`
   }
 
   const res = await getUpHosts(token)
   const hosts = res.data.up.acc.main
-  return (`${protocol}//${hosts[0]}`)
+  return `${protocol}//${hosts[0]}`
 }
 
 function getAPIProtocol(): string {
@@ -276,24 +299,38 @@ function getAPIProtocol(): string {
   return 'https:'
 }
 
+interface PutPolicy {
+  ak: string
+  scope: string
+}
+
 function getPutPolicy(token: string) {
   const segments = token.split(':')
   const ak = segments[0]
-  const putPolicy = JSON.parse(urlSafeBase64Decode(segments[2]))
-  putPolicy.ak = ak
-  putPolicy.bucket = putPolicy.scope.split(':')[0]
-  return putPolicy
+  const putPolicy: PutPolicy = JSON.parse(urlSafeBase64Decode(segments[2]))
+
+  return {
+    ak,
+    bucket: putPolicy.scope.split(':')[0]
+  }
 }
 
 // 返回类型嵌套太多层，并且类型单一，返回直接以 any 代替
-function getUpHosts(token: string): Promise<any> {
-  try {
-    const putPolicy = getPutPolicy(token)
-    const url = getAPIProtocol() + '//api.qiniu.com/v2/query?ak=' + putPolicy.ak + '&bucket=' + putPolicy.bucket
-    return request(url, { method: 'GET' })
-  } catch (e) {
-    return Promise.reject(e)
+interface UpHosts {
+  data: {
+    up: {
+      acc: {
+        main: string[]
+      }
+    }
   }
+}
+
+async function getUpHosts(token: string): Promise<UpHosts> {
+  const putPolicy = getPutPolicy(token)
+  const url = getAPIProtocol() + '//api.qiniu.com/v2/query?ak=' + putPolicy.ak + '&bucket=' + putPolicy.bucket
+  return request(url, { method: 'GET' })
+
 }
 
 export function isContainFileMimeType(fileType: string, mimeType: string[]) {
@@ -301,17 +338,17 @@ export function isContainFileMimeType(fileType: string, mimeType: string[]) {
 }
 
 export function createObjectURL(file: File) {
-  const URL = window.URL || window.webkitURL || (window as any).mozURL
+  const URL = window.URL || window.webkitURL || window.mozURL
   return URL.createObjectURL(file)
 }
 
-export interface ITransformValue {
+export interface TransformValue {
   width: number
   height: number
   matrix: [number, number, number, number, number, number] // TODO: 有没有简便的方法？
 }
 
-export function getTransform(image: HTMLImageElement, orientation: number): ITransformValue {
+export function getTransform(image: HTMLImageElement, orientation: number): TransformValue {
   const { width, height } = image
 
   switch (orientation) {
@@ -372,5 +409,6 @@ export function getTransform(image: HTMLImageElement, orientation: number): ITra
         matrix: [0, -1, 1, 0, 0, width]
       }
     default:
+      throw new Error(`orientation ${orientation} is unavailable`)
   }
 }

@@ -1,4 +1,5 @@
 /* eslint-disable */
+
 export function utf8Encode(argString: any) {
   // http://kevin.vanzonneveld.net
   // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
@@ -35,7 +36,7 @@ export function utf8Encode(argString: any) {
       end++
     } else if (c1 > 127 && c1 < 2048) {
       enc = String.fromCharCode((c1 >> 6) | 192, (c1 & 63) | 128)
-    } else if ((c1 & 0xf800) ^ (0xd800 > 0 as any)) {
+    } else if ((c1 & 0xf800 ^ 0xd800) > 0) {
       enc = String.fromCharCode(
         (c1 >> 12) | 224,
         ((c1 >> 6) & 63) | 128,
@@ -43,7 +44,7 @@ export function utf8Encode(argString: any) {
       )
     } else {
       // surrogate pairs
-      if ((c1 & 0xfc00) ^ (0xd800 > 0 as any)) {
+      if ((c1 & 0xfc00 ^ 0xd800) > 0) {
         throw new RangeError('Unmatched trail surrogate at ' + n)
       }
       let c2 = string.charCodeAt(++n)

@@ -1,23 +1,18 @@
-export type Task = (...args: any) => Promise<void>
+export type RunTask<T> = (...args: T[]) => Promise<void>
 
-export type QueueContent = {
-  task: any
-  resolve: <T>(value?: T | PromiseLike<T>) => void
-  reject: (reason?: any) => void
+export interface QueueContent<T> {
+  task: T
+  resolve: () => void
+  reject: (err?: any) => void
 }
 
-export class Pool {
-  runTask: Task
-  queue: QueueContent[] = []
-  processing: QueueContent[] = []
-  limit: number
+export class Pool<T> {
+  queue: Array<QueueContent<T>> = []
+  processing: Array<QueueContent<T>> = []
 
-  constructor(runTask: Task, limit: number) {
-    this.runTask = runTask
-    this.limit = limit
-  }
+  constructor(private runTask: RunTask<T>, private limit: number) {}
 
-  enqueue(task: any) {
+  enqueue(task: T) {
     return new Promise((resolve, reject) => {
       this.queue.push({
         task,
@@ -28,7 +23,7 @@ export class Pool {
     })
   }
 
-  run(item: QueueContent) {
+  run(item: QueueContent<T>) {
     this.queue = this.queue.filter(v => v !== item)
     this.processing.push(item)
     this.runTask(item.task).then(

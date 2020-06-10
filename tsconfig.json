@@ -1,7 +1,6 @@
 {
   "compileOnSave": true,
   "compilerOptions": {
-    /* Basic Options */
     "outDir": "./dist/",
     "target": "es3",
     "module": "commonjs",
@@ -9,10 +8,9 @@
     "allowJs": false,
     "declaration": true,
     "declarationDir": "./dist/types/",
-    "sourceMap": true,
     "downlevelIteration": true,
     "strict": true,
-    "strictNullChecks": false,
+    "strictNullChecks": true,
     "strictPropertyInitialization": false,
     "noImplicitThis": true,
     "baseUrl": "./src",
@@ -27,5 +25,10 @@
     "node_modules",
     "coverage",
     "test",
+    "dist",
+    "src/newupload/**",
+    "src/newIndex.ts",
+    "src/newUtils.ts",
+    "src/api.ts"
   ]
 }

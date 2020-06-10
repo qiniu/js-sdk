@@ -18,20 +18,18 @@ import {
 } from './utils'
 
 import { Pool } from './pool'
-import { OnNext, OnError, OnCompleted } from './observable'
-import StatisticsLogger from './statisticsLog'
-import { ZoneType } from './config'
+import statisticsLogger from './statisticsLog'
+import { RegionType } from './config'
 
 const BLOCK_SIZE = 4 * 1024 * 1024
 
-export interface IExtra {
+export interface Extra {
   fname: string // 文件原文件名
   params: { [key: string]: string } // 用来放置自定义变量
   mimeType: string[] | null // 用来限制上传文件类型，为 null 时表示不对文件类型限制；限制类型放到数组里： ['image/png', 'image/jpeg', 'image/gif']
 }
 
-export interface IConfig {
-  region: ZoneType
+export interface Config {
   useCdnDomain: boolean
   checkByMD5: boolean
   forceDirect: boolean
@@ -39,62 +37,70 @@ export interface IConfig {
   uphost: string
   concurrentRequestLimit: number
   disableStatisticsReport: boolean
+  region?: RegionType
 }
 
-export interface IUploadOptions {
+export interface UploadOptions {
   file: File
   key: string
   token: string
-  putExtra: Partial<IExtra>
-  config: Partial<IConfig>
+  putExtra: Partial<Extra>
+  config: Partial<Config>
 }
 
-export interface IUploadHandler {
-  onData: OnNext
-  onError: OnError
-  onComplete: OnCompleted
+export interface UploadHandler {
+  onData: (data: UploadProgress) => void
+  onError: (err: CustomError) => void
+  onComplete: (res: any) => void
 }
 
-export interface IProgress {
+export interface Progress {
   loaded: number
   total: number
 }
 
-export interface IProgressCompose {
+export interface ProgressCompose {
   loaded: number
   size: number
   percent: number
 }
 
-export interface IUploadProgress {
-  total: IProgressCompose
-  chunks?: IProgressCompose[]
+export interface UploadProgress {
+  total: ProgressCompose
+  chunks?: ProgressCompose[]
 }
 
-export interface ICtxInfo {
+export interface CtxInfo {
   time: number
   ctx: string
   size: number
   md5: string
 }
 
-export interface IChunkLoaded {
+export interface ChunkLoaded {
   mkFileProgress: 0 | 1
   chunks: number[]
 }
 
-export interface IChunkInfo {
+export interface ChunkInfo {
   chunk: Blob
   index: number
 }
 
+export interface IRequestError {
+  code: number // 请求错误状态码，只有在 err.isRequestError 为 true 的时候才有效。可查阅码值对应说明。
+  message: string // 错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。
+  isRequestError: true | undefined // 用于区分是否 xhr 请求错误当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 true否则为 undefined 。
+  reqId: string // xhr请求错误的 X-Reqid。
+}
+
+export type CustomError = IRequestError | Error | any
+
 export type XHRHandler = (xhr: XMLHttpRequest) => void
 
-const statisticsLogger = new StatisticsLogger()
-
 export class UploadManager {
-  private config: IConfig
-  private putExtra: IExtra
+  private config: Config
+  private putExtra: Extra
   private xhrList: XMLHttpRequest[] = []
   private xhrHandler: XHRHandler = xhr => this.xhrList.push(xhr)
   private file: File
@@ -105,25 +111,24 @@ export class UploadManager {
   private uploadUrl: string
   private uploadAt: number
 
-  private onData: OnNext
-  private onError: OnError
-  private onComplete: OnCompleted
-  private progress: IUploadProgress
-  private ctxList: ICtxInfo[]
-  private loaded: IChunkLoaded
+  private onData: (data: UploadProgress) => void
+  private onError: (err: CustomError) => void
+  private onComplete: (res: any) => void
+  private progress: UploadProgress
+  private ctxList: CtxInfo[]
+  private loaded: ChunkLoaded
   private chunks: Blob[]
-  private localInfo: ICtxInfo[]
+  private localInfo: CtxInfo[]
 
-  constructor(options: IUploadOptions, handlers: IUploadHandler) {
+  constructor(options: UploadOptions, handlers: UploadHandler) {
     this.config = {
       useCdnDomain: true,
       disableStatisticsReport: false,
       retryCount: 3,
       checkByMD5: false,
-      uphost: null,
+      uphost: '',
       forceDirect: false,
       concurrentRequestLimit: 3,
-      region: null,
       ...options.config
     }
 
@@ -166,11 +171,11 @@ export class UploadManager {
     })
 
     upload.then(res => {
-      this.onComplete()
+      this.onComplete(res.data)
       if (!this.config.disableStatisticsReport) {
         this.sendLog(res.reqId, 200)
       }
-    }, err => {
+    }, (err: CustomError) => {
 
       this.clear()
       if (err.isRequestError && !this.config.disableStatisticsReport) {
@@ -243,25 +248,22 @@ export class UploadManager {
   // 分片上传
   resumeUpload() {
 
-    this.loaded = {
-      mkFileProgress: 0,
-      chunks: []
-    }
-
-    this.ctxList = []
     this.localInfo = getLocalFileInfo(this.file)
     this.chunks = getChunks(this.file, BLOCK_SIZE)
-    this.initChunksProgress()
+    this.initBeforeUploadChunks()
 
-    const pool = new Pool((chunkInfo: IChunkInfo) => this.uploadChunk(chunkInfo), this.config.concurrentRequestLimit)
+    const pool = new Pool<ChunkInfo>(
+      (chunkInfo: ChunkInfo) => this.uploadChunk(chunkInfo),
+      this.config.concurrentRequestLimit
+    )
     const uploadChunks = this.chunks.map((chunk, index) => pool.enqueue({ chunk, index }))
 
-    const result = Promise.all(uploadChunks).then(this.mkFileReq)
+    const result = Promise.all(uploadChunks).then(() => this.mkFileReq())
     result.then(
       () => {
         removeLocalFileInfo(this.file)
       },
-      err => {
+      (err: CustomError) => {
         // ctx错误或者过期情况下
         if (err.code === 701) {
           removeLocalFileInfo(this.file)
@@ -271,7 +273,7 @@ export class UploadManager {
     return result
   }
 
-  async uploadChunk(chunkInfo: IChunkInfo) {
+  async uploadChunk(chunkInfo: ChunkInfo) {
     const { index, chunk } = chunkInfo
     const info = this.localInfo[index]
     const requestUrl = this.uploadUrl + '/mkblk/' + chunk.size
@@ -280,28 +282,34 @@ export class UploadManager {
     const shouldCheckMD5 = this.config.checkByMD5
     const reuseSaved = () => {
       this.updateChunkProgress(chunk.size, index)
-      this.ctxList[index] = { ctx: info.ctx, size: info.size, time: info.time, md5: info.md5 }
-      return Promise.resolve(null)
+      this.ctxList[index] = {
+        ctx: info.ctx,
+        size: info.size,
+        time: info.time,
+        md5: info.md5
+      }
     }
 
     if (savedReusable && !shouldCheckMD5) {
-      return reuseSaved()
+      reuseSaved()
+      return
     }
 
     const md5 = await computeMd5(chunk)
 
     if (savedReusable && md5 === info.md5) {
-      return reuseSaved()
+      reuseSaved()
+      return
     }
 
     const headers = getHeadersForChunkUpload(this.token)
-    const onProgress = (data: IProgress) => {
+    const onProgress = (data: Progress) => {
       this.updateChunkProgress(data.loaded, index)
     }
     const onCreate = this.xhrHandler
     const method = 'POST'
 
-    const response = await request(requestUrl, {
+    const response = await request<{ ctx: string }>(requestUrl, {
       method,
       headers,
       body: chunk,
@@ -309,7 +317,10 @@ export class UploadManager {
       onCreate
     })
     // 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null，这里在每次分片上传完成后都手动更新下 progress
-    onProgress({ loaded: chunk.size, total: chunk.size })
+    onProgress({
+      loaded: chunk.size,
+      total: chunk.size
+    })
 
     this.ctxList[index] = {
       time: new Date().getTime(),
@@ -329,7 +340,7 @@ export class UploadManager {
 
     const requestUrL = createMkFileUrl(
       this.uploadUrl,
-      this.file.size,
+      this.file,
       this.key,
       putExtra
     )
@@ -362,7 +373,13 @@ export class UploadManager {
     this.onData(this.progress)
   }
 
-  initChunksProgress() {
+  initBeforeUploadChunks() {
+    this.loaded = {
+      mkFileProgress: 0,
+      chunks: []
+    }
+
+    this.ctxList = []
     this.loaded.chunks = this.chunks.map(_ => 0)
     this.notifyResumeProgress()
   }
@@ -383,7 +400,9 @@ export class UploadManager {
         sum(this.loaded.chunks) + this.loaded.mkFileProgress,
         this.file.size + 1
       ),
-      chunks: this.chunks.map((chunk, index) => this.getProgressInfoItem(this.loaded.chunks[index], chunk.size))
+      chunks: this.chunks.map((chunk, index) => (
+        this.getProgressInfoItem(this.loaded.chunks[index], chunk.size)
+      ))
     }
     this.onData(this.progress)
   }
