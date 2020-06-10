@@ -34,19 +34,23 @@ export interface ImageMogr2 {
   rotate?: number
 }
 
-type Pipeline = (ImageWatermark & { fop: 'watermark' })
-| (ImageViewOptions & { fop: 'imageView2' })
-| (ImageMogr2 & { fop: 'imageMogr2' })
+type Pipeline =
+  | (ImageWatermark & { fop: 'watermark' })
+  | (ImageViewOptions & { fop: 'imageView2' })
+  | (ImageMogr2 & { fop: 'imageMogr2' })
 
-function getImageUrl(key: string, domain: string) {
-  key = encodeURIComponent(key)
-  if (domain.slice(domain.length - 1) !== '/') {
-    domain += '/'
-  }
-  return domain + key
+export interface Entry {
+  domain: string
+  key: string
 }
 
-export function imageView2(op: ImageViewOptions, key?: string, domain?: string) {
+function getImageUrl(entry: Entry) {
+  const { domain, key } = entry
+  const name = encodeURIComponent(key)
+  return `${domain}/${name}`
+}
+
+export function imageView2(op: ImageViewOptions, entry?: Entry) {
   if (!/^\d$/.test(String(op.mode))) {
     throw 'mode should be number in imageView2'
   }
@@ -62,14 +66,14 @@ export function imageView2(op: ImageViewOptions, key?: string, domain?: string) 
   imageUrl += h ? '/h/' + encodeURIComponent(h) : ''
   imageUrl += q ? '/q/' + encodeURIComponent(q) : ''
   imageUrl += format ? '/format/' + encodeURIComponent(format) : ''
-  if (key && domain) {
-    imageUrl = getImageUrl(key, domain) + '?' + imageUrl
+  if (entry) {
+    imageUrl = getImageUrl(entry) + '?' + imageUrl
   }
   return imageUrl
 }
 
 // invoke the imageMogr2 api of Qiniu
-export function imageMogr2(op: ImageMogr2, key?: string, domain?: string) {
+export function imageMogr2(op: ImageMogr2, entry?: Entry) {
   const autoOrient = op['auto-orient']
   const { thumbnail, strip, gravity, crop, quality, rotate, format, blur } = op
 
@@ -84,14 +88,14 @@ export function imageMogr2(op: ImageMogr2, key?: string, domain?: string) {
   imageUrl += rotate ? '/rotate/' + encodeURIComponent(rotate) : ''
   imageUrl += format ? '/format/' + encodeURIComponent(format) : ''
   imageUrl += blur ? '/blur/' + encodeURIComponent(blur) : ''
-  if (key && domain) {
-    imageUrl = getImageUrl(key, domain) + '?' + imageUrl
+  if (entry) {
+    imageUrl = getImageUrl(entry) + '?' + imageUrl
   }
   return imageUrl
 }
 
 // invoke the watermark api of Qiniu
-export function watermark(op: ImageWatermark, key?: string, domain?: string) {
+export function watermark(op: ImageWatermark, entry?: Entry) {
   const mode = op.mode
   if (!mode) {
     throw "mode can't be empty in watermark"
@@ -127,25 +131,25 @@ export function watermark(op: ImageWatermark, key?: string, domain?: string) {
   imageUrl += gravity ? '/gravity/' + encodeURIComponent(gravity) : ''
   imageUrl += dx ? '/dx/' + encodeURIComponent(dx) : ''
   imageUrl += dy ? '/dy/' + encodeURIComponent(dy) : ''
-  if (key && domain) {
-    imageUrl = getImageUrl(key, domain) + '?' + imageUrl
+  if (entry) {
+    imageUrl = getImageUrl(entry) + '?' + imageUrl
   }
   return imageUrl
 }
 
 // invoke the imageInfo api of Qiniu
-export function imageInfo(key: string, domain: string) {
-  const url = getImageUrl(key, domain) + '?imageInfo'
+export function imageInfo(entry: Entry) {
+  const url = getImageUrl(entry) + '?imageInfo'
   return request(url, { method: 'GET' })
 }
 
 // invoke the exif api of Qiniu
-export function exif(key: string, domain: string) {
-  const url = getImageUrl(key, domain) + '?exif'
+export function exif(entry: Entry) {
+  const url = getImageUrl(entry) + '?exif'
   return request(url, { method: 'GET' })
 }
 
-export function pipeline(arr: Pipeline[], key: string, domain: string) {
+export function pipeline(arr: Pipeline[], entry?: Entry) {
   const isArray = Object.prototype.toString.call(arr) === '[object Array]'
   let option: Pipeline
   let errOp = false
@@ -175,8 +179,8 @@ export function pipeline(arr: Pipeline[], key: string, domain: string) {
       }
     }
 
-    if (key) {
-      imageUrl = getImageUrl(key, domain) + '?' + imageUrl
+    if (entry) {
+      imageUrl = getImageUrl(entry) + '?' + imageUrl
       const length = imageUrl.length
       if (imageUrl.slice(length - 1) === '|') {
         imageUrl = imageUrl.slice(0, length - 1)

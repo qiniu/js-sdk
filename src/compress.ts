@@ -104,7 +104,7 @@ class Compress {
   }
 
   getCanvas(img: HTMLImageElement): Promise<HTMLCanvasElement> {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       // 通过得到图片的信息来调整显示方向以正确显示图片，主要解决 ios 系统上的图片会有旋转的问题
       EXIF.getData(img, () => {
         const orientation = EXIF.getTag(img, 'Orientation') || 1
@@ -119,15 +119,15 @@ class Compress {
           context.drawImage(img, 0, 0)
           resolve(canvas)
         } else {
-          throw new Error('context is null')
+          reject(new Error('context is null'))
         }
       })
     })
   }
 
-  doScale(source: HTMLCanvasElement, scale: number) {
+  async doScale(source: HTMLCanvasElement, scale: number) {
     if (scale === 1) {
-      return Promise.resolve(source)
+      return source
     }
     // 不要一次性画图，通过设定的 step 次数，渐进式的画图，这样可以增加图片的清晰度，防止一次性画图导致的像素丢失严重
     const sctx = source.getContext('2d')
@@ -143,47 +143,48 @@ class Compress {
     const originHeight = height
     mirror.width = width
     mirror.height = height
-    if (mctx && sctx) {
-      let src!: CanvasImageSource
-      let context!: CanvasRenderingContext2D
-      for (let i = 0; i < steps; i++) {
+    if (!mctx || !sctx) {
+      throw new Error("mctx or sctx can't be null")
+    }
 
-        let dw = width * factor || 0
-        let dh = height * factor || 0
-        // 到最后一步的时候 dw, dh 用目标缩放尺寸，否则会出现最后尺寸偏小的情况
-        if (i === steps - 1) {
-          dw = originWidth * scale
-          dh = originHeight * scale
-        }
+    let src!: CanvasImageSource
+    let context!: CanvasRenderingContext2D
+    for (let i = 0; i < steps; i++) {
 
-        if (i % 2 === 0) {
-          src = source
-          context = mctx
-        } else {
-          src = mirror
-          context = sctx
-        }
-        // 每次画前都清空，避免图像重叠
-        this.clear(context, width, height)
-        context.drawImage(src, 0, 0, width, height, 0, 0, dw, dh)
-        width = dw
-        height = dh
+      let dw = width * factor | 0 // eslint-disable-line no-bitwise
+      let dh = height * factor | 0 // eslint-disable-line no-bitwise
+      // 到最后一步的时候 dw, dh 用目标缩放尺寸，否则会出现最后尺寸偏小的情况
+      if (i === steps - 1) {
+        dw = originWidth * scale
+        dh = originHeight * scale
       }
 
-      const canvas = src === source ? mirror : source
-      // save data
-      const data = context.getImageData(0, 0, width, height)
-
-      // resize
-      canvas.width = width
-      canvas.height = height
-
-      // store image data
-      context.putImageData(data, 0, 0)
-
-      return Promise.resolve(canvas)
+      if (i % 2 === 0) {
+        src = source
+        context = mctx
+      } else {
+        src = mirror
+        context = sctx
+      }
+      // 每次画前都清空，避免图像重叠
+      this.clear(context, width, height)
+      context.drawImage(src, 0, 0, width, height, 0, 0, dw, dh)
+      width = dw
+      height = dh
     }
-    throw new Error("mctx or sctx can't be null")
+
+    const canvas = src === source ? mirror : source
+    // save data
+    const data = context.getImageData(0, 0, width, height)
+
+    // resize
+    canvas.width = width
+    canvas.height = height
+
+    // store image data
+    context.putImageData(data, 0, 0)
+
+    return canvas
   }
 
   // 这里把 base64 字符串转为 blob 对象

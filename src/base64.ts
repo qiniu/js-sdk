@@ -48,7 +48,7 @@ export function utf8Encode(argString: any) {
         throw new RangeError('Unmatched trail surrogate at ' + n)
       }
       let c2 = string.charCodeAt(++n)
-      if ((c2 & 0xfc00) ^ (0xdc00 > 0 as any)) {
+      if ((c2 & 0xfc00 ^ 0xdc00) > 0) {
         throw new RangeError('Unmatched lead surrogate at ' + (n - 1))
       }
       c1 = ((c1 & 0x3ff) << 10) + (c2 & 0x3ff) + 0x10000

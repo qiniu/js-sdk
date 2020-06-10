@@ -1,22 +1,4 @@
-import {
-  getChunks,
-  isChunkExpired,
-  createMkFileUrl,
-  setLocalFileInfo,
-  removeLocalFileInfo,
-  getLocalFileInfo,
-  isContainFileMimeType,
-  sum,
-  getDomainFromUrl,
-  getPortFromUrl,
-  getHeadersForChunkUpload,
-  getHeadersForMkFile,
-  request,
-  computeMd5,
-  getUploadUrl,
-  filterParams
-} from './utils'
-
+import * as utils from './utils'
 import { Pool } from './pool'
 import statisticsLogger from './statisticsLog'
 import { RegionType } from './config'
@@ -50,7 +32,7 @@ export interface UploadOptions {
 
 export interface UploadHandler {
   onData: (data: UploadProgress) => void
-  onError: (err: CustomError) => void
+  onError: (err: utils.CustomError) => void
   onComplete: (res: any) => void
 }
 
@@ -87,22 +69,11 @@ export interface ChunkInfo {
   index: number
 }
 
-export interface IRequestError {
-  code: number // 请求错误状态码，只有在 err.isRequestError 为 true 的时候才有效。可查阅码值对应说明。
-  message: string // 错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。
-  isRequestError: true | undefined // 用于区分是否 xhr 请求错误当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 true否则为 undefined 。
-  reqId: string // xhr请求错误的 X-Reqid。
-}
-
-export type CustomError = IRequestError | Error | any
-
-export type XHRHandler = (xhr: XMLHttpRequest) => void
-
 export class UploadManager {
   private config: Config
   private putExtra: Extra
   private xhrList: XMLHttpRequest[] = []
-  private xhrHandler: XHRHandler = xhr => this.xhrList.push(xhr)
+  private xhrHandler: utils.XHRHandler = xhr => this.xhrList.push(xhr)
   private file: File
   private key: string
   private aborted = false
@@ -112,7 +83,7 @@ export class UploadManager {
   private uploadAt: number
 
   private onData: (data: UploadProgress) => void
-  private onError: (err: CustomError) => void
+  private onError: (err: utils.CustomError) => void
   private onComplete: (res: any) => void
   private progress: UploadProgress
   private ctxList: CtxInfo[]
@@ -152,14 +123,14 @@ export class UploadManager {
     }
 
     if (this.putExtra.mimeType && this.putExtra.mimeType.length) {
-      if (!isContainFileMimeType(this.file.type, this.putExtra.mimeType)) {
+      if (!utils.isContainFileMimeType(this.file.type, this.putExtra.mimeType)) {
         const err = new Error("file type doesn't match with what you specify")
         this.onError(err)
         return
       }
     }
 
-    const upload = getUploadUrl(this.config, this.token).then(res => {
+    const upload = utils.getUploadUrl(this.config, this.token).then(res => {
       this.uploadUrl = res
       this.uploadAt = new Date().getTime()
 
@@ -175,7 +146,7 @@ export class UploadManager {
       if (!this.config.disableStatisticsReport) {
         this.sendLog(res.reqId, 200)
       }
-    }, (err: CustomError) => {
+    }, (err: utils.CustomError) => {
 
       this.clear()
       if (err.isRequestError && !this.config.disableStatisticsReport) {
@@ -210,9 +181,9 @@ export class UploadManager {
     statisticsLogger.log({
       code,
       reqId,
-      host: getDomainFromUrl(this.uploadUrl),
+      host: utils.getDomainFromUrl(this.uploadUrl),
       remoteIp: '',
-      port: getPortFromUrl(this.uploadUrl),
+      port: utils.getPortFromUrl(this.uploadUrl),
       duration: (new Date().getTime() - this.uploadAt) / 1000,
       time: Math.floor(this.uploadAt / 1000),
       bytesSent: this.progress ? this.progress.total.loaded : 0,
@@ -230,9 +201,9 @@ export class UploadManager {
       formData.append('key', this.key)
     }
     formData.append('fname', this.putExtra.fname)
-    filterParams(this.putExtra.params).forEach(item => formData.append(item[0], item[1]))
+    utils.filterParams(this.putExtra.params).forEach(item => formData.append(item[0], item[1]))
 
-    const result = await request(this.uploadUrl, {
+    const result = await utils.request(this.uploadUrl, {
       method: 'POST',
       body: formData,
       onProgress: data => {
@@ -247,9 +218,6 @@ export class UploadManager {
 
   // 分片上传
   resumeUpload() {
-
-    this.localInfo = getLocalFileInfo(this.file)
-    this.chunks = getChunks(this.file, BLOCK_SIZE)
     this.initBeforeUploadChunks()
 
     const pool = new Pool<ChunkInfo>(
@@ -261,12 +229,12 @@ export class UploadManager {
     const result = Promise.all(uploadChunks).then(() => this.mkFileReq())
     result.then(
       () => {
-        removeLocalFileInfo(this.file)
+        utils.removeLocalFileInfo(this.file)
       },
-      (err: CustomError) => {
+      (err: utils.CustomError) => {
         // ctx错误或者过期情况下
         if (err.code === 701) {
-          removeLocalFileInfo(this.file)
+          utils.removeLocalFileInfo(this.file)
         }
       }
     )
@@ -278,7 +246,7 @@ export class UploadManager {
     const info = this.localInfo[index]
     const requestUrl = this.uploadUrl + '/mkblk/' + chunk.size
 
-    const savedReusable = info && !isChunkExpired(info.time)
+    const savedReusable = info && !utils.isChunkExpired(info.time)
     const shouldCheckMD5 = this.config.checkByMD5
     const reuseSaved = () => {
       this.updateChunkProgress(chunk.size, index)
@@ -295,21 +263,21 @@ export class UploadManager {
       return
     }
 
-    const md5 = await computeMd5(chunk)
+    const md5 = await utils.computeMd5(chunk)
 
     if (savedReusable && md5 === info.md5) {
       reuseSaved()
       return
     }
 
-    const headers = getHeadersForChunkUpload(this.token)
+    const headers = utils.getHeadersForChunkUpload(this.token)
     const onProgress = (data: Progress) => {
       this.updateChunkProgress(data.loaded, index)
     }
     const onCreate = this.xhrHandler
     const method = 'POST'
 
-    const response = await request<{ ctx: string }>(requestUrl, {
+    const response = await utils.request<{ ctx: string }>(requestUrl, {
       method,
       headers,
       body: chunk,
@@ -329,7 +297,7 @@ export class UploadManager {
       md5
     }
 
-    setLocalFileInfo(this.file, this.ctxList)
+    utils.setLocalFileInfo(this.file, this.ctxList)
   }
 
   async mkFileReq() {
@@ -338,7 +306,7 @@ export class UploadManager {
       ...this.putExtra
     }
 
-    const requestUrL = createMkFileUrl(
+    const requestUrL = utils.createMkFileUrl(
       this.uploadUrl,
       this.file,
       this.key,
@@ -346,10 +314,10 @@ export class UploadManager {
     )
 
     const body = this.ctxList.map(value => value.ctx).join(',')
-    const headers = getHeadersForMkFile(this.token)
+    const headers = utils.getHeadersForMkFile(this.token)
     const onCreate = this.xhrHandler
     const method = 'POST'
-    const result = await request(requestUrL, { method, body, headers, onCreate })
+    const result = await utils.request(requestUrL, { method, body, headers, onCreate })
     this.updateMkFileProgress()
     return result
   }
@@ -379,6 +347,9 @@ export class UploadManager {
       chunks: []
     }
 
+    this.localInfo = utils.getLocalFileInfo(this.file)
+    this.chunks = utils.getChunks(this.file, BLOCK_SIZE)
+
     this.ctxList = []
     this.loaded.chunks = this.chunks.map(_ => 0)
     this.notifyResumeProgress()
@@ -397,7 +368,7 @@ export class UploadManager {
   notifyResumeProgress() {
     this.progress = {
       total: this.getProgressInfoItem(
-        sum(this.loaded.chunks) + this.loaded.mkFileProgress,
+        utils.sum(this.loaded.chunks) + this.loaded.mkFileProgress,
         this.file.size + 1
       ),
       chunks: this.chunks.map((chunk, index) => (

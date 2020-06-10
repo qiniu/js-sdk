@@ -1,7 +1,7 @@
 import SparkMD5 from 'spark-md5'
 import { urlSafeBase64Encode, urlSafeBase64Decode } from './base64'
 import { regionUphostMap } from './config'
-import { Config, Extra, Progress, XHRHandler, CtxInfo } from './upload'
+import { Config, Extra, Progress, CtxInfo } from './upload'
 
 // 对上传块本地存储时间检验是否过期
 // TODO: 最好用服务器时间来做判断
@@ -152,7 +152,7 @@ export function readAsArrayBuffer(data: Blob): Promise<ArrayBuffer> {
         const body = evt.target.result
         resolve(body as ArrayBuffer)
       } else {
-        reject(new Error('progress event target is null'))
+        reject(new Error('progress event target is undefined'))
       }
     }
 
@@ -164,12 +164,23 @@ export function readAsArrayBuffer(data: Blob): Promise<ArrayBuffer> {
   })
 }
 
-export interface IRequestResponse<T> {
+export interface RequestResponse<T> {
   data: T
   reqId: string
 }
 
-export interface IRequestOptions {
+export interface RequestError {
+  code: number // 请求错误状态码，只有在 err.isRequestError 为 true 的时候才有效。可查阅码值对应说明。
+  message: string // 错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。
+  isRequestError: true | undefined // 用于区分是否 xhr 请求错误当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 true否则为 undefined 。
+  reqId: string // xhr请求错误的 X-Reqid。
+}
+
+export type CustomError = RequestError | Error | any
+
+export type XHRHandler = (xhr: XMLHttpRequest) => void
+
+export interface RequestOptions {
   method: string
   onProgress?: (data: Progress) => void
   onCreate?: XHRHandler
@@ -177,9 +188,9 @@ export interface IRequestOptions {
   headers?: { [key: string]: string }
 }
 
-export type Response<T> = Promise<IRequestResponse<T>>
+export type Response<T> = Promise<RequestResponse<T>>
 
-export function request<T extends object>(url: string, options: IRequestOptions): Response<T> {
+export function request<T extends object>(url: string, options: RequestOptions): Response<T> {
   return new Promise((resolve, reject) => {
     const xhr = createXHR()
     xhr.open(options.method, url)
@@ -214,7 +225,7 @@ export function request<T extends object>(url: string, options: IRequestOptions)
       if (xhr.status !== 200) {
         let message = `xhr request failed, code: ${xhr.status}`
         if (responseText) {
-          message += `response: ${responseText}`
+          message += ` response: ${responseText}`
         }
         reject({
           code: xhr.status,

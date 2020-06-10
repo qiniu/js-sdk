@@ -5,9 +5,10 @@ import {
   getResumeUploadedSize,
   getHeadersForMkFile,
   getHeadersForChunkUpload,
-  filterParams
+  filterParams,
+  CustomError
 } from './utils'
-import { UploadManager, Extra, Config, UploadOptions, UploadProgress, CustomError } from './upload'
+import { UploadManager, Extra, Config, UploadOptions, UploadProgress } from './upload'
 import { imageMogr2, watermark, imageInfo, exif, pipeline } from './image'
 import { Observable, IObserver } from './observable'
 import compressImage from './compress'

@@ -1,4 +1,5 @@
 import { Pool } from "../pool"
+import { ChunkInfo } from '../upload'
 
 const m = jest.fn()
 const task = (): Promise<void> => {
@@ -9,7 +10,7 @@ const task = (): Promise<void> => {
 }
 
 describe("test Pool for control concurrency", () => {
-  var pool = new Pool(task, 2)
+  var pool = new Pool<ChunkInfo>(task, 2)
   test("pool.js", () => {
     const chunk = new Blob()
     const data = [
