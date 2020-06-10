@@ -1,5 +1,7 @@
 var path = require("path");
 var OpenBrowserPlugin = require("open-browser-webpack-plugin");
+var es3ifyPlugin = require("es3ify-webpack-plugin");
+
 module.exports = {
   entry: "./index.js",
   output: {
@@ -15,15 +17,11 @@ module.exports = {
         use: {
           loader: "babel-loader"
         }
-      },
-      {
-        test: /\.js$/,
-        enforce: "post",
-        loader: "es3ify-loader"
       }
     ]
   },
   plugins:[
+    new es3ifyPlugin(),
     new OpenBrowserPlugin({ url: 'http://0.0.0.0:8000/' })
   ],
   devServer: {
@@ -36,7 +34,7 @@ module.exports = {
         secure: false
       }
     },
-    host: "0.0.0.0", 
+    host: "0.0.0.0",
     port: 8000,
     contentBase: path.join(__dirname, "./"),
     publicPath: "/dist/",
