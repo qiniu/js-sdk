@@ -8,7 +8,7 @@ let initFileInput = (res) =>{
 
   let config = {
     useCdnDomain: true,
-    region: qiniu.Region.z2
+    region: qiniu.region.z2
   };
   let putExtra = {
     fname: "",

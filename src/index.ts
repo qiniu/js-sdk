@@ -1,4 +1,4 @@
-import { Region } from './config'
+import { region } from './config'
 import {
   createMkFileUrl,
   getUploadUrl,
@@ -8,10 +8,13 @@ import {
   filterParams,
   CustomError
 } from './utils'
+import StatisticsLogger from './statisticsLog'
 import { UploadManager, Extra, Config, UploadOptions, UploadProgress } from './upload'
 import { imageMogr2, watermark, imageInfo, exif, pipeline } from './image'
 import { Observable, IObserver } from './observable'
 import compressImage from './compress'
+
+const statisticsLogger = new StatisticsLogger()
 
 function upload(
   file: File,
@@ -34,7 +37,7 @@ function upload(
       onData: (data: UploadProgress) => observer.next(data),
       onError: (err: CustomError) => observer.error(err),
       onComplete: (res: any) => observer.complete(res)
-    })
+    }, statisticsLogger)
     uploadManager.putFile()
     return uploadManager.stop.bind(uploadManager)
   })
@@ -42,7 +45,7 @@ function upload(
 
 export {
   upload,
-  Region,
+  region,
   createMkFileUrl,
   getHeadersForChunkUpload,
   getResumeUploadedSize,

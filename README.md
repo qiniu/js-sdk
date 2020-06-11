@@ -223,13 +223,13 @@ qiniu.compressImage(file, options).then(data => {
   );
   ```
 
-### qiniu.Region: enum
+### qiniu.region: object
 
-  * **qiniu.Region.z0**: 代表华东区域
-  * **qiniu.Region.z1**: 代表华北区域
-  * **qiniu.Region.z2**: 代表华南区域
-  * **qiniu.Region.na0**: 代表北美区域
-  * **qiniu.Region.as0**: 代表新加坡区域
+  * **qiniu.region.z0**: 代表华东区域
+  * **qiniu.region.z1**: 代表华北区域
+  * **qiniu.region.z2**: 代表华南区域
+  * **qiniu.region.na0**: 代表北美区域
+  * **qiniu.region.as0**: 代表新加坡区域
 
 ### qiniu.getUploadUrl(config: object, token: string): Promise
 
@@ -292,12 +292,11 @@ qiniu.compressImage(file, options).then(data => {
     （注意：当 `maxWidth` 和 `maxHeight` 都不设置时，则采用原图尺寸大小）
     * options.noCompressIfLarger: `boolean`，为 `true` 时如果发现压缩后图片大小比原来还大，则返回源图片（即输出的 dist 直接返回了输入的 file）；默认 `false`，即保证图片尺寸符合要求，但不保证压缩后的图片体积一定变小
 
-### qiniu.watermark(options: object, entry?: Entry): string（水印）
+### qiniu.watermark(options: object, key?: string, domain?: string): string（水印）
 
   返回添加水印后的图片地址
-  * **entry**: `object`
-    * **entry.key** : 文件资源名
-    * **entry.domain**: 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取，前端可以通过接口请求后端得到
+  * **key** : 文件资源名
+  * **domain**: 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取，前端可以通过接口请求后端得到
 
 
   ```JavaScript
@@ -309,7 +308,7 @@ qiniu.compressImage(file, options).then(data => {
        gravity: 'SouthWest', // 水印位置，为以下参数[NorthWest、North、NorthEast、West、Center、East、SouthWest、South、SouthEast]之一
        dx: 100,  // 横轴边距，单位:像素(px)
        dy: 100 // 纵轴边距，单位:像素(px)
-   }, entry) // entry 为非必需参数，下同
+   }, key, domain)
 
   // imgLink 可以赋值给 html 的 img 元素的 src 属性，下同
 
@@ -329,12 +328,12 @@ qiniu.compressImage(file, options).then(data => {
        dx: 100,               // 横轴边距，单位:像素(px)
        dy: 100,               // 纵轴边距，单位:像素(px)
        fill: '#FFF000'        // 水印文字颜色，RGB格式，可以是颜色名称
-   }, entry)
+   }, key, domain)
   ```
 
   options包含的具体水印参数解释见[水印（watermark）](https://developer.qiniu.com/dora/api/image-watermarking-processing-watermark)
 
-### qiniu.imageView2(options: object, entry?: Entry): string (缩略)
+### qiniu.imageView2(options: object, key?: string, domain?: string): string (缩略)
 
   返回处理后的图片url
 
@@ -345,12 +344,12 @@ qiniu.compressImage(file, options).then(data => {
      h: 100,        // 具体含义由缩略模式决定
      q: 100,        // 新图的图像质量，取值范围：1-100
      format: 'png'  // 新图的输出格式，取值范围：jpg，gif，png，webp等
-   }, entry)
+   }, key, domain)
   ```
 
   options包含的具体缩略参数解释见[图片基本处理（imageView2）](https://developer.qiniu.com/dora/api/basic-processing-images-imageview2)
 
-### qiniu.imageMogr2(options: object, entry?: Entry): string (图像高级处理)
+### qiniu.imageMogr2(options: object, key?: string, domain?: string): string (图像高级处理)
 
   返回处理后的图片url
 
@@ -365,28 +364,28 @@ qiniu.compressImage(file, options).then(data => {
      rotate: 20,               // 旋转角度，取值范围1-360，缺省为不旋转。
      format: 'png',            // 新图的输出格式，取值范围：jpg，gif，png，webp等
      blur: '3x5'               // 高斯模糊参数
-   }, entry)
+   }, key, domain)
   ```
 
   options包含的具体高级图像处理参数解释见[图像高级处理（imageMogr2）](https://developer.qiniu.com/dora/api/the-advanced-treatment-of-images-imagemogr2)
 
-### qiniu.imageInfo(entry: Entry): Promise
+### qiniu.imageInfo(key: string, domain: string): Promise
 
   ```JavaScript
-  qiniu.imageInfo(entry).then(res => {})
+  qiniu.imageInfo(key, domain).then(res => {})
   ```
 
   具体 imageInfo 解释见[图片基本信息（imageInfo）](https://developer.qiniu.com/dora/api/pictures-basic-information-imageinfo)
 
-### qiniu.exif(entry: Entry): Promise
+### qiniu.exif(key: string, domain: string): Promise
 
   ```JavaScript
-  qiniu.exif(entry).then(res => {})
+  qiniu.exif(key, domain).then(res => {})
   ```
 
   具体 exif 解释见[图片 EXIF 信息（exif）](https://developer.qiniu.com/dora/api/photo-exif-information-exif)
 
-### qiniu.pipeline(fopArr: array, entry?: Entry): string
+### qiniu.pipeline(fopArr: array, key?: string, domain?: string): string
 
   ```JavaScript
   const fopArr = [{
@@ -446,7 +445,7 @@ qiniu.compressImage(file, options).then(data => {
   //    blur:'3x5'
   // }];
 
-  const imgLink = qiniu.pipeline(fopArr, entry))
+  const imgLink = qiniu.pipeline(fopArr, key, domain))
   ```
 
   fopArr包含的具体管道操作解释见[管道操作](https://developer.qiniu.com/dora/manual/processing-mechanism)

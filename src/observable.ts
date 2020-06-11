@@ -33,7 +33,7 @@ export interface ISubscribable<T, E> {
 class Subscription implements ISubscriptionLike {
   public closed = false
 
-  private _unsubscribe: TeardownLogic
+  private _unsubscribe: TeardownLogic | undefined
 
   // 取消 observer 的订阅
   unsubscribe() {

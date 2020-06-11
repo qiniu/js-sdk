@@ -26,9 +26,6 @@
     "coverage",
     "test",
     "dist",
-    "src/newupload/**",
-    "src/newIndex.ts",
-    "src/newUtils.ts",
-    "src/api.ts"
+    "lib"
   ]
 }

@@ -1,7 +1,7 @@
 import * as utils from './utils'
 import { Pool } from './pool'
-import statisticsLogger from './statisticsLog'
-import { Region } from './config'
+import StatisticsLogger from './statisticsLog'
+import { region } from './config'
 
 const BLOCK_SIZE = 4 * 1024 * 1024
 
@@ -19,7 +19,7 @@ export interface Config {
   uphost: string
   concurrentRequestLimit: number
   disableStatisticsReport: boolean
-  region?: Region
+  region?: typeof region[keyof typeof region]
 }
 
 export interface UploadOptions {
@@ -91,7 +91,7 @@ export class UploadManager {
   private chunks: Blob[]
   private localInfo: CtxInfo[]
 
-  constructor(options: UploadOptions, handlers: UploadHandler) {
+  constructor(options: UploadOptions, handlers: UploadHandler, private statisticsLogger: StatisticsLogger) {
     this.config = {
       useCdnDomain: true,
       disableStatisticsReport: false,
@@ -178,7 +178,7 @@ export class UploadManager {
   }
 
   sendLog(reqId: string, code: number) {
-    statisticsLogger.log({
+    this.statisticsLogger.log({
       code,
       reqId,
       host: utils.getDomainFromUrl(this.uploadUrl),
@@ -318,7 +318,7 @@ export class UploadManager {
     const onCreate = this.xhrHandler
     const method = 'POST'
     const result = await utils.request(requestUrL, { method, body, headers, onCreate })
-    this.updateMkFileProgress()
+    this.updateMkFileProgress(1)
     return result
   }
 
@@ -342,16 +342,15 @@ export class UploadManager {
   }
 
   initBeforeUploadChunks() {
-    this.loaded = {
-      mkFileProgress: 0,
-      chunks: []
-    }
 
     this.localInfo = utils.getLocalFileInfo(this.file)
     this.chunks = utils.getChunks(this.file, BLOCK_SIZE)
 
     this.ctxList = []
-    this.loaded.chunks = this.chunks.map(_ => 0)
+    this.loaded = {
+      mkFileProgress: 0,
+      chunks: this.chunks.map(_ => 0)
+    }
     this.notifyResumeProgress()
   }
 
@@ -360,8 +359,8 @@ export class UploadManager {
     this.notifyResumeProgress()
   }
 
-  updateMkFileProgress() {
-    this.loaded.mkFileProgress = 1
+  updateMkFileProgress(progress: 0 | 1) {
+    this.loaded.mkFileProgress = progress
     this.notifyResumeProgress()
   }
 

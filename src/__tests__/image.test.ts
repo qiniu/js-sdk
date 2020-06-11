@@ -2,10 +2,8 @@ import { imageView2, imageMogr2, watermark, imageInfo } from '../image'
 import { urlSafeBase64Encode } from '../base64'
 
 describe('image func test', () => {
-  const entry = {
-    domain: 'http://otxza7yo2.bkt.clouddn.com',
-    key: 'test.png'
-  }
+    const domain = 'http://otxza7yo2.bkt.clouddn.com'
+    const key = 'test.png'
 
   test('imageView2', () => {
     let m = {
@@ -14,9 +12,9 @@ describe('image func test', () => {
       'h': 450,
       'q': 100
     }
-    let url = imageView2(m, entry)
+    let url = imageView2(m, key, domain)
     expect(url).toBe(
-      'http://otxza7yo2.bkt.clouddn.com/' + entry.key + '?' +
+      'http://otxza7yo2.bkt.clouddn.com/' + key + '?' +
       'imageView2/' + encodeURIComponent(m.mode) +
       '/h' + '/' + encodeURIComponent(m.h) +
       '/q' + '/' + encodeURIComponent(m.q)
@@ -35,9 +33,9 @@ describe('image func test', () => {
       blur: 1
     }
 
-    let url = imageMogr2(m, entry)
+    let url = imageMogr2(m, key, domain)
     expect(url).toBe(
-      'http://otxza7yo2.bkt.clouddn.com/' + entry.key + '?imageMogr2/' +
+      'http://otxza7yo2.bkt.clouddn.com/' + key + '?imageMogr2/' +
       'thumbnail/1/strip/gravity/1/quality/1/crop/1/rotate/1/format/1/blur/1'
     )
   })
@@ -51,15 +49,15 @@ describe('image func test', () => {
       dx: 100,
       dy: 100
     }
-    let url = watermark(m, entry)
+    let url = watermark(m, key, domain)
     expect(url).toBe(
-      'http://otxza7yo2.bkt.clouddn.com/' + entry.key + '?' +
+      'http://otxza7yo2.bkt.clouddn.com/' + key + '?' +
       'watermark/' + m.mode + '/image/' + urlSafeBase64Encode(m.image) +
       '/dissolve/100/dx/100/dy/100'
     )
     m.mode = 3
     expect(()=> {
-      watermark(m, entry)
+      watermark(m, key, domain)
     }).toThrow('mode is wrong')
   })
 })

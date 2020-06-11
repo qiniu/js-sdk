@@ -164,19 +164,19 @@ export function readAsArrayBuffer(data: Blob): Promise<ArrayBuffer> {
   })
 }
 
-export interface RequestResponse<T> {
+export interface ResponseSuccess<T> {
   data: T
   reqId: string
 }
 
-export interface RequestError {
+export interface ResponseError {
   code: number // 请求错误状态码，只有在 err.isRequestError 为 true 的时候才有效。可查阅码值对应说明。
   message: string // 错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。
   isRequestError: true | undefined // 用于区分是否 xhr 请求错误当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 true否则为 undefined 。
   reqId: string // xhr请求错误的 X-Reqid。
 }
 
-export type CustomError = RequestError | Error | any
+export type CustomError = ResponseError | Error | any
 
 export type XHRHandler = (xhr: XMLHttpRequest) => void
 
@@ -188,7 +188,7 @@ export interface RequestOptions {
   headers?: { [key: string]: string }
 }
 
-export type Response<T> = Promise<RequestResponse<T>>
+export type Response<T> = Promise<ResponseSuccess<T>>
 
 export function request<T extends object>(url: string, options: RequestOptions): Response<T> {
   return new Promise((resolve, reject) => {
@@ -326,7 +326,6 @@ function getPutPolicy(token: string) {
   }
 }
 
-// 返回类型嵌套太多层，并且类型单一，返回直接以 any 代替
 interface UpHosts {
   data: {
     up: {

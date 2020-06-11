@@ -44,13 +44,16 @@ export interface Entry {
   key: string
 }
 
-function getImageUrl(entry: Entry) {
-  const { domain, key } = entry
-  const name = encodeURIComponent(key)
-  return `${domain}/${name}`
+function getImageUrl(key: string, domain: string) {
+  key = encodeURIComponent(key)
+  if (domain.slice(domain.length - 1) !== '/') {
+    domain += '/'
+  }
+
+  return domain + key
 }
 
-export function imageView2(op: ImageViewOptions, entry?: Entry) {
+export function imageView2(op: ImageViewOptions, key?: string, domain?: string) {
   if (!/^\d$/.test(String(op.mode))) {
     throw 'mode should be number in imageView2'
   }
@@ -66,14 +69,14 @@ export function imageView2(op: ImageViewOptions, entry?: Entry) {
   imageUrl += h ? '/h/' + encodeURIComponent(h) : ''
   imageUrl += q ? '/q/' + encodeURIComponent(q) : ''
   imageUrl += format ? '/format/' + encodeURIComponent(format) : ''
-  if (entry) {
-    imageUrl = getImageUrl(entry) + '?' + imageUrl
+  if (key && domain) {
+    imageUrl = getImageUrl(key, domain) + '?' + imageUrl
   }
   return imageUrl
 }
 
 // invoke the imageMogr2 api of Qiniu
-export function imageMogr2(op: ImageMogr2, entry?: Entry) {
+export function imageMogr2(op: ImageMogr2, key?: string, domain?: string) {
   const autoOrient = op['auto-orient']
   const { thumbnail, strip, gravity, crop, quality, rotate, format, blur } = op
 
@@ -88,14 +91,14 @@ export function imageMogr2(op: ImageMogr2, entry?: Entry) {
   imageUrl += rotate ? '/rotate/' + encodeURIComponent(rotate) : ''
   imageUrl += format ? '/format/' + encodeURIComponent(format) : ''
   imageUrl += blur ? '/blur/' + encodeURIComponent(blur) : ''
-  if (entry) {
-    imageUrl = getImageUrl(entry) + '?' + imageUrl
+  if (key && domain) {
+    imageUrl = getImageUrl(key, domain) + '?' + imageUrl
   }
   return imageUrl
 }
 
 // invoke the watermark api of Qiniu
-export function watermark(op: ImageWatermark, entry?: Entry) {
+export function watermark(op: ImageWatermark, key?: string, domain?: string) {
   const mode = op.mode
   if (!mode) {
     throw "mode can't be empty in watermark"
@@ -131,25 +134,25 @@ export function watermark(op: ImageWatermark, entry?: Entry) {
   imageUrl += gravity ? '/gravity/' + encodeURIComponent(gravity) : ''
   imageUrl += dx ? '/dx/' + encodeURIComponent(dx) : ''
   imageUrl += dy ? '/dy/' + encodeURIComponent(dy) : ''
-  if (entry) {
-    imageUrl = getImageUrl(entry) + '?' + imageUrl
+  if (key && domain) {
+    imageUrl = getImageUrl(key, domain) + '?' + imageUrl
   }
   return imageUrl
 }
 
 // invoke the imageInfo api of Qiniu
-export function imageInfo(entry: Entry) {
-  const url = getImageUrl(entry) + '?imageInfo'
+export function imageInfo(key: string, domain: string) {
+  const url = getImageUrl(key, domain) + '?imageInfo'
   return request(url, { method: 'GET' })
 }
 
 // invoke the exif api of Qiniu
-export function exif(entry: Entry) {
-  const url = getImageUrl(entry) + '?exif'
+export function exif(key: string, domain: string) {
+  const url = getImageUrl(key, domain) + '?exif'
   return request(url, { method: 'GET' })
 }
 
-export function pipeline(arr: Pipeline[], entry?: Entry) {
+export function pipeline(arr: Pipeline[], key?: string, domain?: string) {
   const isArray = Object.prototype.toString.call(arr) === '[object Array]'
   let option: Pipeline
   let errOp = false
@@ -179,8 +182,8 @@ export function pipeline(arr: Pipeline[], entry?: Entry) {
       }
     }
 
-    if (entry) {
-      imageUrl = getImageUrl(entry) + '?' + imageUrl
+    if (key && domain) {
+      imageUrl = getImageUrl(key, domain) + '?' + imageUrl
       const length = imageUrl.length
       if (imageUrl.slice(length - 1) === '|') {
         imageUrl = imageUrl.slice(0, length - 1)

@@ -32,7 +32,6 @@ function isSupportedType(type: string): type is typeof mimeTypes[MimeKey] {
 }
 
 class Compress {
-  // private config: ICompressOptions
   private outputType: string
 
   constructor(private file: File, private config: CompressOptions) {
@@ -113,14 +112,15 @@ class Compress {
         const context = canvas.getContext('2d')
         canvas.width = width
         canvas.height = height
-        if (context) {
-          this.clear(context, width, height)
-          context.transform(...matrix)
-          context.drawImage(img, 0, 0)
-          resolve(canvas)
-        } else {
+        if (!context) {
           reject(new Error('context is null'))
+          return
         }
+
+        this.clear(context, width, height)
+        context.transform(...matrix)
+        context.drawImage(img, 0, 0)
+        resolve(canvas)
       })
     })
   }

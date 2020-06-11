@@ -13,7 +13,7 @@ interface LogInfo {
   size: number
 }
 
-class StatisticsLogger {
+export default class StatisticsLogger {
 
   log(info: LogInfo, token: string) {
     const logString = Object.values(info).join(',')
@@ -34,5 +34,3 @@ class StatisticsLogger {
   }
 
 }
-
-export default new StatisticsLogger()
