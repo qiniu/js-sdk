@@ -1,4 +1,4 @@
-import { RegionType } from './config'
+import { Region } from './config'
 import {
   createMkFileUrl,
   getUploadUrl,
@@ -42,7 +42,7 @@ function upload(
 
 export {
   upload,
-  RegionType,
+  Region,
   createMkFileUrl,
   getHeadersForChunkUpload,
   getResumeUploadedSize,

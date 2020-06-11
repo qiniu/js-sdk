@@ -1,11 +1,9 @@
 const merge = require('webpack-merge')
 const path = require('path')
 const common = require('./webpack.common.js')
-const OpenBrowserPlugin = require('open-browser-webpack-plugin')
 
 module.exports = merge(common, {
   mode: "development",
-  plugins: [new OpenBrowserPlugin({ url: 'http://0.0.0.0:8080/test/demo1/' })],
   devServer: {
     disableHostCheck: true,
     progress: true,

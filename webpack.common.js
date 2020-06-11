@@ -1,4 +1,5 @@
-const path = require('path')
+var path = require("path");
+var es3ifyPlugin = require("es3ify-webpack-plugin");
 
 module.exports = {
   entry: './src/index.ts',
@@ -18,6 +19,7 @@ module.exports = {
       }
     ]
   },
+  plugins: [new es3ifyPlugin()],
   resolve: {
     extensions: ['.ts', '.js']
   }

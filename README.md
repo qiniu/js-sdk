@@ -223,13 +223,13 @@ qiniu.compressImage(file, options).then(data => {
   );
   ```
 
-### qiniu.region: object
+### qiniu.Region: enum
 
-  * **qiniu.region.z0**: 代表华东区域
-  * **qiniu.region.z1**: 代表华北区域
-  * **qiniu.region.z2**: 代表华南区域
-  * **qiniu.region.na0**: 代表北美区域
-  * **qiniu.region.as0**: 代表新加坡区域
+  * **qiniu.Region.z0**: 代表华东区域
+  * **qiniu.Region.z1**: 代表华北区域
+  * **qiniu.Region.z2**: 代表华南区域
+  * **qiniu.Region.na0**: 代表北美区域
+  * **qiniu.Region.as0**: 代表新加坡区域
 
 ### qiniu.getUploadUrl(config: object, token: string): Promise
 

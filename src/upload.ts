@@ -1,7 +1,7 @@
 import * as utils from './utils'
 import { Pool } from './pool'
 import statisticsLogger from './statisticsLog'
-import { RegionType } from './config'
+import { Region } from './config'
 
 const BLOCK_SIZE = 4 * 1024 * 1024
 
@@ -19,7 +19,7 @@ export interface Config {
   uphost: string
   concurrentRequestLimit: number
   disableStatisticsReport: boolean
-  region?: RegionType
+  region?: Region
 }
 
 export interface UploadOptions {

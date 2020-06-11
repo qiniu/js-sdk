@@ -8,14 +8,14 @@ let initFileInput = (res) =>{
 
   let config = {
     useCdnDomain: true,
-    region: qiniu.region.z2
+    region: qiniu.Region.z2
   };
   let putExtra = {
     fname: "",
     params: {},
     mimeType: null
   };
-  
+
 
   $("#select").change(function(){
 
@@ -26,8 +26,8 @@ let initFileInput = (res) =>{
       let total = response.total;
       $(".speed").text("进度：" + total.percent + "% ");
     }
-  
-  
+
+
     let subscription;
     // 调用sdk上传接口获得相应的observable，控制上传和暂停
     let observable = qiniu.upload(file, key, token, putExtra, config);

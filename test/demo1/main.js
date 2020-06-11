@@ -5,7 +5,7 @@
       useCdnDomain: true,
       disableStatisticsReport: false,
       retryCount: 6,
-      region: qiniu.region.z2
+      region: qiniu.Region.z2
     };
     var putExtra = {
       fname: "",
