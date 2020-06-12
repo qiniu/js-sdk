@@ -1,3 +1,5 @@
 /src/__mock__
 /src/__tests__
 /test/*
+dist
+*.js
