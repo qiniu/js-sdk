@@ -20,6 +20,8 @@ export interface ChunkInfo {
   index: number
 }
 
+const MB = 1024 ** 2
+
 export default class Resume extends Base {
   private chunks: Blob[]
   // 本地已存储的文件上传信息
@@ -31,6 +33,14 @@ export default class Resume extends Base {
   private expireAt: number
 
   async run() {
+    if (this.config.chunkSize > this.file.size) {
+      throw new Error("chunkSize can't exceed the file size")
+    }
+
+    if (!this.config.chunkSize || this.config.chunkSize % MB !== 0) {
+      throw new Error('chunkSize must be a multiple of 1M')
+    }
+
     // 初始化上传，获取上传标志 id
     const parts = await initUploadParts(this.token, this.bucket, this.key, this.uploadUrl)
     this.uploadId = parts.data.uploadId
@@ -47,12 +57,12 @@ export default class Resume extends Base {
     const result = Promise.all(uploadChunks).then(() => this.mkFileReq())
     result.then(
       () => {
-        utils.removeLocalFileInfo(this.file)
+        utils.removeLocalFileInfo(this.key, this.file.size)
       },
       err => {
         // 上传凭证无效
         if (err.code === 401) {
-          utils.removeLocalFileInfo(this.file)
+          utils.removeLocalFileInfo(this.key, this.file.size)
         }
       }
     )
@@ -119,7 +129,7 @@ export default class Resume extends Base {
       md5: response.data.md5
     }
 
-    utils.setLocalFileInfo(this.file, this.uploadedList)
+    utils.setLocalFileInfo(this.key, this.file.size, this.uploadedList)
   }
 
   async mkFileReq() {
@@ -155,7 +165,7 @@ export default class Resume extends Base {
 
   initBeforeUploadChunks() {
 
-    this.localInfo = utils.getLocalFileInfo(this.file)
+    this.localInfo = utils.getLocalFileInfo(this.key, this.file.size)
     this.chunks = utils.getChunks(this.file, this.config.chunkSize)
 
     this.uploadedList = []

@@ -154,10 +154,13 @@ qiniu.compressImage(file, options).then(data => {
           }
         }
         ```
-        * next: 接收上传进度信息，res是一个带有 `total` 字段的 `object`，包含`loaded`、`total`、`percent`三个属性，提供上传进度信息。
-          * total.loaded: `number`，已上传大小，单位为字节。
-          * total.total: `number`，本次上传的总量控制信息，单位为字节，注意这里的 total 跟文件大小并不一致。
-          * total.percent: `number`，当前上传进度，范围：0～100。
+        * next: 接收上传进度信息，`object`，提供上传信息。
+          * uploadUrl: 上传地址。
+          * uploadId: 上传的唯一标识。
+          * total: 包含`loaded`、`total`、`percent`三个属性:
+            * total.loaded: `number`，已上传大小，单位为字节。
+            * total.total: `number`，本次上传的总量控制信息，单位为字节，注意这里的 total 跟文件大小并不一致。
+            * total.percent: `number`，当前上传进度，范围：0～100。
 
         * error: 上传错误后触发；自动重试本身并不会触发该错误，而当重试次数到达上限后则可以触发。当不是 xhr 请求错误时，会把当前错误产生原因直接抛出，诸如 JSON 解析异常等；当产生 xhr 请求错误时，参数 err 为一个包含 `code`、`message`、`isRequestError` 三个属性的 `object`：
           * err.isRequestError: 用于区分是否 xhr 请求错误；当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 `true`；否则为 `undefined` 。
@@ -236,19 +239,11 @@ qiniu.compressImage(file, options).then(data => {
   const headers = qiniu.getHeadersForChunkUpload(token)
   ```
 
-### qiniu.getHeadersForMkFile(token: string): object
-
-  返回 `object`，包含用来获得文件创建的头信息，参数为 `token` 字符串；当分片上传完需要把 ctx 信息传给七牛用来创建文件时，请求需要带该函数返回的头信息
-
-  ```JavaScript
-  const headers = qiniu.getHeadersForMkFile(token)
-  ```
-
 ### qiniu.getResumeUploadedSize(file: File): number
   断点续传时返回文件之前已上传的字节数，为 0 代表当前并无该文件的断点信息
 
 ### qiniu.deleteUploadedChunks(token: string, uploadUrl: string, uploadId: string, bucket: string, key: string)
-  删除已上传完成的片
+  删除已上传完成的片，`uploadUrl` 及 `uploadId` 可通过 `next` 的返回获取
 
 ###
 ### qiniu.compressImage(file: File, options: object): Promise (上传前图片压缩)

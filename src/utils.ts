@@ -47,9 +47,9 @@ export function sum(list: number[]) {
   return list.reduce((data, loaded) => data + loaded, 0)
 }
 
-export function setLocalFileInfo(file: File, info: UploadedChunkResult[]) {
+export function setLocalFileInfo(key: string, size: number, info: UploadedChunkResult[]) {
   try {
-    localStorage.setItem(createLocalKey(file), JSON.stringify(info))
+    localStorage.setItem(createLocalKey(key, size), JSON.stringify(info))
   } catch (err) {
     if (window.console && window.console.warn) {
       // eslint-disable-next-line no-console
@@ -58,13 +58,13 @@ export function setLocalFileInfo(file: File, info: UploadedChunkResult[]) {
   }
 }
 
-function createLocalKey(file: File) {
-  return 'qiniu_js_sdk_upload_file_' + file.name + '_size_' + file.size
+function createLocalKey(key: string, size: number) {
+  return 'qiniu_js_sdk_upload_file_' + key + '_size_' + size
 }
 
-export function removeLocalFileInfo(file: File) {
+export function removeLocalFileInfo(key: string, size: number) {
   try {
-    localStorage.removeItem(createLocalKey(file))
+    localStorage.removeItem(createLocalKey(key, size))
   } catch (err) {
     if (window.console && window.console.warn) {
       // eslint-disable-next-line no-console
@@ -73,9 +73,9 @@ export function removeLocalFileInfo(file: File) {
   }
 }
 
-export function getLocalFileInfo(file: File): UploadedChunkResult[] {
+export function getLocalFileInfo(key: string, size: number): UploadedChunkResult[] {
   try {
-    const localInfo = localStorage.getItem(createLocalKey(file))
+    const localInfo = localStorage.getItem(createLocalKey(key, size))
     return localInfo ? JSON.parse(localInfo) : []
   } catch (err) {
     if (window.console && window.console.warn) {
@@ -86,8 +86,8 @@ export function getLocalFileInfo(file: File): UploadedChunkResult[] {
   }
 }
 
-export function getResumeUploadedSize(file: File) {
-  return getLocalFileInfo(file).filter(
+export function getResumeUploadedSize(key: string, size: number) {
+  return getLocalFileInfo(key, size).filter(
     value => value && !isChunkExpired(value.time)
   ).reduce(
     (result, value) => result + value.size,

@@ -61,7 +61,6 @@ export interface ProgressCompose {
 
 export type XHRHandler = (xhr: XMLHttpRequest) => void
 const GB = 1024 ** 3
-const MB = 1024 ** 2
 
 export default abstract class Base {
   protected config: Config
@@ -125,18 +124,6 @@ export default abstract class Base {
 
     if (this.file.size > 10000 * GB) {
       const err = new Error('file size exceed maximum value 10000G')
-      this.onError(err)
-      return
-    }
-
-    if (this.config.chunkSize > this.file.size) {
-      const err = new Error("chunkSize can't exceed the file size")
-      this.onError(err)
-      return
-    }
-
-    if (!this.config.chunkSize || this.config.chunkSize % MB !== 0) {
-      const err = new Error('chunkSize must be a multiple of 1M')
       this.onError(err)
       return
     }
