@@ -133,7 +133,7 @@ qiniu.compressImage(file, options).then(data => {
 ```
 ## API Reference Interface
 
-### qiniu.upload(file: File, key: string, token: string, putExtra: object, config: object): observable
+### qiniu.upload(file: File, key: string, token: string, putExtra?: object, config?: object): observable
 
   * **observable**: 为一个带有 subscribe 方法的类实例
 
@@ -195,33 +195,20 @@ qiniu.compressImage(file, options).then(data => {
     ```JavaScript
     const putExtra = {
       fname: "",
-      params: {},
-      mimeType: [] || null
+      mimeType: "",
+      excludeMimeType: [],
+      customVars: { 'x:test': 'qiniu', ... },
+      metadata: { 'x-qn-meta': 'qiniu', ... },
     };
     ```
 
-    * fname: `string`，文件原文件名
-    * params: `object`，用来放置自定义变量，变量名必须以 `x:` 开始，自定义变量格式及说明请参考[文档](https://developer.qiniu.com/kodo/manual/1235/vars)
-    * mimeType: `null || array`，用来限制上传文件类型，为 `null` 时表示不对文件类型限制；限制类型放到数组里：
+    * fname: `string`，文件原始文件名，若未指定，则魔法变量中无法使用 fname、ext、suffix
+    * customVars: `object`，用来放置自定义变量，变量名必须以 `x:` 开始，自定义变量格式及说明请参考[文档](https://developer.qiniu.com/kodo/manual/1235/vars)
+    * metadata: `object`，用来防止自定义 meta，变量名必须以 `x-qn-meta-`开始，自定义资源信息格式及说明请参考
+    [文档](https://developer.qiniu.com/kodo/api/1252/chgm)
+    * excludeMimeType: `array`，用来限制上传文件类型，为 `null` 时表示不对文件类型限制；限制类型放到数组里：
     `["image/png", "image/jpeg", "image/gif"]`
-
-### qiniu.createMkFileUrl(url: string, file: File, key: string, putExtra: object): string
-
-  返回创建文件的 url；当分片上传时，我们需要把分片返回的 ctx 信息拼接后通过该 url 上传给七牛以创建文件。
-
-  * **url**: 上传域名，可以通过qiniu.getUploadUrl()获得
-  * **file**: 文件对象
-  * **key**: 文件资源名
-  * **putExtra**: 同上
-
-  ```JavaScript
-  const requestUrl = qiniu.createMkFileUrl(
-    uploadUrl,
-    file,
-    key,
-    putExtra
-  );
-  ```
+    * mimeType: `string`，指定所传的文件类型
 
 ### qiniu.region: object
 
@@ -259,20 +246,11 @@ qiniu.compressImage(file, options).then(data => {
 ### qiniu.getResumeUploadedSize(file: File): number
   断点续传时返回文件之前已上传的字节数，为 0 代表当前并无该文件的断点信息
 
-### qiniu.filterParams(params: object): array
+### qiniu.deleteUploadedChunks(token: string, uploadUrl: string, uploadId: string, bucket: string, key: string)
+  删除已上传完成的片
 
-  返回[[k, v],...]格式的数组，k 为自定义变量 `key` 名，v 为自定义变量值，用来提取 `putExtra.params` 包含的自定义变量
-
-  ```JavaScript
-  const customVarList = qiniu.filterParams(putExtra.params)
-
-  for (let i = 0; i < customVarList.length; i++) {
-    const k = customVarList[i]
-    multipart_params_obj[k[0]] = k[1]
-  }
-  ```
 ###
-### qiniu.compressImage(file: File, options: object) : Promise (上传前图片压缩)
+### qiniu.compressImage(file: File, options: object): Promise (上传前图片压缩)
 
   ```JavaScript
   const imgLink = qiniu.compressImage(file, options).then(res => {

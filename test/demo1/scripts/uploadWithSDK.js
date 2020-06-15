@@ -1,4 +1,4 @@
-function uploadWithSDK(token, putExtra, config, domain) {
+function uploadWithSDK(bucket, token, putExtra, config, domain) {
   // 切换tab后进行一些css操作
   controlTabDisplay("sdk");
   $("#select2").unbind("change").bind("change",function(){
@@ -15,7 +15,7 @@ function uploadWithSDK(token, putExtra, config, domain) {
       if (!board) {
         return;
       }
-      putExtra.params["x:name"] = key.split(".")[0];
+      putExtra.customVars["x:name"] = key.split(".")[0];
       board.start = true;
       var dom_total = $(board)
         .find("#totalBar")
@@ -81,14 +81,14 @@ function uploadWithSDK(token, putExtra, config, domain) {
         compareChunks = chunks;
       };
 
-      var subObject = { 
+      var subObject = {
         next: next,
         error: error,
         complete: complete
       };
       var subscription;
       // 调用sdk上传接口获得相应的observable，控制上传和暂停
-      observable = qiniu.upload(file, key, token, putExtra, config);
+      observable = qiniu.upload(bucket, file, key, token, putExtra, config);
 
       $(board)
         .find(".control-upload")
