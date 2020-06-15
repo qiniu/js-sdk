@@ -245,7 +245,6 @@ qiniu.compressImage(file, options).then(data => {
 ### qiniu.deleteUploadedChunks(token: string, uploadUrl: string, uploadId: string, bucket: string, key: string)
   删除已上传完成的片，`uploadUrl` 及 `uploadId` 可通过 `next` 的返回获取
 
-###
 ### qiniu.compressImage(file: File, options: object): Promise (上传前图片压缩)
 
   ```JavaScript
