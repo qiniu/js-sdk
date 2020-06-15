@@ -130,7 +130,7 @@ export default abstract class Base {
     }
 
     if (this.config.chunkSize > this.file.size) {
-      const err = new Error("chunkSize can't exceed file size")
+      const err = new Error("chunkSize can't exceed the file size")
       this.onError(err)
       return
     }

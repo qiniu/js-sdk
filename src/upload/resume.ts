@@ -1,7 +1,7 @@
 import * as utils from '../utils'
 import { Pool } from '../pool'
 import { uploadChunk, uploadComplete, initUploadParts } from '../api'
-import Base, { DEFAULT_CHUNK_SIZE, Progress } from './base'
+import Base, { Progress } from './base'
 
 export interface UploadedChunkResult {
   time: number
@@ -156,7 +156,7 @@ export default class Resume extends Base {
   initBeforeUploadChunks() {
 
     this.localInfo = utils.getLocalFileInfo(this.file)
-    this.chunks = utils.getChunks(this.file, DEFAULT_CHUNK_SIZE)
+    this.chunks = utils.getChunks(this.file, this.config.chunkSize)
 
     this.uploadedList = []
     this.loaded = {
