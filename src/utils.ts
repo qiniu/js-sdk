@@ -5,13 +5,13 @@ import { urlSafeBase64Decode } from './base64'
 
 // 对上传块本地存储时间检验是否过期
 // TODO: 最好用服务器时间来做判断
-export function isChunkExpired(time: number) {
+export function isExpired(time: number) {
   const expireAt = time * 1000 + 3600 * 24 * 1000
   return new Date().getTime() > expireAt
 }
 
 // 文件分块
-export function getChunks(file: File, blockSize: number) {
+export function getChunks(file: File, blockSize: number): Blob[] {
   const getChunkSize = (chunkSize: number): number => {
     // 因为最多 10000 chunk，所以如果 chunkSize 不符合则把每片 chunk 大小扩大两倍
     if (file.size > chunkSize * 10000) {
@@ -23,7 +23,7 @@ export function getChunks(file: File, blockSize: number) {
 
   const chunkSize = getChunkSize(blockSize)
 
-  const chunks = []
+  const chunks: Blob[] = []
   const count = Math.ceil(file.size / chunkSize)
   for (let i = 0; i < count; i++) {
     const chunk = file.slice(
@@ -88,7 +88,7 @@ export function getLocalFileInfo(key: string, size: number): UploadedChunkResult
 
 export function getResumeUploadedSize(key: string, size: number) {
   return getLocalFileInfo(key, size).filter(
-    value => value && !isChunkExpired(value.time)
+    value => value && !isExpired(value.time)
   ).reduce(
     (result, value) => result + value.size,
     0
@@ -295,7 +295,7 @@ export function getPutPolicy(token: string) {
   }
 }
 
-export function isFileTypeAvailable(fileType: string, excludeMimeType: string[]) {
+export function isFileTypeExcluded(fileType: string, excludeMimeType: string[]) {
   return excludeMimeType.indexOf(fileType) > -1
 }
 

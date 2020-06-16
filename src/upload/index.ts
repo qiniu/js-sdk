@@ -6,7 +6,7 @@ import StatisticsLog from '../statisticsLog'
 export * from './base'
 export * from './resume'
 
-export default function uploadManager(
+export default function createUploadManager(
   options: UploadOptions,
   handlers: UploadHandler,
   statisticsLog: StatisticsLog

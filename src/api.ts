@@ -13,14 +13,10 @@ interface UpHosts {
   }
 }
 
-function getUpHosts(token: string): Promise<UpHosts> {
-  try {
-    const putPolicy = utils.getPutPolicy(token)
-    const url = utils.getAPIProtocol() + '//api.qiniu.com/v2/query?ak=' + putPolicy.ak + '&bucket=' + putPolicy.bucket
-    return utils.request(url, { method: 'GET' })
-  } catch (e) {
-    return Promise.reject(e)
-  }
+async function getUpHosts(token: string): Promise<UpHosts> {
+  const putPolicy = utils.getPutPolicy(token)
+  const url = utils.getAPIProtocol() + '//api.qiniu.com/v2/query?ak=' + putPolicy.ak + '&bucket=' + putPolicy.bucket
+  return utils.request(url, { method: 'GET' })
 }
 
 // 获取上传url

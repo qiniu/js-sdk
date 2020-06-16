@@ -115,7 +115,7 @@ export default abstract class Base {
     }
 
     if (this.putExtra.excludeMimeType && this.putExtra.excludeMimeType.length) {
-      if (!utils.isFileTypeAvailable(this.file.type, this.putExtra.excludeMimeType)) {
+      if (utils.isFileTypeExcluded(this.file.type, this.putExtra.excludeMimeType)) {
         const err = new Error('file type is excluded because of the excludeMimeType you set')
         this.onError(err)
         return

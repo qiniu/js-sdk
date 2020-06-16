@@ -133,7 +133,7 @@ qiniu.compressImage(file, options).then(data => {
 ```
 ## API Reference Interface
 
-### qiniu.upload(file: File, key: string, token: string, putExtra?: object, config?: object): observable
+### qiniu.upload(bucket: string, file: File, key: string, token: string, putExtra?: object, config?: object): observable
 
   * **observable**: 为一个带有 subscribe 方法的类实例
 
@@ -172,6 +172,7 @@ qiniu.compressImage(file, options).then(data => {
 
       * subscription: 为一个带有 `unsubscribe` 方法的类实例，通过调用 `subscription.unsubscribe()` 停止当前文件上传。
 
+  * **bucket**: 上传的目标空间
   * **file**: `File` 对象，上传的文件
   * **key**: 文件资源名
   * **token**: 上传验证信息，前端通过接口请求后端获得
@@ -210,7 +211,7 @@ qiniu.compressImage(file, options).then(data => {
     * customVars: `object`，用来放置自定义变量，变量名必须以 `x:` 开始，自定义变量格式及说明请参考[文档](https://developer.qiniu.com/kodo/manual/1235/vars)
     * metadata: `object`，用来防止自定义 meta，变量名必须以 `x-qn-meta-`开始，自定义资源信息格式及说明请参考
     [文档](https://developer.qiniu.com/kodo/api/1252/chgm)
-    * excludeMimeType: `array`，用来限制上传文件类型，为 `null` 时表示不对文件类型限制；限制类型放到数组里：
+    * excludeMimeType: `array`，用来限制上传文件类型，在该数组里的文件类型不允许被上传
     `["image/png", "image/jpeg", "image/gif"]`
     * mimeType: `string`，指定所传的文件类型
 

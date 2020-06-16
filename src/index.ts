@@ -1,5 +1,5 @@
 import StatisticsLogger from './statisticsLog'
-import uploadManager, { Extra, Config, UploadOptions, UploadProgress } from './upload'
+import createUploadManager, { Extra, Config, UploadOptions, UploadProgress } from './upload'
 import { Observable, IObserver } from './observable'
 import { CustomError } from './utils'
 import compressImage from './compress'
@@ -25,7 +25,7 @@ function upload(
   }
 
   return new Observable((observer: IObserver<UploadProgress, CustomError>) => {
-    const manager = uploadManager(options, {
+    const manager = createUploadManager(options, {
       onData: (data: UploadProgress) => observer.next(data),
       onError: (err: CustomError) => observer.error(err),
       onComplete: (res: any) => observer.complete(res)
