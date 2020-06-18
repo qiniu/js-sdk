@@ -10,14 +10,13 @@
     var putExtra = {
       customVars: {}
     };
-    var bucket = 'kindom'
     $(".nav-box")
       .find("a")
       .each(function(index) {
         $(this).on("click", function(e) {
           switch (e.target.name) {
             case "h5":
-              uploadWithSDK(bucket, token, putExtra, config, domain);
+              uploadWithSDK(token, putExtra, config, domain);
               break;
             case "expand":
               uploadWithOthers(token, putExtra, config, domain);
@@ -31,5 +30,5 @@
         });
       });
     imageControl(domain);
-    uploadWithSDK(bucket, token, putExtra, config, domain);
+    uploadWithSDK(token, putExtra, config, domain);
   }})

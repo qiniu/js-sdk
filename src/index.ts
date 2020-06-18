@@ -6,8 +6,15 @@ import compressImage from './compress'
 
 const statisticsLogger = new StatisticsLogger()
 
+/**
+ * @param file 上传文件
+ * @param key 目标文件名
+ * @param token 上传凭证
+ * @param putExtra 上传文件的相关资源信息配置
+ * @param config 上传任务的配置
+ * @returns 返回用于上传任务的可观察对象
+ */
 function upload(
-  bucket: string,
   file: File,
   key: string,
   token: string,
@@ -16,7 +23,6 @@ function upload(
 ): Observable<UploadProgress, CustomError> {
 
   const options: UploadOptions = {
-    bucket,
     file,
     key,
     token,

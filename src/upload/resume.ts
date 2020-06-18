@@ -4,11 +4,9 @@ import { uploadChunk, uploadComplete, initUploadParts } from '../api'
 import Base, { Progress } from './base'
 
 export interface UploadedChunkResult {
-  time: number
   etag: string
   size: number
   md5: string
-  uploadId: string
 }
 
 export interface ChunkLoaded {
@@ -21,19 +19,24 @@ export interface ChunkInfo {
   index: number
 }
 
+export interface LocalInfo {
+  data: UploadedChunkResult[]
+  id: string
+}
+
 const MB = 1024 ** 2
 
 export default class Resume extends Base {
   private chunks: Blob[]
-  // 本地已存储的文件上传信息
-  private localInfo: UploadedChunkResult[]
-  // 当前上传过程中已完成的上传信息
+  /** 本地已存储的文件上传信息 */
+  private localInfo: LocalInfo
+  /** 当前上传过程中已完成的上传信息 */
   private uploadedList: UploadedChunkResult[]
+  /** 当前上传片进度信息 */
   private loaded: ChunkLoaded
   private uploadId: string
-  private expireAt: number
 
-  async run() {
+  protected async run() {
     if (this.config.chunkSize > this.file.size) {
       throw new Error("chunkSize can't exceed the file size")
     }
@@ -53,24 +56,21 @@ export default class Resume extends Base {
     const result = Promise.all(uploadChunks).then(() => this.mkFileReq())
     result.then(
       () => {
-        utils.removeLocalFileInfo(this.key, this.file.size)
+        this.removeLoalFileInfo()
       },
       err => {
-        // 上传凭证无效，上传参数有误（多由于本地存储信息的 uploadId 失效）
+        /** 上传凭证无效，上传参数有误（多由于本地存储信息的 uploadId 失效） */
         if (err.code === 401 || err.code === 400) {
-          utils.removeLocalFileInfo(this.key, this.file.size)
+          this.removeLoalFileInfo()
         }
       }
     )
     return result
   }
 
-  async uploadChunk(chunkInfo: ChunkInfo) {
+  private async uploadChunk(chunkInfo: ChunkInfo) {
     const { index, chunk } = chunkInfo
-    const info = this.localInfo[index]
-    if (utils.isExpired(this.expireAt)) {
-      throw new Error('uploadId is expired, please upload again')
-    }
+    const info = this.localInfo.data[index]
 
     const shouldCheckMD5 = this.config.checkByMD5
     const reuseSaved = () => {
@@ -78,9 +78,7 @@ export default class Resume extends Base {
       this.uploadedList[index] = {
         etag: info.etag,
         size: info.size,
-        time: info.time,
-        md5: info.md5,
-        uploadId: this.uploadId
+        md5: info.md5
       }
     }
 
@@ -96,26 +94,20 @@ export default class Resume extends Base {
       return
     }
 
-    const headers = utils.getHeadersForChunkUpload(this.token)
     const onProgress = (data: Progress) => {
       this.updateChunkProgress(data.loaded, index)
     }
-    const onCreate = this.xhrHandler
-    const method = 'PUT'
+
     const requestOptions = {
-      method,
-      headers,
       body: chunk,
       onProgress,
-      onCreate
+      onCreate: (xhr: XMLHttpRequest) => this.addXhr(xhr)
     }
 
     const response = await uploadChunk(
-      this.bucket,
-      this.key,
+      this.token,
       chunkInfo.index + 1,
-      this.uploadUrl,
-      this.uploadId,
+      this.getUploadInfo(),
       requestOptions
     )
     // 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null，这里在每次分片上传完成后都手动更新下 progress
@@ -125,17 +117,15 @@ export default class Resume extends Base {
     })
 
     this.uploadedList[index] = {
-      time: this.expireAt,
-      uploadId: this.uploadId,
       etag: response.data.etag,
       md5: response.data.md5,
       size: chunk.size
     }
 
-    utils.setLocalFileInfo(this.key, this.file.size, this.uploadedList)
+    this.setLocalFileInfo()
   }
 
-  async mkFileReq() {
+  private async mkFileReq() {
     const data = {
       parts: this.uploadedList.map((value, index) => ({
         etag: value.etag,
@@ -146,19 +136,12 @@ export default class Resume extends Base {
       ...this.putExtra.customVars && { customVars: this.putExtra.customVars },
       ...this.putExtra.metadata && { metadata: this.putExtra.metadata }
     }
-    const headers = utils.getHeadersForMkFile(this.token)
-    const onCreate = this.xhrHandler
-    const method = 'POST'
 
     const result = await uploadComplete(
-      this.bucket,
-      this.key,
-      this.uploadUrl,
-      this.uploadId,
+      this.token,
+      this.getUploadInfo(),
       {
-        method,
-        headers,
-        onCreate,
+        onCreate: xhr => this.addXhr(xhr),
         body: JSON.stringify(data)
       }
     )
@@ -166,20 +149,21 @@ export default class Resume extends Base {
     return result
   }
 
-  async initBeforeUploadChunks() {
-    this.localInfo = utils.getLocalFileInfo(this.key, this.file.size)
-    // 分片必须和当时使用的 uploadId 配套，所以断点续传需要把本地存储的 uploadId 拿出来
-    const result = this.localInfo.find(item => item.uploadId)
-    // 假如没有 result 或者存储信息已过期，clear 本地信息并重新获取 uploadId
-    if (!result || utils.isExpired(result.time)) {
-      utils.removeLocalFileInfo(this.key, this.file.size)
+  private async initBeforeUploadChunks() {
+    this.localInfo = this.getLocalFileInfo()
+    /**
+     * 分片必须和当时使用的 uploadId 配套，所以断点续传需要把本地存储的 uploadId 拿出来
+     * 假如没有 result 或者存储信息已过期，clear 本地信息并重新获取 uploadId
+     */
+    if (!this.localInfo || !this.localInfo.id) {
+      this.removeLoalFileInfo()
       const parts = await initUploadParts(this.token, this.bucket, this.key, this.uploadUrl)
       this.uploadId = parts.data.uploadId
-      this.expireAt = parts.data.expireAt
+      this.localInfo.id = this.uploadId
     } else {
-      this.uploadId = result.uploadId
-      this.expireAt = result.time
+      this.uploadId = this.localInfo.id
     }
+
     this.chunks = utils.getChunks(this.file, this.config.chunkSize)
     this.uploadedList = []
     this.loaded = {
@@ -189,17 +173,39 @@ export default class Resume extends Base {
     this.notifyResumeProgress()
   }
 
-  updateChunkProgress(loaded: number, index: number) {
+  private getUploadInfo() {
+    return {
+      uploadUrl: this.uploadUrl,
+      uploadId: this.uploadId,
+      bucket: this.bucket,
+      key: this.key
+    }
+  }
+
+  private getLocalFileInfo() {
+    return utils.getLocalFileInfo(this.file.name, this.key, this.file.size)
+  }
+
+  private setLocalFileInfo() {
+    this.localInfo.data = this.uploadedList
+    utils.setLocalFileInfo(this.file.name, this.key, this.file.size, this.localInfo)
+  }
+
+  private removeLoalFileInfo() {
+    utils.removeLocalFileInfo(this.file.name, this.key, this.file.size)
+  }
+
+  private updateChunkProgress(loaded: number, index: number) {
     this.loaded.chunks[index] = loaded
     this.notifyResumeProgress()
   }
 
-  updateMkFileProgress(progress: 0 | 1) {
+  private updateMkFileProgress(progress: 0 | 1) {
     this.loaded.mkFileProgress = progress
     this.notifyResumeProgress()
   }
 
-  notifyResumeProgress() {
+  private notifyResumeProgress() {
     this.progress = {
       total: this.getProgressInfoItem(
         utils.sum(this.loaded.chunks) + this.loaded.mkFileProgress,
@@ -208,8 +214,14 @@ export default class Resume extends Base {
       chunks: this.chunks.map((chunk, index) => (
         this.getProgressInfoItem(this.loaded.chunks[index], chunk.size)
       )),
-      uploadId: this.uploadId,
-      uploadUrl: this.uploadUrl
+      uploadInfo: {
+        key: this.key,
+        bucket: this.bucket,
+        uploadId: this.uploadId,
+        uploadUrl: this.uploadUrl,
+        size: this.file.size,
+        fname: this.file.name
+      }
     }
     this.onData(this.progress)
   }

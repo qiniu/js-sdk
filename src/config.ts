@@ -1,3 +1,4 @@
+/** 上传区域 */
 export const region = {
   z0: 'z0',
   z1: 'z1',
@@ -6,6 +7,7 @@ export const region = {
   as0: 'as0'
 } as const
 
+/** 上传区域对应的 host */
 export const regionUphostMap = {
   [region.z0]: {
     srcUphost: 'up.qiniup.com',

@@ -1,14 +1,6 @@
 import SparkMD5 from 'spark-md5'
-import { Progress } from './upload'
-import { UploadedChunkResult } from './upload/resume'
+import { Progress, LocalInfo, UploadInfo } from './upload'
 import { urlSafeBase64Decode } from './base64'
-
-// 对上传块本地存储时间检验是否过期
-// TODO: 最好用服务器时间来做判断
-export function isExpired(time: number) {
-  const expireAt = time * 1000 + 3600 * 24 * 1000
-  return new Date().getTime() > expireAt
-}
 
 // 文件分块
 export function getChunks(file: File, blockSize: number): Blob[] {
@@ -35,11 +27,11 @@ export function getChunks(file: File, blockSize: number): Blob[] {
   return chunks
 }
 
-export function isMetaDataAvailble(params: { [key: string]: string }) {
+export function isMetaDataValid(params: { [key: string]: string }) {
   return Object.keys(params).every(key => key.indexOf('x-qn-meta-') === 0)
 }
 
-export function isCustomVarsAvailble(params: { [key: string]: string }) {
+export function isCustomVarsValid(params: { [key: string]: string }) {
   return Object.keys(params).every(key => key.indexOf('x:') === 0)
 }
 
@@ -47,9 +39,9 @@ export function sum(list: number[]) {
   return list.reduce((data, loaded) => data + loaded, 0)
 }
 
-export function setLocalFileInfo(key: string, size: number, info: UploadedChunkResult[]) {
+export function setLocalFileInfo(name: string, key: string, size: number, info: LocalInfo) {
   try {
-    localStorage.setItem(createLocalKey(key, size), JSON.stringify(info))
+    localStorage.setItem(createLocalKey(name, key, size), JSON.stringify(info))
   } catch (err) {
     if (window.console && window.console.warn) {
       // eslint-disable-next-line no-console
@@ -58,13 +50,13 @@ export function setLocalFileInfo(key: string, size: number, info: UploadedChunkR
   }
 }
 
-function createLocalKey(key: string, size: number) {
-  return 'qiniu_js_sdk_upload_file_' + key + '_size_' + size
+export function createLocalKey(name: string, key: string, size: number): string {
+  return `qiniu_js_sdk_upload_file_name_${name}_key_${key}_size_${size}`
 }
 
-export function removeLocalFileInfo(key: string, size: number) {
+export function removeLocalFileInfo(name: string, key: string, size: number) {
   try {
-    localStorage.removeItem(createLocalKey(key, size))
+    localStorage.removeItem(createLocalKey(name, key, size))
   } catch (err) {
     if (window.console && window.console.warn) {
       // eslint-disable-next-line no-console
@@ -73,26 +65,33 @@ export function removeLocalFileInfo(key: string, size: number) {
   }
 }
 
-export function getLocalFileInfo(key: string, size: number): UploadedChunkResult[] {
+export function getLocalFileInfo(name: string, key: string, size: number): LocalInfo {
   try {
-    const localInfo = localStorage.getItem(createLocalKey(key, size))
-    return localInfo ? JSON.parse(localInfo) : []
+    const localInfo = localStorage.getItem(createLocalKey(name, key, size))
+    return localInfo
+      ? JSON.parse(localInfo)
+      : {
+        id: '',
+        data: []
+      }
   } catch (err) {
     if (window.console && window.console.warn) {
       // eslint-disable-next-line no-console
       console.warn('getLocalFileInfo failed')
     }
-    return []
+    return {
+      id: '',
+      data: []
+    }
   }
 }
 
-export function getResumeUploadedSize(key: string, size: number) {
-  return getLocalFileInfo(key, size).filter(
-    value => value && !isExpired(value.time)
-  ).reduce(
-    (result, value) => result + value.size,
-    0
-  )
+export function getResumeUploadedSize(uploadInfo: UploadInfo) {
+  return getLocalFileInfo(uploadInfo.fname, uploadInfo.key, uploadInfo.size).data
+    .filter(Boolean).reduce(
+      (result, value) => result + value.size,
+      0
+    )
 }
 
 export function getAuthHeaders(token: string) {
@@ -111,7 +110,7 @@ export function getHeadersForChunkUpload(token: string) {
 export function getHeadersForMkFile(token: string) {
   const header = getAuthHeaders(token)
   return {
-    'content-type': 'text/plain',
+    'content-type': 'application/json',
     ...header
   }
 }
@@ -176,9 +175,9 @@ export interface RequestOptions {
   headers?: { [key: string]: string }
 }
 
-export type Response<T extends object = {}> = Promise<ResponseSuccess<T>>
+export type Response<T> = Promise<ResponseSuccess<T>>
 
-export function request<T extends object = {}>(url: string, options: RequestOptions): Response<T> {
+export function request<T>(url: string, options: RequestOptions): Response<T> {
   return new Promise((resolve, reject) => {
     const xhr = createXHR()
     xhr.open(options.method, url)
@@ -293,10 +292,6 @@ export function getPutPolicy(token: string) {
     ak,
     bucket: putPolicy.scope.split(':')[0]
   }
-}
-
-export function isFileTypeExcluded(fileType: string, excludeMimeType: string[]) {
-  return excludeMimeType.indexOf(fileType) > -1
 }
 
 export function createObjectURL(file: File) {

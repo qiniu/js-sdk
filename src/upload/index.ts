@@ -1,7 +1,7 @@
 import Resume from './resume'
 import Direct from './direct'
 import { UploadOptions, UploadHandler, DEFAULT_CHUNK_SIZE } from './base'
-import StatisticsLog from '../statisticsLog'
+import StatisticsLogger from '../statisticsLog'
 
 export * from './base'
 export * from './resume'
@@ -9,13 +9,13 @@ export * from './resume'
 export default function createUploadManager(
   options: UploadOptions,
   handlers: UploadHandler,
-  statisticsLog: StatisticsLog
+  statisticsLogger: StatisticsLogger
 ) {
   if (options.config && options.config.forceDirect) {
-    return new Direct(options, handlers, statisticsLog)
+    return new Direct(options, handlers, statisticsLogger)
   }
 
   return options.file.size > DEFAULT_CHUNK_SIZE
-    ? new Resume(options, handlers, statisticsLog)
-    : new Direct(options, handlers, statisticsLog)
+    ? new Resume(options, handlers, statisticsLogger)
+    : new Direct(options, handlers, statisticsLogger)
 }

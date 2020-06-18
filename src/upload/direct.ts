@@ -3,7 +3,7 @@ import Base from './base'
 
 export default class Direct extends Base {
 
-  async run() {
+  protected async run() {
     const formData = new FormData()
     formData.append('file', this.file)
     formData.append('token', this.token)
@@ -22,21 +22,21 @@ export default class Direct extends Base {
       onProgress: data => {
         this.updateDirectProgress(data.loaded, data.total)
       },
-      onCreate: this.xhrHandler
+      onCreate: xhr => this.addXhr(xhr)
     })
 
     this.finishDirectProgress()
     return result
   }
 
-  updateDirectProgress(loaded: number, total: number) {
-    // 当请求未完成时可能进度会达到100，所以total + 1来防止这种情况出现
+  private updateDirectProgress(loaded: number, total: number) {
+    /** 当请求未完成时可能进度会达到100，所以total + 1来防止这种情况出现 */
     this.progress = { total: this.getProgressInfoItem(loaded, total + 1) }
     this.onData(this.progress)
   }
 
-  finishDirectProgress() {
-    // 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null， 这里 fake 下
+  private finishDirectProgress() {
+    /** 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null， 这里 fake 下 */
     if (!this.progress) {
       this.progress = { total: this.getProgressInfoItem(this.file.size, this.file.size) }
       this.onData(this.progress)

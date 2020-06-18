@@ -6,28 +6,41 @@ import { region } from '../config'
 
 export const DEFAULT_CHUNK_SIZE = 4 * 1024 * 1024
 
+/** 上传文件的资源信息配置 */
 export interface Extra {
-  fname: string // 文件原文件名
-  customVars?: { [key: string]: string } // 用来放置自定义变量
-  metadata?: { [key: string]: string } // 自定义元信息
-  excludeMimeType?: string[] // 用来限制上传文件类型，限制类型放到数组里： ['image/png', 'image/jpeg', 'image/gif']
-  mimeType?: string // 文件类型设置
+  /** 文件原文件名 */
+  fname: string
+  /** 用来放置自定义变量 */
+  customVars?: { [key: string]: string }
+  /** 自定义元信息 */
+  metadata?: { [key: string]: string }
+  /** 文件类型设置 */
+  mimeType?: string //
 }
 
+/** 上传任务的配置信息 */
 export interface Config {
+  /** 是否开启 cdn 加速 */
   useCdnDomain: boolean
+  /** 是否对分片进行 md5校验 */
   checkByMD5: boolean
+  /** 强制直传 */
   forceDirect: boolean
+  /** 上传失败后重试次数 */
   retryCount: number
+  /** 自定义上传域名 */
   uphost: string
+  /** 自定义分片上传并发请求量 */
   concurrentRequestLimit: number
+  /** 是否禁止静态日志上报 */
   disableStatisticsReport: boolean
+  /** 分片大小 */
   chunkSize: number
+  /** 上传区域 */
   region?: typeof region[keyof typeof region]
 }
 
 export interface UploadOptions {
-  bucket: string
   file: File
   key: string
   token: string
@@ -35,11 +48,20 @@ export interface UploadOptions {
   config?: Partial<Config>
 }
 
+export interface UploadInfo {
+  bucket: string
+  key: string
+  uploadId: string
+  uploadUrl: string
+  fname: string
+  size: number
+}
+
+/** 传递给外部的上传进度信息 */
 export interface UploadProgress {
   total: ProgressCompose
+  uploadInfo?: UploadInfo
   chunks?: ProgressCompose[]
-  uploadId?: string
-  uploadUrl?: string
 }
 
 export interface UploadHandler {
@@ -60,13 +82,13 @@ export interface ProgressCompose {
 }
 
 export type XHRHandler = (xhr: XMLHttpRequest) => void
+
 const GB = 1024 ** 3
 
 export default abstract class Base {
   protected config: Config
   protected putExtra: Extra
   protected xhrList: XMLHttpRequest[] = []
-  protected xhrHandler: XHRHandler = xhr => this.xhrList.push(xhr)
   protected file: File
   protected key: string
   protected aborted = false
@@ -81,7 +103,7 @@ export default abstract class Base {
   protected onError: (err: utils.CustomError) => void
   protected onComplete: (res: any) => void
 
-  abstract run(): utils.Response<any>
+  protected abstract run(): utils.Response<any>
 
   constructor(options: UploadOptions, handlers: UploadHandler, private statisticsLogger: StatisticsLogger) {
     this.config = {
@@ -104,22 +126,18 @@ export default abstract class Base {
     this.file = options.file
     this.key = options.key
     this.token = options.token
-    this.bucket = options.bucket
-    Object.assign(this, handlers)
+
+    this.onData = handlers.onData
+    this.onError = handlers.onError
+    this.onComplete = handlers.onComplete
+
+    this.bucket = utils.getPutPolicy(this.token).bucket
   }
 
-  async putFile() {
+  public async putFile() {
     this.aborted = false
     if (!this.putExtra.fname) {
       this.putExtra.fname = this.file.name
-    }
-
-    if (this.putExtra.excludeMimeType && this.putExtra.excludeMimeType.length) {
-      if (utils.isFileTypeExcluded(this.file.type, this.putExtra.excludeMimeType)) {
-        const err = new Error('file type is excluded because of the excludeMimeType you set')
-        this.onError(err)
-        return
-      }
     }
 
     if (this.file.size > 10000 * GB) {
@@ -129,7 +147,7 @@ export default abstract class Base {
     }
 
     if (this.putExtra.customVars) {
-      if (!utils.isCustomVarsAvailble(this.putExtra.customVars)) {
+      if (!utils.isCustomVarsValid(this.putExtra.customVars)) {
         const err = new Error('customVars key should start width x:')
         this.onError(err)
         return
@@ -137,7 +155,7 @@ export default abstract class Base {
     }
 
     if (this.putExtra.metadata) {
-      if (!utils.isMetaDataAvailble(this.putExtra.metadata)) {
+      if (!utils.isMetaDataValid(this.putExtra.metadata)) {
         const err = new Error('metadata key should start with x-qn-meta-')
         this.onError(err)
         return
@@ -173,20 +191,25 @@ export default abstract class Base {
       }
 
       this.onError(err)
+      throw err
     }
   }
 
-  clear() {
+  private clear() {
     this.xhrList.forEach(xhr => xhr.abort())
     this.xhrList = []
   }
 
-  stop() {
+  public stop() {
     this.clear()
     this.aborted = true
   }
 
-  sendLog(reqId: string, code: number) {
+  public addXhr(xhr: XMLHttpRequest) {
+    this.xhrList.push(xhr)
+  }
+
+  private sendLog(reqId: string, code: number) {
     this.statisticsLogger.log({
       code,
       reqId,
@@ -201,7 +224,7 @@ export default abstract class Base {
     }, this.token)
   }
 
-  getProgressInfoItem(loaded: number, size: number) {
+  public getProgressInfoItem(loaded: number, size: number) {
     return {
       loaded,
       size,

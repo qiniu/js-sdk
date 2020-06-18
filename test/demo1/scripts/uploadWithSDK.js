@@ -1,4 +1,4 @@
-function uploadWithSDK(bucket, token, putExtra, config, domain) {
+function uploadWithSDK(token, putExtra, config, domain) {
   // 切换tab后进行一些css操作
   controlTabDisplay("sdk");
   $("#select2").unbind("change").bind("change",function(){
@@ -88,7 +88,7 @@ function uploadWithSDK(bucket, token, putExtra, config, domain) {
       };
       var subscription;
       // 调用sdk上传接口获得相应的observable，控制上传和暂停
-      observable = qiniu.upload(bucket, file, key, token, putExtra, config);
+      observable = qiniu.upload(file, key, token, putExtra, config);
 
       $(board)
         .find(".control-upload")

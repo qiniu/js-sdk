@@ -133,7 +133,7 @@ qiniu.compressImage(file, options).then(data => {
 ```
 ## API Reference Interface
 
-### qiniu.upload(bucket: string, file: File, key: string, token: string, putExtra?: object, config?: object): observable
+### qiniu.upload(file: File, key: string, token: string, putExtra?: object, config?: object): observable
 
   * **observable**: 为一个带有 subscribe 方法的类实例
 
@@ -154,9 +154,14 @@ qiniu.compressImage(file, options).then(data => {
           }
         }
         ```
-        * next: 接收上传进度信息，`object`，提供上传信息。
-          * uploadUrl: 上传地址。
-          * uploadId: 上传的唯一标识。
+        * next: 接收上传进度信息的回调函数，返回值为 `object`，包含字段信息如下：
+          * uploadInfo: `object`，只有分片上传时才返回该字段
+            * uploadInfo.uploadId: 上传任务的唯一标识。
+            * uploadInfo.uploadUrl: 上传地址。
+            * uploadInfo.key: 上传文件的目标文件名。
+            * uploadInfo.bucket: 上传的目标空间。
+            * uploadInfo.size: 上传文件的大小。
+            * uploadInfo.fname: 上传文件的原始资源名。
           * total: 包含`loaded`、`total`、`percent`三个属性:
             * total.loaded: `number`，已上传大小，单位为字节。
             * total.total: `number`，本次上传的总量控制信息，单位为字节，注意这里的 total 跟文件大小并不一致。
@@ -176,7 +181,7 @@ qiniu.compressImage(file, options).then(data => {
   * **file**: `File` 对象，上传的文件
   * **key**: 文件资源名
   * **token**: 上传验证信息，前端通过接口请求后端获得
-  * **config**: `object`
+  * **config**: `object`，其中的每一项都为可选
 
     ```JavaScript
     const config = {
@@ -193,7 +198,7 @@ qiniu.compressImage(file, options).then(data => {
     * config.concurrentRequestLimit: 分片上传的并发请求量，`number`，默认为3；因为浏览器本身也会限制最大并发量，所以最大并发量与浏览器有关。
     * config.checkByMD5: 是否开启 MD5 校验，为布尔值；在断点续传时，开启 MD5 校验会将已上传的分片与当前分片进行 MD5 值比对，若不一致，则重传该分片，避免使用错误的分片。读取分片内容并计算 MD5 需要花费一定的时间，因此会稍微增加断点续传时的耗时，默认为 false，不开启。
     * config.forceDirect: 是否上传全部采用直传方式，为布尔值；为 `true` 时则上传方式全部为直传 form 方式，禁用断点续传，默认 `false`。
-    * config.chunkSize: 分片上传时每片的大小，必须是 1M 的倍数，且最大不能超过 1G。
+    * config.chunkSize: `number`，单位为字节，分片上传时每片的大小，必须是 1M 的倍数，且最大不能超过 1G，默认值 4M。
 
   * **putExtra**:
 
@@ -201,7 +206,6 @@ qiniu.compressImage(file, options).then(data => {
     const putExtra = {
       fname: "",
       mimeType: "",
-      excludeMimeType: [],
       customVars: { 'x:test': 'qiniu', ... },
       metadata: { 'x-qn-meta': 'qiniu', ... },
     };
@@ -211,8 +215,6 @@ qiniu.compressImage(file, options).then(data => {
     * customVars: `object`，用来放置自定义变量，变量名必须以 `x:` 开始，自定义变量格式及说明请参考[文档](https://developer.qiniu.com/kodo/manual/1235/vars)
     * metadata: `object`，用来防止自定义 meta，变量名必须以 `x-qn-meta-`开始，自定义资源信息格式及说明请参考
     [文档](https://developer.qiniu.com/kodo/api/1252/chgm)
-    * excludeMimeType: `array`，用来限制上传文件类型，在该数组里的文件类型不允许被上传
-    `["image/png", "image/jpeg", "image/gif"]`
     * mimeType: `string`，指定所传的文件类型
 
 ### qiniu.region: object
@@ -240,11 +242,11 @@ qiniu.compressImage(file, options).then(data => {
   const headers = qiniu.getHeadersForChunkUpload(token)
   ```
 
-### qiniu.getResumeUploadedSize(file: File): number
+### qiniu.getResumeUploadedSize(uploadInfo: object): number
   断点续传时返回文件之前已上传的字节数，为 0 代表当前并无该文件的断点信息
 
-### qiniu.deleteUploadedChunks(token: string, uploadUrl: string, uploadId: string, bucket: string, key: string)
-  删除已上传完成的片，`uploadUrl` 及 `uploadId` 可通过 `next` 的返回获取
+### qiniu.deleteUploadedChunks(token: string, uploadInfo: object): Promise<void>
+  删除指定上传任务中已上传完成的片，`uploadInfo` 可通过 `next` 的返回获取，`token` 由服务端生成
 
 ### qiniu.compressImage(file: File, options: object): Promise (上传前图片压缩)
 

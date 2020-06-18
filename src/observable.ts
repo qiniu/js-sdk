@@ -1,7 +1,10 @@
-// 消费者接口
+/** 消费者接口 */
 export interface IObserver<T, E> {
+  /** 用来接收 Observable 中的 next 类型通知 */
   next: (value: T) => void
+  /** 用来接收 Observable 中的 error 类型通知 */
   error: (err: E) => void
+  /** 用来接收 Observable 中的 complete 类型通知 */
   complete: (res: any) => void
 }
 
@@ -12,11 +15,12 @@ export interface NextObserver<T, E> {
 }
 
 export interface IUnsubscribable {
+  /** 取消 observer 的订阅 */
   unsubscribe(): void
 }
 
+/**  Subscription 的接口 */
 export interface ISubscriptionLike extends IUnsubscribable {
-  unsubscribe(): void
   readonly closed: boolean
 }
 
@@ -29,13 +33,15 @@ export interface ISubscribable<T, E> {
   subscribe(next: (value: T) => void, error: null | undefined, complete: () => void): IUnsubscribable
 }
 
-// 表示可清理的资源，比如 Observable 的执行
+/** 表示可清理的资源，比如 Observable 的执行 */
 class Subscription implements ISubscriptionLike {
+  /** 用来标示该 Subscription 是否被取消订阅的标示位 */
   public closed = false
 
+  /** 清理 subscription 持有的资源 */
   private _unsubscribe: TeardownLogic | undefined
 
-  // 取消 observer 的订阅
+  /** 取消 observer 的订阅 */
   unsubscribe() {
     if (this.closed) {
       return
@@ -47,14 +53,16 @@ class Subscription implements ISubscriptionLike {
     }
   }
 
+  /** 添加一个 tear down 在该 Subscription 的 unsubscribe() 期间调用 */
   add(teardown: TeardownLogic) {
     this._unsubscribe = teardown
   }
 }
 
-// 实现 Observer 接口并且继承 Subscription 类.
-// Observer 是消费 Observable 值的公有 API
-// 所有 Observers 都转化成了 Subscriber，以便提供类似 Subscription 的能力，比如 unsubscribe
+/**
+ * 实现 Observer 接口并且继承 Subscription 类，Observer 是消费 Observable 值的公有 API
+ * 所有 Observers 都转化成了 Subscriber，以便提供类似 Subscription 的能力，比如 unsubscribe
+*/
 export class Subscriber<T, E> extends Subscription implements IObserver<T, E> {
   protected isStopped = false
   protected destination: Partial<IObserver<T, E>>
@@ -107,6 +115,7 @@ export class Subscriber<T, E> extends Subscription implements IObserver<T, E> {
   }
 }
 
+/** 可观察对象，当前的上传事件的集合 */
 export class Observable<T, E> implements ISubscribable<T, E> {
 
   constructor(private _subscribe: (subscriber: Subscriber<T, E>) => TeardownLogic) {}
