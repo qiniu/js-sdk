@@ -13,6 +13,12 @@ export interface Dimension {
   height?: number
 }
 
+export interface CompressResult {
+  dist: Blob
+  width: number
+  height: number
+}
+
 const mimeTypes = {
   PNG: 'image/png',
   JPEG: 'image/jpeg',
@@ -42,7 +48,7 @@ class Compress {
     }
   }
 
-  async process() {
+  async process(): Promise<CompressResult> {
     this.outputType = this.file.type
     const srcDimension: Dimension = {}
     if (!isSupportedType(this.file.type)) {
@@ -79,7 +85,7 @@ class Compress {
   }
 
   clear(ctx: CanvasRenderingContext2D, width: number, height: number) {
-    /** jpeg 没有 alpha 通道，透明区间会被填充成黑色，这里把透明区间填充为白色 */
+    // jpeg 没有 alpha 通道，透明区间会被填充成黑色，这里把透明区间填充为白色
     if (this.outputType === defaultType) {
       ctx.fillStyle = '#fff'
       ctx.fillRect(0, 0, width, height)
@@ -105,7 +111,7 @@ class Compress {
 
   getCanvas(img: HTMLImageElement): Promise<HTMLCanvasElement> {
     return new Promise((resolve, reject) => {
-      /** 通过得到图片的信息来调整显示方向以正确显示图片，主要解决 ios 系统上的图片会有旋转的问题 */
+      // 通过得到图片的信息来调整显示方向以正确显示图片，主要解决 ios 系统上的图片会有旋转的问题
       EXIF.getData(img, () => {
         const orientation = EXIF.getTag(img, 'Orientation') || 1
         const { width, height, matrix } = getTransform(img, orientation)
@@ -130,7 +136,7 @@ class Compress {
     if (scale === 1) {
       return source
     }
-    /** 不要一次性画图，通过设定的 step 次数，渐进式的画图，这样可以增加图片的清晰度，防止一次性画图导致的像素丢失严重 */
+    // 不要一次性画图，通过设定的 step 次数，渐进式的画图，这样可以增加图片的清晰度，防止一次性画图导致的像素丢失严重
     const sctx = source.getContext('2d')
     const steps = Math.min(maxSteps, Math.ceil((1 / scale) / scaleFactor))
 
@@ -154,7 +160,7 @@ class Compress {
 
       let dw = width * factor | 0 // eslint-disable-line no-bitwise
       let dh = height * factor | 0 // eslint-disable-line no-bitwise
-      /** 到最后一步的时候 dw, dh 用目标缩放尺寸，否则会出现最后尺寸偏小的情况 */
+      // 到最后一步的时候 dw, dh 用目标缩放尺寸，否则会出现最后尺寸偏小的情况
       if (i === steps - 1) {
         dw = originWidth * scale
         dh = originHeight * scale
@@ -167,7 +173,7 @@ class Compress {
         src = mirror
         context = sctx
       }
-      /** 每次画前都清空，避免图像重叠 */
+      // 每次画前都清空，避免图像重叠
       this.clear(context, width, height)
       context.drawImage(src, 0, 0, width, height, 0, 0, dw, dh)
       width = dw
@@ -175,14 +181,14 @@ class Compress {
     }
 
     const canvas = src === source ? mirror : source
-    /** save data */
+    // save data
     const data = context.getImageData(0, 0, width, height)
 
-    /** resize */
+    // resize
     canvas.width = width
     canvas.height = height
 
-    /** store image data */
+    // store image data
     context.putImageData(data, 0, 0)
 
     return canvas

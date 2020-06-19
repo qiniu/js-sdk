@@ -11,6 +11,7 @@ export default class Direct extends Base {
       formData.append('key', this.key)
     }
     formData.append('fname', this.putExtra.fname)
+
     if (this.putExtra.customVars) {
       const { customVars } = this.putExtra
       Object.keys(customVars).forEach(key => formData.append(key, customVars[key].toString()))
@@ -30,13 +31,13 @@ export default class Direct extends Base {
   }
 
   private updateDirectProgress(loaded: number, total: number) {
-    /** 当请求未完成时可能进度会达到100，所以total + 1来防止这种情况出现 */
+    // 当请求未完成时可能进度会达到100，所以total + 1来防止这种情况出现
     this.progress = { total: this.getProgressInfoItem(loaded, total + 1) }
     this.onData(this.progress)
   }
 
   private finishDirectProgress() {
-    /** 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null， 这里 fake 下 */
+    // 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null，这里 fake 下
     if (!this.progress) {
       this.progress = { total: this.getProgressInfoItem(this.file.size, this.file.size) }
       this.onData(this.progress)

@@ -154,14 +154,10 @@ qiniu.compressImage(file, options).then(data => {
           }
         }
         ```
-        * next: 接收上传进度信息的回调函数，返回值为 `object`，包含字段信息如下：
+        * next: 接收上传进度信息的回调函数，回调函数参数值为 `object`，包含字段信息如下：
           * uploadInfo: `object`，只有分片上传时才返回该字段
             * uploadInfo.uploadId: 上传任务的唯一标识。
             * uploadInfo.uploadUrl: 上传地址。
-            * uploadInfo.key: 上传文件的目标文件名。
-            * uploadInfo.bucket: 上传的目标空间。
-            * uploadInfo.size: 上传文件的大小。
-            * uploadInfo.fname: 上传文件的原始资源名。
           * total: 包含`loaded`、`total`、`percent`三个属性:
             * total.loaded: `number`，已上传大小，单位为字节。
             * total.total: `number`，本次上传的总量控制信息，单位为字节，注意这里的 total 跟文件大小并不一致。
@@ -198,14 +194,14 @@ qiniu.compressImage(file, options).then(data => {
     * config.concurrentRequestLimit: 分片上传的并发请求量，`number`，默认为3；因为浏览器本身也会限制最大并发量，所以最大并发量与浏览器有关。
     * config.checkByMD5: 是否开启 MD5 校验，为布尔值；在断点续传时，开启 MD5 校验会将已上传的分片与当前分片进行 MD5 值比对，若不一致，则重传该分片，避免使用错误的分片。读取分片内容并计算 MD5 需要花费一定的时间，因此会稍微增加断点续传时的耗时，默认为 false，不开启。
     * config.forceDirect: 是否上传全部采用直传方式，为布尔值；为 `true` 时则上传方式全部为直传 form 方式，禁用断点续传，默认 `false`。
-    * config.chunkSize: `number`，单位为字节，分片上传时每片的大小，必须是 1M 的倍数，且最大不能超过 1G，默认值 4M。
+    * config.chunkSize: `number`，分片上传时每片的大小，单位为 `MB`，且最大不能超过 1024，默认值 4。因为 chunk 数最大 10000，所以如果文件大小超过 `10000 * chunkSize`，我们会把你所设的 `chunkSize` 扩大二倍，直到符合条件。
 
   * **putExtra**:
 
     ```JavaScript
     const putExtra = {
-      fname: "",
-      mimeType: "",
+      fname: "name",
+      mimeType: "type",
       customVars: { 'x:test': 'qiniu', ... },
       metadata: { 'x-qn-meta': 'qiniu', ... },
     };
@@ -242,13 +238,10 @@ qiniu.compressImage(file, options).then(data => {
   const headers = qiniu.getHeadersForChunkUpload(token)
   ```
 
-### qiniu.getResumeUploadedSize(uploadInfo: object): number
-  断点续传时返回文件之前已上传的字节数，为 0 代表当前并无该文件的断点信息
+### qiniu.deleteUploadedChunks(token: string, key: stting, uploadInfo: object): Promise<void>
+  删除指定上传任务中已上传完成的片，`key` 为目标文件名`uploadInfo` 可通过 `next` 的返回获取，`token` 由服务端生成
 
-### qiniu.deleteUploadedChunks(token: string, uploadInfo: object): Promise<void>
-  删除指定上传任务中已上传完成的片，`uploadInfo` 可通过 `next` 的返回获取，`token` 由服务端生成
-
-### qiniu.compressImage(file: File, options: object): Promise (上传前图片压缩)
+### qiniu.compressImage(file: File, options: object): Promise<CompressResult> (上传前图片压缩)
 
   ```JavaScript
   const imgLink = qiniu.compressImage(file, options).then(res => {
@@ -267,6 +260,10 @@ qiniu.compressImage(file, options).then(data => {
     * options.maxHeight: `number`，压缩图片的最大高度值
     （注意：当 `maxWidth` 和 `maxHeight` 都不设置时，则采用原图尺寸大小）
     * options.noCompressIfLarger: `boolean`，为 `true` 时如果发现压缩后图片大小比原来还大，则返回源图片（即输出的 dist 直接返回了输入的 file）；默认 `false`，即保证图片尺寸符合要求，但不保证压缩后的图片体积一定变小
+  * CompressResult: `object`，包含如下字段：
+    * dist: 压缩后输出的 File 对象，或原始的 file，具体看下面的 options 配置
+    * width: 压缩后的图片宽度
+    * height: 压缩后的图片高度
 
 ### qiniu.watermark(options: object, key?: string, domain?: string): string（水印）
 

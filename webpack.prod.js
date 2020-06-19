@@ -6,21 +6,13 @@ var path = require("path");
 module.exports = merge(common, {
   mode: "production",
   devtool: "source-map",
-  devServer: {
-    disableHostCheck: true,
-    progress: true,
-    proxy: {
-      "/api/*": {
-        target: "http://0.0.0.0:9000",
-        changeOrigin: true,
-        secure: false
-      }
-    },
-    host: "0.0.0.0",
-    contentBase: path.join(__dirname, "./"),
-    publicPath: "/dist/",
-    hot: false,
-    inline: false
+  entry: './lib/index.js',
+  output: {
+    filename: 'qiniu.min.js',
+    library: 'qiniu',
+    libraryTarget: 'umd',
+    path: path.resolve(__dirname, 'dist'),
+    publicPath: '/dist/'
   },
   plugins: [
     new UglifyJSPlugin({

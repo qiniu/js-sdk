@@ -4,7 +4,7 @@ import { getUploadUrl } from '../api'
 import StatisticsLogger from '../statisticsLog'
 import { region } from '../config'
 
-export const DEFAULT_CHUNK_SIZE = 4 * 1024 * 1024
+export const DEFAULT_CHUNK_SIZE = 4 // 单位 MB
 
 /** 上传文件的资源信息配置 */
 export interface Extra {
@@ -34,7 +34,7 @@ export interface Config {
   concurrentRequestLimit: number
   /** 是否禁止静态日志上报 */
   disableStatisticsReport: boolean
-  /** 分片大小 */
+  /** 分片大小，单位为 MB */
   chunkSize: number
   /** 上传区域 */
   region?: typeof region[keyof typeof region]
@@ -49,12 +49,8 @@ export interface UploadOptions {
 }
 
 export interface UploadInfo {
-  bucket: string
-  key: string
   uploadId: string
   uploadUrl: string
-  fname: string
-  size: number
 }
 
 /** 传递给外部的上传进度信息 */
@@ -134,7 +130,7 @@ export default abstract class Base {
     this.bucket = utils.getPutPolicy(this.token).bucket
   }
 
-  public async putFile() {
+  public async putFile(): Promise<any> {
     this.aborted = false
     if (!this.putExtra.fname) {
       this.putExtra.fname = this.file.name
@@ -186,8 +182,7 @@ export default abstract class Base {
       const needRetry = err.isRequestError && err.code === 0 && !this.aborted
       const notReachRetryCount = ++this.retryCount <= this.config.retryCount
       if (needRetry && notReachRetryCount) {
-        this.putFile()
-        return
+        return this.putFile()
       }
 
       this.onError(err)

@@ -1,12 +1,10 @@
 import * as utils from '../utils'
 import { Pool } from '../pool'
-import { uploadChunk, uploadComplete, initUploadParts } from '../api'
-import Base, { Progress } from './base'
+import { uploadChunk, uploadComplete, initUploadParts, UploadChunkData } from '../api'
+import Base, { Progress, UploadInfo, Extra } from './base'
 
-export interface UploadedChunkResult {
-  etag: string
+export interface UploadedChunkStorage extends UploadChunkData {
   size: number
-  md5: string
 }
 
 export interface ChunkLoaded {
@@ -20,29 +18,41 @@ export interface ChunkInfo {
 }
 
 export interface LocalInfo {
-  data: UploadedChunkResult[]
+  data: UploadedChunkStorage[]
   id: string
 }
 
-const MB = 1024 ** 2
+export interface ChunkPart {
+  etag: string
+  partNumber: number
+}
+
+export interface UploadChunkBody extends Extra {
+  parts: ChunkPart[]
+}
+
+/** 是否为正整数 */
+function isPositiveInteger(n: any) {
+  var re = /^[1-9]+$/
+  return re.test(n)
+}
 
 export default class Resume extends Base {
   private chunks: Blob[]
-  /** 本地已存储的文件上传信息 */
-  private localInfo: LocalInfo
   /** 当前上传过程中已完成的上传信息 */
-  private uploadedList: UploadedChunkResult[]
+  private uploadedList: UploadedChunkStorage[]
   /** 当前上传片进度信息 */
   private loaded: ChunkLoaded
   private uploadId: string
 
   protected async run() {
-    if (this.config.chunkSize > this.file.size) {
-      throw new Error("chunkSize can't exceed the file size")
+
+    if (this.config.chunkSize > 1024) {
+      throw new Error('chunkSize maximum value is 1024')
     }
 
-    if (!this.config.chunkSize || this.config.chunkSize % MB !== 0) {
-      throw new Error('chunkSize must be a multiple of 1M')
+    if (!this.config.chunkSize || !isPositiveInteger(this.config.chunkSize)) {
+      throw new Error('chunkSize must be a positive integer')
     }
 
     await this.initBeforeUploadChunks()
@@ -56,12 +66,12 @@ export default class Resume extends Base {
     const result = Promise.all(uploadChunks).then(() => this.mkFileReq())
     result.then(
       () => {
-        this.removeLoalFileInfo()
+        utils.removeLocalFileInfo(this.getLocalKey())
       },
       err => {
-        /** 上传凭证无效，上传参数有误（多由于本地存储信息的 uploadId 失效） */
-        if (err.code === 401 || err.code === 400) {
-          this.removeLoalFileInfo()
+        // uploadId 无效，上传参数有误（多由于本地存储信息的 uploadId 失效
+        if (err.code === 612 || err.code === 400) {
+          utils.removeLocalFileInfo(this.getLocalKey())
         }
       }
     )
@@ -70,16 +80,11 @@ export default class Resume extends Base {
 
   private async uploadChunk(chunkInfo: ChunkInfo) {
     const { index, chunk } = chunkInfo
-    const info = this.localInfo.data[index]
+    const info = this.uploadedList[index]
 
     const shouldCheckMD5 = this.config.checkByMD5
     const reuseSaved = () => {
       this.updateChunkProgress(chunk.size, index)
-      this.uploadedList[index] = {
-        etag: info.etag,
-        size: info.size,
-        md5: info.md5
-      }
     }
 
     if (info && !shouldCheckMD5) {
@@ -106,6 +111,7 @@ export default class Resume extends Base {
 
     const response = await uploadChunk(
       this.token,
+      this.key,
       chunkInfo.index + 1,
       this.getUploadInfo(),
       requestOptions
@@ -122,16 +128,20 @@ export default class Resume extends Base {
       size: chunk.size
     }
 
-    this.setLocalFileInfo()
+    utils.setLocalFileInfo(this.getLocalKey(), {
+      id: this.uploadId,
+      data: this.uploadedList
+    })
+
   }
 
   private async mkFileReq() {
-    const data = {
+    const data: UploadChunkBody = {
       parts: this.uploadedList.map((value, index) => ({
         etag: value.etag,
         partNumber: index + 1
       })),
-      ...this.putExtra.fname && { fname: this.putExtra.fname },
+      fname: this.putExtra.fname,
       ...this.putExtra.mimeType && { mimeType: this.putExtra.mimeType },
       ...this.putExtra.customVars && { customVars: this.putExtra.customVars },
       ...this.putExtra.metadata && { metadata: this.putExtra.metadata }
@@ -139,33 +149,33 @@ export default class Resume extends Base {
 
     const result = await uploadComplete(
       this.token,
+      this.key,
       this.getUploadInfo(),
       {
         onCreate: xhr => this.addXhr(xhr),
         body: JSON.stringify(data)
       }
     )
-    this.updateMkFileProgress(1)
+    this.updateMkFileProgress()
     return result
   }
 
   private async initBeforeUploadChunks() {
-    this.localInfo = this.getLocalFileInfo()
-    /**
-     * 分片必须和当时使用的 uploadId 配套，所以断点续传需要把本地存储的 uploadId 拿出来
-     * 假如没有 result 或者存储信息已过期，clear 本地信息并重新获取 uploadId
-     */
-    if (!this.localInfo || !this.localInfo.id) {
-      this.removeLoalFileInfo()
-      const parts = await initUploadParts(this.token, this.bucket, this.key, this.uploadUrl)
-      this.uploadId = parts.data.uploadId
-      this.localInfo.id = this.uploadId
+    const localInfo = utils.getLocalFileInfo(this.getLocalKey())
+    // 分片必须和当时使用的 uploadId 配套，所以断点续传需要把本地存储的 uploadId 拿出来
+    // 假如没有 localInfo 本地信息并重新获取 uploadId
+    if (!localInfo || !localInfo.id) {
+      // 防止本地信息已被破坏，初始化时 clear 一下
+      utils.removeLocalFileInfo(this.getLocalKey())
+      const res = await initUploadParts(this.token, this.bucket, this.key, this.uploadUrl)
+      this.uploadId = res.data.uploadId
+      this.uploadedList = []
     } else {
-      this.uploadId = this.localInfo.id
+      this.uploadId = localInfo.id
+      this.uploadedList = localInfo.data
     }
 
     this.chunks = utils.getChunks(this.file, this.config.chunkSize)
-    this.uploadedList = []
     this.loaded = {
       mkFileProgress: 0,
       chunks: this.chunks.map(_ => 0)
@@ -173,26 +183,15 @@ export default class Resume extends Base {
     this.notifyResumeProgress()
   }
 
-  private getUploadInfo() {
+  private getUploadInfo(): UploadInfo {
     return {
       uploadUrl: this.uploadUrl,
-      uploadId: this.uploadId,
-      bucket: this.bucket,
-      key: this.key
+      uploadId: this.uploadId
     }
   }
 
-  private getLocalFileInfo() {
-    return utils.getLocalFileInfo(this.file.name, this.key, this.file.size)
-  }
-
-  private setLocalFileInfo() {
-    this.localInfo.data = this.uploadedList
-    utils.setLocalFileInfo(this.file.name, this.key, this.file.size, this.localInfo)
-  }
-
-  private removeLoalFileInfo() {
-    utils.removeLocalFileInfo(this.file.name, this.key, this.file.size)
+  private getLocalKey() {
+    return utils.createLocalKey(this.file.name, this.key, this.file.size)
   }
 
   private updateChunkProgress(loaded: number, index: number) {
@@ -200,8 +199,8 @@ export default class Resume extends Base {
     this.notifyResumeProgress()
   }
 
-  private updateMkFileProgress(progress: 0 | 1) {
-    this.loaded.mkFileProgress = progress
+  private updateMkFileProgress() {
+    this.loaded.mkFileProgress = 1
     this.notifyResumeProgress()
   }
 
@@ -209,18 +208,14 @@ export default class Resume extends Base {
     this.progress = {
       total: this.getProgressInfoItem(
         utils.sum(this.loaded.chunks) + this.loaded.mkFileProgress,
-        this.file.size + 1
+        this.file.size + 1 // 防止在 complete 未调用的时候进度显示 100%
       ),
       chunks: this.chunks.map((chunk, index) => (
         this.getProgressInfoItem(this.loaded.chunks[index], chunk.size)
       )),
       uploadInfo: {
-        key: this.key,
-        bucket: this.bucket,
         uploadId: this.uploadId,
-        uploadUrl: this.uploadUrl,
-        size: this.file.size,
-        fname: this.file.name
+        uploadUrl: this.uploadUrl
       }
     }
     this.onData(this.progress)

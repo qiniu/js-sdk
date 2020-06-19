@@ -42,10 +42,11 @@ function upload(
 }
 
 export {
-  getResumeUploadedSize,
   getHeadersForMkFile,
   getHeadersForChunkUpload
 } from './utils'
+
+export { CompressResult } from './compress'
 
 export { deleteUploadedChunks, getUploadUrl } from './api'
 export { imageMogr2, watermark, imageInfo, exif, pipeline } from './image'

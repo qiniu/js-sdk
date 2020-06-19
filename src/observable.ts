@@ -19,7 +19,7 @@ export interface IUnsubscribable {
   unsubscribe(): void
 }
 
-/**  Subscription 的接口 */
+/** Subscription 的接口 */
 export interface ISubscriptionLike extends IUnsubscribable {
   readonly closed: boolean
 }

@@ -38,16 +38,13 @@ export async function getUploadUrl(config: Config, token: string): Promise<strin
   return `${protocol}//${hosts[0]}`
 }
 
-type UploadParams = Omit<UploadInfo, 'fname' | 'size'>
-
 /**
  * @param bucket 空间名
  * @param key 目标文件名
- * @param uploadUrl 上传地址
- * @param uploadId 上传唯一 id
+ * @param uploadInfo 上传信息
  */
-function getBaseUrl(params: UploadParams) {
-  const { uploadUrl, uploadId, bucket, key } = params
+function getBaseUrl(bucket: string, key: string, uploadInfo: UploadInfo) {
+  const { uploadUrl, uploadId } = uploadInfo
   return `${uploadUrl}/buckets/${bucket}/objects/${urlSafeBase64Encode(key)}/uploads/${uploadId}`
 }
 
@@ -94,11 +91,13 @@ export interface UploadChunkData {
  */
 export function uploadChunk(
   token: string,
+  key: string,
   index: number,
-  params: UploadParams,
+  uploadInfo: UploadInfo,
   options: Partial<utils.RequestOptions>
 ): utils.Response<UploadChunkData> {
-  const url = getBaseUrl(params) + `/${index}`
+  const bucket = utils.getPutPolicy(token).bucket
+  const url = getBaseUrl(bucket, key, uploadInfo) + `/${index}`
   return utils.request<UploadChunkData>(url, {
     ...options,
     method: 'PUT',
@@ -113,15 +112,18 @@ export interface UploadCompleteData {
 
 /**
  * @param token 上传鉴权凭证
+ * @param key 目标文件名
  * @param uploadInfo 上传信息
  * @param options 请求参数
  */
 export function uploadComplete(
   token: string,
-  params: UploadParams,
+  key: string,
+  uploadInfo: UploadInfo,
   options: Partial<utils.RequestOptions>
 ): utils.Response<UploadCompleteData> {
-  const url = getBaseUrl(params)
+  const bucket = utils.getPutPolicy(token).bucket
+  const url = getBaseUrl(bucket, key, uploadInfo)
   return utils.request<UploadCompleteData>(url, {
     ...options,
     method: 'POST',
@@ -131,13 +133,16 @@ export function uploadComplete(
 
 /**
  * @param token 上传鉴权凭证
+ * @param key 目标文件名
  * @param uploadInfo 上传信息
  */
 export function deleteUploadedChunks(
   token: string,
-  params: UploadParams
+  key: string,
+  uploadinfo: UploadInfo
 ): utils.Response<void> {
-  const url = getBaseUrl(params)
+  const bucket = utils.getPutPolicy(token).bucket
+  const url = getBaseUrl(bucket, key, uploadinfo)
   return utils.request(
     url,
     {

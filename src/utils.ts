@@ -1,26 +1,29 @@
 import SparkMD5 from 'spark-md5'
-import { Progress, LocalInfo, UploadInfo } from './upload'
+import { Progress, LocalInfo } from './upload'
 import { urlSafeBase64Decode } from './base64'
+
+const MB = 1024 ** 2
 
 // 文件分块
 export function getChunks(file: File, blockSize: number): Blob[] {
-  const getChunkSize = (chunkSize: number): number => {
-    // 因为最多 10000 chunk，所以如果 chunkSize 不符合则把每片 chunk 大小扩大两倍
-    if (file.size > chunkSize * 10000) {
-      return getChunkSize(chunkSize * 2)
-    }
 
-    return chunkSize
+  let chunkByteSize = blockSize * MB // 转换为字节
+  // 如果 chunkByteSize 比文件大，则直接取文件的大小
+  if (chunkByteSize > file.size) {
+    chunkByteSize = file.size
+  } else {
+    // 因为最多 10000 chunk，所以如果 chunkSize 不符合则把每片 chunk 大小扩大两倍
+    while (file.size > chunkByteSize * 10000) {
+      chunkByteSize *= 2
+    }
   }
 
-  const chunkSize = getChunkSize(blockSize)
-
   const chunks: Blob[] = []
-  const count = Math.ceil(file.size / chunkSize)
+  const count = Math.ceil(file.size / chunkByteSize)
   for (let i = 0; i < count; i++) {
     const chunk = file.slice(
-      chunkSize * i,
-      i === count - 1 ? file.size : chunkSize * (i + 1)
+      chunkByteSize * i,
+      i === count - 1 ? file.size : chunkByteSize * (i + 1)
     )
     chunks.push(chunk)
   }
@@ -39,9 +42,9 @@ export function sum(list: number[]) {
   return list.reduce((data, loaded) => data + loaded, 0)
 }
 
-export function setLocalFileInfo(name: string, key: string, size: number, info: LocalInfo) {
+export function setLocalFileInfo(localKey: string, info: LocalInfo) {
   try {
-    localStorage.setItem(createLocalKey(name, key, size), JSON.stringify(info))
+    localStorage.setItem(localKey, JSON.stringify(info))
   } catch (err) {
     if (window.console && window.console.warn) {
       // eslint-disable-next-line no-console
@@ -54,9 +57,9 @@ export function createLocalKey(name: string, key: string, size: number): string 
   return `qiniu_js_sdk_upload_file_name_${name}_key_${key}_size_${size}`
 }
 
-export function removeLocalFileInfo(name: string, key: string, size: number) {
+export function removeLocalFileInfo(localKey: string) {
   try {
-    localStorage.removeItem(createLocalKey(name, key, size))
+    localStorage.removeItem(localKey)
   } catch (err) {
     if (window.console && window.console.warn) {
       // eslint-disable-next-line no-console
@@ -65,33 +68,17 @@ export function removeLocalFileInfo(name: string, key: string, size: number) {
   }
 }
 
-export function getLocalFileInfo(name: string, key: string, size: number): LocalInfo {
+export function getLocalFileInfo(localKey: string): LocalInfo | null {
   try {
-    const localInfo = localStorage.getItem(createLocalKey(name, key, size))
-    return localInfo
-      ? JSON.parse(localInfo)
-      : {
-        id: '',
-        data: []
-      }
+    const localInfo = localStorage.getItem(localKey)
+    return localInfo ? JSON.parse(localInfo) : null
   } catch (err) {
     if (window.console && window.console.warn) {
       // eslint-disable-next-line no-console
       console.warn('getLocalFileInfo failed')
     }
-    return {
-      id: '',
-      data: []
-    }
+    return null
   }
-}
-
-export function getResumeUploadedSize(uploadInfo: UploadInfo) {
-  return getLocalFileInfo(uploadInfo.fname, uploadInfo.key, uploadInfo.size).data
-    .filter(Boolean).reduce(
-      (result, value) => result + value.size,
-      0
-    )
 }
 
 export function getAuthHeaders(token: string) {
@@ -157,10 +144,10 @@ export interface ResponseSuccess<T> {
 }
 
 export interface ResponseError {
-  code: number // 请求错误状态码，只有在 err.isRequestError 为 true 的时候才有效。可查阅码值对应说明。
-  message: string // 错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。
-  isRequestError: true | undefined // 用于区分是否 xhr 请求错误当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 true否则为 undefined 。
-  reqId: string // xhr请求错误的 X-Reqid。
+  code: number /** 请求错误状态码，只有在 err.isRequestError 为 true 的时候才有效。可查阅码值对应说明。*/
+  message: string /** 错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。 */
+  isRequestError: true | undefined /** 用于区分是否 xhr 请求错误当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 true否则为 undefined 。 */
+  reqId: string /** xhr请求错误的 X-Reqid。 */
 }
 
 export type CustomError = ResponseError | Error | any
