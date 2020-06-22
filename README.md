@@ -2,7 +2,8 @@
 
 基于七牛 API 开发的前端 JavaScript SDK
 
-## 当前版本为 3.x，旧版本文档：[2.x](https://github.com/qiniu/js-sdk/tree/2.x)，[1.x](https://github.com/qiniu/js-sdk/tree/1.x)，2.x 升级到 3.x 的注意事项请参考[文档](https://github.com/qiniu/js-sdk/wiki/2.x-%E5%8D%87%E7%BA%A7%E5%88%B0-3.x-%E6%96%87%E6%A1%A3%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9)
+### 当前版本为 3.x，旧版本文档：[2.x](https://github.com/qiniu/js-sdk/tree/2.x)、[1.x](https://github.com/qiniu/js-sdk/tree/1.x)
+### 2.x 升级到 3.x 的注意事项请参考[文档](https://github.com/qiniu/js-sdk/wiki/2.x-%E5%8D%87%E7%BA%A7%E5%88%B0-3.x-%E6%96%87%E6%A1%A3%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9)
 
 
 ## 快速导航
