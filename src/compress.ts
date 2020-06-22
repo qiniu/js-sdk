@@ -13,6 +13,12 @@ export interface Dimension {
   height?: number
 }
 
+export interface CompressResult {
+  dist: Blob
+  width: number
+  height: number
+}
+
 const mimeTypes = {
   PNG: 'image/png',
   JPEG: 'image/jpeg',
@@ -42,7 +48,7 @@ class Compress {
     }
   }
 
-  async process() {
+  async process(): Promise<CompressResult> {
     this.outputType = this.file.type
     const srcDimension: Dimension = {}
     if (!isSupportedType(this.file.type)) {
@@ -87,7 +93,8 @@ class Compress {
       ctx.clearRect(0, 0, width, height)
     }
   }
-  // 通过 file 初始化 image 对象
+
+  /** 通过 file 初始化 image 对象 */
   getOriginImage(): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
       const url = createObjectURL(this.file)
@@ -187,7 +194,7 @@ class Compress {
     return canvas
   }
 
-  // 这里把 base64 字符串转为 blob 对象
+  /** 这里把 base64 字符串转为 blob 对象 */
   toBlob(result: HTMLCanvasElement) {
     const dataURL = result.toDataURL(this.outputType, this.config.quality)
     const buffer = atob(dataURL.split(',')[1]).split('').map(char => char.charCodeAt(0))

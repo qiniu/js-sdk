@@ -15,7 +15,7 @@ function uploadWithSDK(token, putExtra, config, domain) {
       if (!board) {
         return;
       }
-      putExtra.params["x:name"] = key.split(".")[0];
+      putExtra.customVars["x:name"] = key.split(".")[0];
       board.start = true;
       var dom_total = $(board)
         .find("#totalBar")
@@ -81,7 +81,7 @@ function uploadWithSDK(token, putExtra, config, domain) {
         compareChunks = chunks;
       };
 
-      var subObject = { 
+      var subObject = {
         next: next,
         error: error,
         complete: complete

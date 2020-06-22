@@ -1,42 +1,50 @@
 import SparkMD5 from 'spark-md5'
-import { urlSafeBase64Encode, urlSafeBase64Decode } from './base64'
-import { regionUphostMap } from './config'
-import { Config, Extra, Progress, CtxInfo } from './upload'
+import { Progress, LocalInfo } from './upload'
+import { urlSafeBase64Decode } from './base64'
 
-// 对上传块本地存储时间检验是否过期
-// TODO: 最好用服务器时间来做判断
-export function isChunkExpired(time: number) {
-  const expireAt = time + 3600 * 24 * 1000
-  return new Date().getTime() > expireAt
-}
+const MB = 1024 ** 2
 
 // 文件分块
 export function getChunks(file: File, blockSize: number): Blob[] {
+
+  let chunkByteSize = blockSize * MB // 转换为字节
+  // 如果 chunkByteSize 比文件大，则直接取文件的大小
+  if (chunkByteSize > file.size) {
+    chunkByteSize = file.size
+  } else {
+    // 因为最多 10000 chunk，所以如果 chunkSize 不符合则把每片 chunk 大小扩大两倍
+    while (file.size > chunkByteSize * 10000) {
+      chunkByteSize *= 2
+    }
+  }
+
   const chunks: Blob[] = []
-  const count = Math.ceil(file.size / blockSize)
+  const count = Math.ceil(file.size / chunkByteSize)
   for (let i = 0; i < count; i++) {
     const chunk = file.slice(
-      blockSize * i,
-      i === count - 1 ? file.size : blockSize * (i + 1)
+      chunkByteSize * i,
+      i === count - 1 ? file.size : chunkByteSize * (i + 1)
     )
     chunks.push(chunk)
   }
   return chunks
 }
 
-export function filterParams(params: { [key: string]: string }) {
-  return Object.keys(params)
-    .filter(value => value.indexOf('x:') === 0)
-    .map(k => [k, params[k].toString()])
+export function isMetaDataValid(params: { [key: string]: string }) {
+  return Object.keys(params).every(key => key.indexOf('x-qn-meta-') === 0)
+}
+
+export function isCustomVarsValid(params: { [key: string]: string }) {
+  return Object.keys(params).every(key => key.indexOf('x:') === 0)
 }
 
 export function sum(list: number[]) {
   return list.reduce((data, loaded) => data + loaded, 0)
 }
 
-export function setLocalFileInfo(file: File, info: CtxInfo[]) {
+export function setLocalFileInfo(localKey: string, info: LocalInfo) {
   try {
-    localStorage.setItem(createLocalKey(file), JSON.stringify(info))
+    localStorage.setItem(localKey, JSON.stringify(info))
   } catch (err) {
     if (window.console && window.console.warn) {
       // eslint-disable-next-line no-console
@@ -45,13 +53,13 @@ export function setLocalFileInfo(file: File, info: CtxInfo[]) {
   }
 }
 
-function createLocalKey(file: File) {
-  return 'qiniu_js_sdk_upload_file_' + file.name + '_size_' + file.size
+export function createLocalKey(name: string, key: string, size: number): string {
+  return `qiniu_js_sdk_upload_file_name_${name}_key_${key}_size_${size}`
 }
 
-export function removeLocalFileInfo(file: File) {
+export function removeLocalFileInfo(localKey: string) {
   try {
-    localStorage.removeItem(createLocalKey(file))
+    localStorage.removeItem(localKey)
   } catch (err) {
     if (window.console && window.console.warn) {
       // eslint-disable-next-line no-console
@@ -60,54 +68,20 @@ export function removeLocalFileInfo(file: File) {
   }
 }
 
-export function getLocalFileInfo(file: File): CtxInfo[] {
+export function getLocalFileInfo(localKey: string): LocalInfo | null {
   try {
-    const localInfo = localStorage.getItem(createLocalKey(file))
-    return localInfo ? JSON.parse(localInfo) : []
+    const localInfo = localStorage.getItem(localKey)
+    return localInfo ? JSON.parse(localInfo) : null
   } catch (err) {
     if (window.console && window.console.warn) {
       // eslint-disable-next-line no-console
       console.warn('getLocalFileInfo failed')
     }
-    return []
+    return null
   }
 }
 
-export function getResumeUploadedSize(file: File) {
-  return getLocalFileInfo(file).filter(
-    value => value && !isChunkExpired(value.time)
-  ).reduce(
-    (result, value) => result + value.size,
-    0
-  )
-}
-
-// 构造file上传url
-export function createMkFileUrl(url: string, file: File, key: string, putExtra: Extra) {
-  let requestUrl = url + '/mkfile/' + file.size
-  if (key != null) {
-    requestUrl += '/key/' + urlSafeBase64Encode(key)
-  }
-
-  if (putExtra.mimeType) {
-    requestUrl += '/mimeType/' + urlSafeBase64Encode(file.type)
-  }
-
-  const fname = putExtra.fname
-  if (fname) {
-    requestUrl += '/fname/' + urlSafeBase64Encode(fname)
-  }
-
-  if (putExtra.params) {
-    filterParams(putExtra.params).forEach(
-      item => { requestUrl += '/' + encodeURIComponent(item[0]) + '/' + urlSafeBase64Encode(item[1]) }
-    )
-  }
-
-  return requestUrl
-}
-
-function getAuthHeaders(token: string) {
+export function getAuthHeaders(token: string) {
   const auth = 'UpToken ' + token
   return { Authorization: auth }
 }
@@ -123,7 +97,7 @@ export function getHeadersForChunkUpload(token: string) {
 export function getHeadersForMkFile(token: string) {
   const header = getAuthHeaders(token)
   return {
-    'content-type': 'text/plain',
+    'content-type': 'application/json',
     ...header
   }
 }
@@ -170,10 +144,10 @@ export interface ResponseSuccess<T> {
 }
 
 export interface ResponseError {
-  code: number // 请求错误状态码，只有在 err.isRequestError 为 true 的时候才有效。可查阅码值对应说明。
-  message: string // 错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。
-  isRequestError: true | undefined // 用于区分是否 xhr 请求错误当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 true否则为 undefined 。
-  reqId: string // xhr请求错误的 X-Reqid。
+  code: number /** 请求错误状态码，只有在 err.isRequestError 为 true 的时候才有效。可查阅码值对应说明。*/
+  message: string /** 错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。 */
+  isRequestError: true | undefined /** 用于区分是否 xhr 请求错误当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 true否则为 undefined 。 */
+  reqId: string /** xhr请求错误的 X-Reqid。 */
 }
 
 export type CustomError = ResponseError | Error | any
@@ -190,7 +164,7 @@ export interface RequestOptions {
 
 export type Response<T> = Promise<ResponseSuccess<T>>
 
-export function request<T extends object>(url: string, options: RequestOptions): Response<T> {
+export function request<T>(url: string, options: RequestOptions): Response<T> {
   return new Promise((resolve, reject) => {
     const xhr = createXHR()
     xhr.open(options.method, url)
@@ -284,26 +258,7 @@ export function getDomainFromUrl(url: string): string {
   return ''
 }
 
-// 构造区域上传url
-export async function getUploadUrl(config: Config, token: string): Promise<string> {
-  const protocol = getAPIProtocol()
-
-  if (config.uphost) {
-    return `${protocol}//${config.uphost}`
-  }
-
-  if (config.region) {
-    const upHosts = regionUphostMap[config.region]
-    const host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost
-    return `${protocol}//${host}`
-  }
-
-  const res = await getUpHosts(token)
-  const hosts = res.data.up.acc.main
-  return `${protocol}//${hosts[0]}`
-}
-
-function getAPIProtocol(): string {
+export function getAPIProtocol(): string {
   if (window.location.protocol === 'http:') {
     return 'http:'
   }
@@ -315,7 +270,7 @@ interface PutPolicy {
   scope: string
 }
 
-function getPutPolicy(token: string) {
+export function getPutPolicy(token: string) {
   const segments = token.split(':')
   const ak = segments[0]
   const putPolicy: PutPolicy = JSON.parse(urlSafeBase64Decode(segments[2]))
@@ -326,27 +281,6 @@ function getPutPolicy(token: string) {
   }
 }
 
-interface UpHosts {
-  data: {
-    up: {
-      acc: {
-        main: string[]
-      }
-    }
-  }
-}
-
-async function getUpHosts(token: string): Promise<UpHosts> {
-  const putPolicy = getPutPolicy(token)
-  const url = getAPIProtocol() + '//api.qiniu.com/v2/query?ak=' + putPolicy.ak + '&bucket=' + putPolicy.bucket
-  return request(url, { method: 'GET' })
-
-}
-
-export function isContainFileMimeType(fileType: string, mimeType: string[]) {
-  return mimeType.indexOf(fileType) > -1
-}
-
 export function createObjectURL(file: File) {
   const URL = window.URL || window.webkitURL || window.mozURL
   return URL.createObjectURL(file)
@@ -355,7 +289,7 @@ export function createObjectURL(file: File) {
 export interface TransformValue {
   width: number
   height: number
-  matrix: [number, number, number, number, number, number] // TODO: 有没有简便的方法？
+  matrix: [number, number, number, number, number, number]
 }
 
 export function getTransform(image: HTMLImageElement, orientation: number): TransformValue {
