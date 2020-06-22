@@ -1,5 +1,5 @@
 import * as utils from '../utils'
-import { getUploadUrl } from '../api'
+import { getUploadUrl, UploadCompleteData } from '../api'
 
 import StatisticsLogger from '../statisticsLog'
 import { region } from '../config'
@@ -130,7 +130,7 @@ export default abstract class Base {
     this.bucket = utils.getPutPolicy(this.token).bucket
   }
 
-  public async putFile(): Promise<any> {
+  public async putFile(): Promise<utils.ResponseSuccess<UploadCompleteData> | void> {
     this.aborted = false
     if (!this.putExtra.fname) {
       this.putExtra.fname = this.file.name
@@ -181,8 +181,9 @@ export default abstract class Base {
 
       const needRetry = err.isRequestError && err.code === 0 && !this.aborted
       const notReachRetryCount = ++this.retryCount <= this.config.retryCount
-      if (needRetry && notReachRetryCount) {
-        return this.putFile()
+      // 如果可以重试或者 uploadId 无效则重新上传
+      if (needRetry && notReachRetryCount || err.code === 612) {
+        return await this.putFile()
       }
 
       this.onError(err)

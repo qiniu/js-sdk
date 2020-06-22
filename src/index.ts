@@ -2,6 +2,7 @@ import StatisticsLogger from './statisticsLog'
 import createUploadManager, { Extra, Config, UploadOptions, UploadProgress } from './upload'
 import { Observable, IObserver } from './observable'
 import { CustomError } from './utils'
+import { UploadCompleteData } from './api'
 import compressImage from './compress'
 
 const statisticsLogger = new StatisticsLogger()
@@ -20,7 +21,7 @@ function upload(
   token: string,
   putExtra?: Partial<Extra>,
   config?: Partial<Config>
-): Observable<UploadProgress, CustomError> {
+): Observable<UploadProgress, CustomError, UploadCompleteData> {
 
   const options: UploadOptions = {
     file,
@@ -30,7 +31,7 @@ function upload(
     config
   }
 
-  return new Observable((observer: IObserver<UploadProgress, CustomError>) => {
+  return new Observable((observer: IObserver<UploadProgress, CustomError, UploadCompleteData>) => {
     const manager = createUploadManager(options, {
       onData: (data: UploadProgress) => observer.next(data),
       onError: (err: CustomError) => observer.error(err),

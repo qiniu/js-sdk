@@ -1,5 +1,6 @@
 import { request } from '../utils'
 import Base from './base'
+import { UploadCompleteData } from '../api'
 
 export default class Direct extends Base {
 
@@ -17,7 +18,7 @@ export default class Direct extends Base {
       Object.keys(customVars).forEach(key => formData.append(key, customVars[key].toString()))
     }
 
-    const result = await request(this.uploadUrl, {
+    const result = await request<UploadCompleteData>(this.uploadUrl, {
       method: 'POST',
       body: formData,
       onProgress: data => {

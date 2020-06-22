@@ -108,6 +108,7 @@ export function uploadChunk(
 export interface UploadCompleteData {
   hash: string
   key: string
+  [key: string]: string
 }
 
 /**

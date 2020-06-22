@@ -2,7 +2,7 @@
 
 基于七牛 API 开发的前端 JavaScript SDK
 
-## 当前版本为 2.x，查看 1.x 的文档请点击[这里](https://github.com/qiniu/js-sdk/tree/1.x)
+## 当前版本为 3.x，旧版本文档：[1.x](https://github.com/qiniu/js-sdk/tree/1.x)，[2.x](https://github.com/qiniu/js-sdk/tree/2.x)
 
 ## 快速导航
 
@@ -194,14 +194,14 @@ qiniu.compressImage(file, options).then(data => {
     * config.concurrentRequestLimit: 分片上传的并发请求量，`number`，默认为3；因为浏览器本身也会限制最大并发量，所以最大并发量与浏览器有关。
     * config.checkByMD5: 是否开启 MD5 校验，为布尔值；在断点续传时，开启 MD5 校验会将已上传的分片与当前分片进行 MD5 值比对，若不一致，则重传该分片，避免使用错误的分片。读取分片内容并计算 MD5 需要花费一定的时间，因此会稍微增加断点续传时的耗时，默认为 false，不开启。
     * config.forceDirect: 是否上传全部采用直传方式，为布尔值；为 `true` 时则上传方式全部为直传 form 方式，禁用断点续传，默认 `false`。
-    * config.chunkSize: `number`，分片上传时每片的大小，单位为 `MB`，且最大不能超过 1024，默认值 4。因为 chunk 数最大 10000，所以如果文件大小超过 `10000 * chunkSize`，我们会把你所设的 `chunkSize` 扩大二倍，直到符合条件。
+    * config.chunkSize: `number`，必须为正整数，分片上传时每片的大小，单位为 `MB`，且最大不能超过 1024，默认值 4。因为 chunk 数最大 10000，所以如果文件以你所设的 `chunkSize` 进行分片并且 chunk 数超过 10000，我们会把你所设的 `chunkSize` 扩大二倍，如果仍不符合则继续扩大，直到符合条件。
 
   * **putExtra**:
 
     ```JavaScript
     const putExtra = {
-      fname: "name",
-      mimeType: "type",
+      fname: "qiniu.txt",
+      mimeType: "text/plain",
       customVars: { 'x:test': 'qiniu', ... },
       metadata: { 'x-qn-meta': 'qiniu', ... },
     };
@@ -239,7 +239,7 @@ qiniu.compressImage(file, options).then(data => {
   ```
 
 ### qiniu.deleteUploadedChunks(token: string, key: stting, uploadInfo: object): Promise<void>
-  删除指定上传任务中已上传完成的片，`key` 为目标文件名`uploadInfo` 可通过 `next` 的返回获取，`token` 由服务端生成
+  删除指定上传任务中已上传完成的片，`key` 为目标文件名，`uploadInfo` 可通过 `next` 的返回获取，`token` 由服务端生成
 
 ### qiniu.compressImage(file: File, options: object): Promise<CompressResult> (上传前图片压缩)
 

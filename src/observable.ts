@@ -1,17 +1,17 @@
 /** 消费者接口 */
-export interface IObserver<T, E> {
+export interface IObserver<T, E, C> {
   /** 用来接收 Observable 中的 next 类型通知 */
   next: (value: T) => void
   /** 用来接收 Observable 中的 error 类型通知 */
   error: (err: E) => void
   /** 用来接收 Observable 中的 complete 类型通知 */
-  complete: (res: any) => void
+  complete: (res: C) => void
 }
 
-export interface NextObserver<T, E> {
+export interface NextObserver<T, E, C> {
   next: (value: T) => void
   error?: (err: E) => void
-  complete?: (res: any) => void
+  complete?: (res: C) => void
 }
 
 export interface IUnsubscribable {
@@ -26,11 +26,11 @@ export interface ISubscriptionLike extends IUnsubscribable {
 
 export type TeardownLogic = () => void
 
-export interface ISubscribable<T, E> {
-  subscribe(observer?: NextObserver<T, E>): IUnsubscribable
-  subscribe(next: null | undefined, error: null | undefined, complete: () => void): IUnsubscribable
-  subscribe(next: null | undefined, error: (error: E) => void, complete?: () => void): IUnsubscribable
-  subscribe(next: (value: T) => void, error: null | undefined, complete: () => void): IUnsubscribable
+export interface ISubscribable<T, E, C> {
+  subscribe(observer?: NextObserver<T, E, C>): IUnsubscribable
+  subscribe(next: null | undefined, error: null | undefined, complete: (res: C) => void): IUnsubscribable
+  subscribe(next: null | undefined, error: (error: E) => void, complete?: (res: C) => void): IUnsubscribable
+  subscribe(next: (value: T) => void, error: null | undefined, complete: (res: C) => void): IUnsubscribable
 }
 
 /** 表示可清理的资源，比如 Observable 的执行 */
@@ -63,14 +63,14 @@ class Subscription implements ISubscriptionLike {
  * 实现 Observer 接口并且继承 Subscription 类，Observer 是消费 Observable 值的公有 API
  * 所有 Observers 都转化成了 Subscriber，以便提供类似 Subscription 的能力，比如 unsubscribe
 */
-export class Subscriber<T, E> extends Subscription implements IObserver<T, E> {
+export class Subscriber<T, E, C> extends Subscription implements IObserver<T, E, C> {
   protected isStopped = false
-  protected destination: Partial<IObserver<T, E>>
+  protected destination: Partial<IObserver<T, E, C>>
 
   constructor(
-    observerOrNext?: NextObserver<T, E> | ((value: T) => void) | null,
+    observerOrNext?: NextObserver<T, E, C> | ((value: T) => void) | null,
     error?: ((err: E) => void) | null,
-    complete?: ((res: any) => void) | null
+    complete?: ((res: C) => void) | null
   ) {
     super()
 
@@ -107,7 +107,7 @@ export class Subscriber<T, E> extends Subscription implements IObserver<T, E> {
     }
   }
 
-  complete(result: any) {
+  complete(result: C) {
     if (!this.isStopped && this.destination.complete) {
       this.isStopped = true
       this.destination.complete(result)
@@ -116,18 +116,18 @@ export class Subscriber<T, E> extends Subscription implements IObserver<T, E> {
 }
 
 /** 可观察对象，当前的上传事件的集合 */
-export class Observable<T, E> implements ISubscribable<T, E> {
+export class Observable<T, E, C> implements ISubscribable<T, E, C> {
 
-  constructor(private _subscribe: (subscriber: Subscriber<T, E>) => TeardownLogic) {}
+  constructor(private _subscribe: (subscriber: Subscriber<T, E, C>) => TeardownLogic) {}
 
-  subscribe(observer: NextObserver<T, E>): Subscription
-  subscribe(next: null | undefined, error: null | undefined, complete: (res: any) => void): Subscription
-  subscribe(next: null | undefined, error: (error: E) => void, complete?: (res: any) => void): Subscription
-  subscribe(next: (value: T) => void, error: null | undefined, complete: (res: any) => void): Subscription
+  subscribe(observer: NextObserver<T, E, C>): Subscription
+  subscribe(next: null | undefined, error: null | undefined, complete: (res: C) => void): Subscription
+  subscribe(next: null | undefined, error: (error: E) => void, complete?: (res: C) => void): Subscription
+  subscribe(next: (value: T) => void, error: null | undefined, complete: (res: C) => void): Subscription
   subscribe(
-    observerOrNext?: NextObserver<T, E> | ((value: T) => void) | null,
+    observerOrNext?: NextObserver<T, E, C> | ((value: T) => void) | null,
     error?: ((err: E) => void) | null,
-    complete?: ((res: any) => void) | null
+    complete?: ((res: C) => void) | null
   ): Subscription {
     const sink = new Subscriber(observerOrNext, error, complete)
     sink.add(this._subscribe(sink))

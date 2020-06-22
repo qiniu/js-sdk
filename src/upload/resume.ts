@@ -32,9 +32,9 @@ export interface UploadChunkBody extends Extra {
 }
 
 /** 是否为正整数 */
-function isPositiveInteger(n: any) {
+function isPositiveInteger(n: number) {
   var re = /^[1-9]+$/
-  return re.test(n)
+  return re.test(String(n))
 }
 
 export default class Resume extends Base {
@@ -156,7 +156,7 @@ export default class Resume extends Base {
         body: JSON.stringify(data)
       }
     )
-    this.updateMkFileProgress()
+    this.updateMkFileProgress(1)
     return result
   }
 
@@ -164,7 +164,7 @@ export default class Resume extends Base {
     const localInfo = utils.getLocalFileInfo(this.getLocalKey())
     // 分片必须和当时使用的 uploadId 配套，所以断点续传需要把本地存储的 uploadId 拿出来
     // 假如没有 localInfo 本地信息并重新获取 uploadId
-    if (!localInfo || !localInfo.id) {
+    if (!localInfo) {
       // 防止本地信息已被破坏，初始化时 clear 一下
       utils.removeLocalFileInfo(this.getLocalKey())
       const res = await initUploadParts(this.token, this.bucket, this.key, this.uploadUrl)
@@ -199,8 +199,8 @@ export default class Resume extends Base {
     this.notifyResumeProgress()
   }
 
-  private updateMkFileProgress() {
-    this.loaded.mkFileProgress = 1
+  private updateMkFileProgress(progress: 0 | 1) {
+    this.loaded.mkFileProgress = progress
     this.notifyResumeProgress()
   }
 
