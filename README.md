@@ -4,6 +4,15 @@
 
 ## 当前版本为 3.x，旧版本文档：[2.x](https://github.com/qiniu/js-sdk/tree/2.x)，[1.x](https://github.com/qiniu/js-sdk/tree/1.x)
 
+## Breaking change
+
+* 由于上传 api 的变更及部分冗余接口整理，删除了部分对外接口：
+  * filterParams
+  * getHeadersForMkFile
+  * createMkFileUrl
+  * getResumeUploadedSize
+* putExtra 参数改变，mimeType 代表的是用户所设置的文件类型; customVars  代替 原有的params
+
 ## 快速导航
 
 * [功能简介](#summary)
