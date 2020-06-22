@@ -1,0 +1,31 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "outDir": "./esm",
+    "module": "es6",
+    "lib": ["dom", "es2015", "es2016", "es2017"],
+    "moduleResolution": "node",
+    "allowJs": false,
+    "declaration": true,
+    "downlevelIteration": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "sourceMap": true,
+    "strictPropertyInitialization": false,
+    "noImplicitThis": true,
+    "baseUrl": "./src",
+    "esModuleInterop": true,
+    "suppressImplicitAnyIndexErrors": true,
+    "typeRoots": [
+      "./types",
+      "./node_modules/@types"
+    ]
+  },
+  "exclude": [
+    "node_modules",
+    "coverage",
+    "test",
+    "dist",
+    "lib"
+  ]
+}

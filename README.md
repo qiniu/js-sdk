@@ -2,7 +2,9 @@
 
 基于七牛 API 开发的前端 JavaScript SDK
 
-## 当前版本为 2.x，查看 1.x 的文档请点击[这里](https://github.com/qiniu/js-sdk/tree/1.x)
+### 当前版本为 3.x，旧版本文档：[2.x](https://github.com/qiniu/js-sdk/tree/2.x)、[1.x](https://github.com/qiniu/js-sdk/tree/1.x)
+### 2.x 升级到 3.x 的注意事项请参考[文档](https://github.com/qiniu/js-sdk/wiki/2.x-%E5%8D%87%E7%BA%A7%E5%88%B0-3.x-%E6%96%87%E6%A1%A3%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9)
+
 
 ## 快速导航
 
@@ -88,7 +90,7 @@ Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服�
   npm install qiniu-js
   ```
   ```Javascript
-  var qiniu = require('qiniu-js')
+  const qiniu = require('qiniu-js')
   // or
   import * as qiniu from 'qiniu-js'
   ```
@@ -109,31 +111,31 @@ Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服�
 
 ```JavaScript
 
-var observable = qiniu.upload(file, key, token, putExtra, config)
+const observable = qiniu.upload(file, key, token, putExtra, config)
 
-var subscription = observable.subscribe(observer) // 上传开始
+const subscription = observable.subscribe(observer) // 上传开始
 // or
-var subscription = observable.subscribe(next, error, complete) // 这样传参形式也可以
+const subscription = observable.subscribe(next, error, complete) // 这样传参形式也可以
 
 subscription.unsubscribe() // 上传取消
 ```
 图片上传前压缩：
 
 ```JavaScript
-let options = {
+const options = {
   quality: 0.92,
   noCompressIfLarger: true
   // maxWidth: 1000,
   // maxHeight: 618
 }
 qiniu.compressImage(file, options).then(data => {
-  var observable = qiniu.upload(data.dist, key, token, putExtra, config)
-  var subscription = observable.subscribe(observer) // 上传开始
+  const observable = qiniu.upload(data.dist, key, token, putExtra, config)
+  const subscription = observable.subscribe(observer) // 上传开始
 })
 ```
 ## API Reference Interface
 
-### qiniu.upload(file: blob, key: string, token: string, putExtra: object, config: object): observable
+### qiniu.upload(file: File, key: string, token: string, putExtra?: object, config?: object): observable
 
   * **observable**: 为一个带有 subscribe 方法的类实例
 
@@ -142,7 +144,7 @@ qiniu.compressImage(file, options).then(data => {
       * observer: `observer` 为一个 `object`，用来设置上传过程的监听函数，有三个属性 `next`、`error`、`complete`:
 
         ```JavaScript
-        var observer = {
+        const observer = {
           next(res){
             // ...
           },
@@ -154,10 +156,14 @@ qiniu.compressImage(file, options).then(data => {
           }
         }
         ```
-        * next: 接收上传进度信息，res是一个带有 `total` 字段的 `object`，包含`loaded`、`total`、`percent`三个属性，提供上传进度信息。
-          * total.loaded: `number`，已上传大小，单位为字节。
-          * total.total: `number`，本次上传的总量控制信息，单位为字节，注意这里的 total 跟文件大小并不一致。
-          * total.percent: `number`，当前上传进度，范围：0～100。
+        * next: 接收上传进度信息的回调函数，回调函数参数值为 `object`，包含字段信息如下：
+          * uploadInfo: `object`，只有分片上传时才返回该字段
+            * uploadInfo.id: 上传任务的唯一标识。
+            * uploadInfo.url: 上传地址。
+          * total: 包含`loaded`、`total`、`percent`三个属性:
+            * total.loaded: `number`，已上传大小，单位为字节。
+            * total.total: `number`，本次上传的总量控制信息，单位为字节，注意这里的 total 跟文件大小并不一致。
+            * total.percent: `number`，当前上传进度，范围：0～100。
 
         * error: 上传错误后触发；自动重试本身并不会触发该错误，而当重试次数到达上限后则可以触发。当不是 xhr 请求错误时，会把当前错误产生原因直接抛出，诸如 JSON 解析异常等；当产生 xhr 请求错误时，参数 err 为一个包含 `code`、`message`、`isRequestError` 三个属性的 `object`：
           * err.isRequestError: 用于区分是否 xhr 请求错误；当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 `true`；否则为 `undefined` 。
@@ -169,13 +175,14 @@ qiniu.compressImage(file, options).then(data => {
 
       * subscription: 为一个带有 `unsubscribe` 方法的类实例，通过调用 `subscription.unsubscribe()` 停止当前文件上传。
 
-  * **file**: `Blob` 对象，上传的文件
+  * **bucket**: 上传的目标空间
+  * **file**: `File` 对象，上传的文件
   * **key**: 文件资源名
   * **token**: 上传验证信息，前端通过接口请求后端获得
-  * **config**: `object`
+  * **config**: `object`，其中的每一项都为可选
 
     ```JavaScript
-    var config = {
+    const config = {
       useCdnDomain: true,
       region: qiniu.region.z2
     };
@@ -189,39 +196,24 @@ qiniu.compressImage(file, options).then(data => {
     * config.concurrentRequestLimit: 分片上传的并发请求量，`number`，默认为3；因为浏览器本身也会限制最大并发量，所以最大并发量与浏览器有关。
     * config.checkByMD5: 是否开启 MD5 校验，为布尔值；在断点续传时，开启 MD5 校验会将已上传的分片与当前分片进行 MD5 值比对，若不一致，则重传该分片，避免使用错误的分片。读取分片内容并计算 MD5 需要花费一定的时间，因此会稍微增加断点续传时的耗时，默认为 false，不开启。
     * config.forceDirect: 是否上传全部采用直传方式，为布尔值；为 `true` 时则上传方式全部为直传 form 方式，禁用断点续传，默认 `false`。
+    * config.chunkSize: `number`，分片上传时每片的大小，必须为正整数，单位为 `MB`，且最大不能超过 1024，默认值 4。因为 chunk 数最大 10000，所以如果文件以你所设的 `chunkSize` 进行分片并且 chunk 数超过 10000，我们会把你所设的 `chunkSize` 扩大二倍，如果仍不符合则继续扩大，直到符合条件。
 
-  * **putExtra**:
+  * **putExtra**: `object`，其中的每一项都为可选
 
     ```JavaScript
-    var putExtra = {
-      fname: "",
-      params: {},
-      mimeType: [] || null
+    const putExtra = {
+      fname: "qiniu.txt",
+      mimeType: "text/plain",
+      customVars: { 'x:test': 'qiniu', ... },
+      metadata: { 'x-qn-meta': 'qiniu', ... },
     };
     ```
 
-    * fname: `string`，文件原文件名
-    * params: `object`，用来放置自定义变量，自定义变量格式请参考[文档](https://developer.qiniu.com/kodo/manual/1235/vars)
-    * mimeType: `null || array`，用来限制上传文件类型，为 `null` 时表示不对文件类型限制；限制类型放到数组里：
-    `["image/png", "image/jpeg", "image/gif"]`
-
-### qiniu.createMkFileUrl(url: string, size: number, key: string, putExtra: object): string
-
-  返回创建文件的 url；当分片上传时，我们需要把分片返回的 ctx 信息拼接后通过该 url 上传给七牛以创建文件。
-
-  * **url**: 上传域名，可以通过qiniu.getUploadUrl()获得
-  * **size**: 文件大小
-  * **key**: 文件资源名
-  * **putExtra**: 同上
-
-  ```JavaScript
-  var requestUrl = qiniu.createMkFileUrl(
-    uploadUrl,
-    file.size,
-    key,
-    putExtra
-  );
-  ```
+    * fname: `string`，文件原始文件名，若未指定，则魔法变量中无法使用 fname、ext、suffix
+    * customVars: `object`，用来放置自定义变量，变量名必须以 `x:` 开始，自定义变量格式及说明请参考[文档](https://developer.qiniu.com/kodo/manual/1235/vars)
+    * metadata: `object`，用来防止自定义 meta，变量名必须以 `x-qn-meta-`开始，自定义资源信息格式及说明请参考
+    [文档](https://developer.qiniu.com/kodo/api/1252/chgm)
+    * mimeType: `string`，指定所传的文件类型
 
 ### qiniu.region: object
 
@@ -245,68 +237,53 @@ qiniu.compressImage(file, options).then(data => {
   * **token**: 后端返回的上传验证信息
 
   ```JavaScript
-  var headers = qiniu.getHeadersForChunkUpload(token)
+  const headers = qiniu.getHeadersForChunkUpload(token)
   ```
 
-### qiniu.getHeadersForMkFile(token: string): object
+### qiniu.deleteUploadedChunks(token: string, key: stting, uploadInfo: object): Promise<void>
+  删除指定上传任务中已上传完成的片，`key` 为目标文件名，`uploadInfo` 可通过 `next` 的返回获取，`token` 由服务端生成
 
-  返回 `object`，包含用来获得文件创建的头信息，参数为 `token` 字符串；当分片上传完需要把 ctx 信息传给七牛用来创建文件时，请求需要带该函数返回的头信息
-
-  ```JavaScript
-  var headers = qiniu.getHeadersForMkFile(token)
-  ```
-
-### qiniu.getResumeUploadedSize(file: blob): number
-  断点续传时返回文件之前已上传的字节数，为 0 代表当前并无该文件的断点信息
-
-### qiniu.filterParams(params: object): array
-
-  返回[[k, v],...]格式的数组，k 为自定义变量 `key` 名，v 为自定义变量值，用来提取 `putExtra.params` 包含的自定义变量
+### qiniu.compressImage(file: File, options: object): Promise<CompressResult> (上传前图片压缩)
 
   ```JavaScript
-  var customVarList = qiniu.filterParams(putExtra.params)
-
-  for (var i = 0; i < customVarList.length; i++) {
-    var k = customVarList[i]
-    multipart_params_obj[k[0]] = k[1]
-  }
-  ```
-### qiniu.compressImage(file: blob, options: object) : Promise (上传前图片压缩)
-
-  ```JavaScript
-  var imgLink = qiniu.compressImage(file, options).then(res => {
+  const imgLink = qiniu.compressImage(file, options).then(res => {
     // res : {
-    //   dist: 压缩后输出的 blob 对象，或原始的 file，具体看下面的 options 配置
+    //   dist: 压缩后输出的 File 对象，或原始的 file，具体看下面的 options 配置
     //   width: 压缩后的图片宽度
     //   height: 压缩后的图片高度
     // }
     }
   })
   ```
-  * file: 要压缩的源图片，为 `blob` 对象，支持 `image/png`、`image/jpeg`、`image/bmp`、`image/webp` 这几种图片类型
+  * file: 要压缩的源图片，为 `File` 对象，支持 `image/png`、`image/jpeg`、`image/bmp`、`image/webp` 这几种图片类型
   * options: `object`
     * options.quality: `number`，图片压缩质量，在图片格式为 `image/jpeg` 或 `image/webp` 的情况下生效，其他格式不会生效，可以从 0 到 1 的区间内选择图片的质量。默认值 0.92
     * options.maxWidh: `number`，压缩图片的最大宽度值
     * options.maxHeight: `number`，压缩图片的最大高度值
     （注意：当 `maxWidth` 和 `maxHeight` 都不设置时，则采用原图尺寸大小）
     * options.noCompressIfLarger: `boolean`，为 `true` 时如果发现压缩后图片大小比原来还大，则返回源图片（即输出的 dist 直接返回了输入的 file）；默认 `false`，即保证图片尺寸符合要求，但不保证压缩后的图片体积一定变小
+  * CompressResult: `object`，包含如下字段：
+    * dist: 压缩后输出的 File 对象，或原始的 file，具体看下面的 options 配置
+    * width: 压缩后的图片宽度
+    * height: 压缩后的图片高度
 
-### qiniu.watermark(options: object, key: string, domain: string): string（水印）
+### qiniu.watermark(options: object, key?: string, domain?: string): string（水印）
 
   返回添加水印后的图片地址
   * **key** : 文件资源名
   * **domain**: 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取，前端可以通过接口请求后端得到
 
+
   ```JavaScript
 
-  var imgLink = qiniu.watermark({
+  const imgLink = qiniu.watermark({
        mode: 1, // 图片水印
        image: 'http://www.b1.qiniudn.com/images/logo-2.png', // 图片水印的Url，mode = 1 时 **必需**
        dissolve: 50, // 透明度，取值范围1-100，非必需，下同
        gravity: 'SouthWest', // 水印位置，为以下参数[NorthWest、North、NorthEast、West、Center、East、SouthWest、South、SouthEast]之一
        dx: 100,  // 横轴边距，单位:像素(px)
        dy: 100 // 纵轴边距，单位:像素(px)
-   }, key, domain) // key 为非必需参数，下同
+   }, key, domain)
 
   // imgLink 可以赋值给 html 的 img 元素的 src 属性，下同
 
@@ -316,7 +293,7 @@ qiniu.compressImage(file, options).then(data => {
 
   // 或者
 
-  var imgLink = qiniu.watermark({
+  const imgLink = qiniu.watermark({
        mode: 2,  // 文字水印
        text: 'hello world !', // 水印文字，mode = 2 时 **必需**
        dissolve: 50,          // 透明度，取值范围1-100，非必需，下同
@@ -326,17 +303,17 @@ qiniu.compressImage(file, options).then(data => {
        dx: 100,               // 横轴边距，单位:像素(px)
        dy: 100,               // 纵轴边距，单位:像素(px)
        fill: '#FFF000'        // 水印文字颜色，RGB格式，可以是颜色名称
-   }, key,domain)
+   }, key, domain)
   ```
 
   options包含的具体水印参数解释见[水印（watermark）](https://developer.qiniu.com/dora/api/image-watermarking-processing-watermark)
 
-### qiniu.imageView2(options: object, key: string, domain: string): string (缩略)
+### qiniu.imageView2(options: object, key?: string, domain?: string): string (缩略)
 
   返回处理后的图片url
 
   ```JavaScript
-  var imgLink = qiniu.imageView2({
+  const imgLink = qiniu.imageView2({
      mode: 3,       // 缩略模式，共6种[0-5]
      w: 100,        // 具体含义由缩略模式决定
      h: 100,        // 具体含义由缩略模式决定
@@ -347,12 +324,12 @@ qiniu.compressImage(file, options).then(data => {
 
   options包含的具体缩略参数解释见[图片基本处理（imageView2）](https://developer.qiniu.com/dora/api/basic-processing-images-imageview2)
 
-### qiniu.imageMogr2(options: object, key: string, domain: string): string (图像高级处理)
+### qiniu.imageMogr2(options: object, key?: string, domain?: string): string (图像高级处理)
 
   返回处理后的图片url
 
   ```JavaScript
-  var imgLink = qiniu.imageMogr2({
+  const imgLink = qiniu.imageMogr2({
      "auto-orient": true,      // 布尔值，是否根据原图EXIF信息自动旋正，便于后续处理，建议放在首位。
      strip: true,              // 布尔值，是否去除图片中的元信息
      thumbnail: '1000x1000'    // 缩放操作参数
@@ -383,10 +360,10 @@ qiniu.compressImage(file, options).then(data => {
 
   具体 exif 解释见[图片 EXIF 信息（exif）](https://developer.qiniu.com/dora/api/photo-exif-information-exif)
 
-### qiniu.pipeline(fopArr: array, key: string, domain: string): string
+### qiniu.pipeline(fopArr: array, key?: string, domain?: string): string
 
   ```JavaScript
-  var fopArr = [{
+  const fopArr = [{
       fop: 'watermark', // 指定watermark操作
       mode: 2,          // 此参数同watermark函数的参数，下同。
       text: 'hello world !',
@@ -419,7 +396,7 @@ qiniu.compressImage(file, options).then(data => {
 
   // fopArr 可以为三种类型'watermark'、'imageMogr2'、'imageView2'中的任意1-3个
   // 例如只对'watermark'、'imageMogr2'进行管道操作，则如下即可
-  // var fopArr = [{
+  // const fopArr = [{
   //    fop: 'watermark', // 指定watermark操作
   //    mode: 2, // 此参数同watermark函数的参数，下同。
   //    text: 'hello world !',
@@ -443,7 +420,7 @@ qiniu.compressImage(file, options).then(data => {
   //    blur:'3x5'
   // }];
 
-  var imgLink = qiniu.pipeline(fopArr, key, domain))
+  const imgLink = qiniu.pipeline(fopArr, key, domain))
   ```
 
   fopArr包含的具体管道操作解释见[管道操作](https://developer.qiniu.com/dora/manual/processing-mechanism)

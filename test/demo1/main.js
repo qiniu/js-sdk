@@ -8,9 +8,7 @@
       region: qiniu.region.z2
     };
     var putExtra = {
-      fname: "",
-      params: {},
-      mimeType: null
+      customVars: {}
     };
     $(".nav-box")
       .find("a")

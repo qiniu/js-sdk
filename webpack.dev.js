@@ -1,24 +1,39 @@
-var merge = require("webpack-merge");
-var path = require("path");
-var webpack = require("webpack");
-var common = require("./webpack.common.js");
-var OpenBrowserPlugin = require("open-browser-webpack-plugin");
+const merge = require('webpack-merge')
+const path = require('path')
+const common = require('./webpack.common.js')
+
 module.exports = merge(common, {
-  plugins:[new OpenBrowserPlugin({ url: 'http://0.0.0.0:8080/test/demo1/' })],
+  mode: "development",
+  entry: './src/index.ts',
+  module: {
+    rules: [
+      {
+        test: /\.ts$/,
+        use: 'ts-loader',
+        exclude: /node_modules/
+      }
+    ]
+  },
+  output: {
+    filename: 'qiniu.min.js',
+    library: 'qiniu',
+    libraryTarget: 'umd',
+    path: path.resolve(__dirname, 'webpack'),
+  },
   devServer: {
     disableHostCheck: true,
     progress: true,
+    hot: true,
     proxy: {
-      "/api/*": {
-        target: "http://0.0.0.0:9000",
+      '/api/*': {
+        target: 'http://0.0.0.0:9000',
         changeOrigin: true,
         secure: false
       }
     },
-    host: "0.0.0.0", 
-    contentBase: path.join(__dirname, "./"),
-    publicPath: "/dist/",
-    hot: false,
+    host: '0.0.0.0',
+    contentBase: path.join(__dirname, './'),
+    publicPath: '/webpack/',
     inline: false
   }
-});
+})

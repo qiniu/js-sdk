@@ -1,5 +1,4 @@
 var path = require("path");
-var OpenBrowserPlugin = require("open-browser-webpack-plugin");
 var es3ifyPlugin = require("es3ify-webpack-plugin");
 
 module.exports = {
@@ -21,8 +20,7 @@ module.exports = {
     ]
   },
   plugins:[
-    new es3ifyPlugin(),
-    new OpenBrowserPlugin({ url: 'http://0.0.0.0:8000/' })
+    new es3ifyPlugin()
   ],
   devServer: {
     disableHostCheck: true,
