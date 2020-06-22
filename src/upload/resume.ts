@@ -33,7 +33,7 @@ export interface UploadChunkBody extends Extra {
 
 /** 是否为正整数 */
 function isPositiveInteger(n: number) {
-  var re = /^[1-9]+$/
+  var re = /^[1-9]\d*$/
   return re.test(String(n))
 }
 
@@ -46,13 +46,12 @@ export default class Resume extends Base {
   private uploadId: string
 
   protected async run() {
+    if (!this.config.chunkSize || !isPositiveInteger(this.config.chunkSize)) {
+      throw new Error('chunkSize must be a positive integer')
+    }
 
     if (this.config.chunkSize > 1024) {
       throw new Error('chunkSize maximum value is 1024')
-    }
-
-    if (!this.config.chunkSize || !isPositiveInteger(this.config.chunkSize)) {
-      throw new Error('chunkSize must be a positive integer')
     }
 
     await this.initBeforeUploadChunks()
@@ -116,6 +115,7 @@ export default class Resume extends Base {
       this.getUploadInfo(),
       requestOptions
     )
+
     // 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null，这里在每次分片上传完成后都手动更新下 progress
     onProgress({
       loaded: chunk.size,
@@ -185,8 +185,8 @@ export default class Resume extends Base {
 
   private getUploadInfo(): UploadInfo {
     return {
-      uploadUrl: this.uploadUrl,
-      uploadId: this.uploadId
+      id: this.uploadId,
+      url: this.uploadUrl
     }
   }
 
@@ -214,8 +214,8 @@ export default class Resume extends Base {
         this.getProgressInfoItem(this.loaded.chunks[index], chunk.size)
       )),
       uploadInfo: {
-        uploadId: this.uploadId,
-        uploadUrl: this.uploadUrl
+        id: this.uploadId,
+        url: this.uploadUrl
       }
     }
     this.onData(this.progress)

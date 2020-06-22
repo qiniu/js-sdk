@@ -49,8 +49,8 @@ export interface UploadOptions {
 }
 
 export interface UploadInfo {
-  uploadId: string
-  uploadUrl: string
+  id: string
+  url: string
 }
 
 /** 传递给外部的上传进度信息 */
@@ -130,7 +130,7 @@ export default abstract class Base {
     this.bucket = utils.getPutPolicy(this.token).bucket
   }
 
-  public async putFile(): Promise<utils.ResponseSuccess<UploadCompleteData> | void> {
+  public async putFile(): Promise<utils.ResponseSuccess<UploadCompleteData>> {
     this.aborted = false
     if (!this.putExtra.fname) {
       this.putExtra.fname = this.file.name
@@ -139,14 +139,14 @@ export default abstract class Base {
     if (this.file.size > 10000 * GB) {
       const err = new Error('file size exceed maximum value 10000G')
       this.onError(err)
-      return
+      throw err
     }
 
     if (this.putExtra.customVars) {
       if (!utils.isCustomVarsValid(this.putExtra.customVars)) {
         const err = new Error('customVars key should start width x:')
         this.onError(err)
-        return
+        throw err
       }
     }
 
@@ -154,7 +154,7 @@ export default abstract class Base {
       if (!utils.isMetaDataValid(this.putExtra.metadata)) {
         const err = new Error('metadata key should start with x-qn-meta-')
         this.onError(err)
-        return
+        throw err
       }
     }
 
@@ -181,9 +181,11 @@ export default abstract class Base {
 
       const needRetry = err.isRequestError && err.code === 0 && !this.aborted
       const notReachRetryCount = ++this.retryCount <= this.config.retryCount
-      // 如果可以重试或者 uploadId 无效则重新上传
+      // 以下条件满足其中之一则会进行重新上传：
+      // 1. 满足 needRetry 的条件且 retryCount 不为 0
+      // 2. uploadId 无效时在 resume 里会清除本地数据，并且这里触发重新上传
       if (needRetry && notReachRetryCount || err.code === 612) {
-        return await this.putFile()
+        return this.putFile()
       }
 
       this.onError(err)

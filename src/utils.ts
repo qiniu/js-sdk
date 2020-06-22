@@ -150,7 +150,7 @@ export interface ResponseError {
   reqId: string /** xhr请求错误的 X-Reqid。 */
 }
 
-export type CustomError = ResponseError | Error
+export type CustomError = ResponseError | Error | any
 
 export type XHRHandler = (xhr: XMLHttpRequest) => void
 

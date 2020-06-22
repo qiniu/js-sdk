@@ -44,8 +44,8 @@ export async function getUploadUrl(config: Config, token: string): Promise<strin
  * @param uploadInfo 上传信息
  */
 function getBaseUrl(bucket: string, key: string, uploadInfo: UploadInfo) {
-  const { uploadUrl, uploadId } = uploadInfo
-  return `${uploadUrl}/buckets/${bucket}/objects/${urlSafeBase64Encode(key)}/uploads/${uploadId}`
+  const { url, id } = uploadInfo
+  return `${url}/buckets/${bucket}/objects/${urlSafeBase64Encode(key)}/uploads/${id}`
 }
 
 export interface InitPartsData {
@@ -83,7 +83,6 @@ export interface UploadChunkData {
 }
 
 /**
- *
  * @param token 上传鉴权凭证
  * @param index 当前 chunk 的索引
  * @param uploadInfo 上传信息
@@ -105,11 +104,7 @@ export function uploadChunk(
   })
 }
 
-export interface UploadCompleteData {
-  hash: string
-  key: string
-  [key: string]: string
-}
+export type UploadCompleteData = any
 
 /**
  * @param token 上传鉴权凭证
