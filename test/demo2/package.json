@@ -14,7 +14,6 @@
     "babel-plugin-syntax-flow": "^6.18.0",
     "es3ify-webpack-plugin": "^0.1.0",
     "qiniu-js": "^2.5.4",
-    "uglifyjs-webpack-plugin": "^1.1.6",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.11",
     "webpack-dev-server": "^3.11.0"
