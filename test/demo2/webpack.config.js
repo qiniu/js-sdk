@@ -5,7 +5,7 @@ module.exports = {
   entry: "./index.js",
   output: {
     filename: "boundle.js",
-    path: path.resolve(__dirname, "dist/"),
+    path: path.resolve(__dirname, "webpack/"),
     publicPath: "/test/"
   },
   module: {
@@ -35,7 +35,7 @@ module.exports = {
     host: "0.0.0.0",
     port: 8000,
     contentBase: path.join(__dirname, "./"),
-    publicPath: "/dist/",
+    publicPath: "/webpack/",
     hot: true,
     inline: false
   }
