@@ -1,6 +1,6 @@
 import Resume from './resume'
 import Direct from './direct'
-import { UploadOptions, UploadHandler, DEFAULT_CHUNK_SIZE } from './base'
+import { UploadOptions, UploadHandler } from './base'
 import StatisticsLogger from '../statisticsLog'
 
 export * from './base'
@@ -15,7 +15,7 @@ export default function createUploadManager(
     return new Direct(options, handlers, statisticsLogger)
   }
 
-  return options.file.size > DEFAULT_CHUNK_SIZE
+  return options.file.size > 4 * 1024 * 1024
     ? new Resume(options, handlers, statisticsLogger)
     : new Direct(options, handlers, statisticsLogger)
 }
