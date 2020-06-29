@@ -273,7 +273,7 @@ interface PutPolicy {
 export function getPutPolicy(token: string) {
   const segments = token.split(':')
   const ak = segments[0]
-  const putPolicy: PutPolicy = JSON.parse(urlSafeBase64Decode(segments[2]))
+  const putPolicy: PutPolicy = JSON.parse(urlSafeBase64Decode(segments[segments.length - 1]))
 
   return {
     ak,
