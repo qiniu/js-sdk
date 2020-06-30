@@ -14,6 +14,20 @@ export interface NextObserver<T, E, C> {
   complete?: (res: C) => void
 }
 
+export interface ErrorObserver<T, E, C> {
+  next?: (value: T) => void
+  error: (err: E) => void
+  complete?: (res: C) => void
+}
+
+export interface CompletionObserver<T, E, C> {
+  next?: (value: T) => void
+  error?: (err: E) => void
+  complete: (res: C) => void
+}
+
+export type PartialObserver<T, E, C> = NextObserver<T, E, C> | ErrorObserver<T, E, C> | CompletionObserver<T, E, C>
+
 export interface IUnsubscribable {
   /** 取消 observer 的订阅 */
   unsubscribe(): void
@@ -27,10 +41,11 @@ export interface ISubscriptionLike extends IUnsubscribable {
 export type TeardownLogic = () => void
 
 export interface ISubscribable<T, E, C> {
-  subscribe(observer?: NextObserver<T, E, C>): IUnsubscribable
-  subscribe(next: null | undefined, error: null | undefined, complete: (res: C) => void): IUnsubscribable
-  subscribe(next: null | undefined, error: (error: E) => void, complete?: (res: C) => void): IUnsubscribable
-  subscribe(next: (value: T) => void, error: null | undefined, complete: (res: C) => void): IUnsubscribable
+  subscribe(
+    observer?: PartialObserver<T, E, C> | ((value: T) => void),
+    error?: (error: any) => void,
+    complete?: () => void
+  ): IUnsubscribable
 }
 
 /** 表示可清理的资源，比如 Observable 的执行 */
@@ -68,7 +83,7 @@ export class Subscriber<T, E, C> extends Subscription implements IObserver<T, E,
   protected destination: Partial<IObserver<T, E, C>>
 
   constructor(
-    observerOrNext?: NextObserver<T, E, C> | ((value: T) => void) | null,
+    observerOrNext?: PartialObserver<T, E, C> | ((value: T) => void) | null,
     error?: ((err: E) => void) | null,
     complete?: ((res: C) => void) | null
   ) {
@@ -120,12 +135,12 @@ export class Observable<T, E, C> implements ISubscribable<T, E, C> {
 
   constructor(private _subscribe: (subscriber: Subscriber<T, E, C>) => TeardownLogic) {}
 
-  subscribe(observer: NextObserver<T, E, C>): Subscription
+  subscribe(observer: PartialObserver<T, E, C>): Subscription
   subscribe(next: null | undefined, error: null | undefined, complete: (res: C) => void): Subscription
   subscribe(next: null | undefined, error: (error: E) => void, complete?: (res: C) => void): Subscription
   subscribe(next: (value: T) => void, error: null | undefined, complete: (res: C) => void): Subscription
   subscribe(
-    observerOrNext?: NextObserver<T, E, C> | ((value: T) => void) | null,
+    observerOrNext?: PartialObserver<T, E, C> | ((value: T) => void) | null,
     error?: ((err: E) => void) | null,
     complete?: ((res: C) => void) | null
   ): Subscription {
