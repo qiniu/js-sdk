@@ -47,6 +47,8 @@ export {
   getHeadersForChunkUpload
 } from './utils'
 
+export { urlSafeBase64Encode, urlSafeBase64Decode } from './base64'
+
 export { CompressResult } from './compress'
 
 export { deleteUploadedChunks, getUploadUrl } from './api'

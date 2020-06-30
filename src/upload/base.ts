@@ -126,8 +126,11 @@ export default abstract class Base {
     this.onData = handlers.onData
     this.onError = handlers.onError
     this.onComplete = handlers.onComplete
-
-    this.bucket = utils.getPutPolicy(this.token).bucket
+    try {
+      this.bucket = utils.getPutPolicy(this.token).bucket
+    } catch (e) {
+      this.onError(e)
+    }
   }
 
   public async putFile(): Promise<utils.ResponseSuccess<UploadCompleteData>> {
