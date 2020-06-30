@@ -272,6 +272,7 @@ interface PutPolicy {
 
 export function getPutPolicy(token: string) {
   const segments = token.split(':')
+  // token 构造的差异参考：https://github.com/qbox/product/blob/master/kodo/auths/UpToken.md#admin-uptoken-authorization
   const ak = segments.length > 3 ? segments[1] : segments[0]
   const putPolicy: PutPolicy = JSON.parse(urlSafeBase64Decode(segments[segments.length - 1]))
 
