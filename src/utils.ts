@@ -259,9 +259,10 @@ export function getDomainFromUrl(url: string): string {
 }
 
 export function getAPIProtocol(): string {
-  if (window.location.protocol === 'http:') {
+  if (window && window.location && window.location.protocol === 'http:') {
     return 'http:'
   }
+
   return 'https:'
 }
 
