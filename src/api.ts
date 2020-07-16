@@ -21,7 +21,7 @@ async function getUpHosts(token: string): Promise<UpHosts> {
 
 /** 获取上传url */
 export async function getUploadUrl(config: Config, token: string): Promise<string> {
-  const protocol = utils.getAPIProtocol()
+  const protocol = config.protocol || utils.getAPIProtocol()
 
   if (config.uphost) {
     return `${protocol}//${config.uphost}`
