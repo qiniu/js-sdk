@@ -3,7 +3,7 @@ module.exports = {
   transform: {
     ".ts": 'ts-jest'
   },
-  testRegex: '.+\\.test\\.(ts|js)$',
+  testRegex: '.+\\.test\\.ts$',
   testPathIgnorePatterns: [
     "esm",
     "lib",
