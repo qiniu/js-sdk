@@ -1,5 +1,4 @@
 module.exports = {
-  testURL: "http://localhost",
   transform: {
     ".ts": 'ts-jest'
   },
