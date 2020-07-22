@@ -23,6 +23,10 @@ describe('api function test', () => {
     url = await getUploadUrl(config, token)
     expect(url).toBe('https://upload.qiniup.com')
 
+    config.upprotocol = 'https:'
+    url = await getUploadUrl(config, token)
+    expect(url).toBe('https://upload.qiniup.com')
+
     config.upprotocol = 'http:'
     url = await getUploadUrl(config, token)
     expect(url).toBe('http://upload.qiniup.com')
