@@ -4,7 +4,8 @@
     var config = {
       useCdnDomain: true,
       disableStatisticsReport: false,
-      retryCount: 6
+      retryCount: 6,
+      region: qiniu.region.z2
     };
     var putExtra = {
       customVars: {}
