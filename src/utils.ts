@@ -258,14 +258,6 @@ export function getDomainFromUrl(url: string): string {
   return ''
 }
 
-export function getAPIProtocol(): string {
-  if (window && window.location && window.location.protocol) {
-    return window.location.protocol
-  }
-
-  return 'http:'
-}
-
 interface PutPolicy {
   ak: string
   scope: string

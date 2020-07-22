@@ -37,7 +37,7 @@ export interface Config {
   /** 分片大小，单位为 MB */
   chunkSize: number
   /** 上传域名协议 */
-  protocol?: 'http:' | 'https:'
+  upProtocol?: 'http:' | 'https:'
   /** 上传区域 */
   region?: typeof region[keyof typeof region]
 }
