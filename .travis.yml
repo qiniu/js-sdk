@@ -8,6 +8,8 @@ install:
 - npm install
 script:
 - npm run build
+- jest --coverage
+- npx codecov
 before_deploy: npm run build
 deploy:
   provider: npm
