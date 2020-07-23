@@ -36,6 +36,8 @@ export interface Config {
   disableStatisticsReport: boolean
   /** 分片大小，单位为 MB */
   chunkSize: number
+  /** 上传域名协议 */
+  upprotocol: 'http:' | 'https:'
   /** 上传区域 */
   region?: typeof region[keyof typeof region]
 }
@@ -108,6 +110,7 @@ export default abstract class Base {
       retryCount: 3,
       checkByMD5: false,
       uphost: '',
+      upprotocol: 'https:',
       forceDirect: false,
       chunkSize: DEFAULT_CHUNK_SIZE,
       concurrentRequestLimit: 3,

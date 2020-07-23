@@ -258,13 +258,6 @@ export function getDomainFromUrl(url: string): string {
   return ''
 }
 
-export function getAPIProtocol(): string {
-  if (window.location.protocol === 'http:') {
-    return 'http:'
-  }
-  return 'https:'
-}
-
 interface PutPolicy {
   ak: string
   scope: string

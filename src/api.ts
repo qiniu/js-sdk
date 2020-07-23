@@ -13,15 +13,15 @@ interface UpHosts {
   }
 }
 
-async function getUpHosts(token: string): Promise<UpHosts> {
+export async function getUpHosts(token: string, protocol: 'https:' | 'http:'): Promise<UpHosts> {
   const putPolicy = utils.getPutPolicy(token)
-  const url = utils.getAPIProtocol() + '//api.qiniu.com/v2/query?ak=' + putPolicy.ak + '&bucket=' + putPolicy.bucket
+  const url = protocol + '//api.qiniu.com/v2/query?ak=' + putPolicy.ak + '&bucket=' + putPolicy.bucket
   return utils.request(url, { method: 'GET' })
 }
 
 /** 获取上传url */
 export async function getUploadUrl(config: Config, token: string): Promise<string> {
-  const protocol = utils.getAPIProtocol()
+  const protocol = config.upprotocol
 
   if (config.uphost) {
     return `${protocol}//${config.uphost}`
@@ -33,7 +33,7 @@ export async function getUploadUrl(config: Config, token: string): Promise<strin
     return `${protocol}//${host}`
   }
 
-  const res = await getUpHosts(token)
+  const res = await getUpHosts(token, protocol)
   const hosts = res.data.up.acc.main
   return `${protocol}//${hosts[0]}`
 }
