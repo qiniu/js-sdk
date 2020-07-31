@@ -54,7 +54,11 @@ export function setLocalFileInfo(localKey: string, info: LocalInfo) {
 }
 
 export function createLocalKey(name: string, key: string | null | undefined, size: number): string {
-  return `qiniu_js_sdk_upload_file_name_${name}_key_${key == null ? '' : key}_size_${size}`
+  if (key == null) {
+    return `qiniu_js_sdk_upload_file_name_${name}_size_${size}`
+  }
+
+  return `qiniu_js_sdk_upload_file_name_${name}_key_${key}_size_${size}`
 }
 
 export function removeLocalFileInfo(localKey: string) {
