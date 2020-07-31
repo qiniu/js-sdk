@@ -43,9 +43,9 @@ export async function getUploadUrl(config: Config, token: string): Promise<strin
  * @param key 目标文件名
  * @param uploadInfo 上传信息
  */
-function getBaseUrl(bucket: string, key: string, uploadInfo: UploadInfo) {
+function getBaseUrl(bucket: string, key: string | null | undefined, uploadInfo: UploadInfo) {
   const { url, id } = uploadInfo
-  return `${url}/buckets/${bucket}/objects/${urlSafeBase64Encode(key)}/uploads/${id}`
+  return `${url}/buckets/${bucket}/objects/${key != null ? urlSafeBase64Encode(key) : '~'}/uploads/${id}`
 }
 
 export interface InitPartsData {
@@ -64,10 +64,10 @@ export interface InitPartsData {
 export function initUploadParts(
   token: string,
   bucket: string,
-  key: string,
+  key: string | null | undefined,
   uploadUrl: string
 ): utils.Response<InitPartsData> {
-  const url = `${uploadUrl}/buckets/${bucket}/objects/${urlSafeBase64Encode(key)}/uploads`
+  const url = `${uploadUrl}/buckets/${bucket}/objects/${key != null ? urlSafeBase64Encode(key) : '~'}/uploads`
   return utils.request<InitPartsData>(
     url,
     {
@@ -90,7 +90,7 @@ export interface UploadChunkData {
  */
 export function uploadChunk(
   token: string,
-  key: string,
+  key: string | null | undefined,
   index: number,
   uploadInfo: UploadInfo,
   options: Partial<utils.RequestOptions>
@@ -114,7 +114,7 @@ export type UploadCompleteData = any
  */
 export function uploadComplete(
   token: string,
-  key: string,
+  key: string | null | undefined,
   uploadInfo: UploadInfo,
   options: Partial<utils.RequestOptions>
 ): utils.Response<UploadCompleteData> {
@@ -134,7 +134,7 @@ export function uploadComplete(
  */
 export function deleteUploadedChunks(
   token: string,
-  key: string,
+  key: string | null | undefined,
   uploadinfo: UploadInfo
 ): utils.Response<void> {
   const bucket = utils.getPutPolicy(token).bucket

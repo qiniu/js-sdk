@@ -44,7 +44,7 @@ export interface Config {
 
 export interface UploadOptions {
   file: File
-  key: string
+  key: string | null | undefined
   token: string
   putExtra?: Partial<Extra>
   config?: Partial<Config>
@@ -88,7 +88,7 @@ export default abstract class Base {
   protected putExtra: Extra
   protected xhrList: XMLHttpRequest[] = []
   protected file: File
-  protected key: string
+  protected key: string | null | undefined
   protected aborted = false
   protected retryCount = 0
   protected token: string
