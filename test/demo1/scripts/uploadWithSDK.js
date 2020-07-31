@@ -88,7 +88,7 @@ function uploadWithSDK(token, putExtra, config, domain) {
       };
       var subscription;
       // 调用sdk上传接口获得相应的observable，控制上传和暂停
-      observable = qiniu.upload(file, null, token, putExtra, config);
+      observable = qiniu.upload(file, key, token, putExtra, config);
 
       $(board)
         .find(".control-upload")
