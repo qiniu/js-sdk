@@ -180,7 +180,7 @@ qiniu.compressImage(file, options).then(data => {
 
   * **bucket**: 上传的目标空间
   * **file**: `File` 对象，上传的文件
-  * **key**: 文件资源名
+  * **key**: 文件资源名，为空字符串时则文件名也为空，为 `null` 时则自动使用文件的 `hash` 为文件名
   * **token**: 上传验证信息，前端通过接口请求后端获得
   * **config**: `object`，其中的每一项都为可选
 
