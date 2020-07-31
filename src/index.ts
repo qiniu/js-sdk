@@ -17,7 +17,7 @@ const statisticsLogger = new StatisticsLogger()
  */
 function upload(
   file: File,
-  key: string | null,
+  key: string | null | undefined,
   token: string,
   putExtra?: Partial<Extra>,
   config?: Partial<Config>
