@@ -21,7 +21,14 @@ export async function getUpHosts(token: string, protocol: 'https:' | 'http:'): P
 
 /** 获取上传url */
 export async function getUploadUrl(config: Config, token: string): Promise<string> {
-  const protocol = config.upprotocol
+  const protocol = 'http:'
+  if (window.location.protocol === "http:") {
+    const protocol = config.upprotocol
+  } else if (window.location.protocol === "https:") {
+    const protocol = 'https:'
+  } else {
+    const protocol = 'http:'
+  }
 
   if (config.uphost) {
     return `${protocol}//${config.uphost}`
