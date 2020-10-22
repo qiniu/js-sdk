@@ -16,7 +16,13 @@ module.exports = merge(common, {
   },
   optimization: {
     minimize: true,
-    minimizer: [new TerserPlugin()],
+    minimizer: [
+      new TerserPlugin({
+        cache: true,
+        parallel: true,
+        sourceMap: true
+      })
+    ]
   },
   plugins: [
     new webpack.DefinePlugin({
