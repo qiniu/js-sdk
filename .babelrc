@@ -3,7 +3,6 @@
     [
       "@babel/preset-env",
       {
-        "useBuiltIns": "usage", // 在文件需要的位置单独按需引入 polyfill
         "targets": {
           "browsers": ["last 2 versions", "ie >= 8"]
         },
