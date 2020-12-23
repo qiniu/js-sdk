@@ -38,6 +38,7 @@ type Pipeline =
   | (ImageWatermark & { fop: 'watermark' })
   | (ImageViewOptions & { fop: 'imageView2' })
   | (ImageMogr2 & { fop: 'imageMogr2' })
+  | { fop: 'imageslim' }
 
 export interface Entry {
   domain: string
@@ -172,6 +173,9 @@ export function pipeline(arr: Pipeline[], key?: string, domain?: string) {
           break
         case 'imageMogr2':
           imageUrl += imageMogr2(option) + '|'
+          break
+        case 'imageslim':
+          imageUrl += 'imageslim|'
           break
         default:
           errOp = true
