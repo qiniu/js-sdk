@@ -336,7 +336,7 @@ qiniu.compressImage(file, options).then(data => {
   const imgLink = qiniu.imageMogr2({
      "auto-orient": true,      // 布尔值，是否根据原图EXIF信息自动旋正，便于后续处理，建议放在首位。
      strip: true,              // 布尔值，是否去除图片中的元信息
-     thumbnail: '1000x1000'    // 缩放操作参数
+     thumbnail: '1000x1000',   // 缩放操作参数
      crop: '!300x400a10a10',   // 裁剪操作参数
      gravity: 'NorthWest',     // 裁剪锚点参数
      quality: 40,              // 图片质量，取值范围1-100

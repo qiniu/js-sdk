@@ -24,12 +24,13 @@ export interface ImageWatermark {
 
 export interface ImageMogr2 {
   'auto-orient'?: boolean
+  'ignore-error'?: 1 | 0
   strip?: boolean
-  thumbnail?: number
-  crop?: number
-  gravity?: number
-  format?: number
-  blur?: number
+  thumbnail?: string
+  crop?: string
+  gravity?: string
+  format?: string
+  blur?: string
   quality?: number
   rotate?: number
 }

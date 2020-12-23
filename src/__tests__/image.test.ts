@@ -23,14 +23,14 @@ describe('image func test', () => {
 
   test('imageMogr2', () => {
     let m = {
-      thumbnail: 1,
+      thumbnail: String(1),
       strip: true,
-      gravity: 1,
-      crop: 1,
+      gravity: String(1),
+      crop: String(1),
       quality: 1,
       rotate: 1,
-      format: 1,
-      blur: 1
+      format: String(1),
+      blur: String(1)
     }
 
     let url = imageMogr2(m, key, domain)
