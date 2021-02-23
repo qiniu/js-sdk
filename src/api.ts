@@ -19,9 +19,11 @@ export async function getUpHosts(token: string, protocol: 'https:' | 'http:'): P
   return utils.request(url, { method: 'GET' })
 }
 
+export type UploadUrlConfig = Partial<Pick<Config, 'upprotocol' | 'uphost' | 'region' | 'useCdnDomain'>>
+
 /** 获取上传url */
-export async function getUploadUrl(config: Config, token: string): Promise<string> {
-  const protocol = config.upprotocol
+export async function getUploadUrl(config: UploadUrlConfig, token: string): Promise<string> {
+  const protocol = config.upprotocol || 'https:'
 
   if (config.uphost) {
     return `${protocol}//${config.uphost}`
