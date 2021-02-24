@@ -35,7 +35,7 @@ function upload(
     const manager = createUploadManager(options, {
       onData: (data: UploadProgress) => observer.next(data),
       onError: (err: CustomError) => observer.error(err),
-      onComplete: (res: any) => observer.complete(res)
+      onComplete: (res: UploadCompleteData) => observer.complete(res)
     }, statisticsLogger)
     manager.putFile()
     return manager.stop.bind(manager)
