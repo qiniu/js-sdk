@@ -226,25 +226,13 @@ export function request<T>(url: string, options: RequestOptions): Response<T> {
 }
 
 export function getPortFromUrl(url: string) {
+  // SKIP URL in case of IE incompatibility
   if (url && url.match) {
-    let groups = url.match(/(^https?)/)
-
-    if (!groups) {
+    const matches = url.match(/^(http|https):\/\/[^:\/]+(?::(\d+))?/)
+    if (matches === null) {
       return ''
     }
-
-    const type = groups[1]
-    groups = url.match(/^https?:\/\/([^:^/]*):(\d*)/)
-
-    if (groups) {
-      return groups[2]
-    }
-
-    if (type === 'http') {
-      return '80'
-    }
-
-    return '443'
+    return matches[2] ? matches[2] : { http: "80", https: "443" }[matches[1]];
   }
 
   return ''

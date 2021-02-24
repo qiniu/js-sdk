@@ -46,7 +46,7 @@ export interface Entry {
 
 function getImageUrl(key: string, domain: string) {
   key = encodeURIComponent(key)
-  if (domain.slice(domain.length - 1) !== '/') {
+  if (domain.slice(-1) !== '/') {
     domain += '/'
   }
 
