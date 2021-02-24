@@ -13,7 +13,7 @@ export class Pool<T> {
   constructor(private runTask: RunTask<T>, private limit: number) {}
 
   enqueue(task: T) {
-    return new Promise((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       this.queue.push({
         task,
         resolve,
