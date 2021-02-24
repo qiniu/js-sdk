@@ -228,11 +228,11 @@ export default abstract class Base {
     }, this.token)
   }
 
-  public getProgressInfoItem(loaded: number, size: number) {
+  public getProgressInfoItem(loaded: number, totalSize: number) {
     return {
       loaded,
-      size,
-      percent: loaded / size * 100
+      size: totalSize,
+      percent: +(Math.min(loaded / totalSize, 1) * 100).toFixed(3)
     }
   }
 }
