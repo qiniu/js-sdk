@@ -6,7 +6,9 @@ interface LogInfo {
   host: string
   remoteIp: string
   port: string
+  /** duration in seconds */
   duration: number
+  /** time in seconds */
   time: number
   bytesSent: number
   upType: 'jssdk-h5'

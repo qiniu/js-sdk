@@ -197,8 +197,30 @@ class Compress {
   /** 这里把 base64 字符串转为 blob 对象 */
   toBlob(result: HTMLCanvasElement) {
     const dataURL = result.toDataURL(this.outputType, this.config.quality)
-    const buffer = atob(dataURL.split(',')[1]).split('').map(char => char.charCodeAt(0))
-    const blob = new Blob([new Uint8Array(buffer)], { type: this.outputType })
+    /** example of dataURL is "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFJRU5ErkJggg==" */
+    const rawContent = atob(dataURL.split(';base64,')[1])
+    const buffer = rawContent.split('').map(char => char.charCodeAt(0))
+    /** encoded raw binary into UTF-8 */
+    let blob;
+    try {
+      blob = new Blob([new Uint8Array(buffer)], { type: this.outputType })
+    } catch(e) {
+      // 参考: https://stackoverflow.com/questions/27659305/javascript-uncaught-invalidstateerror-failed-to-read-the-selectiondirection/27659465
+      // TypeError old Google Chrome and Firefox
+      (window as any).BlobBuilder = (window as any).BlobBuilder ||
+                           (window as any).WebKitBlobBuilder ||
+                           (window as any).MozBlobBuilder ||
+                           (window as any).MSBlobBuilder;
+      if (e.name == 'TypeError' && (window as any).BlobBuilder){
+          var bb = new (window as any).BlobBuilder();
+          bb.append(new Uint8Array(buffer));
+          blob = bb.getBlob(this.outputType);
+      }
+      else if(e.name == "InvalidStateError"){
+        // InvalidStateError (tested on FF13 WinXP)
+        blob = new Blob([new Uint8Array(buffer)], {type : this.outputType});
+      }
+    }
     return blob
   }
 }
