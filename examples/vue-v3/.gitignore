@@ -1,10 +1,7 @@
 .DS_Store
 node_modules
-bower_components
 /dist
-demo/config.js
-deploy.sh
-test/config.json
+
 
 # local env files
 .env.local
