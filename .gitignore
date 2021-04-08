@@ -9,6 +9,3 @@ test/config.json
 coverage
 lib
 esm
-
-**/.vscode
-**/.idea
