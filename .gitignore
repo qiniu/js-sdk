@@ -1,9 +1,12 @@
 .DS_Store
-node_modules
 bower_components
-/dist
+coverage
+dist
+esm
 demo/config.js
 deploy.sh
+lib
+node_modules
 test/config.json
 
 # local env files
