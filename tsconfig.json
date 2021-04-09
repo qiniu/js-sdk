@@ -22,10 +22,11 @@
     ]
   },
   "exclude": [
-    "node_modules",
     "coverage",
-    "test",
     "dist",
-    "lib"
+    "examples",
+    "lib",
+    "node_modules",
+    "test"
   ]
 }
