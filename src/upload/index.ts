@@ -1,7 +1,7 @@
 import Resume from './resume'
 import Direct from './direct'
 import { UploadOptions, UploadHandler } from './base'
-import StatisticsLogger from '../statisticsLog'
+import { Logger } from '../logger'
 import { MB } from '../utils'
 
 export * from './base'
@@ -10,13 +10,18 @@ export * from './resume'
 export default function createUploadManager(
   options: UploadOptions,
   handlers: UploadHandler,
-  statisticsLogger: StatisticsLogger
+  logger: Logger
 ) {
   if (options.config && options.config.forceDirect) {
-    return new Direct(options, handlers, statisticsLogger)
+    logger.info('ues forceDirect mode.')
+    return new Direct(options, handlers, logger)
   }
 
-  return options.file.size > 4 * MB
-    ? new Resume(options, handlers, statisticsLogger)
-    : new Direct(options, handlers, statisticsLogger)
+  if (options.file.size > 4 * MB) {
+    logger.info('file size over 4M, use Resume.')
+    return new Resume(options, handlers, logger)
+  }
+
+  logger.info('file size less than 4M, use Direct.')
+  return new Direct(options, handlers, logger)
 }

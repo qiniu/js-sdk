@@ -1,7 +1,7 @@
 import * as utils from '../utils'
 import { getUploadUrl, UploadCompleteData } from '../api'
 
-import StatisticsLogger from '../statisticsLog'
+import { Logger, LogLevel } from '../logger'
 import { region } from '../config'
 
 export const DEFAULT_CHUNK_SIZE = 4 // 单位 MB
@@ -32,14 +32,16 @@ export interface Config {
   uphost: string
   /** 自定义分片上传并发请求量 */
   concurrentRequestLimit: number
-  /** 是否禁止静态日志上报 */
-  disableStatisticsReport: boolean
   /** 分片大小，单位为 MB */
   chunkSize: number
   /** 上传域名协议 */
   upprotocol: 'http:' | 'https:'
   /** 上传区域 */
   region?: typeof region[keyof typeof region]
+  /** 是否禁止静态日志上报 */
+  disableStatisticsReport: boolean
+  /** 设置调试日志输出模式，默认 false，不输出任何日志 */
+  debugLogLevel?: LogLevel
 }
 
 export interface UploadOptions {
@@ -103,7 +105,7 @@ export default abstract class Base {
 
   protected abstract run(): utils.Response<any>
 
-  constructor(options: UploadOptions, handlers: UploadHandler, private statisticsLogger: StatisticsLogger) {
+  constructor(options: UploadOptions, handlers: UploadHandler, protected logger: Logger) {
     this.config = {
       useCdnDomain: true,
       disableStatisticsReport: false,
@@ -117,10 +119,14 @@ export default abstract class Base {
       ...options.config
     }
 
+    logger.info('inited Config', this.config)
+
     this.putExtra = {
       fname: '',
       ...options.putExtra
     }
+
+    logger.info('inited putExtra', this.putExtra)
 
     this.file = options.file
     this.key = options.key
@@ -129,28 +135,35 @@ export default abstract class Base {
     this.onData = handlers.onData
     this.onError = handlers.onError
     this.onComplete = handlers.onComplete
+
     try {
       this.bucket = utils.getPutPolicy(this.token).bucket
     } catch (e) {
       this.onError(e)
+      logger.error('get bucket from token failed.', e)
     }
   }
 
-  public async putFile(): Promise<utils.ResponseSuccess<UploadCompleteData>> {
+  public async putFile(): Promise<void> {
     this.aborted = false
     if (!this.putExtra.fname) {
+      this.logger.info('use file.name as fname.')
       this.putExtra.fname = this.file.name
     }
 
     if (this.file.size > 10000 * GB) {
-      const err = new Error('file size exceed maximum value 10000G')
+      const errorMessage = 'file size exceed maximum value 10000G'
+      const err = new Error(errorMessage)
+      this.logger.error(errorMessage)
       this.onError(err)
       throw err
     }
 
     if (this.putExtra.customVars) {
       if (!utils.isCustomVarsValid(this.putExtra.customVars)) {
-        const err = new Error('customVars key should start width x:')
+        const errorMessage = 'customVars key should start width x:'
+        const err = new Error(errorMessage)
+        this.logger.error(errorMessage)
         this.onError(err)
         throw err
       }
@@ -158,28 +171,28 @@ export default abstract class Base {
 
     if (this.putExtra.metadata) {
       if (!utils.isMetaDataValid(this.putExtra.metadata)) {
-        const err = new Error('metadata key should start with x-qn-meta-')
+        const errorMessage = 'metadata key should start with x-qn-meta-'
+        const err = new Error(errorMessage)
+        this.logger.error(errorMessage)
         this.onError(err)
         throw err
       }
     }
 
     try {
+      this.logger.info('getUploadUrl')
       this.uploadUrl = await getUploadUrl(this.config, this.token)
       this.uploadAt = new Date().getTime()
 
       const result = await this.run()
       this.onComplete(result.data)
-
-      if (!this.config.disableStatisticsReport) {
-        this.sendLog(result.reqId, 200)
-      }
-
-      return result
-
+      this.sendLog(result.reqId, 200) // 收集成功的日志感觉没啥用？
+      return
     } catch (err) {
+      this.logger.error(err)
+
       this.clear()
-      if (err.isRequestError && !this.config.disableStatisticsReport) {
+      if (err.isRequestError) {
         const reqId = this.aborted ? '' : err.reqId
         const code = this.aborted ? -2 : err.code
         this.sendLog(reqId, code)
@@ -191,20 +204,23 @@ export default abstract class Base {
       // 1. 满足 needRetry 的条件且 retryCount 不为 0
       // 2. uploadId 无效时在 resume 里会清除本地数据，并且这里触发重新上传
       if (needRetry && notReachRetryCount || err.code === 612) {
+        this.logger.warn(`error auto retry: ${this.retryCount}/${this.config.retryCount}`)
         return this.putFile()
       }
 
       this.onError(err)
-      throw err
     }
   }
 
   private clear() {
+    this.logger.info('start cleaning all xhr.')
     this.xhrList.forEach(xhr => xhr.abort())
+    this.logger.info('cleanup completed.')
     this.xhrList = []
   }
 
   public stop() {
+    this.logger.info('stop.')
     this.clear()
     this.aborted = true
   }
@@ -214,7 +230,7 @@ export default abstract class Base {
   }
 
   private sendLog(reqId: string, code: number) {
-    this.statisticsLogger.log({
+    this.logger.info({
       code,
       reqId,
       host: utils.getDomainFromUrl(this.uploadUrl),
@@ -225,7 +241,7 @@ export default abstract class Base {
       bytesSent: this.progress ? this.progress.total.loaded : 0,
       upType: 'jssdk-h5',
       size: this.file.size
-    }, this.token)
+    })
   }
 
   public getProgressInfoItem(loaded: number, size: number) {

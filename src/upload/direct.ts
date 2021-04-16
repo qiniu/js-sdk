@@ -5,6 +5,8 @@ import { UploadCompleteData } from '../api'
 export default class Direct extends Base {
 
   protected async run() {
+    this.logger.info('start run Direct.')
+
     const formData = new FormData()
     formData.append('file', this.file)
     formData.append('token', this.token)
@@ -14,9 +16,12 @@ export default class Direct extends Base {
     formData.append('fname', this.putExtra.fname)
 
     if (this.putExtra.customVars) {
+      this.logger.info('inited customVars.')
       const { customVars } = this.putExtra
       Object.keys(customVars).forEach(key => formData.append(key, customVars[key].toString()))
     }
+
+    this.logger.info('inited formData.')
 
     const result = await request<UploadCompleteData>(this.uploadUrl, {
       method: 'POST',
@@ -27,6 +32,7 @@ export default class Direct extends Base {
       onCreate: xhr => this.addXhr(xhr)
     })
 
+    this.logger.info('finishDirectProgress.')
     this.finishDirectProgress()
     return result
   }
@@ -40,6 +46,7 @@ export default class Direct extends Base {
   private finishDirectProgress() {
     // 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null，这里 fake 下
     if (!this.progress) {
+      this.logger.warn('progress is null')
       this.progress = { total: this.getProgressInfoItem(this.file.size, this.file.size) }
       this.onData(this.progress)
       return

@@ -5,7 +5,8 @@
       useCdnDomain: true,
       disableStatisticsReport: false,
       retryCount: 6,
-      region: qiniu.region.z2
+      region: qiniu.region.z2,
+      debugLogLevel: '>=info'
     };
     var putExtra = {
       customVars: {}

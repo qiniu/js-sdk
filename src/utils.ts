@@ -46,10 +46,7 @@ export function setLocalFileInfo(localKey: string, info: LocalInfo) {
   try {
     localStorage.setItem(localKey, JSON.stringify(info))
   } catch (err) {
-    if (window.console && window.console.warn) {
-      // eslint-disable-next-line no-console
-      console.warn('setLocalFileInfo failed')
-    }
+    throw new Error(`setLocalFileInfo failed: ${localKey}`)
   }
 }
 
@@ -62,10 +59,7 @@ export function removeLocalFileInfo(localKey: string) {
   try {
     localStorage.removeItem(localKey)
   } catch (err) {
-    if (window.console && window.console.warn) {
-      // eslint-disable-next-line no-console
-      console.warn('removeLocalFileInfo failed')
-    }
+    throw new Error(`removeLocalFileInfo failed. key: ${localKey}`)
   }
 }
 
@@ -74,11 +68,7 @@ export function getLocalFileInfo(localKey: string): LocalInfo | null {
     const localInfo = localStorage.getItem(localKey)
     return localInfo ? JSON.parse(localInfo) : null
   } catch (err) {
-    if (window.console && window.console.warn) {
-      // eslint-disable-next-line no-console
-      console.warn('getLocalFileInfo failed')
-    }
-    return null
+    throw new Error(`getLocalFileInfo failed. key: ${localKey}`)
   }
 }
 

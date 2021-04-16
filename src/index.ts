@@ -1,11 +1,9 @@
-import StatisticsLogger from './statisticsLog'
 import createUploadManager, { Extra, Config, UploadOptions, UploadProgress } from './upload'
 import { Observable, IObserver } from './observable'
 import { CustomError } from './utils'
 import { UploadCompleteData } from './api'
 import compressImage from './compress'
-
-const statisticsLogger = new StatisticsLogger()
+import { Logger } from './logger'
 
 /**
  * @param file 上传文件
@@ -22,7 +20,6 @@ function upload(
   putExtra?: Partial<Extra>,
   config?: Partial<Config>
 ): Observable<UploadProgress, CustomError, UploadCompleteData> {
-
   const options: UploadOptions = {
     file,
     key,
@@ -31,12 +28,14 @@ function upload(
     config
   }
 
+  // 为每个任务创建单独的 Logger
+  const logger = new Logger(token, config?.disableStatisticsReport, config?.debugLogLevel)
   return new Observable((observer: IObserver<UploadProgress, CustomError, UploadCompleteData>) => {
     const manager = createUploadManager(options, {
       onData: (data: UploadProgress) => observer.next(data),
       onError: (err: CustomError) => observer.error(err),
       onComplete: (res: any) => observer.complete(res)
-    }, statisticsLogger)
+    }, logger)
     manager.putFile()
     return manager.stop.bind(manager)
   })

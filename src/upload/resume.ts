@@ -46,31 +46,46 @@ export default class Resume extends Base {
   private uploadId: string
 
   protected async run() {
+    this.logger.info('start run Resume.')
     if (!this.config.chunkSize || !isPositiveInteger(this.config.chunkSize)) {
-      throw new Error('chunkSize must be a positive integer')
+      const errorMessage = 'chunkSize must be a positive integer.'
+      this.logger.error(errorMessage)
+      throw new Error(errorMessage)
     }
 
     if (this.config.chunkSize > 1024) {
-      throw new Error('chunkSize maximum value is 1024')
+      const errorMessage = 'chunkSize maximum value is 1024.'
+      this.logger.error(errorMessage)
+      throw new Error(errorMessage)
     }
 
-    await this.initBeforeUploadChunks()
+    try {
+      await this.initBeforeUploadChunks()
+    } catch (error) {
+      const errorMessage = 'initBeforeUploadChunks failed.'
+      this.logger.error(errorMessage, error)
+    }
 
     const pool = new Pool(
       (chunkInfo: ChunkInfo) => this.uploadChunk(chunkInfo),
       this.config.concurrentRequestLimit
     )
+
+    const localKey = this.getLocalKey()
     const uploadChunks = this.chunks.map((chunk, index) => pool.enqueue({ chunk, index }))
 
     const result = Promise.all(uploadChunks).then(() => this.mkFileReq())
     result.then(
       () => {
-        utils.removeLocalFileInfo(this.getLocalKey())
+        try { utils.removeLocalFileInfo(localKey) }
+        catch (error) { this.logger.error(error) }
       },
       err => {
+        this.logger.error('uploadChunks failed.', err)
         // uploadId 无效，上传参数有误（多由于本地存储信息的 uploadId 失效
         if (err.code === 612 || err.code === 400) {
-          utils.removeLocalFileInfo(this.getLocalKey())
+          try { utils.removeLocalFileInfo(localKey) }
+          catch (error) { this.logger.error(error) }
         }
       }
     )
@@ -128,11 +143,14 @@ export default class Resume extends Base {
       size: chunk.size
     }
 
-    utils.setLocalFileInfo(this.getLocalKey(), {
-      id: this.uploadId,
-      data: this.uploadedList
-    })
-
+    try {
+      utils.setLocalFileInfo(this.getLocalKey(), {
+        id: this.uploadId,
+        data: this.uploadedList
+      })
+    } catch (error) {
+      this.logger.error(error)
+    }
   }
 
   private async mkFileReq() {
@@ -146,7 +164,8 @@ export default class Resume extends Base {
       ...this.putExtra.customVars && { customVars: this.putExtra.customVars },
       ...this.putExtra.metadata && { metadata: this.putExtra.metadata }
     }
-
+    
+    this.logger.info('parts upload completed, make file.', data)
     const result = await uploadComplete(
       this.token,
       this.key,
@@ -156,23 +175,32 @@ export default class Resume extends Base {
         body: JSON.stringify(data)
       }
     )
+
+    this.logger.info('finishResumeProgress.')
     this.updateMkFileProgress(1)
     return result
   }
 
   private async initBeforeUploadChunks() {
-    const localInfo = utils.getLocalFileInfo(this.getLocalKey())
+    let localInfo: LocalInfo | null = null
+    try { localInfo = utils.getLocalFileInfo(this.getLocalKey()) }
+    catch (error) { this.logger.error(error) }
+
     // 分片必须和当时使用的 uploadId 配套，所以断点续传需要把本地存储的 uploadId 拿出来
     // 假如没有 localInfo 本地信息并重新获取 uploadId
     if (!localInfo) {
       // 防止本地信息已被破坏，初始化时 clear 一下
-      utils.removeLocalFileInfo(this.getLocalKey())
+      // TODO: 在 getLocalFileInfo 时就可以检查不合法数据然后清除
+      this.logger.info('resume upload parts from api.')
+      try { utils.removeLocalFileInfo(this.getLocalKey()) }
+      catch (error) { this.logger.error(error) }
       const res = await initUploadParts(this.token, this.bucket, this.key, this.uploadUrl)
       this.uploadId = res.data.uploadId
       this.uploadedList = []
     } else {
-      this.uploadId = localInfo.id
+      this.logger.info('resume upload parts from local cache.')
       this.uploadedList = localInfo.data
+      this.uploadId = localInfo.id
     }
 
     this.chunks = utils.getChunks(this.file, this.config.chunkSize)
