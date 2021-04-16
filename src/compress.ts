@@ -14,7 +14,7 @@ export interface Dimension {
 }
 
 export interface CompressResult {
-  dist: Blob
+  dist: Blob ｜ File
   width: number
   height: number
 }
