@@ -252,7 +252,7 @@ qiniu.compressImage(file, options).then(data => {
   ```JavaScript
   const imgLink = qiniu.compressImage(file, options).then(res => {
     // res : {
-    //   dist: 压缩后输出的 File 对象，或原始的 file，具体看下面的 options 配置
+    //   dist: 压缩后输出的 Blob 对象或原始的 File 对象，具体看下面的 options 配置
     //   width: 压缩后的图片宽度
     //   height: 压缩后的图片高度
     // }
@@ -267,7 +267,7 @@ qiniu.compressImage(file, options).then(data => {
     （注意：当 `maxWidth` 和 `maxHeight` 都不设置时，则采用原图尺寸大小）
     * options.noCompressIfLarger: `boolean`，为 `true` 时如果发现压缩后图片大小比原来还大，则返回源图片（即输出的 dist 直接返回了输入的 file）；默认 `false`，即保证图片尺寸符合要求，但不保证压缩后的图片体积一定变小
   * CompressResult: `object`，包含如下字段：
-    * dist: 压缩后输出的 File 对象，或原始的 file，具体看下面的 options 配置
+    * dist: 压缩后输出的 Blob 对象或原始的 File 对象
     * width: 压缩后的图片宽度
     * height: 压缩后的图片高度
 
