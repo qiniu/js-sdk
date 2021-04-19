@@ -64,12 +64,23 @@ export function removeLocalFileInfo(localKey: string) {
 }
 
 export function getLocalFileInfo(localKey: string): LocalInfo | null {
-  try {
-    const localInfo = localStorage.getItem(localKey)
-    return localInfo ? JSON.parse(localInfo) : null
-  } catch (err) {
+  let localInfoString: string | null = null
+  try { localInfoString = localStorage.getItem(localKey) }
+  catch { return null }
+
+  if (localInfoString == null) {
+    return null
+  }
+
+  let localInfo: LocalInfo | null = null
+  try { localInfo = JSON.parse(localInfoString) }
+  catch {
+    // 本地信息已被破坏，直接删除
+    try { removeLocalFileInfo(localKey) } catch { }
     throw new Error(`getLocalFileInfo failed. key: ${localKey}`)
   }
+
+  return localInfo
 }
 
 export function getAuthHeaders(token: string) {

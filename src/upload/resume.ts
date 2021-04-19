@@ -184,21 +184,24 @@ export default class Resume extends Base {
   private async initBeforeUploadChunks() {
     let localInfo: LocalInfo | null = null
     try { localInfo = utils.getLocalFileInfo(this.getLocalKey()) }
-    catch (error) { this.logger.error(error) }
+    catch (error) { this.logger.warn(error) }
 
     // 分片必须和当时使用的 uploadId 配套，所以断点续传需要把本地存储的 uploadId 拿出来
     // 假如没有 localInfo 本地信息并重新获取 uploadId
     if (!localInfo) {
-      // 防止本地信息已被破坏，初始化时 clear 一下
-      // TODO: 在 getLocalFileInfo 时就可以检查不合法数据然后清除
       this.logger.info('resume upload parts from api.')
-      try { utils.removeLocalFileInfo(this.getLocalKey()) }
-      catch (error) { this.logger.error(error) }
       const res = await initUploadParts(this.token, this.bucket, this.key, this.uploadUrl)
+      this.logger.info(`resume upload parts of id: ${res.data.uploadId}.`)
       this.uploadId = res.data.uploadId
       this.uploadedList = []
     } else {
-      this.logger.info('resume upload parts from local cache.')
+      const infoMessage = [
+        'resume upload parts from local cache',
+        `total ${localInfo.data.length} part`,
+        `id is ${localInfo.id}.`
+      ]
+
+      this.logger.info(infoMessage.join(', '))
       this.uploadedList = localInfo.data
       this.uploadId = localInfo.id
     }

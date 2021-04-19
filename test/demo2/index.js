@@ -9,7 +9,7 @@ let initFileInput = (res) =>{
   let config = {
     useCdnDomain: true,
     region: qiniu.region.z2,
-    debugLogLevel: '>=info'
+    debugLogLevel: 'INFO'
   };
   let putExtra = {
     fname: "",

@@ -22,6 +22,6 @@ export default function createUploadManager(
     return new Resume(options, handlers, logger)
   }
 
-  logger.info('file size less than 4M, use Direct.')
+  logger.info('file size less or equal than 4M, use Direct.')
   return new Direct(options, handlers, logger)
 }

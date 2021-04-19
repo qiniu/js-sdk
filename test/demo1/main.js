@@ -6,7 +6,7 @@
       disableStatisticsReport: false,
       retryCount: 6,
       region: qiniu.region.z2,
-      debugLogLevel: '>=info'
+      debugLogLevel: 'INFO'
     };
     var putExtra = {
       customVars: {}

@@ -119,14 +119,14 @@ export default abstract class Base {
       ...options.config
     }
 
-    logger.info('inited Config', this.config)
+    logger.info('config inited.', this.config)
 
     this.putExtra = {
       fname: '',
       ...options.putExtra
     }
 
-    logger.info('inited putExtra', this.putExtra)
+    logger.info('putExtra inited.', this.putExtra)
 
     this.file = options.file
     this.key = options.key
@@ -139,11 +139,21 @@ export default abstract class Base {
     try {
       this.bucket = utils.getPutPolicy(this.token).bucket
     } catch (e) {
-      this.onError(e)
       logger.error('get bucket from token failed.', e)
+      this.onError(e)
     }
   }
 
+  private handleError(message: string) {
+    const err = new Error(message)
+    this.logger.error(message)
+    this.onError(err)
+  }
+
+
+  /**
+   * @description 上传文件，状态信息请通过 [Subscriber] 获取。
+   */
   public async putFile(): Promise<void> {
     this.aborted = false
     if (!this.putExtra.fname) {
@@ -152,41 +162,32 @@ export default abstract class Base {
     }
 
     if (this.file.size > 10000 * GB) {
-      const errorMessage = 'file size exceed maximum value 10000G'
-      const err = new Error(errorMessage)
-      this.logger.error(errorMessage)
-      this.onError(err)
-      throw err
+      this.handleError('file size exceed maximum value 10000G.')
+      return
     }
 
     if (this.putExtra.customVars) {
       if (!utils.isCustomVarsValid(this.putExtra.customVars)) {
-        const errorMessage = 'customVars key should start width x:'
-        const err = new Error(errorMessage)
-        this.logger.error(errorMessage)
-        this.onError(err)
-        throw err
+        this.handleError('customVars key should start width x:.')
+        return
       }
     }
 
     if (this.putExtra.metadata) {
       if (!utils.isMetaDataValid(this.putExtra.metadata)) {
-        const errorMessage = 'metadata key should start with x-qn-meta-'
-        const err = new Error(errorMessage)
-        this.logger.error(errorMessage)
-        this.onError(err)
-        throw err
+        this.handleError('metadata key should start with x-qn-meta-.')
+        return
       }
     }
 
     try {
-      this.logger.info('getUploadUrl')
       this.uploadUrl = await getUploadUrl(this.config, this.token)
+      this.logger.info('get uploadUrl from api.', this.uploadUrl)
       this.uploadAt = new Date().getTime()
 
       const result = await this.run()
       this.onComplete(result.data)
-      this.sendLog(result.reqId, 200) // 收集成功的日志感觉没啥用？
+      this.sendLog(result.reqId, 200)
       return
     } catch (err) {
       this.logger.error(err)
@@ -204,8 +205,9 @@ export default abstract class Base {
       // 1. 满足 needRetry 的条件且 retryCount 不为 0
       // 2. uploadId 无效时在 resume 里会清除本地数据，并且这里触发重新上传
       if (needRetry && notReachRetryCount || err.code === 612) {
-        this.logger.warn(`error auto retry: ${this.retryCount}/${this.config.retryCount}`)
-        return this.putFile()
+        this.logger.warn(`error auto retry: ${this.retryCount}/${this.config.retryCount}.`)
+        this.putFile()
+        return
       }
 
       this.onError(err)
@@ -213,8 +215,13 @@ export default abstract class Base {
   }
 
   private clear() {
+    // abort 会触发 onreadystatechange
+    // MDN 文档表示：readyState 为 0 并且 status 为 0
     this.logger.info('start cleaning all xhr.')
-    this.xhrList.forEach(xhr => xhr.abort())
+    this.xhrList.forEach(xhr => {
+      xhr.onreadystatechange = null
+      xhr.abort()
+    })
     this.logger.info('cleanup completed.')
     this.xhrList = []
   }
@@ -230,7 +237,7 @@ export default abstract class Base {
   }
 
   private sendLog(reqId: string, code: number) {
-    this.logger.info({
+    this.logger.report({
       code,
       reqId,
       host: utils.getDomainFromUrl(this.uploadUrl),

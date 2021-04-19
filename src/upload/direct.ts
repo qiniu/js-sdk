@@ -16,13 +16,13 @@ export default class Direct extends Base {
     formData.append('fname', this.putExtra.fname)
 
     if (this.putExtra.customVars) {
-      this.logger.info('inited customVars.')
+      this.logger.info('init customVars.')
       const { customVars } = this.putExtra
       Object.keys(customVars).forEach(key => formData.append(key, customVars[key].toString()))
+      this.logger.info('customVars inited.')
     }
 
-    this.logger.info('inited formData.')
-
+    this.logger.info('formData inited.')
     const result = await request<UploadCompleteData>(this.uploadUrl, {
       method: 'POST',
       body: formData,
@@ -32,7 +32,7 @@ export default class Direct extends Base {
       onCreate: xhr => this.addXhr(xhr)
     })
 
-    this.logger.info('finishDirectProgress.')
+    this.logger.info('Direct progress finish.')
     this.finishDirectProgress()
     return result
   }
@@ -46,7 +46,7 @@ export default class Direct extends Base {
   private finishDirectProgress() {
     // 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null，这里 fake 下
     if (!this.progress) {
-      this.logger.warn('progress is null')
+      this.logger.warn('progress is null.')
       this.progress = { total: this.getProgressInfoItem(this.file.size, this.file.size) }
       this.onData(this.progress)
       return
