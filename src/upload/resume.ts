@@ -63,7 +63,7 @@ export default class Resume extends Base {
       await this.initBeforeUploadChunks()
     } catch (error) {
       const errorMessage = 'initBeforeUploadChunks failed.'
-      this.logger.error(errorMessage, error)
+      this.logger.warn(errorMessage, error)
     }
 
     const pool = new Pool(
@@ -95,6 +95,7 @@ export default class Resume extends Base {
   private async uploadChunk(chunkInfo: ChunkInfo) {
     const { index, chunk } = chunkInfo
     const info = this.uploadedList[index]
+    this.logger.info(`upload part ${index}.`, info)
 
     const shouldCheckMD5 = this.config.checkByMD5
     const reuseSaved = () => {
@@ -107,6 +108,7 @@ export default class Resume extends Base {
     }
 
     const md5 = await utils.computeMd5(chunk)
+    this.logger.info(`computed part md5.`, md5)
 
     if (info && md5 === info.md5) {
       reuseSaved()
@@ -123,6 +125,7 @@ export default class Resume extends Base {
       onCreate: (xhr: XMLHttpRequest) => this.addXhr(xhr)
     }
 
+    this.logger.info(`part ${index} start uploading.`)
     const response = await uploadChunk(
       this.token,
       this.key,
@@ -130,6 +133,7 @@ export default class Resume extends Base {
       this.getUploadInfo(),
       requestOptions
     )
+    this.logger.info(`part ${index} upload completed.`)
 
     // 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null，这里在每次分片上传完成后都手动更新下 progress
     onProgress({
@@ -149,7 +153,7 @@ export default class Resume extends Base {
         data: this.uploadedList
       })
     } catch (error) {
-      this.logger.error(error)
+      this.logger.info(`set part ${index} cache failed.`, error)
     }
   }
 
@@ -251,5 +255,4 @@ export default class Resume extends Base {
     }
     this.onData(this.progress)
   }
-
 }
