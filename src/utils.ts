@@ -74,7 +74,11 @@ export function getLocalFileInfo(localKey: string): LocalInfo | null {
 
   let localInfo: LocalInfo | null = null
   try { localInfo = JSON.parse(localInfoString) }
-  catch { removeLocalFileInfo(localKey) } // 本地信息已被破坏，直接删除
+  catch {
+    // 本地信息已被破坏，直接删除
+    removeLocalFileInfo(localKey)
+    throw new Error(`getLocalFileInfo failed to parse. key: ${localKey}`)
+  }
 
   return localInfo
 }
