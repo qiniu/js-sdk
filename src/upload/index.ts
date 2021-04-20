@@ -1,7 +1,7 @@
 import Resume from './resume'
 import Direct from './direct'
 import { UploadOptions, UploadHandler } from './base'
-import { Logger } from '../logger'
+import Logger from '../logger'
 import { MB } from '../utils'
 
 export * from './base'

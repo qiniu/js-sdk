@@ -66,7 +66,7 @@ export function removeLocalFileInfo(localKey: string) {
 export function getLocalFileInfo(localKey: string): LocalInfo | null {
   let localInfoString: string | null = null
   try { localInfoString = localStorage.getItem(localKey) }
-  catch { return null }
+  catch { throw new Error(`getLocalFileInfo failed. key: ${localKey}`) }
 
   if (localInfoString == null) {
     return null
@@ -74,11 +74,7 @@ export function getLocalFileInfo(localKey: string): LocalInfo | null {
 
   let localInfo: LocalInfo | null = null
   try { localInfo = JSON.parse(localInfoString) }
-  catch {
-    // 本地信息已被破坏，直接删除
-    try { removeLocalFileInfo(localKey) } catch { }
-    throw new Error(`getLocalFileInfo failed. key: ${localKey}`)
-  }
+  catch { removeLocalFileInfo(localKey) } // 本地信息已被破坏，直接删除
 
   return localInfo
 }

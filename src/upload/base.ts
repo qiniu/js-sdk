@@ -1,8 +1,7 @@
-import * as utils from '../utils'
-import { getUploadUrl, UploadCompleteData } from '../api'
-
-import { Logger, LogLevel } from '../logger'
 import { region } from '../config'
+import { getUploadUrl } from '../api'
+import Logger, { LogLevel } from '../logger'
+import * as utils from '../utils'
 
 export const DEFAULT_CHUNK_SIZE = 4 // 单位 MB
 
@@ -150,8 +149,8 @@ export default abstract class Base {
     this.onError(err)
   }
 
-
   /**
+   * @returns Promise 返回结果与上传最终状态无关，状态信息请通过 [Subscriber] 获取。
    * @description 上传文件，状态信息请通过 [Subscriber] 获取。
    */
   public async putFile(): Promise<void> {
@@ -215,8 +214,6 @@ export default abstract class Base {
   }
 
   private clear() {
-    // abort 会触发 onreadystatechange
-    // MDN 文档表示：readyState 为 0 并且 status 为 0
     this.logger.info('start cleaning all xhr.')
     this.xhrList.forEach(xhr => {
       xhr.onreadystatechange = null

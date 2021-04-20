@@ -2,11 +2,12 @@ import { reportV3, V3LogInfo } from './report-v3'
 
 export type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'OFF'
 
-export class Logger {
+export default class Logger {
+  private static id: number = 0
+
   // 为每个类分配一个 id
   // 用以区分不同的上传任务
   private id = Logger.id += 1
-  private static id: number = 0
 
   constructor(
     private token: string,

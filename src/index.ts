@@ -3,7 +3,7 @@ import { Observable, IObserver } from './observable'
 import { CustomError } from './utils'
 import { UploadCompleteData } from './api'
 import compressImage from './compress'
-import { Logger } from './logger'
+import Logger from './logger'
 
 /**
  * @param file 上传文件
