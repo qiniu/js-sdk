@@ -45,6 +45,10 @@ export default class Resume extends Base {
   private loaded: ChunkLoaded
   private uploadId: string
 
+  /**
+   * @returns  {Promise<ResponseSuccess<any>>}
+   * @description 实现了 Base 的 run 接口，处理具体的分片上传事务，并抛出过程中的异常。
+   */
   protected async run() {
     this.logger.info('start run Resume.')
     if (!this.config.chunkSize || !isPositiveInteger(this.config.chunkSize)) {
