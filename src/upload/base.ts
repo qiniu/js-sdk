@@ -37,7 +37,7 @@ export interface Config {
   upprotocol: 'http:' | 'https:'
   /** 上传区域 */
   region?: typeof region[keyof typeof region]
-  /** 是否禁止静态日志上报 */
+  /** 是否禁止统计日志上报 */
   disableStatisticsReport: boolean
   /** 设置调试日志输出模式，默认 `OFF`，不输出任何日志 */
   debugLogLevel?: LogLevel
