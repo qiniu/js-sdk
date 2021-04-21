@@ -7,7 +7,7 @@ export default class Logger {
 
   // 为每个类分配一个 id
   // 用以区分不同的上传任务
-  private id = Logger.id += 1
+  private id = ++Logger.id
 
   constructor(
     private token: string,
