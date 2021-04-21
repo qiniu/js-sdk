@@ -39,7 +39,7 @@ export interface Config {
   region?: typeof region[keyof typeof region]
   /** 是否禁止静态日志上报 */
   disableStatisticsReport: boolean
-  /** 设置调试日志输出模式，默认 false，不输出任何日志 */
+  /** 设置调试日志输出模式，默认 `OFF`，不输出任何日志 */
   debugLogLevel?: LogLevel
 }
 
