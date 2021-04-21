@@ -8,14 +8,27 @@ jest.mock('./report-v3', () => ({
   }
 }))
 
-describe('test logger', () => {
-  const logMessage: unknown[] = []
-  const warnMessage: unknown[] = []
-  const errorMessage: unknown[] = []
+const originalLog = console.log
+const originalWarn = console.warn
+const originalError = console.error
+
+const logMessage: unknown[] = []
+const warnMessage: unknown[] = []
+const errorMessage: unknown[] = []
+
+beforeAll(() => {
   console.log = jest.fn((...args: unknown[]) => logMessage.push(...args))
   console.warn = jest.fn((...args: unknown[]) => warnMessage.push(...args))
   console.error = jest.fn((...args: unknown[]) => errorMessage.push(...args))
+})
 
+afterAll(() => {
+  console.log = originalLog
+  console.warn = originalWarn
+  console.error = originalError
+})
+
+describe('test logger', () => {
   test('test level', () => {
     const infoLogger = new Logger('', true, 'INFO')
     infoLogger.info('test1')
