@@ -64,6 +64,7 @@ export default class Resume extends Base {
     } catch (error) {
       const errorMessage = 'initBeforeUploadChunks failed.'
       this.logger.warn(errorMessage, error)
+      throw error
     }
 
     const pool = new Pool(
