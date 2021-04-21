@@ -46,10 +46,7 @@ export function setLocalFileInfo(localKey: string, info: LocalInfo) {
   try {
     localStorage.setItem(localKey, JSON.stringify(info))
   } catch (err) {
-    if (window.console && window.console.warn) {
-      // eslint-disable-next-line no-console
-      console.warn('setLocalFileInfo failed')
-    }
+    throw new Error(`setLocalFileInfo failed: ${localKey}`)
   }
 }
 
@@ -62,24 +59,28 @@ export function removeLocalFileInfo(localKey: string) {
   try {
     localStorage.removeItem(localKey)
   } catch (err) {
-    if (window.console && window.console.warn) {
-      // eslint-disable-next-line no-console
-      console.warn('removeLocalFileInfo failed')
-    }
+    throw new Error(`removeLocalFileInfo failed. key: ${localKey}`)
   }
 }
 
 export function getLocalFileInfo(localKey: string): LocalInfo | null {
-  try {
-    const localInfo = localStorage.getItem(localKey)
-    return localInfo ? JSON.parse(localInfo) : null
-  } catch (err) {
-    if (window.console && window.console.warn) {
-      // eslint-disable-next-line no-console
-      console.warn('getLocalFileInfo failed')
-    }
+  let localInfoString: string | null = null
+  try { localInfoString = localStorage.getItem(localKey) }
+  catch { throw new Error(`getLocalFileInfo failed. key: ${localKey}`) }
+
+  if (localInfoString == null) {
     return null
   }
+
+  let localInfo: LocalInfo | null = null
+  try { localInfo = JSON.parse(localInfoString) }
+  catch {
+    // 本地信息已被破坏，直接删除
+    removeLocalFileInfo(localKey)
+    throw new Error(`getLocalFileInfo failed to parse. key: ${localKey}`)
+  }
+
+  return localInfo
 }
 
 export function getAuthHeaders(token: string) {

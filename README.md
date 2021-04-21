@@ -201,6 +201,7 @@ qiniu.compressImage(file, options).then(data => {
     * config.checkByMD5: 是否开启 MD5 校验，为布尔值；在断点续传时，开启 MD5 校验会将已上传的分片与当前分片进行 MD5 值比对，若不一致，则重传该分片，避免使用错误的分片。读取分片内容并计算 MD5 需要花费一定的时间，因此会稍微增加断点续传时的耗时，默认为 false，不开启。
     * config.forceDirect: 是否上传全部采用直传方式，为布尔值；为 `true` 时则上传方式全部为直传 form 方式，禁用断点续传，默认 `false`。
     * config.chunkSize: `number`，分片上传时每片的大小，必须为正整数，单位为 `MB`，且最大不能超过 1024，默认值 4。因为 chunk 数最大 10000，所以如果文件以你所设的 `chunkSize` 进行分片并且 chunk 数超过 10000，我们会把你所设的 `chunkSize` 扩大二倍，如果仍不符合则继续扩大，直到符合条件。
+    * config.debugLogLevel: `INFO` | `WARN` | `ERROR` | `OFF`，允许程序在控制台输出日志，默认为 `OFF`，不输出任何日志，本功能仅仅用于本地调试，不建议在线上环境开启。
 
   * **putExtra**: `object`，其中的每一项都为可选
 
