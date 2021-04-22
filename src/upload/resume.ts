@@ -45,26 +45,21 @@ export default class Resume extends Base {
   private loaded: ChunkLoaded
   private uploadId: string
 
+  /**
+   * @returns  {Promise<ResponseSuccess<any>>}
+   * @description 实现了 Base 的 run 接口，处理具体的分片上传事务，并抛出过程中的异常。
+   */
   protected async run() {
     this.logger.info('start run Resume.')
     if (!this.config.chunkSize || !isPositiveInteger(this.config.chunkSize)) {
-      const errorMessage = 'chunkSize must be a positive integer.'
-      this.logger.error(errorMessage)
-      throw new Error(errorMessage)
+      throw new Error('chunkSize must be a positive integer.')
     }
 
     if (this.config.chunkSize > 1024) {
-      const errorMessage = 'chunkSize maximum value is 1024.'
-      this.logger.error(errorMessage)
-      throw new Error(errorMessage)
+      throw new Error('chunkSize maximum value is 1024.')
     }
 
-    try {
-      await this.initBeforeUploadChunks()
-    } catch (error) {
-      const errorMessage = 'initBeforeUploadChunks failed.'
-      this.logger.warn(errorMessage, error)
-    }
+    await this.initBeforeUploadChunks()
 
     const pool = new Pool(
       (chunkInfo: ChunkInfo) => this.uploadChunk(chunkInfo),
