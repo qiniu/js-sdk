@@ -1,5 +1,5 @@
 import { EXIF } from 'exif-js'
-import { createObjectURL, getTransform } from './utils'
+import { createObjectURL, getTransform } from './'
 
 export interface CompressOptions {
   quality?: number

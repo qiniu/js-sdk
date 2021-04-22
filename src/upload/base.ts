@@ -1,7 +1,7 @@
+import * as utils from '../utils'
 import { region } from '../config'
 import { getUploadUrl } from '../api'
 import Logger, { LogLevel } from '../logger'
-import * as utils from '../utils'
 
 export const DEFAULT_CHUNK_SIZE = 4 // 单位 MB
 

@@ -1,5 +1,5 @@
-import { imageView2, imageMogr2, watermark, imageInfo } from '../image'
-import { urlSafeBase64Encode } from '../base64'
+import { imageView2, imageMogr2, watermark } from '../image'
+import { urlSafeBase64Encode } from '../utils'
 
 describe('image func test', () => {
     const domain = 'http://otxza7yo2.bkt.clouddn.com'

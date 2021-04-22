@@ -1,6 +1,6 @@
+import { UploadCompleteData } from '../api'
 import { request } from '../utils'
 import Base from './base'
-import { UploadCompleteData } from '../api'
 
 export default class Direct extends Base {
 

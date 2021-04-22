@@ -1,4 +1,4 @@
-import { Pool } from "../pool"
+import { Pool } from '../utils'
 import { ChunkInfo } from '../upload'
 
 const m = jest.fn()
