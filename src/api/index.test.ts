@@ -1,5 +1,6 @@
 import { DEFAULT_CHUNK_SIZE, Config } from '../upload'
 import { region } from '../config'
+
 import { getUploadUrl } from '.'
 
 jest.mock('../utils', () => ({

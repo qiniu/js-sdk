@@ -1,4 +1,4 @@
-import { createLocalKey } from '.'
+import { createLocalKey } from './helper'
 
 describe('api function test', () => {
   test('createLocalKey', () => {

@@ -1,6 +1,7 @@
 import { uploadChunk, uploadComplete, initUploadParts, UploadChunkData } from '../api'
-import Base, { Progress, UploadInfo, Extra } from './base'
 import * as utils from '../utils'
+
+import Base, { Progress, UploadInfo, Extra } from './base'
 
 export interface UploadedChunkStorage extends UploadChunkData {
   size: number

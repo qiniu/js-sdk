@@ -1,5 +1,6 @@
 import { ChunkInfo } from '../upload'
-import { Pool } from '.'
+
+import { Pool } from './pool'
 
 const m = jest.fn()
 const task = (): Promise<void> => {

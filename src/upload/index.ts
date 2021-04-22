@@ -3,6 +3,7 @@ import Direct from './direct'
 import Logger from '../logger'
 import { UploadCompleteData } from '../api'
 import { CustomError, Observable, IObserver, MB } from '../utils'
+
 import { Config, Extra, UploadHandler, UploadOptions, UploadProgress } from './base'
 
 export * from './base'
@@ -35,7 +36,7 @@ export function createUploadManager(
  * @param config 上传任务的配置
  * @returns 返回用于上传任务的可观察对象
  */
-export function upload(
+export default function upload(
   file: File,
   key: string | null | undefined,
   token: string,

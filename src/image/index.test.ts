@@ -1,4 +1,5 @@
 import { urlSafeBase64Encode } from '../utils'
+
 import { imageView2, imageMogr2, watermark } from '.'
 
 describe('image func test', () => {
