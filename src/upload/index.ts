@@ -27,7 +27,6 @@ export function createUploadManager(
   return new Direct(options, handlers, logger)
 }
 
-
 /**
  * @param file 上传文件
  * @param key 目标文件名

@@ -3,7 +3,7 @@ export {
   urlSafeBase64Encode,
   urlSafeBase64Decode,
   getHeadersForMkFile,
-  getHeadersForChunkUpload,
+  getHeadersForChunkUpload
 } from './utils'
 
 export { region } from './config'
