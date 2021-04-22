@@ -1,7 +1,7 @@
 import Resume from './resume'
 import Direct from './direct'
 import Logger from '../logger'
-import { UploadCompleteData } from 'api'
+import { UploadCompleteData } from '../api'
 import { CustomError, Observable, IObserver, MB } from '../utils'
 import { Config, Extra, UploadHandler, UploadOptions, UploadProgress } from './base'
 
