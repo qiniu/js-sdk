@@ -1,5 +1,5 @@
-import { Pool } from '../utils'
 import { ChunkInfo } from '../upload'
+import { Pool } from '.'
 
 const m = jest.fn()
 const task = (): Promise<void> => {
@@ -24,7 +24,7 @@ describe("test Pool for control concurrency", () => {
     return Promise.all(data.map(value => {
       pool.enqueue(value)
       expect(pool.processing.length).toBeLessThanOrEqual(2)
-    })).then(()=> {
+    })).then(() => {
       expect(m.mock.calls.length).toBe(6)
     })
   })

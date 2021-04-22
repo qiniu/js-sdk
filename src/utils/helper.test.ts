@@ -1,4 +1,4 @@
-import { createLocalKey } from '../utils'
+import { createLocalKey } from '.'
 
 describe('api function test', () => {
   test('createLocalKey', () => {

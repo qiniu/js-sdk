@@ -27,6 +27,7 @@
     "coverage",
     "test",
     "dist",
-    "lib"
+    "lib",
+    "esm"
   ]
 }
