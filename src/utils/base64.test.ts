@@ -16,13 +16,13 @@ const testCases = [
 ]
 
 describe('test base64', () => {
-  test('test urlSafeBase64Encode', () => {
+  test('urlSafeBase64Encode', () => {
     for (const [input, expected] of testCases) {
       const actual = base64.urlSafeBase64Encode(input)
       expect(actual).toMatch(expected)
     }
   })
-  test('test urlSafeBase64Decode', () => {
+  test('urlSafeBase64Decode', () => {
     for (const [expected, input] of testCases) {
       const actual = base64.urlSafeBase64Decode(input)
       expect(actual).toMatch(expected)
