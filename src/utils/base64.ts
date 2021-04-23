@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 // https://github.com/locutusjs/locutus/blob/master/src/php/xml/utf8_encode.js
-function utf8Encode(argString: any) {
+function utf8Encode(argString: string) {
   // http://kevin.vanzonneveld.net
   // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
   // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
@@ -77,7 +77,7 @@ function utf8Encode(argString: any) {
 }
 
 // https://github.com/locutusjs/locutus/blob/master/src/php/xml/utf8_decode.js
-function utf8Decode(strData: any) {
+function utf8Decode(strData: string) {
   // eslint-disable-line camelcase
   //  discuss at: https://locutus.io/php/utf8_decode/
   // original by: Webtoolkit.info (https://www.webtoolkit.info/)
