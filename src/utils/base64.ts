@@ -1,6 +1,7 @@
 /* eslint-disable */
 
-export function utf8Encode(argString: any) {
+// https://github.com/locutusjs/locutus/blob/master/src/php/xml/utf8_encode.js
+function utf8Encode(argString: any) {
   // http://kevin.vanzonneveld.net
   // +   original by: Webtoolkit.info (http://www.webtoolkit.info/)
   // +   improved by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
@@ -75,7 +76,68 @@ export function utf8Encode(argString: any) {
   return utftext
 }
 
-export function base64Encode(data: any) {
+// https://github.com/locutusjs/locutus/blob/master/src/php/xml/utf8_decode.js
+function utf8Decode(strData: any) {
+  // eslint-disable-line camelcase
+  //  discuss at: https://locutus.io/php/utf8_decode/
+  // original by: Webtoolkit.info (https://www.webtoolkit.info/)
+  //    input by: Aman Gupta
+  //    input by: Brett Zamir (https://brett-zamir.me)
+  // improved by: Kevin van Zonneveld (https://kvz.io)
+  // improved by: Norman "zEh" Fuchs
+  // bugfixed by: hitwork
+  // bugfixed by: Onno Marsman (https://twitter.com/onnomarsman)
+  // bugfixed by: Kevin van Zonneveld (https://kvz.io)
+  // bugfixed by: kirilloid
+  // bugfixed by: w35l3y (https://www.wesley.eti.br)
+  //   example 1: utf8_decode('Kevin van Zonneveld')
+  //   returns 1: 'Kevin van Zonneveld'
+
+  const tmpArr = []
+  let i = 0
+  let c1 = 0
+  let seqlen = 0
+
+  strData += ''
+
+  while (i < strData.length) {
+    c1 = strData.charCodeAt(i) & 0xFF
+    seqlen = 0
+
+    // https://en.wikipedia.org/wiki/UTF-8#Codepage_layout
+    if (c1 <= 0xBF) {
+      c1 = (c1 & 0x7F)
+      seqlen = 1
+    } else if (c1 <= 0xDF) {
+      c1 = (c1 & 0x1F)
+      seqlen = 2
+    } else if (c1 <= 0xEF) {
+      c1 = (c1 & 0x0F)
+      seqlen = 3
+    } else {
+      c1 = (c1 & 0x07)
+      seqlen = 4
+    }
+
+    for (let ai = 1; ai < seqlen; ++ai) {
+      c1 = ((c1 << 0x06) | (strData.charCodeAt(ai + i) & 0x3F))
+    }
+
+    if (seqlen === 4) {
+      c1 -= 0x10000
+      tmpArr.push(String.fromCharCode(0xD800 | ((c1 >> 10) & 0x3FF)))
+      tmpArr.push(String.fromCharCode(0xDC00 | (c1 & 0x3FF)))
+    } else {
+      tmpArr.push(String.fromCharCode(c1))
+    }
+
+    i += seqlen
+  }
+
+  return tmpArr.join('')
+}
+
+function base64Encode(data: any) {
   // http://kevin.vanzonneveld.net
   // +   original by: Tyler Akins (http://rumkin.com)
   // +   improved by: Bayron Guevara
@@ -143,7 +205,7 @@ export function base64Encode(data: any) {
   return enc
 }
 
-export function base64Decode(data: string) {
+function base64Decode(data: string) {
   // http://kevin.vanzonneveld.net
   // +   original by: Tyler Akins (http://rumkin.com)
   // +   improved by: Thunder.m
@@ -163,48 +225,50 @@ export function base64Decode(data: string) {
   // }
   let b64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='
   let o1, o2, o3, h1, h2, h3, h4, bits, i = 0,
-      ac = 0,
-      dec = '',
-      tmp_arr = []
+    ac = 0,
+    dec = '',
+    tmp_arr = []
 
   if (!data) {
-      return data
+    return data
   }
 
   data += ''
 
   do { // unpack four hexets into three octets using index points in b64
-      h1 = b64.indexOf(data.charAt(i++))
-      h2 = b64.indexOf(data.charAt(i++))
-      h3 = b64.indexOf(data.charAt(i++))
-      h4 = b64.indexOf(data.charAt(i++))
+    h1 = b64.indexOf(data.charAt(i++))
+    h2 = b64.indexOf(data.charAt(i++))
+    h3 = b64.indexOf(data.charAt(i++))
+    h4 = b64.indexOf(data.charAt(i++))
 
-      bits = h1 << 18 | h2 << 12 | h3 << 6 | h4
+    bits = h1 << 18 | h2 << 12 | h3 << 6 | h4
 
-      o1 = bits >> 16 & 0xff
-      o2 = bits >> 8 & 0xff
-      o3 = bits & 0xff
+    o1 = bits >> 16 & 0xff
+    o2 = bits >> 8 & 0xff
+    o3 = bits & 0xff
 
-      if (h3 === 64) {
-          tmp_arr[ac++] = String.fromCharCode(o1)
-      } else if (h4 === 64) {
-          tmp_arr[ac++] = String.fromCharCode(o1, o2)
-      } else {
-          tmp_arr[ac++] = String.fromCharCode(o1, o2, o3)
-      }
+    if (h3 === 64) {
+      tmp_arr[ac++] = String.fromCharCode(o1)
+    } else if (h4 === 64) {
+      tmp_arr[ac++] = String.fromCharCode(o1, o2)
+    } else {
+      tmp_arr[ac++] = String.fromCharCode(o1, o2, o3)
+    }
   } while (i < data.length)
 
   dec = tmp_arr.join('')
 
-  return dec
+  return utf8Decode(dec)
 }
 
 export function urlSafeBase64Encode(v: any) {
   v = base64Encode(v)
+
+  // 参考 https://tools.ietf.org/html/rfc4648#section-5
   return v.replace(/\//g, '_').replace(/\+/g, '-')
 }
 
-export function urlSafeBase64Decode(v: any){
+export function urlSafeBase64Decode(v: any) {
   v = v.replace(/_/g, '/').replace(/-/g, '+')
   return base64Decode(v)
 }
