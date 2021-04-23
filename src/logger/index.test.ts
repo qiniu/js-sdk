@@ -29,7 +29,7 @@ afterAll(() => {
 })
 
 describe('test logger', () => {
-  test('test level', () => {
+  test('level', () => {
     const infoLogger = new Logger('', true, 'INFO')
     infoLogger.info('test1')
     expect(logMessage).toStrictEqual([`Qiniu-JS-SDK [INFO][1]: `, 'test1'])
@@ -78,7 +78,7 @@ describe('test logger', () => {
     expect(errorMessage).toStrictEqual([])
   })
 
-  test('test unique id', () => {
+  test('unique id', () => {
     // @ts-ignore
     const startId = Logger.id
     new Logger('', true, 'OFF')
@@ -88,7 +88,7 @@ describe('test logger', () => {
     expect(last.id).toStrictEqual(startId + 3)
   })
 
-  test('test report', () => {
+  test('report', () => {
     const logger1 = new Logger('', false, 'OFF')
     logger1.report(null as any)
     expect(isCallReport).toBeTruthy()

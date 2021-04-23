@@ -1,5 +1,4 @@
-import { request } from './utils'
-import { urlSafeBase64Encode } from './base64'
+import { request, urlSafeBase64Encode } from '../utils'
 
 export interface ImageViewOptions {
   mode: number

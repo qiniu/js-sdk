@@ -1,6 +1,7 @@
-import { getUploadUrl } from '../api'
-import { DEFAULT_CHUNK_SIZE, Config } from '../upload/base'
+import { DEFAULT_CHUNK_SIZE, Config } from '../upload'
 import { region } from '../config'
+
+import { getUploadUrl } from '.'
 
 jest.mock('../utils', () => ({
   request: () => Promise.resolve({

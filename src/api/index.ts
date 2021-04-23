@@ -1,7 +1,6 @@
-import * as utils from './utils'
-import { regionUphostMap } from './config'
-import { urlSafeBase64Encode } from './base64'
-import { Config, UploadInfo } from './upload'
+import * as utils from '../utils'
+import { regionUphostMap } from '../config'
+import { Config, UploadInfo } from '../upload'
 
 interface UpHosts {
   data: {
@@ -47,7 +46,7 @@ export async function getUploadUrl(config: UploadUrlConfig, token: string): Prom
  */
 function getBaseUrl(bucket: string, key: string | null | undefined, uploadInfo: UploadInfo) {
   const { url, id } = uploadInfo
-  return `${url}/buckets/${bucket}/objects/${key != null ? urlSafeBase64Encode(key) : '~'}/uploads/${id}`
+  return `${url}/buckets/${bucket}/objects/${key != null ? utils.urlSafeBase64Encode(key) : '~'}/uploads/${id}`
 }
 
 export interface InitPartsData {
@@ -69,7 +68,7 @@ export function initUploadParts(
   key: string | null | undefined,
   uploadUrl: string
 ): utils.Response<InitPartsData> {
-  const url = `${uploadUrl}/buckets/${bucket}/objects/${key != null ? urlSafeBase64Encode(key) : '~'}/uploads`
+  const url = `${uploadUrl}/buckets/${bucket}/objects/${key != null ? utils.urlSafeBase64Encode(key) : '~'}/uploads`
   return utils.request<InitPartsData>(
     url,
     {

@@ -1,6 +1,6 @@
-import * as utils from '../utils'
-import { Pool } from '../pool'
 import { uploadChunk, uploadComplete, initUploadParts, UploadChunkData } from '../api'
+import * as utils from '../utils'
+
 import Base, { Progress, UploadInfo, Extra } from './base'
 
 export interface UploadedChunkStorage extends UploadChunkData {
@@ -61,7 +61,7 @@ export default class Resume extends Base {
 
     await this.initBeforeUploadChunks()
 
-    const pool = new Pool(
+    const pool = new utils.Pool(
       (chunkInfo: ChunkInfo) => this.uploadChunk(chunkInfo),
       this.config.concurrentRequestLimit
     )

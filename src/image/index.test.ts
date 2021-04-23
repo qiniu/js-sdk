@@ -1,9 +1,10 @@
-import { imageView2, imageMogr2, watermark, imageInfo } from '../image'
-import { urlSafeBase64Encode } from '../base64'
+import { urlSafeBase64Encode } from '../utils'
+
+import { imageView2, imageMogr2, watermark } from '.'
 
 describe('image func test', () => {
-    const domain = 'http://otxza7yo2.bkt.clouddn.com'
-    const key = 'test.png'
+  const domain = 'http://otxza7yo2.bkt.clouddn.com'
+  const key = 'test.png'
 
   test('imageView2', () => {
     let m = {
@@ -41,7 +42,7 @@ describe('image func test', () => {
   })
 
   test('watermark', () => {
-    let m ={
+    let m = {
       fop: 'watermark',
       mode: 1,
       image: 'http://www.b1.qiniudn.com/images/logo-2.png',
@@ -56,7 +57,7 @@ describe('image func test', () => {
       '/dissolve/100/dx/100/dy/100'
     )
     m.mode = 3
-    expect(()=> {
+    expect(() => {
       watermark(m, key, domain)
     }).toThrow('mode is wrong')
   })

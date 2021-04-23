@@ -1,5 +1,6 @@
 import SparkMD5 from 'spark-md5'
-import { Progress, LocalInfo } from './upload'
+import { Progress, LocalInfo } from '../upload'
+
 import { urlSafeBase64Decode } from './base64'
 
 export const MB = 1024 ** 2

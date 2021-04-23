@@ -61,7 +61,7 @@ describe('test report-v3', () => {
     size: 1
   }
 
-  test('test stringify send Data', () => {
+  test('stringify send Data', () => {
     reportV3('token', testData, 3)
     mockXHR.changeStatusAndState(0, 0)
     expect(mockXHR.sendData).toBe([
@@ -78,7 +78,7 @@ describe('test report-v3', () => {
     ].join(','))
   })
 
-  test('test retry', () => {
+  test('retry', () => {
     mockXHR.openCount = 0
     reportV3('token', testData)
     for (let index = 1; index <= 10; index++) {
