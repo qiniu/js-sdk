@@ -22,6 +22,10 @@ describe('api function test', () => {
 
   test('getPortFromUrl', () => {
     const testData = [
+      ['', ''],
+      ['//loaclhost', ''],
+      ['http://loaclhost', '80'],
+      ['https://loaclhost', '443'],
       ['http://loaclhost:3030', '3030'],
       ['https://loaclhost:3030', '3030'],
       ['http://loaclhost:3030/path', '3030'],
