@@ -117,7 +117,7 @@ export function createXHR(): XMLHttpRequest {
     return new window.ActiveXObject('Microsoft.XMLHTTP')
   }
 
-  throw new Error('the current environment does not support')
+  throw new Error('the current environment does not support.')
 }
 
 export async function computeMd5(data: Blob): Promise<string> {

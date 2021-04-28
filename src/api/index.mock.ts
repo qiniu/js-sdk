@@ -1,15 +1,15 @@
 import * as api from '.'
 
 export const errorResponseMap = {
-  invalidParams: { code: 400, isRequestError: true }, // 无效的参数
-  expiredToken: { code: 401, isRequestError: true }, // token 过期
+  invalidParams: { code: 400, isRequestError: true, reqId: 'mock' }, // 无效的参数
+  expiredToken: { code: 401, isRequestError: true, reqId: 'mock' }, // token 过期
 
-  gatewayUnavailable: { code: 502, isRequestError: true }, // 网关不可用
-  serviceUnavailable: { code: 503, isRequestError: true }, // 服务不可用
-  serviceTimeout: { code: 504, isRequestError: true }, // 服务超时
-  serviceError: { code: 599, isRequestError: true }, // 服务错误
+  gatewayUnavailable: { code: 502, isRequestError: true, reqId: 'mock' }, // 网关不可用
+  serviceUnavailable: { code: 503, isRequestError: true, reqId: 'mock' }, // 服务不可用
+  serviceTimeout: { code: 504, isRequestError: true, reqId: 'mock' }, // 服务超时
+  serviceError: { code: 599, isRequestError: true, reqId: 'mock' }, // 服务错误
 
-  invalidUploadId: { code: 612, isRequestError: true } // 无效的 upload id
+  invalidUploadId: { code: 612, isRequestError: true, reqId: 'mock' } // 无效的 upload id
 }
 
 export type ApiName =

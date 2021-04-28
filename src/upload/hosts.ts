@@ -64,7 +64,7 @@ export class HostPool {
   private cachedHostsMap = new Map<string, Host[]>()
 
   /**
-   * @param  {string[]} hosts
+   * @param  {string[] | string} hosts
    * @description 如果在构造时传入 hosts，则该 host 池始终使用传入的 host 做为可用的数据
    */
   constructor(hosts?: string[] | string) {
@@ -77,8 +77,9 @@ export class HostPool {
    * @param  {string} accessKey
    * @param  {string} bucketName
    * @param  {string[]} hosts
+   * @param  {Config['upprotocol']} protocol
    * @returns  {void}
-   * @description 注册可用 host，一般在用户通过 config 指定 hosts 时使用 isOverride 参数覆盖掉
+   * @description 注册可用 host
    */
   private register(accessKey: string, bucketName: string, hosts: string[], protocol: Config['upprotocol']): void {
     this.cachedHostsMap.set(
@@ -86,10 +87,11 @@ export class HostPool {
       hosts.map(host => new Host(host, protocol))
     )
   }
+
   /**
    * @param  {string} accessKey
    * @param  {string} bucketName
-   * @param  {Protocol} protocol
+   * @param  {Config['upprotocol']} protocol
    * @returns  {Promise<void>}
    * @description 从接口刷新最新的 host 数据，如果用户在构造时该类时传入了 host、则不会发起请求、而是固定使用传入的数据。
    */
@@ -113,7 +115,7 @@ export class HostPool {
   /**
    * @param  {string} accessKey
    * @param  {string} bucketName
-   * @param  {Protocol} protocol
+   * @param  {Config['upprotocol']} protocol
    * @param  {boolean} isRefresh
    * @returns  {Promise<Host | null>}
    * @description 获取一个可用的上传 Host，排除已冻结的，当无可用或者全部都被冻结时，会清楚内部冻结状态后重新从服务器获取

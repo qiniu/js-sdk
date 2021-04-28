@@ -14,7 +14,7 @@ export function normalizeUploadConfig(config?: Partial<Config>): Config {
     concurrentRequestLimit: 3,
     chunkSize: DEFAULT_CHUNK_SIZE,
 
-    // 兼容原来的 https:、http: 的 写法
+    // 兼容原来的 https:、http: 的写法
     upprotocol: upprotocol ? upprotocol.replace(/:$/, '') as Config['upprotocol'] : 'https',
 
     debugLogLevel: 'OFF',
