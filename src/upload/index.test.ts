@@ -51,7 +51,7 @@ describe('test upload', () => {
     expect(error).toStrictEqual(null)
   })
 
-  test('Direct: all api state.', async () => {
+  test('Direct: all api error state.', async () => {
     const testStateTable = [
       'invalidParams', 'expiredToken',
       'gatewayUnavailable', 'serviceUnavailable',
@@ -79,7 +79,7 @@ describe('test upload', () => {
     expect(error).toStrictEqual(null)
   })
 
-  test('Resume: all api state.', async () => {
+  test('Resume: all api error state.', async () => {
     const testApiTable: ApiName[] = [
       'getUpHosts', 'initUploadParts',
       'uploadChunk', 'uploadComplete'

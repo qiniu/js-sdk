@@ -8,8 +8,11 @@ jest.mock('./report-v3', () => ({
   }
 }))
 
+// eslint-disable-next-line no-console
 const originalLog = console.log
+// eslint-disable-next-line no-console
 const originalWarn = console.warn
+// eslint-disable-next-line no-console
 const originalError = console.error
 
 const logMessage: unknown[] = []
@@ -17,14 +20,20 @@ const warnMessage: unknown[] = []
 const errorMessage: unknown[] = []
 
 beforeAll(() => {
+  // eslint-disable-next-line no-console
   console.log = jest.fn((...args: unknown[]) => logMessage.push(...args))
+  // eslint-disable-next-line no-console
   console.warn = jest.fn((...args: unknown[]) => warnMessage.push(...args))
+  // eslint-disable-next-line no-console
   console.error = jest.fn((...args: unknown[]) => errorMessage.push(...args))
 })
 
 afterAll(() => {
+  // eslint-disable-next-line no-console
   console.log = originalLog
+  // eslint-disable-next-line no-console
   console.warn = originalWarn
+  // eslint-disable-next-line no-console
   console.error = originalError
 })
 
@@ -79,11 +88,15 @@ describe('test logger', () => {
   })
 
   test('unique id', () => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
     // @ts-ignore
     const startId = Logger.id
+    // eslint-disable-next-line no-new
     new Logger('', true, 'OFF')
+    // eslint-disable-next-line no-new
     new Logger('', true, 'OFF')
     const last = new Logger('', true, 'OFF')
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
     // @ts-ignore
     expect(last.id).toStrictEqual(startId + 3)
   })

@@ -165,23 +165,23 @@ export default abstract class Base {
   protected async checkAndUpdateUploadHost() {
     // 从 hostPool 中获取一个可用的 host 挂载在 this
     this.logger.info('get available upload host.', this.hostPool)
-    const availableHost = await this.hostPool.getUp(
+    const newHost = await this.hostPool.getUp(
       this.putPolicy.ak,
       this.putPolicy.bucket,
       this.config.upprotocol
     )
 
-    if (availableHost == null) {
+    if (newHost == null) {
       throw new Error('no available upload host.')
     }
 
-    if (this.uploadHost != null && this.uploadHost.host !== availableHost.host) {
-      this.logger.warn(`host switches from ${this.uploadHost.host} to ${availableHost.host}.`)
+    if (this.uploadHost != null && this.uploadHost.host !== newHost.host) {
+      this.logger.warn(`host switches from ${this.uploadHost.host} to ${newHost.host}.`)
     } else {
-      this.logger.info(`use host ${availableHost.host}.`)
+      this.logger.info(`use host ${newHost.host}.`)
     }
 
-    this.uploadHost = availableHost
+    this.uploadHost = newHost
   }
 
   // 检查并更新解冻当前的 host

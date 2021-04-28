@@ -67,10 +67,9 @@ export class HostPool {
    * @param  {string[]} hosts
    * @description 如果在构造时传入 hosts，则该 host 池始终使用传入的 host 做为可用的数据
    */
-  constructor(hosts?: string[] | string) {
+  constructor(hosts?: string[]) {
     if (hosts == null) return
-    if (Array.isArray(hosts)) this.hosts = hosts
-    if (typeof hosts === 'string') this.hosts = [hosts]
+    this.hosts = hosts
   }
 
   /**
@@ -95,7 +94,7 @@ export class HostPool {
    */
   private async refresh(accessKey: string, bucketName: string, protocol: Config['upprotocol']): Promise<void> {
     const hosts: string[] = []
-    if (this.hosts != null) {
+    if (this.hosts != null && this.hosts.length > 0) {
       hosts.push(...this.hosts)
     } else {
       const response = await getUpHosts(accessKey, bucketName, protocol)

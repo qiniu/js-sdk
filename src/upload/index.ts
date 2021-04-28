@@ -1,6 +1,7 @@
 import Resume from './resume'
 import Direct from './direct'
 import Logger from '../logger'
+import { regionUphostMap } from '../config'
 import { UploadCompleteData } from '../api'
 import { QiniuError, Observable, IObserver, MB } from '../utils'
 
@@ -54,8 +55,29 @@ export default function upload(
     config
   }
 
+  const hostList: string[] = []
+
+  // 如果用户传了 region，添加指定 region 的 host 到可用 host 列表
+  if (config?.region) {
+    const hostMap = regionUphostMap[config?.region]
+    if (config.useCdnDomain) {
+      hostList.push(hostMap.cdnUphost)
+    } else {
+      hostList.push(hostMap.srcUphost)
+    }
+  }
+
+  // 如果同时指定了 uphost 参数，添加到可用 host 列表
+  if (config?.uphost != null) {
+    if (Array.isArray(config?.uphost)) {
+      hostList.push(...config?.uphost)
+    } else {
+      hostList.push(config?.uphost)
+    }
+  }
+
   // 创建 host 池
-  const hostPool = new HostPool(config?.uphost)
+  const hostPool = new HostPool(hostList)
 
   // 为每个任务创建单独的 Logger
   const logger = new Logger(options.token, config?.disableStatisticsReport, config?.debugLogLevel)
