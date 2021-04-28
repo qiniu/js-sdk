@@ -187,7 +187,7 @@ export default class Resume extends Base {
       }
     )
 
-    this.logger.info('finishResumeProgress.')
+    this.logger.info('finish Resume Progress.')
     this.updateMkFileProgress(1)
     this.checkAndUnfreezeHost()
     return result

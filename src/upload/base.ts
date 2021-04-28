@@ -6,6 +6,8 @@ import { Host, HostPool } from './hosts'
 
 export const DEFAULT_CHUNK_SIZE = 4 // 单位 MB
 
+export const RETRY_CODE = [502, 503, 504, 599]
+
 /** 上传文件的资源信息配置 */
 export interface Extra {
   /** 文件原文件名 */
@@ -186,6 +188,7 @@ export default abstract class Base {
 
   // 检查并更新解冻当前的 host
   protected checkAndUnfreezeHost() {
+    this.logger.info('check unfreeze host.')
     if (this.uploadHost != null && this.uploadHost.isFrozen()) {
       this.uploadHost.unfreeze()
       this.logger.warn(`${this.uploadHost.host} will be unfreeze.`)
@@ -194,10 +197,11 @@ export default abstract class Base {
 
   // 检查并更新冻结当前的 host
   private checkAndFreezeHost(error: utils.QiniuError) {
-    if (utils.isResponseError(error)) {
-      if ([502, 503, 504, 599].includes(error.code)) {
-        this.uploadHost.freeze()
+    this.logger.info('check freeze host.')
+    if (utils.isResponseError(error) && this.uploadHost != null) {
+      if (RETRY_CODE.includes(error.code)) {
         this.logger.warn(`${this.uploadHost.host} will be temporarily frozen.`)
+        this.uploadHost.freeze()
       }
     }
   }
@@ -256,8 +260,8 @@ export default abstract class Base {
 
       // 检查并冻结当前的 host
       this.checkAndFreezeHost(err)
-      const needRetry = err.isRequestError && err.code === 0 && !this.aborted
       const notReachRetryCount = ++this.retryCount <= this.config.retryCount
+      const needRetry = err.isRequestError && !this.aborted && [0, ...RETRY_CODE].includes(err.code)
 
       // 以下条件满足其中之一则会进行重新上传：
       // 1. 满足 needRetry 的条件且 retryCount 不为 0

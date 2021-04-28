@@ -67,9 +67,10 @@ export class HostPool {
    * @param  {string[]} hosts
    * @description 如果在构造时传入 hosts，则该 host 池始终使用传入的 host 做为可用的数据
    */
-  constructor(hosts?: string[]) {
+  constructor(hosts?: string[] | string) {
     if (hosts == null) return
-    this.hosts = hosts
+    if (Array.isArray(hosts)) this.hosts = hosts
+    if (typeof hosts === 'string') this.hosts = [hosts]
   }
 
   /**

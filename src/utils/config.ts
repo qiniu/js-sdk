@@ -1,10 +1,10 @@
-import { Config, DEFAULT_CHUNK_SIZE } from 'upload'
+import { regionUphostMap } from '../config'
+import { Config, DEFAULT_CHUNK_SIZE } from '../upload'
 
-export function normalizeUploadConfig(config: Config): Config {
-  if (config == null) return config
-  const { upprotocol } = config
+export function normalizeUploadConfig(config?: Partial<Config>): Config {
+  const { upprotocol } = { ...config }
 
-  const normalizeData: Config = {
+  const normalizeConfig: Config = {
     uphost: '',
     retryCount: 3,
 
@@ -21,5 +21,26 @@ export function normalizeUploadConfig(config: Config): Config {
     disableStatisticsReport: false
   }
 
-  return { ...normalizeData, ...config }
+  const hostList: string[] = []
+
+  // 如果用户传了 region，添加指定 region 的 host 到可用 host 列表
+  if (config?.region) {
+    const hostMap = regionUphostMap[config?.region]
+    if (config.useCdnDomain) {
+      hostList.push(hostMap.cdnUphost)
+    } else {
+      hostList.push(hostMap.srcUphost)
+    }
+  }
+
+  // 如果同时指定了 uphost 参数，添加到可用 host 列表
+  if (config?.uphost != null) {
+    if (Array.isArray(config?.uphost)) {
+      hostList.push(...config?.uphost)
+    } else {
+      hostList.push(config?.uphost)
+    }
+  }
+
+  return { ...config, ...normalizeConfig, uphost: hostList }
 }
