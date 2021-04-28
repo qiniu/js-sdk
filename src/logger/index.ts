@@ -3,7 +3,7 @@ import { reportV3, V3LogInfo } from './report-v3'
 export type LogLevel = 'INFO' | 'WARN' | 'ERROR' | 'OFF'
 
 export default class Logger {
-  private static id: number = 0
+  private static id = 0
 
   // 为每个类分配一个 id
   // 用以区分不同的上传任务
@@ -22,8 +22,11 @@ export default class Logger {
    */
   report(data: V3LogInfo, retry?: number) {
     if (this.disableReport) return
-    try { reportV3(this.token, data, retry) }
-    catch (error) { console.warn(error) }
+    try {
+      reportV3(this.token, data, retry)
+    } catch (error) {
+      this.warn(error)
+    }
   }
 
   /**
@@ -33,6 +36,7 @@ export default class Logger {
   info(...args: unknown[]) {
     const allowLevel: LogLevel[] = ['INFO']
     if (allowLevel.includes(this.level)) {
+      // eslint-disable-next-line no-console
       console.log(`Qiniu-JS-SDK [INFO][${this.id}]: `, ...args)
     }
   }
@@ -44,6 +48,7 @@ export default class Logger {
   warn(...args: unknown[]) {
     const allowLevel: LogLevel[] = ['INFO', 'WARN']
     if (allowLevel.includes(this.level)) {
+      // eslint-disable-next-line no-console
       console.warn(`Qiniu-JS-SDK [WARN][${this.id}]: `, ...args)
     }
   }
@@ -55,6 +60,7 @@ export default class Logger {
   error(...args: unknown[]) {
     const allowLevel: LogLevel[] = ['INFO', 'WARN', 'ERROR']
     if (allowLevel.includes(this.level)) {
+      // eslint-disable-next-line no-console
       console.error(`Qiniu-JS-SDK [ERROR][${this.id}]: `, ...args)
     }
   }

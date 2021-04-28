@@ -8,7 +8,9 @@ class MockXHR {
 
   status: number
   readyState: number
-  onreadystatechange() { }
+  onreadystatechange() {
+    // null
+  }
 
   clear() {
     this.sendData = ''

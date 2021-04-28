@@ -1,5 +1,4 @@
-import { UploadCompleteData } from '../api'
-import { request } from '../utils'
+import { direct } from '../api'
 
 import Base from './base'
 
@@ -24,9 +23,8 @@ export default class Direct extends Base {
     }
 
     this.logger.info('formData inited.')
-    const result = await request<UploadCompleteData>(this.uploadUrl, {
-      method: 'POST',
-      body: formData,
+    await this.checkAndUpdateUploadHost()
+    const result = await direct(this.uploadHost.url(), formData, {
       onProgress: data => {
         this.updateDirectProgress(data.loaded, data.total)
       },
@@ -35,6 +33,7 @@ export default class Direct extends Base {
 
     this.logger.info('Direct progress finish.')
     this.finishDirectProgress()
+    this.checkAndUnfreezeHost()
     return result
   }
 

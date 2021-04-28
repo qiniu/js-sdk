@@ -1,43 +1,26 @@
-import * as utils from '../utils'
-import { regionUphostMap } from '../config'
+import { stringify } from 'querystring'
+
 import { Config, UploadInfo } from '../upload'
+import * as utils from '../utils'
 
 interface UpHosts {
   data: {
     up: {
       acc: {
         main: string[]
+        backup: string[]
       }
     }
   }
 }
 
-export async function getUpHosts(token: string, protocol: 'https:' | 'http:'): Promise<UpHosts> {
-  const putPolicy = utils.getPutPolicy(token)
-  const url = protocol + '//api.qiniu.com/v2/query?ak=' + putPolicy.ak + '&bucket=' + putPolicy.bucket
+export async function getUpHosts(accessKey: string, bucketName: string, protocol: Config['upprotocol']): Promise<UpHosts> {
+  const params = stringify({ ak: accessKey, bucket: bucketName })
+  const url = `${protocol}://api.qiniu.com/v2/query?${params}`
   return utils.request(url, { method: 'GET' })
 }
 
 export type UploadUrlConfig = Partial<Pick<Config, 'upprotocol' | 'uphost' | 'region' | 'useCdnDomain'>>
-
-/** 获取上传url */
-export async function getUploadUrl(config: UploadUrlConfig, token: string): Promise<string> {
-  const protocol = config.upprotocol || 'https:'
-
-  if (config.uphost) {
-    return `${protocol}//${config.uphost}`
-  }
-
-  if (config.region) {
-    const upHosts = regionUphostMap[config.region]
-    const host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost
-    return `${protocol}//${host}`
-  }
-
-  const res = await getUpHosts(token, protocol)
-  const hosts = res.data.up.acc.main
-  return `${protocol}//${hosts[0]}`
-}
 
 /**
  * @param bucket 空间名
@@ -147,4 +130,23 @@ export function deleteUploadedChunks(
       headers: utils.getAuthHeaders(token)
     }
   )
+}
+
+/**
+ * @param  {string} url
+ * @param  {FormData} data
+ * @param  {Partial<utils.RequestOptions>} options
+ * @returns Promise
+ * @description 直传接口
+ */
+export function direct(
+  url: string,
+  data: FormData,
+  options: Partial<utils.RequestOptions>
+): Promise<UploadCompleteData> {
+  return utils.request<UploadCompleteData>(url, {
+    method: 'POST',
+    body: data,
+    ...options
+  })
 }

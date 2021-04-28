@@ -1,6 +1,5 @@
 import SparkMD5 from 'spark-md5'
 import { Progress, LocalInfo } from '../upload'
-
 import { urlSafeBase64Decode } from './base64'
 
 export const MB = 1024 ** 2
@@ -66,16 +65,20 @@ export function removeLocalFileInfo(localKey: string) {
 
 export function getLocalFileInfo(localKey: string): LocalInfo | null {
   let localInfoString: string | null = null
-  try { localInfoString = localStorage.getItem(localKey) }
-  catch { throw new Error(`getLocalFileInfo failed. key: ${localKey}`) }
+  try {
+    localInfoString = localStorage.getItem(localKey)
+  } catch {
+    throw new Error(`getLocalFileInfo failed. key: ${localKey}`)
+  }
 
   if (localInfoString == null) {
     return null
   }
 
   let localInfo: LocalInfo | null = null
-  try { localInfo = JSON.parse(localInfoString) }
-  catch {
+  try {
+    localInfo = JSON.parse(localInfoString)
+  } catch {
     // 本地信息已被破坏，直接删除
     removeLocalFileInfo(localKey)
     throw new Error(`getLocalFileInfo failed to parse. key: ${localKey}`)
@@ -110,7 +113,11 @@ export function createXHR(): XMLHttpRequest {
     return new XMLHttpRequest()
   }
 
-  return window.ActiveXObject('Microsoft.XMLHTTP')
+  if (window.ActiveXObject) {
+    return new window.ActiveXObject('Microsoft.XMLHTTP')
+  }
+
+  throw new Error('the current environment does not support')
 }
 
 export async function computeMd5(data: Blob): Promise<string> {
@@ -147,13 +154,19 @@ export interface ResponseSuccess<T> {
 }
 
 export interface ResponseError {
-  code: number /** 请求错误状态码，只有在 err.isRequestError 为 true 的时候才有效。可查阅码值对应说明。*/
+  code: number /** 请求错误状态码，只有在 err.isRequestError 为 true 的时候才有效。可查阅码值对应说明。 */
   message: string /** 错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。 */
-  isRequestError: true | undefined /** 用于区分是否 xhr 请求错误当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 true否则为 undefined 。 */
   reqId: string /** xhr请求错误的 X-Reqid。 */
+
+  isRequestError: true | undefined /** 用于区分是否 xhr 请求错误当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 true否则为 undefined 。 */
 }
 
-export type CustomError = ResponseError | Error | any
+export type QiniuError = ResponseError | Error | any
+
+export function isResponseError(error: QiniuError): error is ResponseError {
+  if (error && error.code != null && error.reqId != null) return true
+  return false
+}
 
 export type XHRHandler = (xhr: XMLHttpRequest) => void
 

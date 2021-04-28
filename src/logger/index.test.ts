@@ -32,7 +32,7 @@ describe('test logger', () => {
   test('level', () => {
     const infoLogger = new Logger('', true, 'INFO')
     infoLogger.info('test1')
-    expect(logMessage).toStrictEqual([`Qiniu-JS-SDK [INFO][1]: `, 'test1'])
+    expect(logMessage).toStrictEqual(['Qiniu-JS-SDK [INFO][1]: ', 'test1'])
     infoLogger.warn('test2')
     expect(warnMessage).toStrictEqual(['Qiniu-JS-SDK [WARN][1]: ', 'test2'])
     infoLogger.error('test3')

@@ -33,7 +33,7 @@ export interface UploadChunkBody extends Extra {
 
 /** 是否为正整数 */
 function isPositiveInteger(n: number) {
-  var re = /^[1-9]\d*$/
+  const re = /^[1-9]\d*$/
   return re.test(String(n))
 }
 
@@ -66,25 +66,34 @@ export default class Resume extends Base {
       this.config.concurrentRequestLimit
     )
 
+    let mkFileResponse = null
     const localKey = this.getLocalKey()
     const uploadChunks = this.chunks.map((chunk, index) => pool.enqueue({ chunk, index }))
 
-    const result = Promise.all(uploadChunks).then(() => this.mkFileReq())
-    result.then(
-      () => {
-        try { utils.removeLocalFileInfo(localKey) }
-        catch (error) { this.logger.error(error) }
-      },
-      err => {
-        this.logger.error('uploadChunks failed.', err)
-        // uploadId 无效，上传参数有误（多由于本地存储信息的 uploadId 失效
-        if (err.code === 612 || err.code === 400) {
-          try { utils.removeLocalFileInfo(localKey) }
-          catch (error) { this.logger.error(error) }
+    try {
+      await Promise.all(uploadChunks)
+      mkFileResponse = await this.mkFileReq()
+    } catch (error) {
+      this.logger.error('uploadChunks failed.', error)
+      // uploadId 无效，上传参数有误（多由于本地存储信息的 uploadId 失效
+      if (error.code === 612 || error.code === 400) {
+        try {
+          utils.removeLocalFileInfo(localKey)
+        } catch (removeError) {
+          this.logger.error(removeError)
         }
       }
-    )
-    return result
+
+      throw error
+    }
+
+    // 上传成功，清理本地缓存数据
+    try {
+      utils.removeLocalFileInfo(localKey)
+    } catch (error) {
+      this.logger.error(error)
+    }
+    return mkFileResponse
   }
 
   private async uploadChunk(chunkInfo: ChunkInfo) {
@@ -103,7 +112,7 @@ export default class Resume extends Base {
     }
 
     const md5 = await utils.computeMd5(chunk)
-    this.logger.info(`computed part md5.`, md5)
+    this.logger.info('computed part md5.', md5)
 
     if (info && md5 === info.md5) {
       reuseSaved()
@@ -121,6 +130,7 @@ export default class Resume extends Base {
     }
 
     this.logger.info(`part ${index} start uploading.`)
+    await this.checkAndUpdateUploadHost()
     const response = await uploadChunk(
       this.token,
       this.key,
@@ -129,6 +139,7 @@ export default class Resume extends Base {
       requestOptions
     )
     this.logger.info(`part ${index} upload completed.`)
+    this.checkAndUnfreezeHost()
 
     // 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null，这里在每次分片上传完成后都手动更新下 progress
     onProgress({
@@ -163,8 +174,9 @@ export default class Resume extends Base {
       ...this.putExtra.customVars && { customVars: this.putExtra.customVars },
       ...this.putExtra.metadata && { metadata: this.putExtra.metadata }
     }
-    
+
     this.logger.info('parts upload completed, make file.', data)
+    await this.checkAndUpdateUploadHost()
     const result = await uploadComplete(
       this.token,
       this.key,
@@ -177,19 +189,30 @@ export default class Resume extends Base {
 
     this.logger.info('finishResumeProgress.')
     this.updateMkFileProgress(1)
+    this.checkAndUnfreezeHost()
     return result
   }
 
   private async initBeforeUploadChunks() {
     let localInfo: LocalInfo | null = null
-    try { localInfo = utils.getLocalFileInfo(this.getLocalKey()) }
-    catch (error) { this.logger.warn(error) }
+    try {
+      localInfo = utils.getLocalFileInfo(this.getLocalKey())
+    } catch (error) {
+      this.logger.warn(error)
+    }
 
     // 分片必须和当时使用的 uploadId 配套，所以断点续传需要把本地存储的 uploadId 拿出来
     // 假如没有 localInfo 本地信息并重新获取 uploadId
     if (!localInfo) {
       this.logger.info('resume upload parts from api.')
-      const res = await initUploadParts(this.token, this.bucket, this.key, this.uploadUrl)
+      await this.checkAndUpdateUploadHost()
+      const res = await initUploadParts(
+        this.token,
+        this.putPolicy.bucket,
+        this.key,
+        this.uploadHost.url()
+      )
+      this.checkAndUnfreezeHost()
       this.logger.info(`resume upload parts of id: ${res.data.uploadId}.`)
       this.uploadId = res.data.uploadId
       this.uploadedList = []
@@ -216,7 +239,7 @@ export default class Resume extends Base {
   private getUploadInfo(): UploadInfo {
     return {
       id: this.uploadId,
-      url: this.uploadUrl
+      url: this.uploadHost.url()
     }
   }
 
@@ -245,7 +268,7 @@ export default class Resume extends Base {
       )),
       uploadInfo: {
         id: this.uploadId,
-        url: this.uploadUrl
+        url: this.uploadHost?.url()
       }
     }
     this.onData(this.progress)

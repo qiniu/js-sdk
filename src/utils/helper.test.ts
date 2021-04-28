@@ -13,7 +13,7 @@ describe('api function test', () => {
       ['message áßäöü', '3fc4229d4a54045f5d5b96dd759581d4']
     ]
 
-    for (const [input, expected] of testData) {
+    for await (const [input, expected] of testData) {
       const testBlob = new Blob([input], { type: 'text/plain;charset=utf-8' })
       const actual = await computeMd5(testBlob)
       expect(actual).toStrictEqual(expected)
@@ -31,7 +31,7 @@ describe('api function test', () => {
       ['http://loaclhost:3030/path', '3030'],
       ['http://loaclhost:3030/path?test=3232', '3030'],
       ['http://loaclhost.com:3030/path?test=3232', '3030'],
-      ['http://loaclhost.com.cn:3030/path?test=3232', '3030'],
+      ['http://loaclhost.com.cn:3030/path?test=3232', '3030']
     ]
 
     for (const [input, expected] of testData) {
