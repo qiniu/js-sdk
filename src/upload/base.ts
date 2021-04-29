@@ -154,11 +154,11 @@ export default abstract class Base {
 
     try {
       this.putPolicy = utils.getPutPolicy(this.token)
-      if (this.putPolicy.ak == null || this.putPolicy == null) {
+      if (this.putPolicy == null || this.putPolicy.ak == null || this.putPolicy.bucket == null) {
         throw new Error(`not a valid upload token: ${this.token}`)
       }
     } catch (error) {
-      logger.error('get bucket from token failed.', error)
+      logger.error('get putPolicy from token failed.', error)
       this.onError(error)
     }
   }
@@ -166,7 +166,7 @@ export default abstract class Base {
   // 检查并更新 upload host
   protected async checkAndUpdateUploadHost() {
     // 从 hostPool 中获取一个可用的 host 挂载在 this
-    this.logger.info('get available upload host.', this.hostPool)
+    this.logger.info('get available upload host.')
     const newHost = await this.hostPool.getUp(
       this.putPolicy.ak,
       this.putPolicy.bucket,
@@ -186,12 +186,12 @@ export default abstract class Base {
     this.uploadHost = newHost
   }
 
-  // 检查并更新解冻当前的 host
+  // 检查并解冻当前的 host
   protected checkAndUnfreezeHost() {
     this.logger.info('check unfreeze host.')
     if (this.uploadHost != null && this.uploadHost.isFrozen()) {
-      this.uploadHost.unfreeze()
       this.logger.warn(`${this.uploadHost.host} will be unfreeze.`)
+      this.uploadHost.unfreeze()
     }
   }
 
@@ -300,14 +300,14 @@ export default abstract class Base {
     this.logger.report({
       code,
       reqId,
-      host: utils.getDomainFromUrl(this.uploadHost?.url() || ''),
       remoteIp: '',
-      port: utils.getPortFromUrl(this.uploadHost?.url() || ''),
-      duration: (new Date().getTime() - this.uploadAt) / 1000,
-      time: Math.floor(this.uploadAt / 1000),
-      bytesSent: this.progress ? this.progress.total.loaded : 0,
       upType: 'jssdk-h5',
-      size: this.file.size
+      size: this.file.size,
+      time: Math.floor(this.uploadAt / 1000),
+      port: utils.getPortFromUrl(this.uploadHost?.url()),
+      host: utils.getDomainFromUrl(this.uploadHost?.url()),
+      duration: (new Date().getTime() - this.uploadAt) / 1000,
+      bytesSent: this.progress ? this.progress.total.loaded : 0
     })
   }
 

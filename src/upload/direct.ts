@@ -31,9 +31,9 @@ export default class Direct extends Base {
       onCreate: xhr => this.addXhr(xhr)
     })
 
+    this.checkAndUnfreezeHost()
     this.logger.info('Direct progress finish.')
     this.finishDirectProgress()
-    this.checkAndUnfreezeHost()
     return result
   }
 

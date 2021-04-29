@@ -30,7 +30,7 @@ export class Host {
     const unfreezeTime = unfreezeTimeMap.get(this.host)
     if (unfreezeTime != null && unfreezeTime >= currentTime) return true
 
-    // 已经到达解冻时间，产生一个副作用（解冻当前的 host）
+    // 已经到达解冻时间（解冻当前的 host）
     this.unfreeze()
     return false
   }
@@ -101,10 +101,10 @@ export class HostPool {
       hosts.push(...this.hosts)
     } else {
       const response = await getUpHosts(accessKey, bucketName, protocol)
-      if (response?.data?.up?.acc != null) {
+      if (response?.data != null) {
         hosts.push(
-          ...(response?.data?.up?.acc?.main || []),
-          ...(response?.data?.up?.acc?.backup || [])
+          ...(response.data.up?.acc?.main || []),
+          ...(response.data.up?.acc?.backup || [])
         )
       }
     }
@@ -118,9 +118,9 @@ export class HostPool {
    * @param  {Config['upprotocol']} protocol
    * @param  {boolean} isRefresh
    * @returns  {Promise<Host | null>}
-   * @description 获取一个可用的上传 Host，排除已冻结的，当无可用或者全部都被冻结时，会清楚内部冻结状态后重新从服务器获取
+   * @description 获取一个可用的上传 Host，排除已冻结的
    */
-  async getUp(accessKey: string, bucketName: string, protocol: Config['upprotocol'], isRefresh = false): Promise<Host | null> {
+  public async getUp(accessKey: string, bucketName: string, protocol: Config['upprotocol'], isRefresh = false): Promise<Host | null> {
     if (isRefresh) await this.refresh(accessKey, bucketName, protocol)
     const cachedHost = this.cachedHostsMap.get(`${accessKey}@${bucketName}`)
     if (cachedHost == null && isRefresh === false) {
@@ -132,17 +132,14 @@ export class HostPool {
       return this.getUp(accessKey, bucketName, protocol, true)
     }
 
-    // 有 host 但是全被冻结了，根据解冻时间去取离解冻时间最近的 host
+    // 有 host 但是全被冻结了，去取离解冻最近的 host
     if (cachedHost != null && cachedHost.length > 0 && availableHost.length === 0) {
-
       const priorityQueue = cachedHost.slice()
         .sort(({ host: hostA }, { host: hostB }) => {
           const aUnfreezeTime = unfreezeTimeMap.get(hostA)
           const bUnfreezeTime = unfreezeTimeMap.get(hostB)
-          if (!aUnfreezeTime) return 1
-          if (!bUnfreezeTime) return -1
 
-          return aUnfreezeTime - bUnfreezeTime
+          return (aUnfreezeTime || 0) - (bUnfreezeTime || 0)
         })
 
       return priorityQueue[0]

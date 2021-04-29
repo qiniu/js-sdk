@@ -80,7 +80,7 @@ export default class Resume extends Base {
         try {
           utils.removeLocalFileInfo(localKey)
         } catch (removeError) {
-          this.logger.error(removeError)
+          this.logger.warn(removeError)
         }
       }
 
@@ -91,7 +91,7 @@ export default class Resume extends Base {
     try {
       utils.removeLocalFileInfo(localKey)
     } catch (error) {
-      this.logger.error(error)
+      this.logger.warn(error)
     }
     return mkFileResponse
   }
