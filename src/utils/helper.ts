@@ -305,12 +305,12 @@ export function getPutPolicy(token: string) {
   }
 
   if (putPolicy.scope == null) {
-    throw new QiniuError(QiniuErrorType.InvalidToken, 'missing scope field.')
+    throw new QiniuError(QiniuErrorType.InvalidToken, 'scope field is null.')
   }
 
   const bucketName = putPolicy.scope.split(':')[0]
   if (!bucketName) {
-    throw new QiniuError(QiniuErrorType.InvalidToken, 'invalid scope field.')
+    throw new QiniuError(QiniuErrorType.InvalidToken, 'resolve bucketName failed.')
   }
 
   return { assessKey, bucketName, scope: putPolicy.scope }
