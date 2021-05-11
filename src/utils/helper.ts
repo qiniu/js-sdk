@@ -276,13 +276,14 @@ export function getDomainFromUrl(url: string): string {
   return ''
 }
 
+// 非标准的 PutPolicy
 interface PutPolicy {
   assessKey: string
   bucketName: string
   scope: string
 }
 
-export function getPutPolicy(token: string) {
+export function getPutPolicy(token: string): PutPolicy {
   if (!token) throw new QiniuError(QiniuErrorType.InvalidToken, 'invalid token.')
 
   const segments = token.split(':')
