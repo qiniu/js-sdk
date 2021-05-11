@@ -1,4 +1,4 @@
-import { ErrorType, isQiniuRequestError, QiniuError } from '../errors'
+import { QiniuErrorType, isQiniuRequestError, QiniuError } from '../errors'
 import Logger, { LogLevel } from '../logger'
 import { region } from '../config'
 import * as utils from '../utils'
@@ -7,7 +7,8 @@ import { Host, HostPool } from './hosts'
 
 export const DEFAULT_CHUNK_SIZE = 4 // 单位 MB
 
-export const RETRY_CODE_LIST = [0, 612, 502, 503, 504, 599]
+export const FREEZE_CODE_LIST = [0, 502, 503, 504, 599] // 将会冻结当前 host 的 code
+export const RETRY_CODE_LIST = [...FREEZE_CODE_LIST, 612] // 会进行重试的 code
 
 /** 上传文件的资源信息配置 */
 export interface Extra {
@@ -173,7 +174,7 @@ export default abstract class Base {
 
     if (newHost == null) {
       throw new QiniuError(
-        ErrorType.NotAvailableUploadHost,
+        QiniuErrorType.NotAvailableUploadHost,
         'no available upload host.'
       )
     }
@@ -200,7 +201,7 @@ export default abstract class Base {
   private checkAndFreezeHost(error: QiniuError) {
     this.logger.info('check freeze host.')
     if (isQiniuRequestError(error) && this.uploadHost != null) {
-      if (RETRY_CODE_LIST.includes(error.code)) {
+      if (FREEZE_CODE_LIST.includes(error.code)) {
         this.logger.warn(`${this.uploadHost.host} will be temporarily frozen.`)
         this.uploadHost.freeze()
       }
@@ -225,7 +226,7 @@ export default abstract class Base {
 
     if (this.file.size > 10000 * GB) {
       this.handleError(new QiniuError(
-        ErrorType.InvalidFile,
+        QiniuErrorType.InvalidFile,
         'file size exceed maximum value 10000G.'
       ))
       return
@@ -234,7 +235,7 @@ export default abstract class Base {
     if (this.putExtra.customVars) {
       if (!utils.isCustomVarsValid(this.putExtra.customVars)) {
         this.handleError(new QiniuError(
-          ErrorType.InvalidCustomVars,
+          QiniuErrorType.InvalidCustomVars,
           'customVars key should start width x:.'
         ))
         return
@@ -244,7 +245,7 @@ export default abstract class Base {
     if (this.putExtra.metadata) {
       if (!utils.isMetaDataValid(this.putExtra.metadata)) {
         this.handleError(new QiniuError(
-          ErrorType.InvalidMetadata,
+          QiniuErrorType.InvalidMetadata,
           'metadata key should start with x-qn-meta-.'
         ))
         return

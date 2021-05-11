@@ -1,5 +1,5 @@
 import { uploadChunk, uploadComplete, initUploadParts, UploadChunkData } from '../api'
-import { QiniuError, ErrorType } from '../errors'
+import { QiniuError, QiniuErrorType } from '../errors'
 import * as utils from '../utils'
 
 import Base, { Progress, UploadInfo, Extra } from './base'
@@ -54,14 +54,14 @@ export default class Resume extends Base {
     this.logger.info('start run Resume.')
     if (!this.config.chunkSize || !isPositiveInteger(this.config.chunkSize)) {
       throw new QiniuError(
-        ErrorType.InvalidChunkSize,
+        QiniuErrorType.InvalidChunkSize,
         'chunkSize must be a positive integer.'
       )
     }
 
     if (this.config.chunkSize > 1024) {
       throw new QiniuError(
-        ErrorType.InvalidChunkSize,
+        QiniuErrorType.InvalidChunkSize,
         'chunkSize maximum value is 1024.'
       )
     }
