@@ -1,6 +1,7 @@
 import SparkMD5 from 'spark-md5'
-import { Progress, LocalInfo } from '../upload'
 import { urlSafeBase64Decode } from './base64'
+import { Progress, LocalInfo } from '../upload'
+import { ErrorType, QiniuError, QiniuRequestError } from '../errors'
 
 export const MB = 1024 ** 2
 
@@ -46,7 +47,10 @@ export function setLocalFileInfo(localKey: string, info: LocalInfo) {
   try {
     localStorage.setItem(localKey, JSON.stringify(info))
   } catch (err) {
-    throw new Error(`setLocalFileInfo failed: ${localKey}`)
+    throw new QiniuError(
+      ErrorType.WriteCacheFailed,
+      `setLocalFileInfo failed: ${localKey}`
+    )
   }
 }
 
@@ -59,7 +63,10 @@ export function removeLocalFileInfo(localKey: string) {
   try {
     localStorage.removeItem(localKey)
   } catch (err) {
-    throw new Error(`removeLocalFileInfo failed. key: ${localKey}`)
+    throw new QiniuError(
+      ErrorType.RemoveCacheFailed,
+      `removeLocalFileInfo failed. key: ${localKey}`
+    )
   }
 }
 
@@ -68,7 +75,10 @@ export function getLocalFileInfo(localKey: string): LocalInfo | null {
   try {
     localInfoString = localStorage.getItem(localKey)
   } catch {
-    throw new Error(`getLocalFileInfo failed. key: ${localKey}`)
+    throw new QiniuError(
+      ErrorType.ReadCacheFailed,
+      `getLocalFileInfo failed. key: ${localKey}`
+    )
   }
 
   if (localInfoString == null) {
@@ -81,7 +91,10 @@ export function getLocalFileInfo(localKey: string): LocalInfo | null {
   } catch {
     // 本地信息已被破坏，直接删除
     removeLocalFileInfo(localKey)
-    throw new Error(`getLocalFileInfo failed to parse. key: ${localKey}`)
+    throw new QiniuError(
+      ErrorType.InvalidCacheData,
+      `getLocalFileInfo failed to parse. key: ${localKey}`
+    )
   }
 
   return localInfo
@@ -117,7 +130,10 @@ export function createXHR(): XMLHttpRequest {
     return new window.ActiveXObject('Microsoft.XMLHTTP')
   }
 
-  throw new Error('the current environment does not support.')
+  throw new QiniuError(
+    ErrorType.NotAvailableXMLHttpRequest,
+    'the current environment does not support.'
+  )
 }
 
 export async function computeMd5(data: Blob): Promise<string> {
@@ -136,12 +152,18 @@ export function readAsArrayBuffer(data: Blob): Promise<ArrayBuffer> {
         const body = evt.target.result
         resolve(body as ArrayBuffer)
       } else {
-        reject(new Error('progress event target is undefined'))
+        reject(new QiniuError(
+          ErrorType.InvalidProgressEventTarget,
+          'progress event target is undefined'
+        ))
       }
     }
 
     reader.onerror = () => {
-      reject(new Error('fileReader read failed'))
+      reject(new QiniuError(
+        ErrorType.FileReaderReadFailed,
+        'fileReader read failed'
+      ))
     }
 
     reader.readAsArrayBuffer(data)
@@ -151,21 +173,6 @@ export function readAsArrayBuffer(data: Blob): Promise<ArrayBuffer> {
 export interface ResponseSuccess<T> {
   data: T
   reqId: string
-}
-
-export interface ResponseError {
-  code: number /** 请求错误状态码，只有在 err.isRequestError 为 true 的时候才有效。可查阅码值对应说明。 */
-  message: string /** 错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。 */
-  reqId: string /** xhr请求错误的 X-Reqid。 */
-
-  isRequestError: true | undefined /** 用于区分是否 xhr 请求错误当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 true否则为 undefined 。 */
-}
-
-export type QiniuError = ResponseError | Error | any
-
-export function isResponseError(error: QiniuError): error is ResponseError {
-  if (error && error.code != null && error.reqId != null) return true
-  return false
 }
 
 export type XHRHandler = (xhr: XMLHttpRequest) => void
@@ -217,12 +224,7 @@ export function request<T>(url: string, options: RequestOptions): Response<T> {
         if (responseText) {
           message += ` response: ${responseText}`
         }
-        reject({
-          code: xhr.status,
-          message,
-          reqId,
-          isRequestError: true
-        })
+        reject(new QiniuRequestError(xhr.status, reqId, message))
         return
       }
 
@@ -275,20 +277,43 @@ export function getDomainFromUrl(url: string): string {
 }
 
 interface PutPolicy {
-  ak: string
+  assessKey: string
+  bucketName: string
   scope: string
 }
 
 export function getPutPolicy(token: string) {
-  const segments = token.split(':')
-  // token 构造的差异参考：https://github.com/qbox/product/blob/master/kodo/auths/UpToken.md#admin-uptoken-authorization
-  const ak = segments.length > 3 ? segments[1] : segments[0]
-  const putPolicy: PutPolicy = JSON.parse(urlSafeBase64Decode(segments[segments.length - 1]))
+  if (!token) throw new QiniuError(ErrorType.InvalidToken, 'invalid token.')
 
-  return {
-    ak,
-    bucket: putPolicy.scope.split(':')[0]
+  const segments = token.split(':')
+  if (segments.length === 1) throw new QiniuError(ErrorType.InvalidToken, 'invalid token segments.')
+
+  // token 构造的差异参考：https://github.com/qbox/product/blob/master/kodo/auths/UpToken.md#admin-uptoken-authorization
+  const assessKey = segments.length > 3 ? segments[1] : segments[0]
+  if (!assessKey) throw new QiniuError(ErrorType.InvalidToken, 'missing assess key field.')
+
+  let putPolicy: PutPolicy | null = null
+
+  try {
+    putPolicy = JSON.parse(urlSafeBase64Decode(segments[segments.length - 1]))
+  } catch (error) {
+    throw new QiniuError(ErrorType.InvalidToken, 'token parse failed.')
   }
+
+  if (putPolicy == null) {
+    throw new QiniuError(ErrorType.InvalidToken, 'putPolicy is null.')
+  }
+
+  if (putPolicy.scope == null) {
+    throw new QiniuError(ErrorType.InvalidToken, 'missing scope field.')
+  }
+
+  const bucketName = putPolicy.scope.split(':')[0]
+  if (!bucketName) {
+    throw new QiniuError(ErrorType.InvalidToken, 'invalid scope field.')
+  }
+
+  return { assessKey, bucketName, scope: putPolicy.scope }
 }
 
 export function createObjectURL(file: File) {
@@ -363,6 +388,9 @@ export function getTransform(image: HTMLImageElement, orientation: number): Tran
         matrix: [0, -1, 1, 0, 0, width]
       }
     default:
-      throw new Error(`orientation ${orientation} is unavailable`)
+      throw new QiniuError(
+        ErrorType.InvalidTransformOrientation,
+        `orientation ${orientation} is unavailable`
+      )
   }
 }

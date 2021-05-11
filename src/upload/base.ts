@@ -1,3 +1,4 @@
+import { ErrorType, isQiniuRequestError, QiniuError } from '../errors'
 import Logger, { LogLevel } from '../logger'
 import { region } from '../config'
 import * as utils from '../utils'
@@ -6,7 +7,7 @@ import { Host, HostPool } from './hosts'
 
 export const DEFAULT_CHUNK_SIZE = 4 // 单位 MB
 
-export const RETRY_CODE = [502, 503, 504, 599]
+export const RETRY_CODE_LIST = [0, 612, 502, 503, 504, 599]
 
 /** 上传文件的资源信息配置 */
 export interface Extra {
@@ -68,7 +69,7 @@ export interface UploadProgress {
 
 export interface UploadHandler {
   onData: (data: UploadProgress) => void
-  onError: (err: utils.QiniuError) => void
+  onError: (err: QiniuError) => void
   onComplete: (res: any) => void
 }
 
@@ -107,7 +108,7 @@ export default abstract class Base {
   protected progress: UploadProgress
 
   protected onData: (data: UploadProgress) => void
-  protected onError: (err: utils.QiniuError) => void
+  protected onError: (err: QiniuError) => void
   protected onComplete: (res: any) => void
 
   /**
@@ -118,7 +119,7 @@ export default abstract class Base {
 
   constructor(
     options: UploadOptions,
-    handlers: UploadHandler,
+    handler: UploadHandler,
     protected hostPool: HostPool,
     protected logger: Logger
   ) {
@@ -148,15 +149,12 @@ export default abstract class Base {
     this.file = options.file
     this.token = options.token
 
-    this.onData = handlers.onData
-    this.onError = handlers.onError
-    this.onComplete = handlers.onComplete
+    this.onData = handler.onData
+    this.onError = handler.onError
+    this.onComplete = handler.onComplete
 
     try {
       this.putPolicy = utils.getPutPolicy(this.token)
-      if (this.putPolicy == null || this.putPolicy.ak == null || this.putPolicy.bucket == null) {
-        throw new Error(`not a valid upload token: ${this.token}`)
-      }
     } catch (error) {
       logger.error('get putPolicy from token failed.', error)
       this.onError(error)
@@ -168,13 +166,16 @@ export default abstract class Base {
     // 从 hostPool 中获取一个可用的 host 挂载在 this
     this.logger.info('get available upload host.')
     const newHost = await this.hostPool.getUp(
-      this.putPolicy.ak,
-      this.putPolicy.bucket,
+      this.putPolicy.assessKey,
+      this.putPolicy.bucketName,
       this.config.upprotocol
     )
 
     if (newHost == null) {
-      throw new Error('no available upload host.')
+      throw new QiniuError(
+        ErrorType.NotAvailableUploadHost,
+        'no available upload host.'
+      )
     }
 
     if (this.uploadHost != null && this.uploadHost.host !== newHost.host) {
@@ -190,26 +191,25 @@ export default abstract class Base {
   protected checkAndUnfreezeHost() {
     this.logger.info('check unfreeze host.')
     if (this.uploadHost != null && this.uploadHost.isFrozen()) {
-      this.logger.warn(`${this.uploadHost.host} will be unfreeze.`)
+      this.logger.warn(`${this.uploadHost.host} will be unfrozen.`)
       this.uploadHost.unfreeze()
     }
   }
 
   // 检查并更新冻结当前的 host
-  private checkAndFreezeHost(error: utils.QiniuError) {
+  private checkAndFreezeHost(error: QiniuError) {
     this.logger.info('check freeze host.')
-    if (utils.isResponseError(error) && this.uploadHost != null) {
-      if (RETRY_CODE.includes(error.code)) {
+    if (isQiniuRequestError(error) && this.uploadHost != null) {
+      if (RETRY_CODE_LIST.includes(error.code)) {
         this.logger.warn(`${this.uploadHost.host} will be temporarily frozen.`)
         this.uploadHost.freeze()
       }
     }
   }
 
-  private handleError(message: string) {
-    const err = new Error(message)
-    this.logger.error(message)
-    this.onError(err)
+  private handleError(error: QiniuError) {
+    this.logger.error(error.message)
+    this.onError(error)
   }
 
   /**
@@ -224,20 +224,29 @@ export default abstract class Base {
     }
 
     if (this.file.size > 10000 * GB) {
-      this.handleError('file size exceed maximum value 10000G.')
+      this.handleError(new QiniuError(
+        ErrorType.InvalidFile,
+        'file size exceed maximum value 10000G.'
+      ))
       return
     }
 
     if (this.putExtra.customVars) {
       if (!utils.isCustomVarsValid(this.putExtra.customVars)) {
-        this.handleError('customVars key should start width x:.')
+        this.handleError(new QiniuError(
+          ErrorType.InvalidCustomVars,
+          'customVars key should start width x:.'
+        ))
         return
       }
     }
 
     if (this.putExtra.metadata) {
       if (!utils.isMetaDataValid(this.putExtra.metadata)) {
-        this.handleError('metadata key should start with x-qn-meta-.')
+        this.handleError(new QiniuError(
+          ErrorType.InvalidMetadata,
+          'metadata key should start with x-qn-meta-.'
+        ))
         return
       }
     }
@@ -252,24 +261,25 @@ export default abstract class Base {
       this.logger.error(err)
       this.clear()
 
-      if (err.isRequestError) {
+      if (isQiniuRequestError(err)) {
         const reqId = this.aborted ? '' : err.reqId
         const code = this.aborted ? -2 : err.code
         this.sendLog(reqId, code)
-      }
 
-      // 检查并冻结当前的 host
-      this.checkAndFreezeHost(err)
-      const notReachRetryCount = ++this.retryCount <= this.config.retryCount
-      const needRetry = err.isRequestError && !this.aborted && [0, ...RETRY_CODE].includes(err.code)
+        // 检查并冻结当前的 host
+        this.checkAndFreezeHost(err)
 
-      // 以下条件满足其中之一则会进行重新上传：
-      // 1. 满足 needRetry 的条件且 retryCount 不为 0
-      // 2. uploadId 无效时在 resume 里会清除本地数据，并且这里触发重新上传
-      if (needRetry && notReachRetryCount) {
-        this.logger.warn(`error auto retry: ${this.retryCount}/${this.config.retryCount}.`)
-        this.putFile()
-        return
+        const notReachRetryCount = ++this.retryCount <= this.config.retryCount
+        const needRetry = !this.aborted && RETRY_CODE_LIST.includes(err.code)
+
+        // 以下条件满足其中之一则会进行重新上传：
+        // 1. 满足 needRetry 的条件且 retryCount 不为 0
+        // 2. uploadId 无效时在 resume 里会清除本地数据，并且这里触发重新上传
+        if (needRetry && notReachRetryCount) {
+          this.logger.warn(`error auto retry: ${this.retryCount}/${this.config.retryCount}.`)
+          this.putFile()
+          return
+        }
       }
 
       this.onError(err)

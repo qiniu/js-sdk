@@ -79,7 +79,7 @@ export function uploadChunk(
   uploadInfo: UploadInfo,
   options: Partial<utils.RequestOptions>
 ): utils.Response<UploadChunkData> {
-  const bucket = utils.getPutPolicy(token).bucket
+  const bucket = utils.getPutPolicy(token).bucketName
   const url = getBaseUrl(bucket, key, uploadInfo) + `/${index}`
   return utils.request<UploadChunkData>(url, {
     ...options,
@@ -102,7 +102,7 @@ export function uploadComplete(
   uploadInfo: UploadInfo,
   options: Partial<utils.RequestOptions>
 ): utils.Response<UploadCompleteData> {
-  const bucket = utils.getPutPolicy(token).bucket
+  const bucket = utils.getPutPolicy(token).bucketName
   const url = getBaseUrl(bucket, key, uploadInfo)
   return utils.request<UploadCompleteData>(url, {
     ...options,
@@ -121,7 +121,7 @@ export function deleteUploadedChunks(
   key: string | null | undefined,
   uploadinfo: UploadInfo
 ): utils.Response<void> {
-  const bucket = utils.getPutPolicy(token).bucket
+  const bucket = utils.getPutPolicy(token).bucketName
   const url = getBaseUrl(bucket, key, uploadinfo)
   return utils.request(
     url,

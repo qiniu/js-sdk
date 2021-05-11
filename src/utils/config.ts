@@ -27,9 +27,9 @@ export function normalizeUploadConfig(config?: Partial<Config>): Config {
   if (config?.region) {
     const hostMap = regionUphostMap[config?.region]
     if (config.useCdnDomain) {
-      hostList.push(hostMap.cdnUphost)
+      hostList.push(...(hostMap.cdnUphost || []))
     } else {
-      hostList.push(hostMap.srcUphost)
+      hostList.push(...(hostMap.srcUphost || []))
     }
   }
 
@@ -42,5 +42,5 @@ export function normalizeUploadConfig(config?: Partial<Config>): Config {
     }
   }
 
-  return { ...config, ...normalizeConfig, uphost: hostList }
+  return { ...config, ...normalizeConfig, uphost: hostList.filter(Boolean) }
 }

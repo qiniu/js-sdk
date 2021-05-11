@@ -1,4 +1,5 @@
 import { uploadChunk, uploadComplete, initUploadParts, UploadChunkData } from '../api'
+import { QiniuError, ErrorType } from '../errors'
 import * as utils from '../utils'
 
 import Base, { Progress, UploadInfo, Extra } from './base'
@@ -52,11 +53,17 @@ export default class Resume extends Base {
   protected async run() {
     this.logger.info('start run Resume.')
     if (!this.config.chunkSize || !isPositiveInteger(this.config.chunkSize)) {
-      throw new Error('chunkSize must be a positive integer.')
+      throw new QiniuError(
+        ErrorType.InvalidChunkSize,
+        'chunkSize must be a positive integer.'
+      )
     }
 
     if (this.config.chunkSize > 1024) {
-      throw new Error('chunkSize maximum value is 1024.')
+      throw new QiniuError(
+        ErrorType.InvalidChunkSize,
+        'chunkSize maximum value is 1024.'
+      )
     }
 
     await this.initBeforeUploadChunks()
@@ -208,7 +215,7 @@ export default class Resume extends Base {
       await this.checkAndUpdateUploadHost()
       const res = await initUploadParts(
         this.token,
-        this.putPolicy.bucket,
+        this.putPolicy.bucketName,
         this.key,
         this.uploadHost.url()
       )

@@ -1,8 +1,9 @@
 import Resume from './resume'
 import Direct from './direct'
 import Logger from '../logger'
+import { QiniuError } from '../errors'
 import { UploadCompleteData } from '../api'
-import { QiniuError, Observable, IObserver, MB, normalizeUploadConfig } from '../utils'
+import { Observable, IObserver, MB, normalizeUploadConfig } from '../utils'
 
 import { Config, Extra, UploadHandler, UploadOptions, UploadProgress } from './base'
 import { HostPool } from './hosts'

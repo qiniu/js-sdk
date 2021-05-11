@@ -1,15 +1,18 @@
+import { QiniuRequestError } from '../errors'
 import * as api from '.'
 
-export const errorResponseMap = {
-  invalidParams: { code: 400, isRequestError: true, reqId: 'mock' }, // 无效的参数
-  expiredToken: { code: 401, isRequestError: true, reqId: 'mock' }, // token 过期
+export const errorMap = {
+  invalidRequest: new QiniuRequestError(0, 'mock'), // 请求错误
 
-  gatewayUnavailable: { code: 502, isRequestError: true, reqId: 'mock' }, // 网关不可用
-  serviceUnavailable: { code: 503, isRequestError: true, reqId: 'mock' }, // 服务不可用
-  serviceTimeout: { code: 504, isRequestError: true, reqId: 'mock' }, // 服务超时
-  serviceError: { code: 599, isRequestError: true, reqId: 'mock' }, // 服务错误
+  invalidParams: new QiniuRequestError(400, 'mock'), // 无效的参数
+  expiredToken: new QiniuRequestError(401, 'mock'), // token 过期
 
-  invalidUploadId: { code: 612, isRequestError: true, reqId: 'mock' } // 无效的 upload id
+  gatewayUnavailable: new QiniuRequestError(502, 'mock'), // 网关不可用
+  serviceUnavailable: new QiniuRequestError(503, 'mock'), // 服务不可用
+  serviceTimeout: new QiniuRequestError(504, 'mock'), // 服务超时
+  serviceError: new QiniuRequestError(599, 'mock'), // 服务错误
+
+  invalidUploadId: new QiniuRequestError(612, 'mock'), // 无效的 upload id
 }
 
 export type ApiName =

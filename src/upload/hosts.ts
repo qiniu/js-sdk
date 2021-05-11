@@ -29,9 +29,6 @@ export class Host {
     const currentTime = new Date().getTime()
     const unfreezeTime = unfreezeTimeMap.get(this.host)
     if (unfreezeTime != null && unfreezeTime >= currentTime) return true
-
-    // 已经到达解冻时间（解冻当前的 host）
-    this.unfreeze()
     return false
   }
 
@@ -122,19 +119,19 @@ export class HostPool {
    */
   public async getUp(accessKey: string, bucketName: string, protocol: Config['upprotocol'], isRefresh = false): Promise<Host | null> {
     if (isRefresh) await this.refresh(accessKey, bucketName, protocol)
-    const cachedHost = this.cachedHostsMap.get(`${accessKey}@${bucketName}`)
-    if (cachedHost == null && isRefresh === false) {
+    const cachedHostList = this.cachedHostsMap.get(`${accessKey}@${bucketName}`) || []
+    if (cachedHostList.length === 0 && isRefresh === false) {
       return this.getUp(accessKey, bucketName, protocol, true)
     }
 
-    const availableHost = (cachedHost || []).filter(host => !host.isFrozen())
-    if (availableHost.length === 0 && isRefresh === false) {
+    const availableHostList = cachedHostList.filter(host => !host.isFrozen())
+    if (availableHostList.length === 0 && isRefresh === false) {
       return this.getUp(accessKey, bucketName, protocol, true)
     }
 
     // 有 host 但是全被冻结了，去取离解冻最近的 host
-    if (cachedHost != null && cachedHost.length > 0 && availableHost.length === 0) {
-      const priorityQueue = cachedHost.slice()
+    if (cachedHostList.length > 0 && availableHostList.length === 0) {
+      const priorityQueue = cachedHostList.slice()
         .sort(({ host: hostA }, { host: hostB }) => {
           const aUnfreezeTime = unfreezeTimeMap.get(hostA)
           const bUnfreezeTime = unfreezeTimeMap.get(hostB)
@@ -145,6 +142,6 @@ export class HostPool {
       return priorityQueue[0]
     }
 
-    return availableHost ? availableHost[0] : null
+    return availableHostList[0] || null
   }
 }
