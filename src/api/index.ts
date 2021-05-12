@@ -1,6 +1,7 @@
 import { stringify } from 'querystring'
 
 import { Config, UploadInfo } from '../upload'
+import { regionUphostMap } from '../config'
 import * as utils from '../utils'
 
 interface UpHosts {
@@ -149,4 +150,33 @@ export function direct(
     body: data,
     ...options
   })
+}
+
+/**
+ * @param  {UploadUrlConfig} config
+ * @param  {string} token
+ * @returns Promise
+ * @description 获取上传 url
+ * @deprecated 将会在下一个大版本中移除
+ */
+export async function getUploadUrl(config: UploadUrlConfig, token: string): Promise<string> {
+  const protocol = config.upprotocol || 'https'
+
+  if (config.uphost) {
+    if (Array.isArray(config.uphost)) {
+      return `${protocol}//${config.uphost[0]}`
+    }
+    return `${protocol}//${config.uphost}`
+  }
+
+  if (config.region) {
+    const upHosts = regionUphostMap[config.region]
+    const host = config.useCdnDomain ? upHosts.cdnUphost[0] : upHosts.srcUphost[0]
+    return `${protocol}//${host}`
+  }
+
+  const putPolicy = utils.getPutPolicy(token)
+  const res = await getUpHosts(putPolicy.assessKey, putPolicy.bucketName, protocol)
+  const hosts = res.data.up.acc.main
+  return `${protocol}//${hosts[0]}`
 }

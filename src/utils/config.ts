@@ -1,11 +1,11 @@
 import { regionUphostMap } from '../config'
 import { Config, DEFAULT_CHUNK_SIZE } from '../upload'
 
-export function normalizeUploadConfig(config?: Partial<Config>): Config {
-  const { upprotocol } = { ...config }
+export function normalizeUploadConfig(config: Partial<Config> = {}): Config {
+  const { upprotocol } = config
 
   const normalizeConfig: Config = {
-    uphost: '',
+    uphost: [],
     retryCount: 3,
 
     checkByMD5: false,
@@ -42,5 +42,5 @@ export function normalizeUploadConfig(config?: Partial<Config>): Config {
     }
   }
 
-  return { ...config, ...normalizeConfig, uphost: hostList.filter(Boolean) }
+  return { ...normalizeConfig, ...config, uphost: hostList.filter(Boolean) }
 }
