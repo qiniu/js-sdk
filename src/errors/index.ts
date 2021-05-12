@@ -34,7 +34,7 @@ export class QiniuError extends Error {
 }
 
 export function isQiniuError(error: any): error is QiniuRequestError {
-  if (error != null && QiniuErrorType[error.type] !== null) return true
+  if (error != null && QiniuErrorType[error.type] != null) return true
   return false
 }
 
