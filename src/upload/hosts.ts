@@ -119,23 +119,19 @@ export class HostPool {
    */
   public async getUp(accessKey: string, bucketName: string, protocol: Config['upprotocol'], isRefresh = false): Promise<Host | null> {
     if (isRefresh) await this.refresh(accessKey, bucketName, protocol)
+
     const cachedHostList = this.cachedHostsMap.get(`${accessKey}@${bucketName}`) || []
     if (cachedHostList.length === 0 && isRefresh === false) {
       return this.getUp(accessKey, bucketName, protocol, true)
     }
 
     const availableHostList = cachedHostList.filter(host => !host.isFrozen())
-    if (availableHostList.length === 0 && isRefresh === false) {
-      return this.getUp(accessKey, bucketName, protocol, true)
-    }
-
     // 有 host 但是全被冻结了，去取离解冻最近的 host
     if (cachedHostList.length > 0 && availableHostList.length === 0) {
       const priorityQueue = cachedHostList.slice()
         .sort(({ host: hostA }, { host: hostB }) => {
           const aUnfreezeTime = unfreezeTimeMap.get(hostA)
           const bUnfreezeTime = unfreezeTimeMap.get(hostB)
-
           return (aUnfreezeTime || 0) - (bUnfreezeTime || 0)
         })
 
