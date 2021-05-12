@@ -59,7 +59,7 @@ export default function upload(
   const hostPool = new HostPool(options.config?.uphost)
 
   // 为每个任务创建单独的 Logger
-  const logger = new Logger(options.token, config?.disableStatisticsReport, config?.debugLogLevel)
+  const logger = new Logger(options.token, config?.disableStatisticsReport, config?.debugLogLevel, file.name)
 
   return new Observable((observer: IObserver<UploadProgress, QiniuError, UploadCompleteData>) => {
     const manager = createUploadManager(options, {

@@ -12,8 +12,13 @@ export default class Logger {
   constructor(
     private token: string,
     private disableReport = true,
-    private level: LogLevel = 'OFF'
+    private level: LogLevel = 'OFF',
+    private prefix = 'task'
   ) { }
+
+  private getPrintPrefix(level: LogLevel) {
+    return `Qiniu-JS-SDK [${level}][${this.prefix}#${this.id}]: `
+  }
 
   /**
    * @param  {V3LogInfo} data 上报的数据。
@@ -37,7 +42,7 @@ export default class Logger {
     const allowLevel: LogLevel[] = ['INFO']
     if (allowLevel.includes(this.level)) {
       // eslint-disable-next-line no-console
-      console.log(`Qiniu-JS-SDK [INFO][${this.id}]: `, ...args)
+      console.log(this.getPrintPrefix('INFO'), ...args)
     }
   }
 
@@ -49,7 +54,7 @@ export default class Logger {
     const allowLevel: LogLevel[] = ['INFO', 'WARN']
     if (allowLevel.includes(this.level)) {
       // eslint-disable-next-line no-console
-      console.warn(`Qiniu-JS-SDK [WARN][${this.id}]: `, ...args)
+      console.warn(this.getPrintPrefix('WARN'), ...args)
     }
   }
 
@@ -61,7 +66,7 @@ export default class Logger {
     const allowLevel: LogLevel[] = ['INFO', 'WARN', 'ERROR']
     if (allowLevel.includes(this.level)) {
       // eslint-disable-next-line no-console
-      console.error(`Qiniu-JS-SDK [ERROR][${this.id}]: `, ...args)
+      console.error(this.getPrintPrefix('ERROR'), ...args)
     }
   }
 }

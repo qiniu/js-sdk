@@ -41,11 +41,17 @@ describe('test logger', () => {
   test('level', () => {
     const infoLogger = new Logger('', true, 'INFO')
     infoLogger.info('test1')
-    expect(logMessage).toStrictEqual(['Qiniu-JS-SDK [INFO][1]: ', 'test1'])
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
+    expect(logMessage).toStrictEqual([infoLogger.getPrintPrefix('INFO'), 'test1'])
     infoLogger.warn('test2')
-    expect(warnMessage).toStrictEqual(['Qiniu-JS-SDK [WARN][1]: ', 'test2'])
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
+    expect(warnMessage).toStrictEqual([infoLogger.getPrintPrefix('WARN'), 'test2'])
     infoLogger.error('test3')
-    expect(errorMessage).toStrictEqual(['Qiniu-JS-SDK [ERROR][1]: ', 'test3'])
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
+    expect(errorMessage).toStrictEqual([infoLogger.getPrintPrefix('ERROR'), 'test3'])
 
     // 清空消息
     logMessage.splice(0, logMessage.length)
@@ -56,9 +62,13 @@ describe('test logger', () => {
     warnLogger.info('test1')
     expect(logMessage).toStrictEqual([])
     warnLogger.warn('test2')
-    expect(warnMessage).toStrictEqual(['Qiniu-JS-SDK [WARN][2]: ', 'test2'])
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
+    expect(warnMessage).toStrictEqual([warnLogger.getPrintPrefix('WARN'), 'test2'])
     warnLogger.error('test3')
-    expect(errorMessage).toStrictEqual(['Qiniu-JS-SDK [ERROR][2]: ', 'test3'])
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
+    expect(errorMessage).toStrictEqual([warnLogger.getPrintPrefix('ERROR'), 'test3'])
 
     // 清空消息
     logMessage.splice(0, logMessage.length)
@@ -71,7 +81,9 @@ describe('test logger', () => {
     errorLogger.warn('test2')
     expect(warnMessage).toStrictEqual([])
     errorLogger.error('test3')
-    expect(errorMessage).toStrictEqual(['Qiniu-JS-SDK [ERROR][3]: ', 'test3'])
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
+    expect(errorMessage).toStrictEqual([errorLogger.getPrintPrefix('ERROR'), 'test3'])
 
     // 清空消息
     logMessage.splice(0, logMessage.length)
