@@ -13,7 +13,7 @@ export default class Logger {
     private token: string,
     private disableReport = true,
     private level: LogLevel = 'OFF',
-    private prefix = 'task'
+    private prefix = 'UPLOAD'
   ) { }
 
   private getPrintPrefix(level: LogLevel) {
