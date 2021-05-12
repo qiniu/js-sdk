@@ -55,14 +55,14 @@ export default class Resume extends Base {
     if (!this.config.chunkSize || !isPositiveInteger(this.config.chunkSize)) {
       throw new QiniuError(
         QiniuErrorType.InvalidChunkSize,
-        'chunkSize must be a positive integer.'
+        'chunkSize must be a positive integer'
       )
     }
 
     if (this.config.chunkSize > 1024) {
       throw new QiniuError(
         QiniuErrorType.InvalidChunkSize,
-        'chunkSize maximum value is 1024.'
+        'chunkSize maximum value is 1024'
       )
     }
 

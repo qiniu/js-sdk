@@ -18,7 +18,6 @@ describe('test config ', () => {
       disableStatisticsReport: false
     })
 
-    // @ts-ignore
     const config2 = normalizeUploadConfig({ upprotocol: 'https:' })
     expect(config2).toStrictEqual({
       uphost: [],

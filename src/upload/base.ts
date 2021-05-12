@@ -39,7 +39,7 @@ export interface Config {
   /** 分片大小，单位为 MB */
   chunkSize: number
   /** 上传域名协议 */
-  upprotocol: 'https' | 'http'
+  upprotocol: 'https' | 'http' | 'https:' | 'http:'
   /** 上传区域 */
   region?: typeof region[keyof typeof region]
   /** 是否禁止统计日志上报 */
@@ -227,7 +227,7 @@ export default abstract class Base {
     if (this.file.size > 10000 * GB) {
       this.handleError(new QiniuError(
         QiniuErrorType.InvalidFile,
-        'file size exceed maximum value 10000G.'
+        'file size exceed maximum value 10000G'
       ))
       return
     }
@@ -236,7 +236,7 @@ export default abstract class Base {
       if (!utils.isCustomVarsValid(this.putExtra.customVars)) {
         this.handleError(new QiniuError(
           QiniuErrorType.InvalidCustomVars,
-          'customVars key should start width x:.'
+          'customVars key should start width x:'
         ))
         return
       }
@@ -246,7 +246,7 @@ export default abstract class Base {
       if (!utils.isMetaDataValid(this.putExtra.metadata)) {
         this.handleError(new QiniuError(
           QiniuErrorType.InvalidMetadata,
-          'metadata key should start with x-qn-meta-.'
+          'metadata key should start with x-qn-meta-'
         ))
         return
       }

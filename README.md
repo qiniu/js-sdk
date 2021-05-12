@@ -168,12 +168,11 @@ qiniu.compressImage(file, options).then(data => {
             * total.total: `number`，本次上传的总量控制信息，单位为字节，注意这里的 total 跟文件大小并不一致。
             * total.percent: `number`，当前上传进度，范围：0～100。
 
-        * error: 上传错误后触发；自动重试本身并不会触发该错误，而当重试次数到达上限后则可以触发。当不是 xhr 请求错误时，会把当前错误产生原因直接抛出，诸如 JSON 解析异常等；当产生 xhr 请求错误时，参数 err 为一个包含 `code`、`message`、`isRequestError` 三个属性的 `object`：
-          * err.isRequestError: 用于区分是否 xhr 请求错误；当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 `true`；否则为 `undefined` 。
-          * err.reqId: `string`，xhr请求错误的 `X-Reqid`。
-          * err.code: `number`，请求错误状态码，只有在 `err.isRequestError` 为 true 的时候才有效。可查阅码值对应[说明](https://developer.qiniu.com/kodo/api/3928/error-responses)。
-          * err.message: `string`，错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。
-
+        * error: 上传错误后触发；自动重试本身并不会触发该错误，而当重试次数到达上限后则可以触发。当不是 xhr 请求错误时，会把当前错误产生原因直接抛出，诸如 JSON 解析异常等；当产生 xhr 请求错误时，参数 err 的类型为 `QiniuError`, 你可以通过 `error.type` 得知具体的错误类型，通过 `error.message` 获取错误的信息，对于请求错误，err 的类型为 `QiniuRequestError`(继承自`QiniuError`)。
+          *  `QiniuRequestError` 拥有额外的信息：
+            - err.reqId: `string`，xhr 请求错误的 `X-Reqid`。
+            - err.code: `number`，请求错误状态码，可查阅码值对应[说明](https://developer.qiniu.com/kodo/api/3928/error-responses)。
+       
         * complete: 接收上传完成后的后端返回信息，具体返回结构取决于后端sdk的配置，可参考[上传策略](https://developer.qiniu.com/kodo/manual/1206/put-policy)。
 
       * subscription: 为一个带有 `unsubscribe` 方法的类实例，通过调用 `subscription.unsubscribe()` 停止当前文件上传。
@@ -193,7 +192,7 @@ qiniu.compressImage(file, options).then(data => {
 
     * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，`true` 表示使用，默认为 `false`。
     * config.disableStatisticsReport: 是否禁用日志报告，为布尔值，默认为 `false`。
-    * config.uphost: 上传 `host`，类型为 `string[] | string`， 如果设定该参数则优先使用该参数作为上传地址，默认为 `null`。
+    * config.uphost: 上传 `host`，类型为 `string[] | string`， 使用 `string[]` 时，内部会在重试过程中自动尝试不同的 `host`，如果设定该参数则优先使用该参数作为上传地址，默认为 `[]`。
     * config.upprotocol: 自定义上传域名协议，值为 `https` 或者 `http`，默认为 `https`。
     * config.region: 选择上传域名区域；当为 `null` 或 `undefined` 时，自动分析上传域名区域。
     * config.retryCount: 上传自动重试次数（整体重试次数，而不是某个分片的重试次数）；默认 3 次（即上传失败后最多重试两次）。
