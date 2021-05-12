@@ -317,8 +317,8 @@ export default abstract class Base {
       time: Math.floor(this.uploadAt / 1000),
       port: utils.getPortFromUrl(this.uploadHost?.url()),
       host: utils.getDomainFromUrl(this.uploadHost?.url()),
-      duration: (new Date().getTime() - this.uploadAt) / 1000,
-      bytesSent: this.progress ? this.progress.total.loaded : 0
+      bytesSent: this.progress ? this.progress.total.loaded : 0,
+      duration: Math.floor((new Date().getTime() - this.uploadAt) / 1000)
     })
   }
 
