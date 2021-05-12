@@ -2,8 +2,6 @@ import { regionUphostMap } from '../config'
 import { Config, DEFAULT_CHUNK_SIZE } from '../upload'
 
 export function normalizeUploadConfig(config: Partial<Config> = {}): Config {
-  const { upprotocol } = config
-
   const normalizeConfig: Config = {
     uphost: [],
     retryCount: 3,
@@ -14,33 +12,40 @@ export function normalizeUploadConfig(config: Partial<Config> = {}): Config {
     concurrentRequestLimit: 3,
     chunkSize: DEFAULT_CHUNK_SIZE,
 
-    // 兼容原来的 https:、http: 的写法
-    upprotocol: upprotocol ? upprotocol.replace(/:$/, '') as Config['upprotocol'] : 'https',
+    upprotocol: 'https',
 
     debugLogLevel: 'OFF',
-    disableStatisticsReport: false
+    disableStatisticsReport: false,
+
+    ...config,
   }
+
+  // 兼容原来的 http: https: 的写法
+  normalizeConfig.upprotocol = normalizeConfig.upprotocol.replace(/:$/, '') as Config['upprotocol']
 
   const hostList: string[] = []
 
   // 如果用户传了 region，添加指定 region 的 host 到可用 host 列表
-  if (config?.region) {
-    const hostMap = regionUphostMap[config?.region]
-    if (config.useCdnDomain) {
-      hostList.push(...(hostMap.cdnUphost || []))
+  if (normalizeConfig?.region) {
+    const hostMap = regionUphostMap[normalizeConfig?.region]
+    if (normalizeConfig.useCdnDomain) {
+      hostList.push(...hostMap.cdnUphost)
     } else {
-      hostList.push(...(hostMap.srcUphost || []))
+      hostList.push(...hostMap.srcUphost)
     }
   }
 
   // 如果同时指定了 uphost 参数，添加到可用 host 列表
-  if (config?.uphost != null) {
-    if (Array.isArray(config?.uphost)) {
-      hostList.push(...config?.uphost)
+  if (normalizeConfig?.uphost != null) {
+    if (Array.isArray(normalizeConfig?.uphost)) {
+      hostList.push(...normalizeConfig?.uphost)
     } else {
-      hostList.push(config?.uphost)
+      hostList.push(normalizeConfig?.uphost)
     }
   }
 
-  return { ...normalizeConfig, ...config, uphost: hostList.filter(Boolean) }
+  return {
+    ...normalizeConfig,
+    uphost: hostList.filter(Boolean)
+  }
 }

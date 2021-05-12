@@ -1,5 +1,5 @@
 export { imageMogr2, watermark, imageInfo, exif, pipeline } from './image'
-export { deleteUploadedChunks } from './api'
+export { deleteUploadedChunks, getUploadUrl } from './api'
 export { default as upload } from './upload'
 export { region } from './config'
 export * from './errors'

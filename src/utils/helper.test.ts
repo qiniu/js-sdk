@@ -13,7 +13,7 @@ describe('api function test', () => {
       ['message áßäöü', '3fc4229d4a54045f5d5b96dd759581d4']
     ]
 
-    for await (const [input, expected] of testData) {
+    for (const [input, expected] of testData) {
       const testBlob = new Blob([input], { type: 'text/plain;charset=utf-8' })
       const actual = await computeMd5(testBlob)
       expect(actual).toStrictEqual(expected)

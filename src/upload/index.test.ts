@@ -37,18 +37,13 @@ describe('test upload', () => {
   })
 
   test('base Direct.', async () => {
-    let error = null
-    let result = null
-
     // 文件小于等于 4M 使用直传
-    try { result = await observablePromisify(upload(File3M, null, testToken)) } catch (err) { error = err }
-    expect(result).toStrictEqual((await mockApi.direct()).data)
-    expect(error).toStrictEqual(null)
+    const result1 = await observablePromisify(upload(File3M, null, testToken))
+    expect(result1).toStrictEqual((await mockApi.direct()).data)
 
     // 文件等于 4M 使用直传
-    try { result = await observablePromisify(upload(File4M, null, testToken)) } catch (err) { error = err }
-    expect(result).toStrictEqual((await mockApi.direct()).data)
-    expect(error).toStrictEqual(null)
+    const result2 = await observablePromisify(upload(File4M, null, testToken))
+    expect(result2).toStrictEqual((await mockApi.direct()).data)
   })
 
   test('Direct: all api error state.', async () => {
@@ -59,7 +54,7 @@ describe('test upload', () => {
       'invalidUploadId', 'invalidRequest'
     ] as const
 
-    for await (const state of testStateTable) {
+    for (const state of testStateTable) {
       let error = null
       localStorage.clear()
       mockApi.clearInterceptor()
@@ -70,13 +65,9 @@ describe('test upload', () => {
   })
 
   test('Resume: base.', async () => {
-    let error = null
-    let result = null
-
     // 文件大于等于 4M 使用分片
-    try { result = await observablePromisify(upload(File5M, null, testToken)) } catch (err) { error = err }
+    const result = await observablePromisify(upload(File5M, null, testToken))
     expect(result).toStrictEqual((await mockApi.uploadComplete()).data)
-    expect(error).toStrictEqual(null)
   })
 
   test('Resume: all api error state.', async () => {
@@ -92,8 +83,8 @@ describe('test upload', () => {
       'invalidUploadId', 'invalidRequest'
     ] as const
 
-    for await (const apiName of testApiTable) {
-      for await (const state of testStateTable) {
+    for (const apiName of testApiTable) {
+      for (const state of testStateTable) {
         let error = null
         localStorage.clear()
         mockApi.clearInterceptor()
