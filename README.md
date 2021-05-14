@@ -203,7 +203,7 @@ qiniu.compressImage(file, options).then(data => {
 
   * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，`true` 表示使用，默认为 `false`。
   * config.disableStatisticsReport: 是否禁用日志报告，为布尔值，默认为 `false`。
-  * config.uphost: 上传 `host`，类型为 `string[] | string`，如果指定一个非空数组或者非空字符串，则优先使用该数据作为上传地址，默认为 `[]`，传入多个 `host` 时，内部会在重试过程中根据情况自动切换不同的 `host`。
+  * config.uphost: 上传 `host`，类型为 `string[] | string`，如果指定一个非空数组或者非空字符串，则仅使用该数据作为上传 `host`，默认为 `[]`，传入多个 `host` 时，内部会在重试过程中根据情况自动切换不同的 `host`。
   * config.upprotocol: 自定义上传域名协议，值为 `https` 或者 `http`，默认为 `https`。
   * config.region: 选择上传域名区域；当为 `null` 或 `undefined` 时，自动分析上传域名区域，当指定了 `uphost` 时，此设置项无效。
   * config.retryCount: 上传自动重试次数（整体重试次数，而不是某个分片的重试次数）；默认 3 次（即上传失败后最多重试两次）。
