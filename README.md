@@ -180,7 +180,7 @@ qiniu.compressImage(file, options).then(data => {
         * `QiniuRequestError` 继承自 `QiniuError`
           * reqId: `string` xhr 请求错误的 `X-Reqid`。
           * code: `number` 请求错误状态码，可查阅码值对应 [说明](https://developer.qiniu.com/kodo/api/3928/error-responses)。
-          * isRequestError: 用于区分是否为 xhr 请求错误；当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 `true`；否则为 `undefined`。
+          * isRequestError: 固定为 `true`，*不推荐使用，即将废弃*。
         * `QiniuNetworkError` 继承自 `QiniuRequestError`
           * reqId: 由于请求可能还未真正发出，所以可能无法收集到 `reqId`，该字段可能为 `''`。
 
@@ -203,9 +203,9 @@ qiniu.compressImage(file, options).then(data => {
 
   * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，`true` 表示使用，默认为 `false`。
   * config.disableStatisticsReport: 是否禁用日志报告，为布尔值，默认为 `false`。
-  * config.uphost: 上传 `host`，类型为 `string[] | string`，如果设定该参数则优先使用该参数作为上传地址，默认为 `[]`，传入多个 `host` 时，内部会在重试过程中根据情况自动切换不同的 `host`。
+  * config.uphost: 上传 `host`，类型为 `string[] | string`，如果指定一个非空数组或者非空字符串，则优先使用该数据作为上传地址，默认为 `[]`，传入多个 `host` 时，内部会在重试过程中根据情况自动切换不同的 `host`。
   * config.upprotocol: 自定义上传域名协议，值为 `https` 或者 `http`，默认为 `https`。
-  * config.region: 选择上传域名区域；当为 `null` 或 `undefined` 时，自动分析上传域名区域。
+  * config.region: 选择上传域名区域；当为 `null` 或 `undefined` 时，自动分析上传域名区域，当指定了 `uphost` 时，此设置项无效。
   * config.retryCount: 上传自动重试次数（整体重试次数，而不是某个分片的重试次数）；默认 3 次（即上传失败后最多重试两次）。
   * config.concurrentRequestLimit: 分片上传的并发请求量，`number`，默认为3；因为浏览器本身也会限制最大并发量，所以最大并发量与浏览器有关。
   * config.checkByMD5: 是否开启 MD5 校验，为布尔值；在断点续传时，开启 MD5 校验会将已上传的分片与当前分片进行 MD5 值比对，若不一致，则重传该分片，避免使用错误的分片。读取分片内容并计算 MD5 需要花费一定的时间，因此会稍微增加断点续传时的耗时，默认为 false，不开启。
