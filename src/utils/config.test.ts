@@ -64,11 +64,26 @@ describe('test config ', () => {
     const config5 = normalizeUploadConfig({ uphost: ['test'], region: region.z0 })
     expect(config5).toStrictEqual({
       region: region.z0,
-      uphost: [...regionUphostMap[region.z0].cdnUphost, 'test'],
+      uphost: ['test'],
       retryCount: 3,
       checkByMD5: false,
       forceDirect: false,
       useCdnDomain: true,
+      concurrentRequestLimit: 3,
+      chunkSize: DEFAULT_CHUNK_SIZE,
+      upprotocol: 'https',
+      debugLogLevel: 'OFF',
+      disableStatisticsReport: false
+    })
+
+    const config6 = normalizeUploadConfig({ useCdnDomain: false, region: region.z0 })
+    expect(config6).toStrictEqual({
+      region: region.z0,
+      uphost: regionUphostMap[region.z0].srcUphost,
+      retryCount: 3,
+      checkByMD5: false,
+      forceDirect: false,
+      useCdnDomain: false,
       concurrentRequestLimit: 3,
       chunkSize: DEFAULT_CHUNK_SIZE,
       upprotocol: 'https',

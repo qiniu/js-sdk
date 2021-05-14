@@ -1,4 +1,4 @@
-export enum QiniuErrorType {
+export enum QiniuErrorName {
   // 输入错误
   InvalidFile = 'InvalidFile',
   InvalidToken = 'InvalidToken',
@@ -24,27 +24,28 @@ export enum QiniuErrorType {
   InvalidProgressEventTarget = 'InvalidProgressEventTarget',
 
   // 请求错误
-  RequestError = 'RequestError'
+  RequestError = 'RequestError',
+
+  // 网络错误
+  NetworkError = 'NetworkError'
 }
 
-export class QiniuError extends Error {
-  constructor(public type: QiniuErrorType, message?: string) {
-    super(message)
+export class QiniuError implements Error {
+  public stack: string | undefined
+  constructor(public name: QiniuErrorName, public message: string) {
+    this.stack = new Error().stack
   }
-}
-
-export function isQiniuError(error: any): error is QiniuRequestError {
-  if (error != null && QiniuErrorType[error.type] != null) return true
-  return false
 }
 
 export class QiniuRequestError extends QiniuError {
-  constructor(public code: number, public reqId: string, message?: string) {
-    super(QiniuErrorType.RequestError, message)
-  }
-}
 
-export function isQiniuRequestError(error: any): error is QiniuRequestError {
-  if (isQiniuError(error) && error.type === QiniuErrorType.RequestError) return true
-  return false
+  /**
+   * @description 标志当前的 error 类型是一个 RequestError
+   * @deprecated 下一个大版本将会移除
+   */
+  public isRequestError = true
+
+  constructor(public code: number, public reqId: string, message: string) {
+    super(QiniuErrorName.RequestError, message)
+  }
 }

@@ -4,6 +4,8 @@ import { region } from '../config'
 import { getUploadUrl } from '.'
 
 jest.mock('../utils', () => ({
+  ...jest.requireActual('../utils') as any,
+
   request: () => Promise.resolve({
     data: {
       up: {
@@ -50,6 +52,15 @@ describe('api function test', () => {
     config.upprotocol = 'http'
     url = await getUploadUrl(config, token)
     expect(url).toBe('http://upload.qiniup.com')
+
+    config.upprotocol = 'https:'
+    url = await getUploadUrl(config, token)
+    expect(url).toBe('https://upload.qiniup.com')
+
+    config.upprotocol = 'http:'
+    url = await getUploadUrl(config, token)
+    expect(url).toBe('http://upload.qiniup.com')
+
 
     config.uphost = 'qiniu.com'
     url = await getUploadUrl(config, token)

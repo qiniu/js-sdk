@@ -47,20 +47,19 @@ describe('test upload', () => {
   })
 
   test('Direct: all api error state.', async () => {
-    const testStateTable = [
+    const testStateTable: Array<keyof typeof errorMap> = [
       'invalidParams', 'expiredToken',
       'gatewayUnavailable', 'serviceUnavailable',
       'serviceTimeout', 'serviceError',
-      'invalidUploadId', 'invalidRequest'
-    ] as const
+      'invalidUploadId', 'networkError'
+    ]
 
     for (const state of testStateTable) {
-      let error = null
       localStorage.clear()
       mockApi.clearInterceptor()
       mockApi.setInterceptor('direct', () => Promise.reject(errorMap[state]))
-      try { await observablePromisify(upload(File3M, null, testToken)) } catch (err) { error = err }
-      expect(error).toStrictEqual(errorMap[state])
+      await expect(observablePromisify(upload(File3M, null, testToken)))
+        .rejects.toStrictEqual(errorMap[state])
     }
   })
 
@@ -76,21 +75,20 @@ describe('test upload', () => {
       'uploadChunk', 'uploadComplete'
     ]
 
-    const testStateTable = [
+    const testStateTable: Array<keyof typeof errorMap> = [
       'invalidParams', 'expiredToken',
       'gatewayUnavailable', 'serviceUnavailable',
       'serviceTimeout', 'serviceError',
-      'invalidUploadId', 'invalidRequest'
-    ] as const
+      'invalidUploadId', 'networkError'
+    ]
 
     for (const apiName of testApiTable) {
       for (const state of testStateTable) {
-        let error = null
         localStorage.clear()
         mockApi.clearInterceptor()
         mockApi.setInterceptor(apiName, (..._: any[]) => Promise.reject(errorMap[state]))
-        try { await observablePromisify(upload(File5M, null, testToken)) } catch (err) { error = err }
-        expect(error).toStrictEqual(errorMap[state])
+        await expect(observablePromisify(upload(File5M, null, testToken)))
+          .rejects.toStrictEqual(errorMap[state])
       }
     }
   })

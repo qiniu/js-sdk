@@ -5,7 +5,10 @@ import { QiniuError } from '../errors'
 import { UploadCompleteData } from '../api'
 import { Observable, IObserver, MB, normalizeUploadConfig } from '../utils'
 
-import { Config, Extra, UploadHandler, UploadOptions, UploadProgress } from './base'
+import {
+  Config, Extra, UploadOptions,
+  UploadHandlers, UploadProgress
+} from './base'
 import { HostPool } from './hosts'
 
 export * from './base'
@@ -13,7 +16,7 @@ export * from './resume'
 
 export function createUploadManager(
   options: UploadOptions,
-  handlers: UploadHandler,
+  handlers: UploadHandlers,
   hostPool: HostPool,
   logger: Logger
 ) {

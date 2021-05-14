@@ -23,15 +23,13 @@ export default class Direct extends Base {
     }
 
     this.logger.info('formData inited.')
-    await this.checkAndUpdateUploadHost()
-    const result = await direct(this.uploadHost.url(), formData, {
+    const result = await direct(this.uploadHost!.getUrl(), formData, {
       onProgress: data => {
         this.updateDirectProgress(data.loaded, data.total)
       },
       onCreate: xhr => this.addXhr(xhr)
     })
 
-    this.checkAndUnfreezeHost()
     this.logger.info('Direct progress finish.')
     this.finishDirectProgress()
     return result

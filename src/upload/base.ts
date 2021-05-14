@@ -1,4 +1,4 @@
-import { QiniuErrorType, isQiniuRequestError, QiniuError } from '../errors'
+import { QiniuErrorName, QiniuError, QiniuRequestError } from '../errors'
 import Logger, { LogLevel } from '../logger'
 import { region } from '../config'
 import * as utils from '../utils'
@@ -7,6 +7,7 @@ import { Host, HostPool } from './hosts'
 
 export const DEFAULT_CHUNK_SIZE = 4 // 单位 MB
 
+// code 信息地址 https://developer.qiniu.com/kodo/3928/error-responses
 export const FREEZE_CODE_LIST = [0, 502, 503, 504, 599] // 将会冻结当前 host 的 code
 export const RETRY_CODE_LIST = [...FREEZE_CODE_LIST, 612] // 会进行重试的 code
 
@@ -22,8 +23,7 @@ export interface Extra {
   mimeType?: string //
 }
 
-/** 上传任务的配置信息 */
-export interface Config {
+export interface InternalConfig {
   /** 是否开启 cdn 加速 */
   useCdnDomain: boolean
   /** 是否对分片进行 md5校验 */
@@ -33,13 +33,13 @@ export interface Config {
   /** 上传失败后重试次数 */
   retryCount: number
   /** 自定义上传域名 */
-  uphost: string[] | string
+  uphost: string[]
   /** 自定义分片上传并发请求量 */
   concurrentRequestLimit: number
   /** 分片大小，单位为 MB */
   chunkSize: number
   /** 上传域名协议 */
-  upprotocol: 'https' | 'http' | 'https:' | 'http:'
+  upprotocol: 'https' | 'http'
   /** 上传区域 */
   region?: typeof region[keyof typeof region]
   /** 是否禁止统计日志上报 */
@@ -48,12 +48,20 @@ export interface Config {
   debugLogLevel?: LogLevel
 }
 
+/** 上传任务的配置信息 */
+export interface Config extends Omit<InternalConfig, 'upprotocol' | 'uphost'> {
+  /** 上传域名协议 */
+  upprotocol: 'https' | 'http' | 'https:' | 'http:'
+  /** 自定义上传域名 */
+  uphost: string[] | string
+}
+
 export interface UploadOptions {
   file: File
   key: string | null | undefined
   token: string
+  config: InternalConfig
   putExtra?: Partial<Extra>
-  config?: Partial<Config>
 }
 
 export interface UploadInfo {
@@ -68,7 +76,7 @@ export interface UploadProgress {
   chunks?: ProgressCompose[]
 }
 
-export interface UploadHandler {
+export interface UploadHandlers {
   onData: (data: UploadProgress) => void
   onError: (err: QiniuError) => void
   onComplete: (res: any) => void
@@ -96,14 +104,15 @@ export default abstract class Base {
   protected aborted = false
   protected retryCount = 0
 
-  protected uploadHost: Host
+  protected uploadHost?: Host
   protected xhrList: XMLHttpRequest[] = []
 
   protected file: File
   protected key: string | null | undefined
 
   protected token: string
-  protected putPolicy: ReturnType<typeof utils.getPutPolicy>
+  protected assessKey: string
+  protected bucketName: string
 
   protected uploadAt: number
   protected progress: UploadProgress
@@ -120,23 +129,12 @@ export default abstract class Base {
 
   constructor(
     options: UploadOptions,
-    handler: UploadHandler,
+    handlers: UploadHandlers,
     protected hostPool: HostPool,
     protected logger: Logger
   ) {
-    this.config = {
-      useCdnDomain: true,
-      disableStatisticsReport: false,
-      retryCount: 3,
-      checkByMD5: false,
-      uphost: '',
-      upprotocol: 'https',
-      forceDirect: false,
-      chunkSize: DEFAULT_CHUNK_SIZE,
-      concurrentRequestLimit: 3,
-      ...options.config
-    }
 
+    this.config = options.config
     logger.info('config inited.', this.config)
 
     this.putExtra = {
@@ -150,12 +148,14 @@ export default abstract class Base {
     this.file = options.file
     this.token = options.token
 
-    this.onData = handler.onData
-    this.onError = handler.onError
-    this.onComplete = handler.onComplete
+    this.onData = handlers.onData
+    this.onError = handlers.onError
+    this.onComplete = handlers.onComplete
 
     try {
-      this.putPolicy = utils.getPutPolicy(this.token)
+      const putPolicy = utils.getPutPolicy(this.token)
+      this.bucketName = putPolicy.bucketName
+      this.assessKey = putPolicy.assessKey
     } catch (error) {
       logger.error('get putPolicy from token failed.', error)
       this.onError(error)
@@ -167,14 +167,14 @@ export default abstract class Base {
     // 从 hostPool 中获取一个可用的 host 挂载在 this
     this.logger.info('get available upload host.')
     const newHost = await this.hostPool.getUp(
-      this.putPolicy.assessKey,
-      this.putPolicy.bucketName,
+      this.assessKey,
+      this.bucketName,
       this.config.upprotocol
     )
 
     if (newHost == null) {
       throw new QiniuError(
-        QiniuErrorType.NotAvailableUploadHost,
+        QiniuErrorName.NotAvailableUploadHost,
         'no available upload host.'
       )
     }
@@ -200,7 +200,7 @@ export default abstract class Base {
   // 检查并更新冻结当前的 host
   private checkAndFreezeHost(error: QiniuError) {
     this.logger.info('check freeze host.')
-    if (isQiniuRequestError(error) && this.uploadHost != null) {
+    if (error instanceof QiniuRequestError && this.uploadHost != null) {
       if (FREEZE_CODE_LIST.includes(error.code)) {
         this.logger.warn(`${this.uploadHost.host} will be temporarily frozen.`)
         this.uploadHost.freeze()
@@ -226,7 +226,7 @@ export default abstract class Base {
 
     if (this.file.size > 10000 * GB) {
       this.handleError(new QiniuError(
-        QiniuErrorType.InvalidFile,
+        QiniuErrorName.InvalidFile,
         'file size exceed maximum value 10000G'
       ))
       return
@@ -235,7 +235,8 @@ export default abstract class Base {
     if (this.putExtra.customVars) {
       if (!utils.isCustomVarsValid(this.putExtra.customVars)) {
         this.handleError(new QiniuError(
-          QiniuErrorType.InvalidCustomVars,
+          QiniuErrorName.InvalidCustomVars,
+          // FIXME: width => with
           'customVars key should start width x:'
         ))
         return
@@ -245,7 +246,7 @@ export default abstract class Base {
     if (this.putExtra.metadata) {
       if (!utils.isMetaDataValid(this.putExtra.metadata)) {
         this.handleError(new QiniuError(
-          QiniuErrorType.InvalidMetadata,
+          QiniuErrorName.InvalidMetadata,
           'metadata key should start with x-qn-meta-'
         ))
         return
@@ -254,15 +255,17 @@ export default abstract class Base {
 
     try {
       this.uploadAt = new Date().getTime()
+      await this.checkAndUpdateUploadHost()
       const result = await this.run()
       this.onComplete(result.data)
+      this.checkAndUnfreezeHost()
       this.sendLog(result.reqId, 200)
       return
     } catch (err) {
       this.logger.error(err)
       this.clear()
 
-      if (isQiniuRequestError(err)) {
+      if (err instanceof QiniuRequestError) {
         const reqId = this.aborted ? '' : err.reqId
         const code = this.aborted ? -2 : err.code
         this.sendLog(reqId, code)
@@ -315,8 +318,8 @@ export default abstract class Base {
       upType: 'jssdk-h5',
       size: this.file.size,
       time: Math.floor(this.uploadAt / 1000),
-      port: utils.getPortFromUrl(this.uploadHost?.url()),
-      host: utils.getDomainFromUrl(this.uploadHost?.url()),
+      port: utils.getPortFromUrl(this.uploadHost?.getUrl()),
+      host: utils.getDomainFromUrl(this.uploadHost?.getUrl()),
       bytesSent: this.progress ? this.progress.total.loaded : 0,
       duration: Math.floor((new Date().getTime() - this.uploadAt) / 1000)
     })

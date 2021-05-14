@@ -1,7 +1,7 @@
 import SparkMD5 from 'spark-md5'
 import { urlSafeBase64Decode } from './base64'
 import { Progress, LocalInfo } from '../upload'
-import { QiniuErrorType, QiniuError, QiniuRequestError } from '../errors'
+import { QiniuErrorName, QiniuError, QiniuRequestError } from '../errors'
 
 export const MB = 1024 ** 2
 
@@ -48,7 +48,7 @@ export function setLocalFileInfo(localKey: string, info: LocalInfo) {
     localStorage.setItem(localKey, JSON.stringify(info))
   } catch (err) {
     throw new QiniuError(
-      QiniuErrorType.WriteCacheFailed,
+      QiniuErrorName.WriteCacheFailed,
       `setLocalFileInfo failed: ${localKey}`
     )
   }
@@ -64,7 +64,7 @@ export function removeLocalFileInfo(localKey: string) {
     localStorage.removeItem(localKey)
   } catch (err) {
     throw new QiniuError(
-      QiniuErrorType.RemoveCacheFailed,
+      QiniuErrorName.RemoveCacheFailed,
       `removeLocalFileInfo failed. key: ${localKey}`
     )
   }
@@ -76,7 +76,7 @@ export function getLocalFileInfo(localKey: string): LocalInfo | null {
     localInfoString = localStorage.getItem(localKey)
   } catch {
     throw new QiniuError(
-      QiniuErrorType.ReadCacheFailed,
+      QiniuErrorName.ReadCacheFailed,
       `getLocalFileInfo failed. key: ${localKey}`
     )
   }
@@ -92,7 +92,7 @@ export function getLocalFileInfo(localKey: string): LocalInfo | null {
     // 本地信息已被破坏，直接删除
     removeLocalFileInfo(localKey)
     throw new QiniuError(
-      QiniuErrorType.InvalidCacheData,
+      QiniuErrorName.InvalidCacheData,
       `getLocalFileInfo failed to parse. key: ${localKey}`
     )
   }
@@ -131,7 +131,7 @@ export function createXHR(): XMLHttpRequest {
   }
 
   throw new QiniuError(
-    QiniuErrorType.NotAvailableXMLHttpRequest,
+    QiniuErrorName.NotAvailableXMLHttpRequest,
     'the current environment does not support.'
   )
 }
@@ -153,7 +153,7 @@ export function readAsArrayBuffer(data: Blob): Promise<ArrayBuffer> {
         resolve(body as ArrayBuffer)
       } else {
         reject(new QiniuError(
-          QiniuErrorType.InvalidProgressEventTarget,
+          QiniuErrorName.InvalidProgressEventTarget,
           'progress event target is undefined'
         ))
       }
@@ -161,7 +161,7 @@ export function readAsArrayBuffer(data: Blob): Promise<ArrayBuffer> {
 
     reader.onerror = () => {
       reject(new QiniuError(
-        QiniuErrorType.FileReaderReadFailed,
+        QiniuErrorName.FileReaderReadFailed,
         'fileReader read failed'
       ))
     }
@@ -218,6 +218,12 @@ export function request<T>(url: string, options: RequestOptions): Response<T> {
         return
       }
 
+      if (xhr.status === 0) {
+        // 发生 0 基本都是网络错误，常见的比如跨域、断网、host 解析失败、系统拦截等等
+        reject(new QiniuError(QiniuErrorName.NetworkError, 'network error.'))
+        return
+      }
+
       const reqId = xhr.getResponseHeader('x-reqId') || ''
       if (xhr.status !== 200) {
         let message = `xhr request failed, code: ${xhr.status}`
@@ -242,7 +248,7 @@ export function request<T>(url: string, options: RequestOptions): Response<T> {
   })
 }
 
-export function getPortFromUrl(url: string) {
+export function getPortFromUrl(url?: string) {
   if (url && url.match) {
     let groups = url.match(/(^https?)/)
 
@@ -267,7 +273,7 @@ export function getPortFromUrl(url: string) {
   return ''
 }
 
-export function getDomainFromUrl(url: string): string {
+export function getDomainFromUrl(url?: string): string {
   if (url && url.match) {
     const groups = url.match(/^https?:\/\/([^:^/]*)/)
     return groups ? groups[1] : ''
@@ -284,34 +290,34 @@ interface PutPolicy {
 }
 
 export function getPutPolicy(token: string): PutPolicy {
-  if (!token) throw new QiniuError(QiniuErrorType.InvalidToken, 'invalid token.')
+  if (!token) throw new QiniuError(QiniuErrorName.InvalidToken, 'invalid token.')
 
   const segments = token.split(':')
-  if (segments.length === 1) throw new QiniuError(QiniuErrorType.InvalidToken, 'invalid token segments.')
+  if (segments.length === 1) throw new QiniuError(QiniuErrorName.InvalidToken, 'invalid token segments.')
 
   // token 构造的差异参考：https://github.com/qbox/product/blob/master/kodo/auths/UpToken.md#admin-uptoken-authorization
   const assessKey = segments.length > 3 ? segments[1] : segments[0]
-  if (!assessKey) throw new QiniuError(QiniuErrorType.InvalidToken, 'missing assess key field.')
+  if (!assessKey) throw new QiniuError(QiniuErrorName.InvalidToken, 'missing assess key field.')
 
   let putPolicy: PutPolicy | null = null
 
   try {
     putPolicy = JSON.parse(urlSafeBase64Decode(segments[segments.length - 1]))
   } catch (error) {
-    throw new QiniuError(QiniuErrorType.InvalidToken, 'token parse failed.')
+    throw new QiniuError(QiniuErrorName.InvalidToken, 'token parse failed.')
   }
 
   if (putPolicy == null) {
-    throw new QiniuError(QiniuErrorType.InvalidToken, 'putPolicy is null.')
+    throw new QiniuError(QiniuErrorName.InvalidToken, 'putPolicy is null.')
   }
 
   if (putPolicy.scope == null) {
-    throw new QiniuError(QiniuErrorType.InvalidToken, 'scope field is null.')
+    throw new QiniuError(QiniuErrorName.InvalidToken, 'scope field is null.')
   }
 
   const bucketName = putPolicy.scope.split(':')[0]
   if (!bucketName) {
-    throw new QiniuError(QiniuErrorType.InvalidToken, 'resolve bucketName failed.')
+    throw new QiniuError(QiniuErrorName.InvalidToken, 'resolve bucketName failed.')
   }
 
   return { assessKey, bucketName, scope: putPolicy.scope }
@@ -390,7 +396,7 @@ export function getTransform(image: HTMLImageElement, orientation: number): Tran
       }
     default:
       throw new QiniuError(
-        QiniuErrorType.InvalidTransformOrientation,
+        QiniuErrorName.InvalidTransformOrientation,
         `orientation ${orientation} is unavailable`
       )
   }

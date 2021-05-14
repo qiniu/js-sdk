@@ -1,5 +1,6 @@
 import { stringify } from 'querystring'
 
+import { normalizeUploadConfig } from '../utils'
 import { Config, UploadInfo } from '../upload'
 import { regionUphostMap } from '../config'
 import * as utils from '../utils'
@@ -157,16 +158,13 @@ export function direct(
  * @param  {string} token
  * @returns Promise
  * @description 获取上传 url
- * @deprecated 将会在下一个大版本中移除
  */
-export async function getUploadUrl(config: UploadUrlConfig, token: string): Promise<string> {
-  const protocol = config.upprotocol || 'https'
+export async function getUploadUrl(_config: UploadUrlConfig, token: string): Promise<string> {
+  const config = normalizeUploadConfig(_config)
+  const protocol = config.upprotocol
 
-  if (config.uphost) {
-    if (Array.isArray(config.uphost)) {
-      return `${protocol}://${config.uphost[0]}`
-    }
-    return `${protocol}://${config.uphost}`
+  if (config.uphost.length > 0) {
+    return `${protocol}://${config.uphost[0]}`
   }
 
   if (config.region) {

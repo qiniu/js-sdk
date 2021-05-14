@@ -17,7 +17,7 @@ export default class Logger {
   ) { }
 
   private getPrintPrefix(level: LogLevel) {
-    return `Qiniu-JS-SDK [${level}][${this.prefix}#${this.id}]: `
+    return `Qiniu-JS-SDK [${level}][${this.prefix}#${this.id}]:`
   }
 
   /**

@@ -1,8 +1,8 @@
 export { imageMogr2, watermark, imageInfo, exif, pipeline } from './image'
+export { QiniuErrorName, QiniuError, QiniuRequestError } from './errors'
 export { deleteUploadedChunks, getUploadUrl } from './api'
 export { default as upload } from './upload'
 export { region } from './config'
-export * from './errors'
 
 export {
   compressImage,

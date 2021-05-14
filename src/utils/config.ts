@@ -1,8 +1,10 @@
 import { regionUphostMap } from '../config'
-import { Config, DEFAULT_CHUNK_SIZE } from '../upload'
+import { Config, DEFAULT_CHUNK_SIZE, InternalConfig } from '../upload'
 
-export function normalizeUploadConfig(config: Partial<Config> = {}): Config {
-  const normalizeConfig: Config = {
+export function normalizeUploadConfig(config?: Partial<Config>): InternalConfig {
+  const { upprotocol, uphost, ...otherConfig } = { ...config }
+
+  const normalizeConfig: InternalConfig = {
     uphost: [],
     retryCount: 3,
 
@@ -17,30 +19,31 @@ export function normalizeUploadConfig(config: Partial<Config> = {}): Config {
     debugLogLevel: 'OFF',
     disableStatisticsReport: false,
 
-    ...config,
+    ...otherConfig
   }
 
   // 兼容原来的 http: https: 的写法
-  normalizeConfig.upprotocol = normalizeConfig.upprotocol.replace(/:$/, '') as Config['upprotocol']
+  normalizeConfig.upprotocol = upprotocol
+    ? upprotocol.replace(/:$/, '') as InternalConfig['upprotocol']
+    : normalizeConfig.upprotocol
 
   const hostList: string[] = []
 
-  // 如果用户传了 region，添加指定 region 的 host 到可用 host 列表
-  if (normalizeConfig?.region) {
+  // 如果同时指定了 uphost 参数，添加到可用 host 列表
+  if (uphost != null) {
+    if (Array.isArray(uphost)) {
+      hostList.push(...uphost)
+    } else {
+      hostList.push(uphost)
+    }
+
+    // 否则如果用户传了 region，添加指定 region 的 host 到可用 host 列表
+  } else if (normalizeConfig?.region) {
     const hostMap = regionUphostMap[normalizeConfig?.region]
     if (normalizeConfig.useCdnDomain) {
       hostList.push(...hostMap.cdnUphost)
     } else {
       hostList.push(...hostMap.srcUphost)
-    }
-  }
-
-  // 如果同时指定了 uphost 参数，添加到可用 host 列表
-  if (normalizeConfig?.uphost != null) {
-    if (Array.isArray(normalizeConfig?.uphost)) {
-      hostList.push(...normalizeConfig?.uphost)
-    } else {
-      hostList.push(normalizeConfig?.uphost)
     }
   }
 

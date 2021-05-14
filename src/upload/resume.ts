@@ -1,5 +1,5 @@
 import { uploadChunk, uploadComplete, initUploadParts, UploadChunkData } from '../api'
-import { QiniuError, QiniuErrorType } from '../errors'
+import { QiniuError, QiniuErrorName, QiniuRequestError } from '../errors'
 import * as utils from '../utils'
 
 import Base, { Progress, UploadInfo, Extra } from './base'
@@ -54,14 +54,14 @@ export default class Resume extends Base {
     this.logger.info('start run Resume.')
     if (!this.config.chunkSize || !isPositiveInteger(this.config.chunkSize)) {
       throw new QiniuError(
-        QiniuErrorType.InvalidChunkSize,
+        QiniuErrorName.InvalidChunkSize,
         'chunkSize must be a positive integer'
       )
     }
 
     if (this.config.chunkSize > 1024) {
       throw new QiniuError(
-        QiniuErrorType.InvalidChunkSize,
+        QiniuErrorName.InvalidChunkSize,
         'chunkSize maximum value is 1024'
       )
     }
@@ -81,9 +81,8 @@ export default class Resume extends Base {
       await Promise.all(uploadChunks)
       mkFileResponse = await this.mkFileReq()
     } catch (error) {
-      this.logger.error('uploadChunks failed.', error)
       // uploadId 无效，上传参数有误（多由于本地存储信息的 uploadId 失效
-      if (error.code === 612 || error.code === 400) {
+      if (error instanceof QiniuRequestError && (error.code === 612 || error.code === 400)) {
         try {
           utils.removeLocalFileInfo(localKey)
         } catch (removeError) {
@@ -137,7 +136,6 @@ export default class Resume extends Base {
     }
 
     this.logger.info(`part ${index} start uploading.`)
-    await this.checkAndUpdateUploadHost()
     const response = await uploadChunk(
       this.token,
       this.key,
@@ -146,7 +144,6 @@ export default class Resume extends Base {
       requestOptions
     )
     this.logger.info(`part ${index} upload completed.`)
-    this.checkAndUnfreezeHost()
 
     // 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null，这里在每次分片上传完成后都手动更新下 progress
     onProgress({
@@ -183,7 +180,6 @@ export default class Resume extends Base {
     }
 
     this.logger.info('parts upload completed, make file.', data)
-    await this.checkAndUpdateUploadHost()
     const result = await uploadComplete(
       this.token,
       this.key,
@@ -196,7 +192,6 @@ export default class Resume extends Base {
 
     this.logger.info('finish Resume Progress.')
     this.updateMkFileProgress(1)
-    this.checkAndUnfreezeHost()
     return result
   }
 
@@ -212,14 +207,12 @@ export default class Resume extends Base {
     // 假如没有 localInfo 本地信息并重新获取 uploadId
     if (!localInfo) {
       this.logger.info('resume upload parts from api.')
-      await this.checkAndUpdateUploadHost()
       const res = await initUploadParts(
         this.token,
-        this.putPolicy.bucketName,
+        this.bucketName,
         this.key,
-        this.uploadHost.url()
+        this.uploadHost!.getUrl()
       )
-      this.checkAndUnfreezeHost()
       this.logger.info(`resume upload parts of id: ${res.data.uploadId}.`)
       this.uploadId = res.data.uploadId
       this.uploadedList = []
@@ -246,7 +239,7 @@ export default class Resume extends Base {
   private getUploadInfo(): UploadInfo {
     return {
       id: this.uploadId,
-      url: this.uploadHost.url()
+      url: this.uploadHost!.getUrl()
     }
   }
 
@@ -275,7 +268,7 @@ export default class Resume extends Base {
       )),
       uploadInfo: {
         id: this.uploadId,
-        url: this.uploadHost?.url()
+        url: this.uploadHost!.getUrl()
       }
     }
     this.onData(this.progress)

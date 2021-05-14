@@ -7,20 +7,7 @@ import { Config } from './base'
 const unfreezeTimeMap = new Map<string, number>()
 
 export class Host {
-  public host: string
-  public protocol: Config['upprotocol']
-
-  constructor(host: string, protocol: Config['upprotocol'] = 'https') {
-    this.protocol = protocol
-    this.host = host
-  }
-
-  /**
-   * @description 获取当前 host 的完整 url
-   */
-  url() {
-    return `${this.protocol}://${this.host}`
-  }
+  constructor(public host: string, public protocol: Config['upprotocol'] = 'https') { }
 
   /**
    * @description 当前 host 是否为冻结状态
@@ -28,8 +15,7 @@ export class Host {
   isFrozen() {
     const currentTime = new Date().getTime()
     const unfreezeTime = unfreezeTimeMap.get(this.host)
-    if (unfreezeTime != null && unfreezeTime >= currentTime) return true
-    return false
+    return unfreezeTime != null && unfreezeTime >= currentTime
   }
 
   /**
@@ -47,8 +33,21 @@ export class Host {
   unfreeze() {
     unfreezeTimeMap.delete(this.host)
   }
-}
 
+  /**
+   * @description 获取当前 host 的完整 url
+   */
+  getUrl() {
+    return `${this.protocol}://${this.host}`
+  }
+
+  /**
+   * @description 获取解冻时间
+   */
+  getUnfreezeTime() {
+    return unfreezeTimeMap.get(this.host)
+  }
+}
 export class HostPool {
   /**
    * @description 构造类时传入的数据
@@ -61,13 +60,13 @@ export class HostPool {
   private cachedHostsMap = new Map<string, Host[]>()
 
   /**
-   * @param  {string[] | string} hosts
+   * @param  {string[]} hosts
    * @description 如果在构造时传入 hosts，则该 host 池始终使用传入的 host 做为可用的数据
    */
-  constructor(hosts?: string[] | string) {
-    if (hosts == null) return
-    if (Array.isArray(hosts)) this.hosts = hosts
-    if (typeof hosts === 'string') this.hosts = [hosts]
+  constructor(hosts?: string[]) {
+    if (hosts != null) {
+      this.hosts = hosts
+    }
   }
 
   /**
@@ -121,23 +120,19 @@ export class HostPool {
     if (isRefresh) await this.refresh(accessKey, bucketName, protocol)
 
     const cachedHostList = this.cachedHostsMap.get(`${accessKey}@${bucketName}`) || []
-    if (cachedHostList.length === 0 && isRefresh === false) {
+    if (cachedHostList.length === 0 && !isRefresh) {
       return this.getUp(accessKey, bucketName, protocol, true)
     }
 
     const availableHostList = cachedHostList.filter(host => !host.isFrozen())
-    // 有 host 但是全被冻结了，去取离解冻最近的 host
-    if (cachedHostList.length > 0 && availableHostList.length === 0) {
-      const priorityQueue = cachedHostList.slice()
-        .sort(({ host: hostA }, { host: hostB }) => {
-          const aUnfreezeTime = unfreezeTimeMap.get(hostA)
-          const bUnfreezeTime = unfreezeTimeMap.get(hostB)
-          return (aUnfreezeTime || 0) - (bUnfreezeTime || 0)
-        })
+    if (availableHostList.length > 0) return availableHostList[0]
 
-      return priorityQueue[0]
-    }
+    // 无可用的，去取离解冻最近的 host
+    const priorityQueue = cachedHostList
+      .slice().sort((hostA, hostB) => (
+        hostA.getUnfreezeTime() || 0) - (hostB.getUnfreezeTime() || 0)
+      )
 
-    return availableHostList[0] || null
+    return priorityQueue[0]
   }
 }
