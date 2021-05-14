@@ -40,8 +40,8 @@ export class QiniuError implements Error {
 export class QiniuRequestError extends QiniuError {
 
   /**
-   * @description 标志当前的 error 类型是一个 RequestError
-   * @deprecated 下一个大版本将会移除
+   * @description 标记当前的 error 类型是一个 QiniuRequestError
+   * @deprecated 下一个大版本将会移除，不推荐使用，推荐直接使用 instanceof 进行判断
    */
   public isRequestError = true
 
