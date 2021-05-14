@@ -1,5 +1,5 @@
 import { getUpHosts } from '../api'
-import { Config } from './base'
+import { InternalConfig } from './base'
 
 /**
   * @description 解冻时间，key 是 host，value 为解冻时间
@@ -7,7 +7,7 @@ import { Config } from './base'
 const unfreezeTimeMap = new Map<string, number>()
 
 export class Host {
-  constructor(public host: string, public protocol: Config['upprotocol'] = 'https') { }
+  constructor(public host: string, public protocol: InternalConfig['upprotocol']) { }
 
   /**
    * @description 当前 host 是否为冻结状态
@@ -50,11 +50,6 @@ export class Host {
 }
 export class HostPool {
   /**
-   * @description 构造类时传入的数据
-   */
-  private hosts?: string[]
-
-  /**
    * @description 缓存的 host 表，以 bucket 和 accessKey 作为 key
    */
   private cachedHostsMap = new Map<string, Host[]>()
@@ -63,21 +58,18 @@ export class HostPool {
    * @param  {string[]} hosts
    * @description 如果在构造时传入 hosts，则该 host 池始终使用传入的 host 做为可用的数据
    */
-  constructor(hosts?: string[]) {
-    if (hosts != null) {
-      this.hosts = hosts
-    }
+  constructor(private hosts?: string[]) {
   }
 
   /**
    * @param  {string} accessKey
    * @param  {string} bucketName
    * @param  {string[]} hosts
-   * @param  {Config['upprotocol']} protocol
+   * @param  {InternalConfig['upprotocol']} protocol
    * @returns  {void}
    * @description 注册可用 host
    */
-  private register(accessKey: string, bucketName: string, hosts: string[], protocol: Config['upprotocol']): void {
+  private register(accessKey: string, bucketName: string, hosts: string[], protocol: InternalConfig['upprotocol']): void {
     this.cachedHostsMap.set(
       `${accessKey}@${bucketName}`,
       hosts.map(host => new Host(host, protocol))
@@ -87,11 +79,11 @@ export class HostPool {
   /**
    * @param  {string} accessKey
    * @param  {string} bucketName
-   * @param  {Config['upprotocol']} protocol
+   * @param  {InternalConfig['upprotocol']} protocol
    * @returns  {Promise<void>}
    * @description 从接口刷新最新的 host 数据，如果用户在构造时该类时传入了 host、则不会发起请求、而是固定使用传入的数据。
    */
-  private async refresh(accessKey: string, bucketName: string, protocol: Config['upprotocol']): Promise<void> {
+  private async refresh(accessKey: string, bucketName: string, protocol: InternalConfig['upprotocol']): Promise<void> {
     const hosts: string[] = []
     if (this.hosts != null && this.hosts.length > 0) {
       hosts.push(...this.hosts)
@@ -111,12 +103,12 @@ export class HostPool {
   /**
    * @param  {string} accessKey
    * @param  {string} bucketName
-   * @param  {Config['upprotocol']} protocol
+   * @param  {InternalConfig['upprotocol']} protocol
    * @param  {boolean} isRefresh
    * @returns  {Promise<Host | null>}
    * @description 获取一个可用的上传 Host，排除已冻结的
    */
-  public async getUp(accessKey: string, bucketName: string, protocol: Config['upprotocol'], isRefresh = false): Promise<Host | null> {
+  public async getUp(accessKey: string, bucketName: string, protocol: InternalConfig['upprotocol'], isRefresh = false): Promise<Host | null> {
     if (isRefresh) await this.refresh(accessKey, bucketName, protocol)
 
     const cachedHostList = this.cachedHostsMap.get(`${accessKey}@${bucketName}`) || []
@@ -124,6 +116,7 @@ export class HostPool {
       return this.getUp(accessKey, bucketName, protocol, true)
     }
 
+    if (cachedHostList.length === 0) return null
     const availableHostList = cachedHostList.filter(host => !host.isFrozen())
     if (availableHostList.length > 0) return availableHostList[0]
 

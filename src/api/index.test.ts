@@ -61,7 +61,6 @@ describe('api function test', () => {
     url = await getUploadUrl(config, token)
     expect(url).toBe('http://upload.qiniup.com')
 
-
     config.uphost = 'qiniu.com'
     url = await getUploadUrl(config, token)
     expect(url).toBe('http://qiniu.com')

@@ -24,10 +24,7 @@ export enum QiniuErrorName {
   InvalidProgressEventTarget = 'InvalidProgressEventTarget',
 
   // 请求错误
-  RequestError = 'RequestError',
-
-  // 网络错误
-  NetworkError = 'NetworkError'
+  RequestError = 'RequestError'
 }
 
 export class QiniuError implements Error {
@@ -47,5 +44,11 @@ export class QiniuRequestError extends QiniuError {
 
   constructor(public code: number, public reqId: string, message: string) {
     super(QiniuErrorName.RequestError, message)
+  }
+}
+
+export class QiniuNetworkError extends QiniuRequestError {
+  constructor(message: string) {
+    super(0, '', message)
   }
 }

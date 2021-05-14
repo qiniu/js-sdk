@@ -4,11 +4,7 @@ import Logger from '../logger'
 import { QiniuError } from '../errors'
 import { UploadCompleteData } from '../api'
 import { Observable, IObserver, MB, normalizeUploadConfig } from '../utils'
-
-import {
-  Config, Extra, UploadOptions,
-  UploadHandlers, UploadProgress
-} from './base'
+import { Extra, UploadOptions, UploadHandlers, UploadProgress, InternalConfig } from './base'
 import { HostPool } from './hosts'
 
 export * from './base'
@@ -47,22 +43,22 @@ export default function upload(
   key: string | null | undefined,
   token: string,
   putExtra?: Partial<Extra>,
-  config?: Partial<Config>
+  config?: Partial<InternalConfig>
 ): Observable<UploadProgress, QiniuError, UploadCompleteData> {
+
+  // 为每个任务创建单独的 Logger
+  const logger = new Logger(token, config?.disableStatisticsReport, config?.debugLogLevel, file.name)
 
   const options: UploadOptions = {
     file,
     key,
     token,
     putExtra,
-    config: normalizeUploadConfig(config)
+    config: normalizeUploadConfig(config, logger)
   }
 
   // 创建 host 池
   const hostPool = new HostPool(options.config?.uphost)
-
-  // 为每个任务创建单独的 Logger
-  const logger = new Logger(options.token, config?.disableStatisticsReport, config?.debugLogLevel, file.name)
 
   return new Observable((observer: IObserver<UploadProgress, QiniuError, UploadCompleteData>) => {
     const manager = createUploadManager(options, {

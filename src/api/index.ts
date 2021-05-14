@@ -1,8 +1,7 @@
 import { stringify } from 'querystring'
 
 import { normalizeUploadConfig } from '../utils'
-import { Config, UploadInfo } from '../upload'
-import { regionUphostMap } from '../config'
+import { Config, InternalConfig, UploadInfo } from '../upload'
 import * as utils from '../utils'
 
 interface UpHosts {
@@ -16,13 +15,11 @@ interface UpHosts {
   }
 }
 
-export async function getUpHosts(accessKey: string, bucketName: string, protocol: Config['upprotocol']): Promise<UpHosts> {
+export async function getUpHosts(accessKey: string, bucketName: string, protocol: InternalConfig['upprotocol']): Promise<UpHosts> {
   const params = stringify({ ak: accessKey, bucket: bucketName })
   const url = `${protocol}://api.qiniu.com/v2/query?${params}`
   return utils.request(url, { method: 'GET' })
 }
-
-export type UploadUrlConfig = Partial<Pick<Config, 'upprotocol' | 'uphost' | 'region' | 'useCdnDomain'>>
 
 /**
  * @param bucket 空间名
@@ -153,6 +150,8 @@ export function direct(
   })
 }
 
+export type UploadUrlConfig = Partial<Pick<Config, 'upprotocol' | 'uphost' | 'region' | 'useCdnDomain'>>
+
 /**
  * @param  {UploadUrlConfig} config
  * @param  {string} token
@@ -166,13 +165,6 @@ export async function getUploadUrl(_config: UploadUrlConfig, token: string): Pro
   if (config.uphost.length > 0) {
     return `${protocol}://${config.uphost[0]}`
   }
-
-  if (config.region) {
-    const upHosts = regionUphostMap[config.region]
-    const host = config.useCdnDomain ? upHosts.cdnUphost[0] : upHosts.srcUphost[0]
-    return `${protocol}://${host}`
-  }
-
   const putPolicy = utils.getPutPolicy(token)
   const res = await getUpHosts(putPolicy.assessKey, putPolicy.bucketName, protocol)
   const hosts = res.data.up.acc.main

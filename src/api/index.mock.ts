@@ -1,8 +1,8 @@
-import { QiniuRequestError } from '../errors'
+import { QiniuNetworkError, QiniuRequestError } from '../errors'
 import * as api from '.'
 
 export const errorMap = {
-  networkError: new QiniuRequestError(0, 'mock', 'message'), // 网络错误
+  networkError: new QiniuNetworkError('message'), // 网络错误
 
   invalidParams: new QiniuRequestError(400, 'mock', 'message'), // 无效的参数
   expiredToken: new QiniuRequestError(401, 'mock', 'message'), // token 过期

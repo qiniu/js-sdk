@@ -98,7 +98,7 @@ export type XHRHandler = (xhr: XMLHttpRequest) => void
 const GB = 1024 ** 3
 
 export default abstract class Base {
-  protected config: Config
+  protected config: InternalConfig
   protected putExtra: Extra
 
   protected aborted = false

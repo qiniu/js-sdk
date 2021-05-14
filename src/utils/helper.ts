@@ -1,7 +1,7 @@
 import SparkMD5 from 'spark-md5'
 import { urlSafeBase64Decode } from './base64'
 import { Progress, LocalInfo } from '../upload'
-import { QiniuErrorName, QiniuError, QiniuRequestError } from '../errors'
+import { QiniuErrorName, QiniuError, QiniuRequestError, QiniuNetworkError } from '../errors'
 
 export const MB = 1024 ** 2
 
@@ -220,7 +220,7 @@ export function request<T>(url: string, options: RequestOptions): Response<T> {
 
       if (xhr.status === 0) {
         // 发生 0 基本都是网络错误，常见的比如跨域、断网、host 解析失败、系统拦截等等
-        reject(new QiniuError(QiniuErrorName.NetworkError, 'network error.'))
+        reject(new QiniuNetworkError('network error.'))
         return
       }
 
@@ -248,7 +248,7 @@ export function request<T>(url: string, options: RequestOptions): Response<T> {
   })
 }
 
-export function getPortFromUrl(url?: string) {
+export function getPortFromUrl(url: string | undefined) {
   if (url && url.match) {
     let groups = url.match(/(^https?)/)
 
@@ -273,7 +273,7 @@ export function getPortFromUrl(url?: string) {
   return ''
 }
 
-export function getDomainFromUrl(url?: string): string {
+export function getDomainFromUrl(url: string | undefined): string {
   if (url && url.match) {
     const groups = url.match(/^https?:\/\/([^:^/]*)/)
     return groups ? groups[1] : ''

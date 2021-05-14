@@ -1,7 +1,8 @@
+import Logger from '../logger'
 import { regionUphostMap } from '../config'
 import { Config, DEFAULT_CHUNK_SIZE, InternalConfig } from '../upload'
 
-export function normalizeUploadConfig(config?: Partial<Config>): InternalConfig {
+export function normalizeUploadConfig(config?: Partial<Config>, logger?: Logger,): InternalConfig {
   const { upprotocol, uphost, ...otherConfig } = { ...config }
 
   const normalizeConfig: InternalConfig = {
@@ -23,14 +24,19 @@ export function normalizeUploadConfig(config?: Partial<Config>): InternalConfig 
   }
 
   // 兼容原来的 http: https: 的写法
-  normalizeConfig.upprotocol = upprotocol
-    ? upprotocol.replace(/:$/, '') as InternalConfig['upprotocol']
-    : normalizeConfig.upprotocol
+  if (upprotocol) {
+    normalizeConfig.upprotocol = upprotocol
+      .replace(/:$/, '') as InternalConfig['upprotocol']
+  }
 
   const hostList: string[] = []
 
+  if (logger && config?.uphost != null && config?.region != null) {
+    logger.warn('do not use both the uphost and region config.')
+  }
+
   // 如果同时指定了 uphost 参数，添加到可用 host 列表
-  if (uphost != null) {
+  if (uphost) {
     if (Array.isArray(uphost)) {
       hostList.push(...uphost)
     } else {
