@@ -173,15 +173,16 @@ qiniu.compressImage(file, options).then(data => {
           * total.percent: `number`，当前上传进度，范围：0～100。
 
       * error: 上传错误后触发；自动重试本身并不会触发该错误，而当重试次数到达上限后则可以触发。当不是 xhr 请求错误时，会把当前错误产生原因直接抛出，诸如 JSON 解析异常等；当产生 xhr 请求错误时，参数 err 的类型为 `QiniuError`, 对于请求错误，err 的类型为 `QiniuRequestError`(继承自`QiniuError`)，如果是由于非服务端原因发生错误时（例如断网、跨域等等），错误的类型为 `QiniuNetworkError`(继承自`QiniuRequestError`)。
-        * `QiniuError` (实现了 `Error`)
+        * `QiniuError`
           * name: `QiniuErrorName` 错误的类型。
-          * message `string` 错误的信息。
-        * `QiniuRequestError` (继承自 `QiniuError`)
+          * message: `string` 错误的信息。
+          * stack: `string` 调用堆栈信息。
+        * `QiniuRequestError` 继承自 `QiniuError`
           * reqId: `string` xhr 请求错误的 `X-Reqid`。
           * code: `number` 请求错误状态码，可查阅码值对应 [说明](https://developer.qiniu.com/kodo/api/3928/error-responses)。
           * isRequestError: 用于区分是否为 xhr 请求错误；当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 `true`；否则为 `undefined`。
-        * `QiniuNetworkError` (继承自 `QiniuRequestError`)
-          * reqId：由于请求可能还未真正发出、所以可能无法收集到 `reqId`，该字段可能为 `''`。
+        * `QiniuNetworkError` 继承自 `QiniuRequestError`
+          * reqId: 由于请求可能还未真正发出，所以可能无法收集到 `reqId`，该字段可能为 `''`。
 
       * complete: 接收上传完成后的后端返回信息，具体返回结构取决于后端sdk的配置，可参考 [上传策略](https://developer.qiniu.com/kodo/manual/1206/put-policy)。
 

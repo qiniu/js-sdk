@@ -80,7 +80,7 @@ export class HostPool {
    * @param  {string} bucketName
    * @param  {InternalConfig['upprotocol']} protocol
    * @returns  {Promise<void>}
-   * @description 从接口刷新最新的 host 数据，如果用户在构造时该类时传入了 host、则不会发起请求、而是固定使用传入的数据。
+   * @description 刷新最新的 host 数据，如果用户在构造时该类时传入了 host 或者已经存在缓存则不会发起请求
    */
   private async refresh(accessKey: string, bucketName: string, protocol: InternalConfig['upprotocol']): Promise<void> {
     const cachedHostList = this.cachedHostsMap.get(`${accessKey}@${bucketName}`) || []
@@ -105,7 +105,6 @@ export class HostPool {
    * @param  {string} accessKey
    * @param  {string} bucketName
    * @param  {InternalConfig['upprotocol']} protocol
-   * @param  {boolean} isRefresh
    * @returns  {Promise<Host | null>}
    * @description 获取一个可用的上传 Host，排除已冻结的
    */
