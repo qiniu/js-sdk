@@ -83,22 +83,14 @@ export default class Resume extends Base {
     } catch (error) {
       // uploadId 无效，上传参数有误（多由于本地存储信息的 uploadId 失效
       if (error instanceof QiniuRequestError && (error.code === 612 || error.code === 400)) {
-        try {
-          utils.removeLocalFileInfo(localKey)
-        } catch (removeError) {
-          this.logger.warn(removeError)
-        }
+        utils.removeLocalFileInfo(localKey, this.logger)
       }
 
       throw error
     }
 
     // 上传成功，清理本地缓存数据
-    try {
-      utils.removeLocalFileInfo(localKey)
-    } catch (error) {
-      this.logger.warn(error)
-    }
+    utils.removeLocalFileInfo(localKey, this.logger)
     return mkFileResponse
   }
 
@@ -157,14 +149,10 @@ export default class Resume extends Base {
       size: chunk.size
     }
 
-    try {
-      utils.setLocalFileInfo(this.getLocalKey(), {
-        id: this.uploadId,
-        data: this.uploadedList
-      })
-    } catch (error) {
-      this.logger.info(`set part ${index} cache failed.`, error)
-    }
+    utils.setLocalFileInfo(this.getLocalKey(), {
+      id: this.uploadId,
+      data: this.uploadedList
+    }, this.logger)
   }
 
   private async mkFileReq() {
@@ -196,12 +184,7 @@ export default class Resume extends Base {
   }
 
   private async initBeforeUploadChunks() {
-    let localInfo: LocalInfo | null = null
-    try {
-      localInfo = utils.getLocalFileInfo(this.getLocalKey())
-    } catch (error) {
-      this.logger.warn(error)
-    }
+    const localInfo = utils.getLocalFileInfo(this.getLocalKey(), this.logger)
 
     // 分片必须和当时使用的 uploadId 配套，所以断点续传需要把本地存储的 uploadId 拿出来
     // 假如没有 localInfo 本地信息并重新获取 uploadId

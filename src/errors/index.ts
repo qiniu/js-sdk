@@ -47,8 +47,11 @@ export class QiniuRequestError extends QiniuError {
   }
 }
 
+/**
+ * @description 由于跨域、证书错误、断网、host 解析失败、系统拦截等原因导致的错误
+ */
 export class QiniuNetworkError extends QiniuRequestError {
-  constructor(message: string) {
-    super(0, '', message)
+  constructor(reqId: string, message: string) {
+    super(0, reqId, message)
   }
 }

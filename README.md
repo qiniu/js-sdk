@@ -6,7 +6,7 @@
 
 基于七牛 API 开发的前端 JavaScript SDK
 
-### 当前版本为 3.x，旧版本文档：[2.x](https://github.com/qiniu/js-sdk/tree/2.x)、[1.x](https://github.com/qiniu/js-sdk/tree/1.x)
+## 当前版本为 3.x，旧版本文档：[2.x](https://github.com/qiniu/js-sdk/tree/2.x)、[1.x](https://github.com/qiniu/js-sdk/tree/1.x)
 
 ### 2.x 升级到 3.x 的注意事项请参考 [文档](https://github.com/qiniu/js-sdk/wiki/2.x-%E5%8D%87%E7%BA%A7%E5%88%B0-3.x-%E6%96%87%E6%A1%A3%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9)
 
@@ -81,17 +81,15 @@ Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服�
 
 * 直接使用静态文件地址：
 
-  ```
-  https://cdnjs.cloudflare.com/ajax/libs/qiniu-js/<version>/qiniu.min.js
-  ```
+  `https://cdnjs.cloudflare.com/ajax/libs/qiniu-js/<version>/qiniu.min.js`
 
-  通过sctipt标签引入该文件，会在全局生成名为 `qiniu` 的对象
+  通过 script 标签引入该文件，会在全局生成名为 `qiniu` 的对象
 
 * 使用 NPM 安装
 
   NPM 的全称是 Node Package Manager，是一个 [NodeJS](https://nodejs.org) 包管理和分发工具，已经成为了非官方的发布 Node 模块（包）的标准。如果需要更详细的关于 NPM 的使用说明，您可以访问 [NPM 官方网站](https://www.npmjs.com)，或对应的 [中文网站](http://www.npmjs.com.cn/)
 
-  ```
+  ```shell
   npm install qiniu-js
   ```
 
@@ -164,6 +162,7 @@ qiniu.compressImage(file, options).then(data => {
           }
         }
         ```
+
       * next: 接收上传进度信息的回调函数，回调函数参数值为 `object`，包含字段信息如下：
         * uploadInfo: `object`，只有分片上传时才返回该字段
           * uploadInfo.id: 上传任务的唯一标识。
@@ -174,16 +173,15 @@ qiniu.compressImage(file, options).then(data => {
           * total.percent: `number`，当前上传进度，范围：0～100。
 
       * error: 上传错误后触发；自动重试本身并不会触发该错误，而当重试次数到达上限后则可以触发。当不是 xhr 请求错误时，会把当前错误产生原因直接抛出，诸如 JSON 解析异常等；当产生 xhr 请求错误时，参数 err 的类型为 `QiniuError`, 对于请求错误，err 的类型为 `QiniuRequestError`(继承自`QiniuError`)，如果是由于非服务端原因发生错误时（例如断网、跨域等等），错误的类型为 `QiniuNetworkError`(继承自`QiniuRequestError`)。
-        * `QiniuError`
+        * `QiniuError` (实现了 `Error`)
           * name: `QiniuErrorName` 错误的类型。
           * message `string` 错误的信息。
-        * `QiniuRequestError`
+        * `QiniuRequestError` (继承自 `QiniuError`)
           * reqId: `string` xhr 请求错误的 `X-Reqid`。
           * code: `number` 请求错误状态码，可查阅码值对应 [说明](https://developer.qiniu.com/kodo/api/3928/error-responses)。
           * isRequestError: 用于区分是否为 xhr 请求错误；当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 `true`；否则为 `undefined`。
-        * `QiniuNetworkError`
-          * code: `number` 固定为 `0`。
-          * reqId: 由于请求还未真正发出、无法收集到 `reqId`，所以该字段固定为 `''`。
+        * `QiniuNetworkError` (继承自 `QiniuRequestError`)
+          * reqId：由于请求可能还未真正发出、所以可能无法收集到 `reqId`，该字段可能为 `''`。
 
       * complete: 接收上传完成后的后端返回信息，具体返回结构取决于后端sdk的配置，可参考 [上传策略](https://developer.qiniu.com/kodo/manual/1206/put-policy)。
 

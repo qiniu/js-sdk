@@ -55,11 +55,10 @@ export class HostPool {
   private cachedHostsMap = new Map<string, Host[]>()
 
   /**
-   * @param  {string[]} hosts
-   * @description 如果在构造时传入 hosts，则该 host 池始终使用传入的 host 做为可用的数据
+   * @param  {string[]} initHosts
+   * @description 如果在构造时传入 initHosts，则该 host 池始终使用传入的 initHosts 做为可用的数据
    */
-  constructor(private hosts?: string[]) {
-  }
+  constructor(private initHosts: string[] = []) { }
 
   /**
    * @param  {string} accessKey
@@ -84,20 +83,22 @@ export class HostPool {
    * @description 从接口刷新最新的 host 数据，如果用户在构造时该类时传入了 host、则不会发起请求、而是固定使用传入的数据。
    */
   private async refresh(accessKey: string, bucketName: string, protocol: InternalConfig['upprotocol']): Promise<void> {
-    const hosts: string[] = []
-    if (this.hosts != null && this.hosts.length > 0) {
-      hosts.push(...this.hosts)
-    } else {
-      const response = await getUpHosts(accessKey, bucketName, protocol)
-      if (response?.data != null) {
-        hosts.push(
-          ...(response.data.up?.acc?.main || []),
-          ...(response.data.up?.acc?.backup || [])
-        )
-      }
+    const cachedHostList = this.cachedHostsMap.get(`${accessKey}@${bucketName}`) || []
+    if (cachedHostList.length > 0) return
+
+    if (this.initHosts.length > 0) {
+      this.register(accessKey, bucketName, this.initHosts, protocol)
+      return
     }
 
-    this.register(accessKey, bucketName, hosts, protocol)
+    const response = await getUpHosts(accessKey, bucketName, protocol)
+    if (response?.data != null) {
+      const stashHosts: string[] = [
+        ...(response.data.up?.acc?.main || []),
+        ...(response.data.up?.acc?.backup || [])
+      ]
+      this.register(accessKey, bucketName, stashHosts, protocol)
+    }
   }
 
   /**
@@ -108,13 +109,9 @@ export class HostPool {
    * @returns  {Promise<Host | null>}
    * @description 获取一个可用的上传 Host，排除已冻结的
    */
-  public async getUp(accessKey: string, bucketName: string, protocol: InternalConfig['upprotocol'], isRefresh = false): Promise<Host | null> {
-    if (isRefresh) await this.refresh(accessKey, bucketName, protocol)
-
+  public async getUp(accessKey: string, bucketName: string, protocol: InternalConfig['upprotocol']): Promise<Host | null> {
+    await this.refresh(accessKey, bucketName, protocol)
     const cachedHostList = this.cachedHostsMap.get(`${accessKey}@${bucketName}`) || []
-    if (cachedHostList.length === 0 && !isRefresh) {
-      return this.getUp(accessKey, bucketName, protocol, true)
-    }
 
     if (cachedHostList.length === 0) return null
     const availableHostList = cachedHostList.filter(host => !host.isFrozen())

@@ -1,7 +1,10 @@
 import SparkMD5 from 'spark-md5'
-import { urlSafeBase64Decode } from './base64'
-import { Progress, LocalInfo } from '../upload'
+
 import { QiniuErrorName, QiniuError, QiniuRequestError, QiniuNetworkError } from '../errors'
+import { Progress, LocalInfo } from '../upload'
+import Logger from '../logger'
+
+import { urlSafeBase64Decode } from './base64'
 
 export const MB = 1024 ** 2
 
@@ -43,14 +46,14 @@ export function sum(list: number[]) {
   return list.reduce((data, loaded) => data + loaded, 0)
 }
 
-export function setLocalFileInfo(localKey: string, info: LocalInfo) {
+export function setLocalFileInfo(localKey: string, info: LocalInfo, logger: Logger) {
   try {
     localStorage.setItem(localKey, JSON.stringify(info))
   } catch (err) {
-    throw new QiniuError(
+    logger.warn(new QiniuError(
       QiniuErrorName.WriteCacheFailed,
       `setLocalFileInfo failed: ${localKey}`
-    )
+    ))
   }
 }
 
@@ -59,26 +62,26 @@ export function createLocalKey(name: string, key: string | null | undefined, siz
   return `qiniu_js_sdk_upload_file_name_${name}${localKey}size_${size}`
 }
 
-export function removeLocalFileInfo(localKey: string) {
+export function removeLocalFileInfo(localKey: string, logger: Logger) {
   try {
     localStorage.removeItem(localKey)
   } catch (err) {
-    throw new QiniuError(
+    logger.warn(new QiniuError(
       QiniuErrorName.RemoveCacheFailed,
       `removeLocalFileInfo failed. key: ${localKey}`
-    )
+    ))
   }
 }
 
-export function getLocalFileInfo(localKey: string): LocalInfo | null {
+export function getLocalFileInfo(localKey: string, logger: Logger): LocalInfo | null {
   let localInfoString: string | null = null
   try {
     localInfoString = localStorage.getItem(localKey)
   } catch {
-    throw new QiniuError(
+    logger.warn(new QiniuError(
       QiniuErrorName.ReadCacheFailed,
       `getLocalFileInfo failed. key: ${localKey}`
-    )
+    ))
   }
 
   if (localInfoString == null) {
@@ -90,11 +93,11 @@ export function getLocalFileInfo(localKey: string): LocalInfo | null {
     localInfo = JSON.parse(localInfoString)
   } catch {
     // 本地信息已被破坏，直接删除
-    removeLocalFileInfo(localKey)
-    throw new QiniuError(
+    removeLocalFileInfo(localKey, logger)
+    logger.warn(new QiniuError(
       QiniuErrorName.InvalidCacheData,
       `getLocalFileInfo failed to parse. key: ${localKey}`
-    )
+    ))
   }
 
   return localInfo
@@ -218,13 +221,14 @@ export function request<T>(url: string, options: RequestOptions): Response<T> {
         return
       }
 
+      const reqId = xhr.getResponseHeader('x-reqId') || ''
+
       if (xhr.status === 0) {
         // 发生 0 基本都是网络错误，常见的比如跨域、断网、host 解析失败、系统拦截等等
-        reject(new QiniuNetworkError('network error.'))
+        reject(new QiniuNetworkError(reqId, 'network error.'))
         return
       }
 
-      const reqId = xhr.getResponseHeader('x-reqId') || ''
       if (xhr.status !== 200) {
         let message = `xhr request failed, code: ${xhr.status}`
         if (responseText) {
