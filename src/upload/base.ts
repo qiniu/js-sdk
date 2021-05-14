@@ -1,9 +1,15 @@
+import { QiniuErrorName, QiniuError, QiniuRequestError } from '../errors'
 import Logger, { LogLevel } from '../logger'
-import { getUploadUrl } from '../api'
 import { region } from '../config'
 import * as utils from '../utils'
 
+import { Host, HostPool } from './hosts'
+
 export const DEFAULT_CHUNK_SIZE = 4 // 单位 MB
+
+// code 信息地址 https://developer.qiniu.com/kodo/3928/error-responses
+export const FREEZE_CODE_LIST = [0, 502, 503, 504, 599] // 将会冻结当前 host 的 code
+export const RETRY_CODE_LIST = [...FREEZE_CODE_LIST, 612] // 会进行重试的 code
 
 /** 上传文件的资源信息配置 */
 export interface Extra {
@@ -17,8 +23,7 @@ export interface Extra {
   mimeType?: string //
 }
 
-/** 上传任务的配置信息 */
-export interface Config {
+export interface InternalConfig {
   /** 是否开启 cdn 加速 */
   useCdnDomain: boolean
   /** 是否对分片进行 md5校验 */
@@ -28,13 +33,13 @@ export interface Config {
   /** 上传失败后重试次数 */
   retryCount: number
   /** 自定义上传域名 */
-  uphost: string
+  uphost: string[]
   /** 自定义分片上传并发请求量 */
   concurrentRequestLimit: number
   /** 分片大小，单位为 MB */
   chunkSize: number
   /** 上传域名协议 */
-  upprotocol: 'http:' | 'https:'
+  upprotocol: 'https' | 'http'
   /** 上传区域 */
   region?: typeof region[keyof typeof region]
   /** 是否禁止统计日志上报 */
@@ -43,12 +48,20 @@ export interface Config {
   debugLogLevel?: LogLevel
 }
 
+/** 上传任务的配置信息 */
+export interface Config extends Omit<InternalConfig, 'upprotocol' | 'uphost'> {
+  /** 上传域名协议 */
+  upprotocol: InternalConfig['upprotocol'] | 'https:' | 'http:'
+  /** 自定义上传域名 */
+  uphost: InternalConfig['uphost'] | string
+}
+
 export interface UploadOptions {
   file: File
   key: string | null | undefined
   token: string
+  config: InternalConfig
   putExtra?: Partial<Extra>
-  config?: Partial<Config>
 }
 
 export interface UploadInfo {
@@ -63,9 +76,9 @@ export interface UploadProgress {
   chunks?: ProgressCompose[]
 }
 
-export interface UploadHandler {
+export interface UploadHandlers {
   onData: (data: UploadProgress) => void
-  onError: (err: utils.CustomError) => void
+  onError: (err: QiniuError) => void
   onComplete: (res: any) => void
 }
 
@@ -85,39 +98,43 @@ export type XHRHandler = (xhr: XMLHttpRequest) => void
 const GB = 1024 ** 3
 
 export default abstract class Base {
-  protected config: Config
+  protected config: InternalConfig
   protected putExtra: Extra
-  protected xhrList: XMLHttpRequest[] = []
-  protected file: File
-  protected key: string | null | undefined
+
   protected aborted = false
   protected retryCount = 0
+
+  protected uploadHost?: Host
+  protected xhrList: XMLHttpRequest[] = []
+
+  protected file: File
+  protected key: string | null | undefined
+
   protected token: string
-  protected uploadUrl: string
-  protected bucket: string
+  protected assessKey: string
+  protected bucketName: string
+
   protected uploadAt: number
   protected progress: UploadProgress
 
   protected onData: (data: UploadProgress) => void
-  protected onError: (err: utils.CustomError) => void
+  protected onError: (err: QiniuError) => void
   protected onComplete: (res: any) => void
 
+  /**
+   * @returns utils.Response<any>
+   * @description 子类通过该方法实现具体的任务处理
+   */
   protected abstract run(): utils.Response<any>
 
-  constructor(options: UploadOptions, handlers: UploadHandler, protected logger: Logger) {
-    this.config = {
-      useCdnDomain: true,
-      disableStatisticsReport: false,
-      retryCount: 3,
-      checkByMD5: false,
-      uphost: '',
-      upprotocol: 'https:',
-      forceDirect: false,
-      chunkSize: DEFAULT_CHUNK_SIZE,
-      concurrentRequestLimit: 3,
-      ...options.config
-    }
+  constructor(
+    options: UploadOptions,
+    handlers: UploadHandlers,
+    protected hostPool: HostPool,
+    protected logger: Logger
+  ) {
 
+    this.config = options.config
     logger.info('config inited.', this.config)
 
     this.putExtra = {
@@ -127,8 +144,8 @@ export default abstract class Base {
 
     logger.info('putExtra inited.', this.putExtra)
 
-    this.file = options.file
     this.key = options.key
+    this.file = options.file
     this.token = options.token
 
     this.onData = handlers.onData
@@ -136,17 +153,64 @@ export default abstract class Base {
     this.onComplete = handlers.onComplete
 
     try {
-      this.bucket = utils.getPutPolicy(this.token).bucket
-    } catch (e) {
-      logger.error('get bucket from token failed.', e)
-      this.onError(e)
+      const putPolicy = utils.getPutPolicy(this.token)
+      this.bucketName = putPolicy.bucketName
+      this.assessKey = putPolicy.assessKey
+    } catch (error) {
+      logger.error('get putPolicy from token failed.', error)
+      this.onError(error)
     }
   }
 
-  private handleError(message: string) {
-    const err = new Error(message)
-    this.logger.error(message)
-    this.onError(err)
+  // 检查并更新 upload host
+  protected async checkAndUpdateUploadHost() {
+    // 从 hostPool 中获取一个可用的 host 挂载在 this
+    this.logger.info('get available upload host.')
+    const newHost = await this.hostPool.getUp(
+      this.assessKey,
+      this.bucketName,
+      this.config.upprotocol
+    )
+
+    if (newHost == null) {
+      throw new QiniuError(
+        QiniuErrorName.NotAvailableUploadHost,
+        'no available upload host.'
+      )
+    }
+
+    if (this.uploadHost != null && this.uploadHost.host !== newHost.host) {
+      this.logger.warn(`host switches from ${this.uploadHost.host} to ${newHost.host}.`)
+    } else {
+      this.logger.info(`use host ${newHost.host}.`)
+    }
+
+    this.uploadHost = newHost
+  }
+
+  // 检查并解冻当前的 host
+  protected checkAndUnfreezeHost() {
+    this.logger.info('check unfreeze host.')
+    if (this.uploadHost != null && this.uploadHost.isFrozen()) {
+      this.logger.warn(`${this.uploadHost.host} will be unfrozen.`)
+      this.uploadHost.unfreeze()
+    }
+  }
+
+  // 检查并更新冻结当前的 host
+  private checkAndFreezeHost(error: QiniuError) {
+    this.logger.info('check freeze host.')
+    if (error instanceof QiniuRequestError && this.uploadHost != null) {
+      if (FREEZE_CODE_LIST.includes(error.code)) {
+        this.logger.warn(`${this.uploadHost.host} will be temporarily frozen.`)
+        this.uploadHost.freeze()
+      }
+    }
+  }
+
+  private handleError(error: QiniuError) {
+    this.logger.error(error.message)
+    this.onError(error)
   }
 
   /**
@@ -161,52 +225,65 @@ export default abstract class Base {
     }
 
     if (this.file.size > 10000 * GB) {
-      this.handleError('file size exceed maximum value 10000G.')
+      this.handleError(new QiniuError(
+        QiniuErrorName.InvalidFile,
+        'file size exceed maximum value 10000G'
+      ))
       return
     }
 
     if (this.putExtra.customVars) {
       if (!utils.isCustomVarsValid(this.putExtra.customVars)) {
-        this.handleError('customVars key should start width x:.')
+        this.handleError(new QiniuError(
+          QiniuErrorName.InvalidCustomVars,
+          // FIXME: width => with
+          'customVars key should start width x:'
+        ))
         return
       }
     }
 
     if (this.putExtra.metadata) {
       if (!utils.isMetaDataValid(this.putExtra.metadata)) {
-        this.handleError('metadata key should start with x-qn-meta-.')
+        this.handleError(new QiniuError(
+          QiniuErrorName.InvalidMetadata,
+          'metadata key should start with x-qn-meta-'
+        ))
         return
       }
     }
 
     try {
-      this.uploadUrl = await getUploadUrl(this.config, this.token)
-      this.logger.info('get uploadUrl from api.', this.uploadUrl)
       this.uploadAt = new Date().getTime()
-
+      await this.checkAndUpdateUploadHost()
       const result = await this.run()
       this.onComplete(result.data)
+      this.checkAndUnfreezeHost()
       this.sendLog(result.reqId, 200)
       return
     } catch (err) {
       this.logger.error(err)
-
       this.clear()
-      if (err.isRequestError) {
+
+      if (err instanceof QiniuRequestError) {
         const reqId = this.aborted ? '' : err.reqId
         const code = this.aborted ? -2 : err.code
         this.sendLog(reqId, code)
-      }
 
-      const needRetry = err.isRequestError && err.code === 0 && !this.aborted
-      const notReachRetryCount = ++this.retryCount <= this.config.retryCount
-      // 以下条件满足其中之一则会进行重新上传：
-      // 1. 满足 needRetry 的条件且 retryCount 不为 0
-      // 2. uploadId 无效时在 resume 里会清除本地数据，并且这里触发重新上传
-      if (needRetry && notReachRetryCount || err.code === 612) {
-        this.logger.warn(`error auto retry: ${this.retryCount}/${this.config.retryCount}.`)
-        this.putFile()
-        return
+        // 检查并冻结当前的 host
+        this.checkAndFreezeHost(err)
+
+        const notReachRetryCount = ++this.retryCount <= this.config.retryCount
+        const needRetry = !this.aborted && RETRY_CODE_LIST.includes(err.code)
+
+        // 以下条件满足其中之一则会进行重新上传：
+        // 1. 满足 needRetry 的条件且 retryCount 不为 0
+        // 2. uploadId 无效时在 resume 里会清除本地数据，并且这里触发重新上传
+        if (needRetry && notReachRetryCount) {
+          this.logger.warn(`error auto retry: ${this.retryCount}/${this.config.retryCount}.`)
+          this.putFile()
+          return
+        }
       }
 
       this.onError(err)
@@ -237,14 +314,14 @@ export default abstract class Base {
     this.logger.report({
       code,
       reqId,
-      host: utils.getDomainFromUrl(this.uploadUrl),
       remoteIp: '',
-      port: utils.getPortFromUrl(this.uploadUrl),
-      duration: (new Date().getTime() - this.uploadAt) / 1000,
-      time: Math.floor(this.uploadAt / 1000),
-      bytesSent: this.progress ? this.progress.total.loaded : 0,
       upType: 'jssdk-h5',
-      size: this.file.size
+      size: this.file.size,
+      time: Math.floor(this.uploadAt / 1000),
+      port: utils.getPortFromUrl(this.uploadHost?.getUrl()),
+      host: utils.getDomainFromUrl(this.uploadHost?.getUrl()),
+      bytesSent: this.progress ? this.progress.total.loaded : 0,
+      duration: Math.floor((new Date().getTime() - this.uploadAt) / 1000)
     })
   }
 

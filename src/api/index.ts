@@ -1,42 +1,24 @@
+import { stringify } from 'querystring'
+
+import { normalizeUploadConfig } from '../utils'
+import { Config, InternalConfig, UploadInfo } from '../upload'
 import * as utils from '../utils'
-import { regionUphostMap } from '../config'
-import { Config, UploadInfo } from '../upload'
 
 interface UpHosts {
   data: {
     up: {
       acc: {
         main: string[]
+        backup: string[]
       }
     }
   }
 }
 
-export async function getUpHosts(token: string, protocol: 'https:' | 'http:'): Promise<UpHosts> {
-  const putPolicy = utils.getPutPolicy(token)
-  const url = protocol + '//api.qiniu.com/v2/query?ak=' + putPolicy.ak + '&bucket=' + putPolicy.bucket
+export async function getUpHosts(accessKey: string, bucketName: string, protocol: InternalConfig['upprotocol']): Promise<UpHosts> {
+  const params = stringify({ ak: accessKey, bucket: bucketName })
+  const url = `${protocol}://api.qiniu.com/v2/query?${params}`
   return utils.request(url, { method: 'GET' })
-}
-
-export type UploadUrlConfig = Partial<Pick<Config, 'upprotocol' | 'uphost' | 'region' | 'useCdnDomain'>>
-
-/** 获取上传url */
-export async function getUploadUrl(config: UploadUrlConfig, token: string): Promise<string> {
-  const protocol = config.upprotocol || 'https:'
-
-  if (config.uphost) {
-    return `${protocol}//${config.uphost}`
-  }
-
-  if (config.region) {
-    const upHosts = regionUphostMap[config.region]
-    const host = config.useCdnDomain ? upHosts.cdnUphost : upHosts.srcUphost
-    return `${protocol}//${host}`
-  }
-
-  const res = await getUpHosts(token, protocol)
-  const hosts = res.data.up.acc.main
-  return `${protocol}//${hosts[0]}`
 }
 
 /**
@@ -96,7 +78,7 @@ export function uploadChunk(
   uploadInfo: UploadInfo,
   options: Partial<utils.RequestOptions>
 ): utils.Response<UploadChunkData> {
-  const bucket = utils.getPutPolicy(token).bucket
+  const bucket = utils.getPutPolicy(token).bucketName
   const url = getBaseUrl(bucket, key, uploadInfo) + `/${index}`
   return utils.request<UploadChunkData>(url, {
     ...options,
@@ -119,7 +101,7 @@ export function uploadComplete(
   uploadInfo: UploadInfo,
   options: Partial<utils.RequestOptions>
 ): utils.Response<UploadCompleteData> {
-  const bucket = utils.getPutPolicy(token).bucket
+  const bucket = utils.getPutPolicy(token).bucketName
   const url = getBaseUrl(bucket, key, uploadInfo)
   return utils.request<UploadCompleteData>(url, {
     ...options,
@@ -138,7 +120,7 @@ export function deleteUploadedChunks(
   key: string | null | undefined,
   uploadinfo: UploadInfo
 ): utils.Response<void> {
-  const bucket = utils.getPutPolicy(token).bucket
+  const bucket = utils.getPutPolicy(token).bucketName
   const url = getBaseUrl(bucket, key, uploadinfo)
   return utils.request(
     url,
@@ -147,4 +129,44 @@ export function deleteUploadedChunks(
       headers: utils.getAuthHeaders(token)
     }
   )
+}
+
+/**
+ * @param  {string} url
+ * @param  {FormData} data
+ * @param  {Partial<utils.RequestOptions>} options
+ * @returns Promise
+ * @description 直传接口
+ */
+export function direct(
+  url: string,
+  data: FormData,
+  options: Partial<utils.RequestOptions>
+): Promise<UploadCompleteData> {
+  return utils.request<UploadCompleteData>(url, {
+    method: 'POST',
+    body: data,
+    ...options
+  })
+}
+
+export type UploadUrlConfig = Partial<Pick<Config, 'upprotocol' | 'uphost' | 'region' | 'useCdnDomain'>>
+
+/**
+ * @param  {UploadUrlConfig} config
+ * @param  {string} token
+ * @returns Promise
+ * @description 获取上传 url
+ */
+export async function getUploadUrl(_config: UploadUrlConfig, token: string): Promise<string> {
+  const config = normalizeUploadConfig(_config)
+  const protocol = config.upprotocol
+
+  if (config.uphost.length > 0) {
+    return `${protocol}://${config.uphost[0]}`
+  }
+  const putPolicy = utils.getPutPolicy(token)
+  const res = await getUpHosts(putPolicy.assessKey, putPolicy.bucketName, protocol)
+  const hosts = res.data.up.acc.main
+  return `${protocol}://${hosts[0]}`
 }

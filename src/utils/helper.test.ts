@@ -31,7 +31,7 @@ describe('api function test', () => {
       ['http://loaclhost:3030/path', '3030'],
       ['http://loaclhost:3030/path?test=3232', '3030'],
       ['http://loaclhost.com:3030/path?test=3232', '3030'],
-      ['http://loaclhost.com.cn:3030/path?test=3232', '3030'],
+      ['http://loaclhost.com.cn:3030/path?test=3232', '3030']
     ]
 
     for (const [input, expected] of testData) {

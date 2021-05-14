@@ -6,8 +6,9 @@
 
 基于七牛 API 开发的前端 JavaScript SDK
 
-### 当前版本为 3.x，旧版本文档：[2.x](https://github.com/qiniu/js-sdk/tree/2.x)、[1.x](https://github.com/qiniu/js-sdk/tree/1.x)
-### 2.x 升级到 3.x 的注意事项请参考[文档](https://github.com/qiniu/js-sdk/wiki/2.x-%E5%8D%87%E7%BA%A7%E5%88%B0-3.x-%E6%96%87%E6%A1%A3%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9)
+## 当前版本为 3.x，旧版本文档：[2.x](https://github.com/qiniu/js-sdk/tree/2.x)、[1.x](https://github.com/qiniu/js-sdk/tree/1.x)
+
+### 2.x 升级到 3.x 的注意事项请参考 [文档](https://github.com/qiniu/js-sdk/wiki/2.x-%E5%8D%87%E7%BA%A7%E5%88%B0-3.x-%E6%96%87%E6%A1%A3%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9)
 
 ## 快速导航
 
@@ -18,7 +19,6 @@
 * [运行示例](#demo)
 * [说明](#note)
 * [常见问题](#faq)
-
 
 ## 概述
 
@@ -38,9 +38,10 @@ Qiniu-JavaScript-SDK 为客户端 SDK，没有包含 `token` 生成实现，为�
 * [C/C++](https://developer.qiniu.com/kodo/sdk/cpp)
 * [Objective-C](https://developer.qiniu.com/kodo/sdk/objc)
 
-Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服务器端部分是基于[ Node.js 服务器端 SDK ](https://developer.qiniu.com/kodo/sdk/nodejs) 开发的。
+Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服务器端部分是基于 [Node.js 服务器端 SDK](https://developer.qiniu.com/kodo/sdk/nodejs) 开发的。
 
-- [JavaScript SDK 在线示例](http://jssdk-v2.demo.qiniu.io/)
+* [JavaScript SDK 在线示例](http://jssdk-v2.demo.qiniu.io/)
+
 <!--
 本 SDK 可使开发者忽略上传底层实现细节，而更多的关注 UI 层的展现。
  -->
@@ -63,12 +64,12 @@ Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服�
 
 ## 准备
 
-* 在使用 JS-SDK 之前，您必须先注册一个七牛帐号，并登录控制台获取一对有效的 `AccessKey` 和 `SecretKey`，您可以阅读[ 快速入门 ](https://developer.qiniu.com/kodo/manual/console-quickstart)和[ 安全机制 ](https://developer.qiniu.com/kodo/manual/security#security) 以进一步了解如何正确使用和管理密钥 。
+* 在使用 JS-SDK 之前，您必须先注册一个七牛帐号，并登录控制台获取一对有效的 `AccessKey` 和 `SecretKey`，您可以阅读 [快速入门](https://developer.qiniu.com/kodo/manual/console-quickstart) 和 [安全机制](https://developer.qiniu.com/kodo/manual/security#security) 以进一步了解如何正确使用和管理密钥 。
 
 * JS-SDK 依赖服务端颁发 `token`，可以通过以下二种方式实现：
 
-  * 利用[七牛服务端 SDK ](https://developer.qiniu.com/sdk#sdk)构建后端服务
-  * 利用七牛底层 API 构建服务，详见七牛[上传策略](https://developer.qiniu.com/kodo/manual/put-policy)和[上传凭证](https://developer.qiniu.com/kodo/manual/upload-token)
+  * 利用 [七牛服务端 SDK](https://developer.qiniu.com/sdk#sdk) 构建后端服务
+  * 利用七牛底层 API 构建服务，详见七牛 [上传策略](https://developer.qiniu.com/kodo/manual/put-policy) 和 [上传凭证](https://developer.qiniu.com/kodo/manual/upload-token)
 
   前端通过接口请求以获得 `token` 信息
 
@@ -80,18 +81,18 @@ Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服�
 
 * 直接使用静态文件地址：
 
-  ```
-  https://cdnjs.cloudflare.com/ajax/libs/qiniu-js/<version>/qiniu.min.js
-  ```
-  通过sctipt标签引入该文件，会在全局生成名为 `qiniu` 的对象
+  `https://cdnjs.cloudflare.com/ajax/libs/qiniu-js/<version>/qiniu.min.js`
+
+  通过 script 标签引入该文件，会在全局生成名为 `qiniu` 的对象
 
 * 使用 NPM 安装
 
-  NPM 的全称是 Node Package Manager，是一个[ NodeJS ](https://nodejs.org)包管理和分发工具，已经成为了非官方的发布 Node 模块（包）的标准。如果需要更详细的关于 NPM 的使用说明，您可以访问[ NPM 官方网站](https://www.npmjs.com)，或对应的[中文网站](http://www.npmjs.com.cn/)
+  NPM 的全称是 Node Package Manager，是一个 [NodeJS](https://nodejs.org) 包管理和分发工具，已经成为了非官方的发布 Node 模块（包）的标准。如果需要更详细的关于 NPM 的使用说明，您可以访问 [NPM 官方网站](https://www.npmjs.com)，或对应的 [中文网站](http://www.npmjs.com.cn/)
 
-  ```
+  ```shell
   npm install qiniu-js
   ```
+
   ```Javascript
   const qiniu = require('qiniu-js')
   // or
@@ -122,6 +123,7 @@ const subscription = observable.subscribe(next, error, complete) // 这样传参
 
 subscription.unsubscribe() // 上传取消
 ```
+
 图片上传前压缩：
 
 ```JavaScript
@@ -136,15 +138,16 @@ qiniu.compressImage(file, options).then(data => {
   const subscription = observable.subscribe(observer) // 上传开始
 })
 ```
+
 ## API Reference Interface
 
 ### qiniu.upload(file: File, key: string, token: string, putExtra?: object, config?: object): observable
 
-  * **observable**: 为一个带有 subscribe 方法的类实例
+* **observable**: 为一个带有 subscribe 方法的类实例
 
-    * observable.subscribe(observer: object): subscription
+  * observable.subscribe(observer: object): subscription
 
-      * observer: `observer` 为一个 `object`，用来设置上传过程的监听函数，有三个属性 `next`、`error`、`complete`:
+    * observer: `observer` 为一个 `object`，用来设置上传过程的监听函数，有三个属性 `next`、`error`、`complete`:
 
         ```JavaScript
         const observer = {
@@ -159,30 +162,37 @@ qiniu.compressImage(file, options).then(data => {
           }
         }
         ```
-        * next: 接收上传进度信息的回调函数，回调函数参数值为 `object`，包含字段信息如下：
-          * uploadInfo: `object`，只有分片上传时才返回该字段
-            * uploadInfo.id: 上传任务的唯一标识。
-            * uploadInfo.url: 上传地址。
-          * total: 包含`loaded`、`total`、`percent`三个属性:
-            * total.loaded: `number`，已上传大小，单位为字节。
-            * total.total: `number`，本次上传的总量控制信息，单位为字节，注意这里的 total 跟文件大小并不一致。
-            * total.percent: `number`，当前上传进度，范围：0～100。
 
-        * error: 上传错误后触发；自动重试本身并不会触发该错误，而当重试次数到达上限后则可以触发。当不是 xhr 请求错误时，会把当前错误产生原因直接抛出，诸如 JSON 解析异常等；当产生 xhr 请求错误时，参数 err 为一个包含 `code`、`message`、`isRequestError` 三个属性的 `object`：
-          * err.isRequestError: 用于区分是否 xhr 请求错误；当 xhr 请求出现错误并且后端通过 HTTP 状态码返回了错误信息时，该参数为 `true`；否则为 `undefined` 。
-          * err.reqId: `string`，xhr请求错误的 `X-Reqid`。
-          * err.code: `number`，请求错误状态码，只有在 `err.isRequestError` 为 true 的时候才有效。可查阅码值对应[说明](https://developer.qiniu.com/kodo/api/3928/error-responses)。
-          * err.message: `string`，错误信息，包含错误码，当后端返回提示信息时也会有相应的错误信息。
+      * next: 接收上传进度信息的回调函数，回调函数参数值为 `object`，包含字段信息如下：
+        * uploadInfo: `object`，只有分片上传时才返回该字段
+          * uploadInfo.id: 上传任务的唯一标识。
+          * uploadInfo.url: 上传地址。
+        * total: 包含`loaded`、`total`、`percent`三个属性:
+          * total.loaded: `number`，已上传大小，单位为字节。
+          * total.total: `number`，本次上传的总量控制信息，单位为字节，注意这里的 total 跟文件大小并不一致。
+          * total.percent: `number`，当前上传进度，范围：0～100。
 
-        * complete: 接收上传完成后的后端返回信息，具体返回结构取决于后端sdk的配置，可参考[上传策略](https://developer.qiniu.com/kodo/manual/1206/put-policy)。
+      * error: 上传错误后触发；自动重试本身并不会触发该错误，而当重试次数到达上限后则可以触发。当不是 xhr 请求错误时，会把当前错误产生原因直接抛出，诸如 JSON 解析异常等；当产生 xhr 请求错误时，参数 err 的类型为 `QiniuError`, 对于请求错误，err 的类型为 `QiniuRequestError`(继承自`QiniuError`)，如果是由于非服务端原因发生错误时（例如断网、跨域等等），错误的类型为 `QiniuNetworkError`(继承自`QiniuRequestError`)。
+        * `QiniuError`
+          * name: `QiniuErrorName` 错误的类型。
+          * message: `string` 错误的信息。
+          * stack: `string` 调用堆栈信息。
+        * `QiniuRequestError` 继承自 `QiniuError`
+          * reqId: `string` xhr 请求错误的 `X-Reqid`。
+          * code: `number` 请求错误状态码，可查阅码值对应 [说明](https://developer.qiniu.com/kodo/api/3928/error-responses)。
+          * isRequestError: 固定为 `true`，*不推荐使用，即将废弃*。
+        * `QiniuNetworkError` 继承自 `QiniuRequestError`
+          * reqId: 由于请求可能还未真正发出，所以可能无法收集到 `reqId`，该字段可能为 `''`。
 
-      * subscription: 为一个带有 `unsubscribe` 方法的类实例，通过调用 `subscription.unsubscribe()` 停止当前文件上传。
+      * complete: 接收上传完成后的后端返回信息，具体返回结构取决于后端sdk的配置，可参考 [上传策略](https://developer.qiniu.com/kodo/manual/1206/put-policy)。
 
-  * **bucket**: 上传的目标空间
-  * **file**: `File` 对象，上传的文件
-  * **key**: 文件资源名，为空字符串时则文件资源名也为空，为 `null` 或者 `undefined` 时则自动使用文件的 `hash` 作为文件名
-  * **token**: 上传验证信息，前端通过接口请求后端获得
-  * **config**: `object`，其中的每一项都为可选
+    * subscription: 为一个带有 `unsubscribe` 方法的类实例，通过调用 `subscription.unsubscribe()` 停止当前文件上传。
+
+* **bucket**: 上传的目标空间
+* **file**: `File` 对象，上传的文件
+* **key**: 文件资源名，为空字符串时则文件资源名也为空，为 `null` 或者 `undefined` 时则自动使用文件的 `hash` 作为文件名
+* **token**: 上传验证信息，前端通过接口请求后端获得
+* **config**: `object`，其中的每一项都为可选
 
     ```JavaScript
     const config = {
@@ -191,19 +201,19 @@ qiniu.compressImage(file, options).then(data => {
     };
     ```
 
-    * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，`true` 表示使用，默认为 `false`。
-    * config.disableStatisticsReport: 是否禁用日志报告，为布尔值，默认为 `false`。
-    * config.uphost: 上传 `host`，类型为 `string`， 如果设定该参数则优先使用该参数作为上传地址，默认为 `null`。
-    * config.upprotocol: 自定义上传域名协议，值为 `https:` 或者 `http:`，默认为 `https:`。
-    * config.region: 选择上传域名区域；当为 `null` 或 `undefined` 时，自动分析上传域名区域。
-    * config.retryCount: 上传自动重试次数（整体重试次数，而不是某个分片的重试次数）；默认 3 次（即上传失败后最多重试两次）。
-    * config.concurrentRequestLimit: 分片上传的并发请求量，`number`，默认为3；因为浏览器本身也会限制最大并发量，所以最大并发量与浏览器有关。
-    * config.checkByMD5: 是否开启 MD5 校验，为布尔值；在断点续传时，开启 MD5 校验会将已上传的分片与当前分片进行 MD5 值比对，若不一致，则重传该分片，避免使用错误的分片。读取分片内容并计算 MD5 需要花费一定的时间，因此会稍微增加断点续传时的耗时，默认为 false，不开启。
-    * config.forceDirect: 是否上传全部采用直传方式，为布尔值；为 `true` 时则上传方式全部为直传 form 方式，禁用断点续传，默认 `false`。
-    * config.chunkSize: `number`，分片上传时每片的大小，必须为正整数，单位为 `MB`，且最大不能超过 1024，默认值 4。因为 chunk 数最大 10000，所以如果文件以你所设的 `chunkSize` 进行分片并且 chunk 数超过 10000，我们会把你所设的 `chunkSize` 扩大二倍，如果仍不符合则继续扩大，直到符合条件。
-    * config.debugLogLevel: `INFO` | `WARN` | `ERROR` | `OFF`，允许程序在控制台输出日志，默认为 `OFF`，不输出任何日志，本功能仅仅用于本地调试，不建议在线上环境开启。
+  * config.useCdnDomain: 表示是否使用 cdn 加速域名，为布尔值，`true` 表示使用，默认为 `false`。
+  * config.disableStatisticsReport: 是否禁用日志报告，为布尔值，默认为 `false`。
+  * config.uphost: 上传 `host`，类型为 `string[] | string`，如果指定一个非空数组或者非空字符串，则仅使用该数据作为上传 `host`，默认为 `[]`，传入多个 `host` 时，内部会在重试过程中根据情况自动切换不同的 `host`。
+  * config.upprotocol: 自定义上传域名协议，值为 `https` 或者 `http`，默认为 `https`。
+  * config.region: 选择上传域名区域；当为 `null` 或 `undefined` 时，自动分析上传域名区域，当指定了 `uphost` 时，此设置项无效。
+  * config.retryCount: 上传自动重试次数（整体重试次数，而不是某个分片的重试次数）；默认 3 次（即上传失败后最多重试两次）。
+  * config.concurrentRequestLimit: 分片上传的并发请求量，`number`，默认为3；因为浏览器本身也会限制最大并发量，所以最大并发量与浏览器有关。
+  * config.checkByMD5: 是否开启 MD5 校验，为布尔值；在断点续传时，开启 MD5 校验会将已上传的分片与当前分片进行 MD5 值比对，若不一致，则重传该分片，避免使用错误的分片。读取分片内容并计算 MD5 需要花费一定的时间，因此会稍微增加断点续传时的耗时，默认为 false，不开启。
+  * config.forceDirect: 是否上传全部采用直传方式，为布尔值；为 `true` 时则上传方式全部为直传 form 方式，禁用断点续传，默认 `false`。
+  * config.chunkSize: `number`，分片上传时每片的大小，必须为正整数，单位为 `MB`，且最大不能超过 1024，默认值 4。因为 chunk 数最大 10000，所以如果文件以你所设的 `chunkSize` 进行分片并且 chunk 数超过 10000，我们会把你所设的 `chunkSize` 扩大二倍，如果仍不符合则继续扩大，直到符合条件。
+  * config.debugLogLevel: `INFO` | `WARN` | `ERROR` | `OFF`，允许程序在控制台输出日志，默认为 `OFF`，不输出任何日志，本功能仅仅用于本地调试，不建议在线上环境开启。
 
-  * **putExtra**: `object`，其中的每一项都为可选
+* **putExtra**: `object`，其中的每一项都为可选
 
     ```JavaScript
     const putExtra = {
@@ -214,19 +224,19 @@ qiniu.compressImage(file, options).then(data => {
     };
     ```
 
-    * fname: `string`，文件原始文件名，若未指定，则魔法变量中无法使用 fname、ext、suffix
-    * customVars: `object`，用来放置自定义变量，变量名必须以 `x:` 开始，自定义变量格式及说明请参考[文档](https://developer.qiniu.com/kodo/manual/1235/vars)
-    * metadata: `object`，用来防止自定义 meta，变量名必须以 `x-qn-meta-`开始，自定义资源信息格式及说明请参考
+  * fname: `string`，文件原始文件名，若未指定，则魔法变量中无法使用 fname、ext、suffix
+  * customVars: `object`，用来放置自定义变量，变量名必须以 `x:` 开始，自定义变量格式及说明请参考 [文档](https://developer.qiniu.com/kodo/manual/1235/vars)
+  * metadata: `object`，用来防止自定义 meta，变量名必须以 `x-qn-meta-`开始，自定义资源信息格式及说明请参考
     [文档](https://developer.qiniu.com/kodo/api/1252/chgm)
-    * mimeType: `string`，指定所传的文件类型
+  * mimeType: `string`，指定所传的文件类型
 
 ### qiniu.region: object
 
-  * **qiniu.region.z0**: 代表华东区域
-  * **qiniu.region.z1**: 代表华北区域
-  * **qiniu.region.z2**: 代表华南区域
-  * **qiniu.region.na0**: 代表北美区域
-  * **qiniu.region.as0**: 代表新加坡区域
+* **qiniu.region.z0**: 代表华东区域
+* **qiniu.region.z1**: 代表华北区域
+* **qiniu.region.z2**: 代表华南区域
+* **qiniu.region.na0**: 代表北美区域
+* **qiniu.region.as0**: 代表新加坡区域
 
 ### qiniu.getUploadUrl(config: object, token: string): Promise
 
@@ -239,13 +249,15 @@ qiniu.compressImage(file, options).then(data => {
 ### qiniu.getHeadersForChunkUpload(token: string): object
 
   返回 `object`，包含用来获得分片上传设置的头信息，参数为 `token` 字符串；当分片上传时，请求需要带该函数返回的头信息
-  * **token**: 后端返回的上传验证信息
+
+* **token**: 后端返回的上传验证信息
 
   ```JavaScript
   const headers = qiniu.getHeadersForChunkUpload(token)
   ```
 
 ### qiniu.deleteUploadedChunks(token: string, key: stting, uploadInfo: object): Promise<void>
+
   删除指定上传任务中已上传完成的片，`key` 为目标文件名，`uploadInfo` 可通过 `next` 的返回获取，`token` 由服务端生成
 
 ### qiniu.compressImage(file: File, options: object): Promise<CompressResult> (上传前图片压缩)
@@ -260,24 +272,25 @@ qiniu.compressImage(file, options).then(data => {
     }
   })
   ```
-  * file: 要压缩的源图片，为 `File` 对象，支持 `image/png`、`image/jpeg`、`image/bmp`、`image/webp` 这几种图片类型
-  * options: `object`
-    * options.quality: `number`，图片压缩质量，在图片格式为 `image/jpeg` 或 `image/webp` 的情况下生效，其他格式不会生效，可以从 0 到 1 的区间内选择图片的质量。默认值 0.92
-    * options.maxWidh: `number`，压缩图片的最大宽度值
-    * options.maxHeight: `number`，压缩图片的最大高度值
+
+* file: 要压缩的源图片，为 `File` 对象，支持 `image/png`、`image/jpeg`、`image/bmp`、`image/webp` 这几种图片类型
+* options: `object`
+  * options.quality: `number`，图片压缩质量，在图片格式为 `image/jpeg` 或 `image/webp` 的情况下生效，其他格式不会生效，可以从 0 到 1 的区间内选择图片的质量。默认值 0.92
+  * options.maxWidh: `number`，压缩图片的最大宽度值
+  * options.maxHeight: `number`，压缩图片的最大高度值
     （注意：当 `maxWidth` 和 `maxHeight` 都不设置时，则采用原图尺寸大小）
-    * options.noCompressIfLarger: `boolean`，为 `true` 时如果发现压缩后图片大小比原来还大，则返回源图片（即输出的 dist 直接返回了输入的 file）；默认 `false`，即保证图片尺寸符合要求，但不保证压缩后的图片体积一定变小
-  * CompressResult: `object`，包含如下字段：
-    * dist: 压缩后输出的 Blob 对象或原始的 File 对象
-    * width: 压缩后的图片宽度
-    * height: 压缩后的图片高度
+  * options.noCompressIfLarger: `boolean`，为 `true` 时如果发现压缩后图片大小比原来还大，则返回源图片（即输出的 dist 直接返回了输入的 file）；默认 `false`，即保证图片尺寸符合要求，但不保证压缩后的图片体积一定变小
+* CompressResult: `object`，包含如下字段：
+  * dist: 压缩后输出的 Blob 对象或原始的 File 对象
+  * width: 压缩后的图片宽度
+  * height: 压缩后的图片高度
 
 ### qiniu.watermark(options: object, key?: string, domain?: string): string（水印）
 
   返回添加水印后的图片地址
-  * **key** : 文件资源名
-  * **domain**: 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取，前端可以通过接口请求后端得到
 
+* **key** : 文件资源名
+* **domain**: 为七牛空间（bucket)对应的域名，选择某个空间后，可通过"空间设置->基本设置->域名设置"查看获取，前端可以通过接口请求后端得到
 
   ```JavaScript
 
@@ -285,7 +298,7 @@ qiniu.compressImage(file, options).then(data => {
        mode: 1, // 图片水印
        image: 'http://www.b1.qiniudn.com/images/logo-2.png', // 图片水印的Url，mode = 1 时 **必需**
        dissolve: 50, // 透明度，取值范围1-100，非必需，下同
-       gravity: 'SouthWest', // 水印位置，为以下参数[NorthWest、North、NorthEast、West、Center、East、SouthWest、South、SouthEast]之一
+       gravity: 'SouthWest', // 水印位置，为以下参数 [NorthWest、North、NorthEast、West、Center、East、SouthWest、South、SouthEast] 之一
        dx: 100,  // 横轴边距，单位:像素(px)
        dy: 100 // 纵轴边距，单位:像素(px)
    }, key, domain)
@@ -311,7 +324,7 @@ qiniu.compressImage(file, options).then(data => {
    }, key, domain)
   ```
 
-  options包含的具体水印参数解释见[水印（watermark）](https://developer.qiniu.com/dora/api/image-watermarking-processing-watermark)
+  options包含的具体水印参数解释见 [水印（watermark）](https://developer.qiniu.com/dora/api/image-watermarking-processing-watermark)
 
 ### qiniu.imageView2(options: object, key?: string, domain?: string): string (缩略)
 
@@ -319,15 +332,15 @@ qiniu.compressImage(file, options).then(data => {
 
   ```JavaScript
   const imgLink = qiniu.imageView2({
-     mode: 3,       // 缩略模式，共6种[0-5]
+     mode: 3,       // 缩略模式，共 6 种 [0-5]
      w: 100,        // 具体含义由缩略模式决定
      h: 100,        // 具体含义由缩略模式决定
      q: 100,        // 新图的图像质量，取值范围：1-100
-     format: 'png'  // 新图的输出格式，取值范围：jpg，gif，png，webp等
+     format: 'png'  // 新图的输出格式，取值范围：jpg，gif，png，webp 等
    }, key, domain)
   ```
 
-  options包含的具体缩略参数解释见[图片基本处理（imageView2）](https://developer.qiniu.com/dora/api/basic-processing-images-imageview2)
+  options包含的具体缩略参数解释见 [图片基本处理（imageView2）](https://developer.qiniu.com/dora/api/basic-processing-images-imageview2)
 
 ### qiniu.imageMogr2(options: object, key?: string, domain?: string): string (图像高级处理)
 
@@ -347,7 +360,7 @@ qiniu.compressImage(file, options).then(data => {
    }, key, domain)
   ```
 
-  options包含的具体高级图像处理参数解释见[图像高级处理（imageMogr2）](https://developer.qiniu.com/dora/api/the-advanced-treatment-of-images-imagemogr2)
+  options包含的具体高级图像处理参数解释见 [图像高级处理（imageMogr2）](https://developer.qiniu.com/dora/api/the-advanced-treatment-of-images-imagemogr2)
 
 ### qiniu.imageInfo(key: string, domain: string): Promise
 
@@ -355,7 +368,7 @@ qiniu.compressImage(file, options).then(data => {
   qiniu.imageInfo(key, domain).then(res => {})
   ```
 
-  具体 imageInfo 解释见[图片基本信息（imageInfo）](https://developer.qiniu.com/dora/api/pictures-basic-information-imageinfo)
+  具体 imageInfo 解释见 [图片基本信息（imageInfo）](https://developer.qiniu.com/dora/api/pictures-basic-information-imageinfo)
 
 ### qiniu.exif(key: string, domain: string): Promise
 
@@ -363,7 +376,7 @@ qiniu.compressImage(file, options).then(data => {
   qiniu.exif(key, domain).then(res => {})
   ```
 
-  具体 exif 解释见[图片 EXIF 信息（exif）](https://developer.qiniu.com/dora/api/photo-exif-information-exif)
+  具体 exif 解释见 [图片 EXIF 信息（exif）](https://developer.qiniu.com/dora/api/photo-exif-information-exif)
 
 ### qiniu.pipeline(fopArr: array, key?: string, domain?: string): string
 
@@ -428,7 +441,7 @@ qiniu.compressImage(file, options).then(data => {
   const imgLink = qiniu.pipeline(fopArr, key, domain))
   ```
 
-  fopArr包含的具体管道操作解释见[管道操作](https://developer.qiniu.com/dora/manual/processing-mechanism)
+  fopArr包含的具体管道操作解释见 [管道操作](https://developer.qiniu.com/dora/manual/processing-mechanism)
 
 <a id="demo"></a>
 
@@ -449,8 +462,8 @@ qiniu.compressImage(file, options).then(data => {
      "Domain": "<Your Bucket Domain>" // Bucket 的外链默认域名，在 Bucket 的内容管理里查看，如：'http://xxx.bkt.clouddn.com/'
    }
    ```
-2. 进入项目根目录，执行 `npm install` 安装依赖库，然后打开两个终端，一个执行 `npm run serve` 跑 server， 一个执行 `npm run dev` 运行服务；demo1：`http://0.0.0.0:8080/test/demo1`；demo3：`http://0.0.0.0:8080/test/demo3`；demo1为测试上传功能的示例，demo3为测试图片压缩功能的示例；demo2 为测试 es6 语法的示例，进入 demo2 目录，执行 `npm install`，然后 `npm start` 运行 demo2；demo1、demo2 和 demo3 都共用一个 server，请注意 server 文件里的 `region` 设置跟 `config` 里的` region` 设置要保持一致。
 
+2. 进入项目根目录，执行 `npm install` 安装依赖库，然后打开两个终端，一个执行 `npm run serve` 跑 server， 一个执行 `npm run dev` 运行服务；demo1：`http://0.0.0.0:8080/test/demo1`；demo3：`http://0.0.0.0:8080/test/demo3`；demo1为测试上传功能的示例，demo3为测试图片压缩功能的示例；demo2 为测试 es6 语法的示例，进入 demo2 目录，执行 `npm install`，然后 `npm start` 运行 demo2；demo1、demo2 和 demo3 都共用一个 server，请注意 server 文件里的 `region` 设置跟 `config` 里的`region` 设置要保持一致。
 
 <a id="note"></a>
 
@@ -460,7 +473,7 @@ qiniu.compressImage(file, options).then(data => {
 
 2. 如果您想了解更多七牛的图片处理，建议您仔细阅读 [七牛官方文档-图片处理](https://developer.qiniu.com/dora/api/image-processing-api)
 
-3. JS-SDK 示例生成 `token` 时，指定的 `Bucket Name` 为公开空间，所以可以公开访问上传成功后的资源。若您生成 `token` 时，指定的 `Bucket Name` 为私有空间，那您还需要在服务端进行额外的处理才能访问您上传的资源。具体参见[下载凭证](https://developer.qiniu.com/kodo/manual/download-token)。JS-SDK 数据处理部分功能不适用于私有空间。
+3. JS-SDK 示例生成 `token` 时，指定的 `Bucket Name` 为公开空间，所以可以公开访问上传成功后的资源。若您生成 `token` 时，指定的 `Bucket Name` 为私有空间，那您还需要在服务端进行额外的处理才能访问您上传的资源。具体参见 [下载凭证](https://developer.qiniu.com/kodo/manual/download-token)。JS-SDK 数据处理部分功能不适用于私有空间。
 
 <a id="faq"></a>
 
@@ -477,16 +490,18 @@ qiniu.compressImage(file, options).then(data => {
 这里又分为两种方法：
 
 1. 通过在 `token` 中设定 `mimeLimit` 字段限定上传文件的类型，该设定是在后端 sdk 设置，请查看相应的 sdk 文档，示例
+
  ```JavaScript
 "image/\*": 表示只允许上传图片类型；
 "image/jpeg;image/png": 表示只允许上传 jpg 和 png 类型的图片；
 "!application/json;text/plain": 表示禁止上传 json 文本和纯文本。（注意最前面的感叹号）
 ```
+
 2. 通过 `putExtra` 的 `mimeType` 参数直接在前端限定
 
 ### 贡献代码
 
-1. 登录 https://github.com
+1. 登录 <https://github.com>
 
 2. Fork git@github.com:qiniu/js-sdk.git
 

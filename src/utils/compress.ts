@@ -1,4 +1,5 @@
 import { EXIF } from 'exif-js'
+import { QiniuErrorName, QiniuError } from '../errors'
 
 import { createObjectURL, getTransform } from './helper'
 
@@ -53,7 +54,10 @@ class Compress {
     this.outputType = this.file.type
     const srcDimension: Dimension = {}
     if (!isSupportedType(this.file.type)) {
-      throw new Error(`unsupported file type: ${this.file.type}`)
+      throw new QiniuError(
+        QiniuErrorName.UnsupportedFileType,
+        `unsupported file type: ${this.file.type}`
+      )
     }
 
     const originImage = await this.getOriginImage()
@@ -118,12 +122,16 @@ class Compress {
         const { width, height, matrix } = getTransform(img, orientation)
         const canvas = document.createElement('canvas')
         const context = canvas.getContext('2d')
-        canvas.width = width
-        canvas.height = height
         if (!context) {
-          reject(new Error('context is null'))
+          reject(new QiniuError(
+            QiniuErrorName.GetCanvasContextFailed,
+            'context is null'
+          ))
           return
         }
+
+        canvas.width = width
+        canvas.height = height
 
         this.clear(context, width, height)
         context.transform(...matrix)
@@ -152,7 +160,10 @@ class Compress {
     mirror.width = width
     mirror.height = height
     if (!mctx || !sctx) {
-      throw new Error("mctx or sctx can't be null")
+      throw new QiniuError(
+        QiniuErrorName.GetCanvasContextFailed,
+        "mctx or sctx can't be null"
+      )
     }
 
     let src!: CanvasImageSource

@@ -3,6 +3,7 @@ var TerserPlugin = require('terser-webpack-plugin');
 var merge = require("webpack-merge");
 var common = require("./webpack.common.js");
 var path = require("path");
+
 module.exports = merge(common, {
   mode: "production",
   devtool: "source-map",

@@ -1,31 +1,33 @@
 import Resume from './resume'
 import Direct from './direct'
 import Logger from '../logger'
+import { QiniuError } from '../errors'
 import { UploadCompleteData } from '../api'
-import { CustomError, Observable, IObserver, MB } from '../utils'
-
-import { Config, Extra, UploadHandler, UploadOptions, UploadProgress } from './base'
+import { Observable, IObserver, MB, normalizeUploadConfig } from '../utils'
+import { Extra, UploadOptions, UploadHandlers, UploadProgress, InternalConfig } from './base'
+import { HostPool } from './hosts'
 
 export * from './base'
 export * from './resume'
 
 export function createUploadManager(
   options: UploadOptions,
-  handlers: UploadHandler,
+  handlers: UploadHandlers,
+  hostPool: HostPool,
   logger: Logger
 ) {
   if (options.config && options.config.forceDirect) {
     logger.info('ues forceDirect mode.')
-    return new Direct(options, handlers, logger)
+    return new Direct(options, handlers, hostPool, logger)
   }
 
   if (options.file.size > 4 * MB) {
     logger.info('file size over 4M, use Resume.')
-    return new Resume(options, handlers, logger)
+    return new Resume(options, handlers, hostPool, logger)
   }
 
   logger.info('file size less or equal than 4M, use Direct.')
-  return new Direct(options, handlers, logger)
+  return new Direct(options, handlers, hostPool, logger)
 }
 
 /**
@@ -41,24 +43,29 @@ export default function upload(
   key: string | null | undefined,
   token: string,
   putExtra?: Partial<Extra>,
-  config?: Partial<Config>
-): Observable<UploadProgress, CustomError, UploadCompleteData> {
+  config?: Partial<InternalConfig>
+): Observable<UploadProgress, QiniuError, UploadCompleteData> {
+
+  // 为每个任务创建单独的 Logger
+  const logger = new Logger(token, config?.disableStatisticsReport, config?.debugLogLevel, file.name)
+
   const options: UploadOptions = {
     file,
     key,
     token,
     putExtra,
-    config
+    config: normalizeUploadConfig(config, logger)
   }
 
-  // 为每个任务创建单独的 Logger
-  const logger = new Logger(token, config?.disableStatisticsReport, config?.debugLogLevel)
-  return new Observable((observer: IObserver<UploadProgress, CustomError, UploadCompleteData>) => {
+  // 创建 host 池
+  const hostPool = new HostPool(options.config.uphost)
+
+  return new Observable((observer: IObserver<UploadProgress, QiniuError, UploadCompleteData>) => {
     const manager = createUploadManager(options, {
       onData: (data: UploadProgress) => observer.next(data),
-      onError: (err: CustomError) => observer.error(err),
+      onError: (err: QiniuError) => observer.error(err),
       onComplete: (res: any) => observer.complete(res)
-    }, logger)
+    }, hostPool, logger)
     manager.putFile()
     return manager.stop.bind(manager)
   })
