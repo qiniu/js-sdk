@@ -42,8 +42,6 @@ function isPositiveInteger(n: number) {
 
 export default class Resume extends Base {
   private chunks: Blob[]
-  /** 使用的缓存分片索引 */
-  private usedCaches: number[] = []
   /** 当前上传过程中已完成的上传信息 */
   private uploadedList: UploadedChunkStorage[]
   /** 当前上传片进度信息 */
