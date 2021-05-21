@@ -184,7 +184,7 @@ qiniu.compressImage(file, options).then(data => {
           * message: `string` 错误的信息。
           * stack: `string` 调用堆栈信息。
         * `QiniuRequestError` 继承自 `QiniuError`
-          * data: `any` 服务端返回的错误信息，如果不是一个标准的 `json` 格式，则该字段为 `undefined`。
+          * data: `any` 服务端返回的错误信息，如果不是标准的 `json` 格式，则该字段为 `undefined`。
           * reqId: `string` xhr 请求错误的 `X-Reqid`。
           * code: `number` 请求错误状态码，可查阅码值对应 [说明](https://developer.qiniu.com/kodo/api/3928/error-responses)。
           * isRequestError: 固定为 `true`，*不推荐使用，即将废弃*。
