@@ -234,7 +234,15 @@ export function request<T>(url: string, options: RequestOptions): Response<T> {
         if (responseText) {
           message += ` response: ${responseText}`
         }
-        reject(new QiniuRequestError(xhr.status, reqId, message))
+
+        let data
+        try {
+          data = JSON.parse(responseText)
+        } catch {
+          // 无需处理该错误、可能拿到非 json 格式的响应是预期的
+        }
+
+        reject(new QiniuRequestError(xhr.status, reqId, message, data))
         return
       }
 

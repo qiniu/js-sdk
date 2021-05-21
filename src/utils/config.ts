@@ -2,7 +2,7 @@ import Logger from '../logger'
 import { regionUphostMap } from '../config'
 import { Config, DEFAULT_CHUNK_SIZE, InternalConfig } from '../upload'
 
-export function normalizeUploadConfig(config?: Partial<Config>, logger?: Logger,): InternalConfig {
+export function normalizeUploadConfig(config?: Partial<Config>, logger?: Logger): InternalConfig {
   const { upprotocol, uphost, ...otherConfig } = { ...config }
 
   const normalizeConfig: InternalConfig = {

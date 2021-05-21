@@ -51,6 +51,7 @@ describe('test upload', () => {
       localStorage.clear()
       mockApi.clearInterceptor()
       mockApi.setInterceptor('direct', () => Promise.reject(error))
+      // eslint-disable-next-line no-await-in-loop
       await expect(observablePromisify(upload(File3M, null, testToken)))
         .rejects.toStrictEqual(error)
     }
@@ -73,6 +74,7 @@ describe('test upload', () => {
         localStorage.clear()
         mockApi.clearInterceptor()
         mockApi.setInterceptor(apiName, (..._: any[]) => Promise.reject(error))
+        // eslint-disable-next-line no-await-in-loop
         await expect(observablePromisify(upload(File5M, null, testToken)))
           .rejects.toStrictEqual(error)
       }

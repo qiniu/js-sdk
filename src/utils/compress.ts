@@ -1,4 +1,5 @@
 import { EXIF } from 'exif-js'
+
 import { QiniuErrorName, QiniuError } from '../errors'
 
 import { createObjectURL, getTransform } from './helper'

@@ -3,16 +3,14 @@ import { ChunkInfo } from '../upload'
 import { Pool } from './pool'
 
 const m = jest.fn()
-const task = (): Promise<void> => {
-  return new Promise((resolve, _) => {
-    m()
-    resolve()
-  })
-}
+const task = (): Promise<void> => new Promise((resolve, _) => {
+  m()
+  resolve()
+})
 
-describe("test Pool for control concurrency", () => {
-  var pool = new Pool<ChunkInfo>(task, 2)
-  test("pool.js", () => {
+describe('test Pool for control concurrency', () => {
+  const pool = new Pool<ChunkInfo>(task, 2)
+  test('pool.js', async () => {
     const chunk = new Blob()
     const data = [
       { chunk, index: 0 },
@@ -22,11 +20,11 @@ describe("test Pool for control concurrency", () => {
       { chunk, index: 4 },
       { chunk, index: 5 }
     ]
-    return Promise.all(data.map(value => {
-      pool.enqueue(value)
+
+    for (const item of data) {
+      // eslint-disable-next-line no-await-in-loop
+      await pool.enqueue(item)
       expect(pool.processing.length).toBeLessThanOrEqual(2)
-    })).then(() => {
-      expect(m.mock.calls.length).toBe(6)
-    })
+    }
   })
 })

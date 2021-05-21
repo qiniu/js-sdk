@@ -60,7 +60,11 @@ export default function upload(
   // 创建 host 池
   const hostPool = new HostPool(options.config.uphost)
 
-  return new Observable((observer: IObserver<UploadProgress, QiniuError | QiniuRequestError | QiniuNetworkError, UploadCompleteData>) => {
+  return new Observable((observer: IObserver<
+    UploadProgress,
+    QiniuError | QiniuRequestError | QiniuNetworkError,
+    UploadCompleteData
+  >) => {
     const manager = createUploadManager(options, {
       onData: (data: UploadProgress) => observer.next(data),
       onError: (err: QiniuError) => observer.error(err),

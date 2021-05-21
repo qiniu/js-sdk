@@ -6,6 +6,9 @@ import Base, { Progress, UploadInfo, Extra } from './base'
 
 export interface UploadedChunkStorage extends UploadChunkData {
   size: number
+
+  // 标记该 chunk 是否来自缓存
+  isLocalCache?: true
 }
 
 export interface ChunkLoaded {
@@ -208,6 +211,12 @@ export default class Resume extends Base {
 
       this.logger.info(infoMessage.join(', '))
       this.uploadedList = localInfo.data
+      if (Array.isArray(this.uploadedList)) {
+        this.uploadedList.forEach(chunk => {
+          chunk.isLocalCache = true
+        })
+      }
+
       this.uploadId = localInfo.id
     }
 
