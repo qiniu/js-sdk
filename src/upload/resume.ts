@@ -83,7 +83,7 @@ export default class Resume extends Base {
       await Promise.all(uploadChunks)
       mkFileResponse = await this.mkFileReq()
     } catch (error) {
-      // uploadId 无效，上传参数有误（多由于本地存储信息的 uploadId 失效
+      // uploadId 无效，上传参数有误（多由于本地存储信息的 uploadId 失效）
       if (error instanceof QiniuRequestError && (error.code === 612 || error.code === 400)) {
         utils.removeLocalFileInfo(localKey, this.logger)
       }
@@ -119,6 +119,11 @@ export default class Resume extends Base {
     if (info && md5 === info.md5) {
       reuseSaved()
       return
+    }
+
+    // 有缓存但是没有使用则调整标记
+    if (info) {
+      info.fromCache = false
     }
 
     const onProgress = (data: Progress) => {
