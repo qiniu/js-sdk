@@ -91,7 +91,7 @@ export interface ProgressCompose {
   size: number
   loaded: number
   percent: number
-  isCache?: boolean
+  fromCache?: boolean
 }
 
 export type XHRHandler = (xhr: XMLHttpRequest) => void
@@ -326,11 +326,11 @@ export default abstract class Base {
     })
   }
 
-  public getProgressInfoItem(loaded: number, size: number, isCache?: boolean): ProgressCompose {
+  public getProgressInfoItem(loaded: number, size: number, fromCache?: boolean): ProgressCompose {
     return {
       size,
       loaded,
-      isCache,
+      fromCache,
       percent: loaded / size * 100
     }
   }

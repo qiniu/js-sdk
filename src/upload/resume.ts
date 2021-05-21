@@ -6,6 +6,8 @@ import Base, { Progress, UploadInfo, Extra } from './base'
 
 export interface UploadedChunkStorage extends UploadChunkData {
   size: number
+
+  fromCache?: boolean
 }
 
 export interface ChunkLoaded {
@@ -103,7 +105,7 @@ export default class Resume extends Base {
 
     const shouldCheckMD5 = this.config.checkByMD5
     const reuseSaved = () => {
-      this.usedCaches.push(index)
+      info.fromCache = true
       this.updateChunkProgress(chunk.size, index)
     }
 
@@ -248,11 +250,13 @@ export default class Resume extends Base {
     this.progress = {
       total: this.getProgressInfoItem(
         utils.sum(this.loaded.chunks) + this.loaded.mkFileProgress,
+        // FIXME: 不准确的 fileSize
         this.file.size + 1 // 防止在 complete 未调用的时候进度显示 100%
       ),
       chunks: this.chunks.map((chunk, index) => {
-        const isCache = this.usedCaches.includes(index)
-        return this.getProgressInfoItem(this.loaded.chunks[index], chunk.size, isCache)
+        const info = this.uploadedList[index]
+        const fromCache = info && info.fromCache
+        return this.getProgressInfoItem(this.loaded.chunks[index], chunk.size, fromCache)
       }),
       uploadInfo: {
         id: this.uploadId,

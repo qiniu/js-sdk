@@ -45,9 +45,9 @@ export class QiniuRequestError extends QiniuError {
   /**
    * @description 发生错误时服务端返回的错误信息，如果返回不是一个合法的 json、则该字段为 undefined
    */
-  public data?: { [key: string]: any }
+  public data?: any
 
-  constructor(public code: number, public reqId: string, message: string, data?: { [key: string]: any }) {
+  constructor(public code: number, public reqId: string, message: string, data?: any) {
     super(QiniuErrorName.RequestError, message)
     this.data = data
   }
