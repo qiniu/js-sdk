@@ -1,16 +1,24 @@
 language: node_js
+
 node_js:
-- '12'
+  - "12"
+
 cache:
   directories:
-  - node_modules
+    - node_modules
+
 install:
-- npm install
+  - npm install
+
 script:
-- npm run build
-- jest --coverage
-- npx codecov
-before_deploy: npm run build
+  - npm run lint
+  - npm run test
+  - npx codecov
+  - npm run build
+
+before_deploy:
+  - npm run build
+
 deploy:
   provider: npm
   email: sdk@qiniu.com

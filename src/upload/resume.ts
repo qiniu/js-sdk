@@ -6,6 +6,8 @@ import Base, { Progress, UploadInfo, Extra } from './base'
 
 export interface UploadedChunkStorage extends UploadChunkData {
   size: number
+
+  fromCache?: boolean
 }
 
 export interface ChunkLoaded {
@@ -81,7 +83,7 @@ export default class Resume extends Base {
       await Promise.all(uploadChunks)
       mkFileResponse = await this.mkFileReq()
     } catch (error) {
-      // uploadId 无效，上传参数有误（多由于本地存储信息的 uploadId 失效
+      // uploadId 无效，上传参数有误（多由于本地存储信息的 uploadId 失效）
       if (error instanceof QiniuRequestError && (error.code === 612 || error.code === 400)) {
         utils.removeLocalFileInfo(localKey, this.logger)
       }
@@ -101,9 +103,11 @@ export default class Resume extends Base {
 
     const shouldCheckMD5 = this.config.checkByMD5
     const reuseSaved = () => {
+      info.fromCache = true
       this.updateChunkProgress(chunk.size, index)
     }
 
+    // FIXME: 至少判断一下 size
     if (info && !shouldCheckMD5) {
       reuseSaved()
       return
@@ -115,6 +119,11 @@ export default class Resume extends Base {
     if (info && md5 === info.md5) {
       reuseSaved()
       return
+    }
+
+    // 有缓存但是没有使用则调整标记
+    if (info) {
+      info.fromCache = false
     }
 
     const onProgress = (data: Progress) => {
@@ -244,11 +253,14 @@ export default class Resume extends Base {
     this.progress = {
       total: this.getProgressInfoItem(
         utils.sum(this.loaded.chunks) + this.loaded.mkFileProgress,
+        // FIXME: 不准确的 fileSize
         this.file.size + 1 // 防止在 complete 未调用的时候进度显示 100%
       ),
-      chunks: this.chunks.map((chunk, index) => (
-        this.getProgressInfoItem(this.loaded.chunks[index], chunk.size)
-      )),
+      chunks: this.chunks.map((chunk, index) => {
+        const info = this.uploadedList[index]
+        const fromCache = info && info.fromCache
+        return this.getProgressInfoItem(this.loaded.chunks[index], chunk.size, fromCache)
+      }),
       uploadInfo: {
         id: this.uploadId,
         url: this.uploadHost!.getUrl()

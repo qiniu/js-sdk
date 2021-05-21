@@ -23,7 +23,7 @@ jest.mock('../utils', () => ({
 
 describe('api function test', () => {
   test('getUploadUrl', async () => {
-    let config: Config = {
+    const config: Config = {
       useCdnDomain: true,
       disableStatisticsReport: false,
       retryCount: 3,

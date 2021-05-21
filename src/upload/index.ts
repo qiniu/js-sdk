@@ -1,9 +1,9 @@
 import Resume from './resume'
 import Direct from './direct'
 import Logger from '../logger'
-import { QiniuError, QiniuNetworkError, QiniuRequestError } from '../errors'
 import { UploadCompleteData } from '../api'
 import { Observable, IObserver, MB, normalizeUploadConfig } from '../utils'
+import { QiniuError, QiniuNetworkError, QiniuRequestError } from '../errors'
 import { Extra, UploadOptions, UploadHandlers, UploadProgress, Config } from './base'
 import { HostPool } from './hosts'
 
@@ -60,7 +60,11 @@ export default function upload(
   // 创建 host 池
   const hostPool = new HostPool(options.config.uphost)
 
-  return new Observable((observer: IObserver<UploadProgress, QiniuError | QiniuRequestError | QiniuNetworkError, UploadCompleteData>) => {
+  return new Observable((observer: IObserver<
+    UploadProgress,
+    QiniuError | QiniuRequestError | QiniuNetworkError,
+    UploadCompleteData
+  >) => {
     const manager = createUploadManager(options, {
       onData: (data: UploadProgress) => observer.next(data),
       onError: (err: QiniuError) => observer.error(err),

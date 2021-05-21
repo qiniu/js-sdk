@@ -41,15 +41,15 @@ describe('test logger', () => {
   test('level', () => {
     const infoLogger = new Logger('', true, 'INFO')
     infoLogger.info('test1')
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(logMessage).toStrictEqual([infoLogger.getPrintPrefix('INFO'), 'test1'])
     infoLogger.warn('test2')
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(warnMessage).toStrictEqual([infoLogger.getPrintPrefix('WARN'), 'test2'])
     infoLogger.error('test3')
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(errorMessage).toStrictEqual([infoLogger.getPrintPrefix('ERROR'), 'test3'])
 
@@ -62,11 +62,11 @@ describe('test logger', () => {
     warnLogger.info('test1')
     expect(logMessage).toStrictEqual([])
     warnLogger.warn('test2')
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(warnMessage).toStrictEqual([warnLogger.getPrintPrefix('WARN'), 'test2'])
     warnLogger.error('test3')
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(errorMessage).toStrictEqual([warnLogger.getPrintPrefix('ERROR'), 'test3'])
 
@@ -81,7 +81,7 @@ describe('test logger', () => {
     errorLogger.warn('test2')
     expect(warnMessage).toStrictEqual([])
     errorLogger.error('test3')
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(errorMessage).toStrictEqual([errorLogger.getPrintPrefix('ERROR'), 'test3'])
 
@@ -100,7 +100,7 @@ describe('test logger', () => {
   })
 
   test('unique id', () => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     const startId = Logger.id
     // eslint-disable-next-line no-new
@@ -108,7 +108,7 @@ describe('test logger', () => {
     // eslint-disable-next-line no-new
     new Logger('', true, 'OFF')
     const last = new Logger('', true, 'OFF')
-    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     expect(last.id).toStrictEqual(startId + 3)
   })

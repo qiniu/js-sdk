@@ -15,6 +15,7 @@ describe('api function test', () => {
 
     for (const [input, expected] of testData) {
       const testBlob = new Blob([input], { type: 'text/plain;charset=utf-8' })
+      // eslint-disable-next-line no-await-in-loop
       const actual = await computeMd5(testBlob)
       expect(actual).toStrictEqual(expected)
     }

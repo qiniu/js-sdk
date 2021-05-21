@@ -118,8 +118,8 @@ export class HostPool {
 
     // 无可用的，去取离解冻最近的 host
     const priorityQueue = cachedHostList
-      .slice().sort((hostA, hostB) => (
-        hostA.getUnfreezeTime() || 0) - (hostB.getUnfreezeTime() || 0)
+      .slice().sort(
+        (hostA, hostB) => (hostA.getUnfreezeTime() || 0) - (hostB.getUnfreezeTime() || 0)
       )
 
     return priorityQueue[0]

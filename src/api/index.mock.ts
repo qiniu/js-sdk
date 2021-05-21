@@ -12,7 +12,7 @@ export const errorMap = {
   serviceTimeout: new QiniuRequestError(504, 'mock', 'message'), // 服务超时
   serviceError: new QiniuRequestError(599, 'mock', 'message'), // 服务错误
 
-  invalidUploadId: new QiniuRequestError(612, 'mock', 'message'), // 无效的 upload id
+  invalidUploadId: new QiniuRequestError(612, 'mock', 'message') // 无效的 upload id
 }
 
 export type ApiName =

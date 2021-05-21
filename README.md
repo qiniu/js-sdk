@@ -167,7 +167,13 @@ qiniu.compressImage(file, options).then(data => {
         * uploadInfo: `object`，只有分片上传时才返回该字段
           * uploadInfo.id: 上传任务的唯一标识。
           * uploadInfo.url: 上传地址。
-        * total: 包含`loaded`、`total`、`percent`三个属性:
+        * chunks: `Array<ProgressCompose>` 每个 `chunk` 的上传信息，只有分片上传有此字段
+          * ProgressCompose 的信息如下
+            * size: `number` chunk 的尺寸
+            * loaded: `number` 已经发送完毕的尺寸
+            * percent: `number` 进度比例，范围在 0 - 100
+            * fromCache?: `boolean` 是否是来自缓存
+        * total: 包含 `loaded`、`total`、`percent` 三个属性:
           * total.loaded: `number`，已上传大小，单位为字节。
           * total.total: `number`，本次上传的总量控制信息，单位为字节，注意这里的 total 跟文件大小并不一致。
           * total.percent: `number`，当前上传进度，范围：0～100。
@@ -178,6 +184,7 @@ qiniu.compressImage(file, options).then(data => {
           * message: `string` 错误的信息。
           * stack: `string` 调用堆栈信息。
         * `QiniuRequestError` 继承自 `QiniuError`
+          * data: `any` 服务端返回的错误信息，如果不是标准的 `json` 格式，则该字段为 `undefined`。
           * reqId: `string` xhr 请求错误的 `X-Reqid`。
           * code: `number` 请求错误状态码，可查阅码值对应 [说明](https://developer.qiniu.com/kodo/api/3928/error-responses)。
           * isRequestError: 固定为 `true`，*不推荐使用，即将废弃*。
