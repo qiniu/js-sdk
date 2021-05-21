@@ -9,7 +9,7 @@ export enum Status {
   Finished // 已完成
 }
 
-// 面向 hooks 的上传逻辑封装
+// 上传逻辑封装
 export function useUpload(file: File) {
   const [state, setState] = React.useState<Status>()
   const [error, setError] = React.useState<Error>()
@@ -22,7 +22,7 @@ export function useUpload(file: File) {
   const [subscribe, setSubscribe] = React.useState<ReturnType<ReturnType<typeof upload>['subscribe']>>()
 
   // 开始上传文件
-  const startUpload = React.useCallback(() => {
+  const start = React.useCallback(() => {
     setStartTime(Date.now())
     setCompleteInfo(null)
     setError(null)
@@ -35,7 +35,7 @@ export function useUpload(file: File) {
   }, [observable])
 
   // 停止上传文件
-  const stopUpload = React.useCallback(() => {
+  const stop = React.useCallback(() => {
     if (state === Status.Processing && subscribe && !subscribe.closed) {
       setState(Status.Finished)
       subscribe.unsubscribe()
@@ -52,10 +52,15 @@ export function useUpload(file: File) {
   // 获取 token
   React.useEffect(() => {
     const setting = loadSetting()
+    if (setting == null || !setting.assessKey || !setting.secretKey || !setting.bucketName) {
+      setError(new Error('请点开设置并输入必要的配置信息'))
+      return
+    }
+
     fetch(`/api/token?setting=${decodeURIComponent(JSON.stringify(setting))}`)
       .then(_response => _response.text())
       .then(_token => setToken(_token))
-      .catch(_error => setError(new Error(`get token failed: ${_error.message || _error.name}`)))
+      .catch(_error => setError(new Error(`获取 Token 失败: ${_error.message || _error.name}`)))
   }, [file])
 
   // 创建上传任务
@@ -87,5 +92,5 @@ export function useUpload(file: File) {
     }
   }, [speed, speedPeak])
 
-  return { startUpload, stopUpload, state, progress, error, completeInfo, speed, speedPeak }
+  return { start, stop, state, progress, error, completeInfo, speed, speedPeak }
 }

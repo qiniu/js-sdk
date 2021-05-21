@@ -1,6 +1,5 @@
 import * as React from 'react'
 import byteSize from 'byte-size'
-import { upload } from 'qiniu-js'
 import { UploadProgress } from 'qiniu-js/esm/upload'
 
 import startIcon from './assets/start.svg'
@@ -14,8 +13,8 @@ interface IProps {
 
 export function Item(props: IProps) {
   const {
+    stop, start,
     speed, speedPeak,
-    stopUpload, startUpload,
     state, error, progress, completeInfo,
   } = useUpload(props.file)
 
@@ -28,7 +27,7 @@ export function Item(props: IProps) {
             {[Status.Processing].includes(state) && (
               <img
                 className={classnames.img}
-                onClick={() => stopUpload()}
+                onClick={() => stop()}
                 src={stopIcon}
                 height="14"
                 width="14"
@@ -36,7 +35,7 @@ export function Item(props: IProps) {
             )}
             {[Status.Readied, Status.Finished].includes(state) && (
               <img
-                onClick={() => startUpload()}
+                onClick={() => start()}
                 className={classnames.img}
                 src={startIcon}
                 height="14"
