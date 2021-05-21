@@ -4,15 +4,15 @@ import * as api from '.'
 export const errorMap = {
   networkError: new QiniuNetworkError('mock', 'message'), // 网络错误
 
-  invalidParams: new QiniuRequestError(400, 'mock', 'message', {}), // 无效的参数
-  expiredToken: new QiniuRequestError(401, 'mock', 'message', {}), // token 过期
+  invalidParams: new QiniuRequestError(400, 'mock', 'message'), // 无效的参数
+  expiredToken: new QiniuRequestError(401, 'mock', 'message'), // token 过期
 
-  gatewayUnavailable: new QiniuRequestError(502, 'mock', 'message', {}), // 网关不可用
-  serviceUnavailable: new QiniuRequestError(503, 'mock', 'message', {}), // 服务不可用
-  serviceTimeout: new QiniuRequestError(504, 'mock', 'message', {}), // 服务超时
-  serviceError: new QiniuRequestError(599, 'mock', 'message', {}), // 服务错误
+  gatewayUnavailable: new QiniuRequestError(502, 'mock', 'message'), // 网关不可用
+  serviceUnavailable: new QiniuRequestError(503, 'mock', 'message'), // 服务不可用
+  serviceTimeout: new QiniuRequestError(504, 'mock', 'message'), // 服务超时
+  serviceError: new QiniuRequestError(599, 'mock', 'message'), // 服务错误
 
-  invalidUploadId: new QiniuRequestError(612, 'mock', 'message', {}) // 无效的 upload id
+  invalidUploadId: new QiniuRequestError(612, 'mock', 'message') // 无效的 upload id
 }
 
 export type ApiName =

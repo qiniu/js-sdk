@@ -8,7 +8,7 @@ export interface UploadedChunkStorage extends UploadChunkData {
   size: number
 
   // 标记该 chunk 是否来自缓存
-  isLocalCached?: true
+  isLocalCache?: boolean
 }
 
 export interface ChunkLoaded {
@@ -107,6 +107,7 @@ export default class Resume extends Base {
       this.updateChunkProgress(chunk.size, index)
     }
 
+    // FIXME: 至少比对一下 size 吧
     if (info && !shouldCheckMD5) {
       reuseSaved()
       return
@@ -213,7 +214,7 @@ export default class Resume extends Base {
       this.uploadedList = localInfo.data
       if (Array.isArray(this.uploadedList)) {
         this.uploadedList.forEach(chunk => {
-          chunk.isLocalCached = true
+          chunk.isLocalCache = true
         })
       }
 

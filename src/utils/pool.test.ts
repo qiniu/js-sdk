@@ -21,10 +21,11 @@ describe('test Pool for control concurrency', () => {
       { chunk, index: 5 }
     ]
 
-    for (const item of data) {
-      // eslint-disable-next-line no-await-in-loop
-      await pool.enqueue(item)
+    return Promise.all(data.map(async value => {
+      await pool.enqueue(value)
       expect(pool.processing.length).toBeLessThanOrEqual(2)
-    }
+    })).then(() => {
+      expect(m.mock.calls.length).toBe(6)
+    })
   })
 })

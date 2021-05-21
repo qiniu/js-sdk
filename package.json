@@ -8,11 +8,11 @@
   "types": "esm/index.d.ts",
   "module": "esm/index.js",
   "scripts": {
+    "test": "jest --coverage",
     "clean": "del \"./(lib|dist|esm)\"",
-    "test": "jest --coverage && npx codecov",
     "build": "npm run clean && tsc && babel esm --out-dir lib && webpack --optimize-minimize --config webpack.prod.js",
-    "dev": "npm run lint && webpack-dev-server --open --config webpack.dev.js",
-    "lint": "eslint --ext .ts src/",
+    "dev": "webpack-dev-server --open --config webpack.dev.js",
+    "lint": "tsc --noEmit && eslint --ext .ts src/",
     "server": "node test/server.js"
   },
   "repository": {

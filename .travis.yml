@@ -13,6 +13,7 @@ install:
 script:
   - npm run lint
   - npm run test
+  - npx codecov
   - npm run build
 
 before_deploy:

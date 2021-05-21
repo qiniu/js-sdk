@@ -43,11 +43,11 @@ export class QiniuRequestError extends QiniuError {
   public isRequestError = true
 
   /**
- * @description 发生错误时服务端返回的错误信息，如果返回不是一个合法的 json、则该字段为 undefined
- */
-  public data: any = undefined
+   * @description 发生错误时服务端返回的错误信息，如果返回不是一个合法的 json、则该字段为 undefined
+   */
+  public data?: { [key: string]: any }
 
-  constructor(public code: number, public reqId: string, message: string, data: any) {
+  constructor(public code: number, public reqId: string, message: string, data?: { [key: string]: any }) {
     super(QiniuErrorName.RequestError, message)
     this.data = data
   }
@@ -58,6 +58,6 @@ export class QiniuRequestError extends QiniuError {
  */
 export class QiniuNetworkError extends QiniuRequestError {
   constructor(reqId = '', message: string) {
-    super(0, reqId, message, undefined)
+    super(0, reqId, message)
   }
 }
