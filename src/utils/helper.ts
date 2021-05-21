@@ -225,7 +225,7 @@ export function request<T>(url: string, options: RequestOptions): Response<T> {
 
       if (xhr.status === 0) {
         // 发生 0 基本都是网络错误，常见的比如跨域、断网、host 解析失败、系统拦截等等
-        reject(new QiniuNetworkError(reqId, 'network error.'))
+        reject(new QiniuNetworkError('network error.', reqId))
         return
       }
 

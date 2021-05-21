@@ -43,7 +43,7 @@ export default function upload(
   key: string | null | undefined,
   token: string,
   putExtra?: Partial<Extra>,
-  config?: Partial<Config>
+  config?: Config
 ): Observable<UploadProgress, QiniuError | QiniuRequestError | QiniuNetworkError, UploadCompleteData> {
 
   // 为每个任务创建单独的 Logger

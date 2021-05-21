@@ -49,11 +49,11 @@ export interface InternalConfig {
 }
 
 /** 上传任务的配置信息 */
-export interface Config extends Omit<InternalConfig, 'upprotocol' | 'uphost'> {
+export interface Config extends Partial<Omit<InternalConfig, 'upprotocol' | 'uphost'>> {
   /** 上传域名协议 */
-  upprotocol: InternalConfig['upprotocol'] | 'https:' | 'http:'
+  upprotocol?: InternalConfig['upprotocol'] | 'https:' | 'http:'
   /** 自定义上传域名 */
-  uphost: InternalConfig['uphost'] | string
+  uphost?: InternalConfig['uphost'] | string
 }
 
 export interface UploadOptions {
