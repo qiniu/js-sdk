@@ -167,7 +167,13 @@ qiniu.compressImage(file, options).then(data => {
         * uploadInfo: `object`，只有分片上传时才返回该字段
           * uploadInfo.id: 上传任务的唯一标识。
           * uploadInfo.url: 上传地址。
-        * total: 包含`loaded`、`total`、`percent`三个属性:
+        * chunks: `Array<ProgressCompose>` 每个 `chunk` 的上传信息，只有分片上传有此字段
+          * ProgressCompose 的信息如下
+            * size: `number` chunk 的尺寸
+            * loaded: `number` 已经发送完毕的尺寸
+            * percent: `number` 进度比例，范围在 0 - 1
+            * isCache?: `boolean` 是否使用的缓存
+        * total: 包含 `loaded`、`total`、`percent` 三个属性:
           * total.loaded: `number`，已上传大小，单位为字节。
           * total.total: `number`，本次上传的总量控制信息，单位为字节，注意这里的 total 跟文件大小并不一致。
           * total.percent: `number`，当前上传进度，范围：0～100。

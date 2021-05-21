@@ -83,14 +83,15 @@ export interface UploadHandlers {
 }
 
 export interface Progress {
-  loaded: number
   total: number
+  loaded: number
 }
 
 export interface ProgressCompose {
-  loaded: number
   size: number
+  loaded: number
   percent: number
+  isCache?: boolean
 }
 
 export type XHRHandler = (xhr: XMLHttpRequest) => void
@@ -325,10 +326,11 @@ export default abstract class Base {
     })
   }
 
-  public getProgressInfoItem(loaded: number, size: number) {
+  public getProgressInfoItem(loaded: number, size: number, isCache?: boolean): ProgressCompose {
     return {
-      loaded,
       size,
+      loaded,
+      isCache,
       percent: loaded / size * 100
     }
   }

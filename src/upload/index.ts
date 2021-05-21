@@ -1,9 +1,9 @@
 import Resume from './resume'
 import Direct from './direct'
 import Logger from '../logger'
-import { QiniuError, QiniuNetworkError, QiniuRequestError } from '../errors'
 import { UploadCompleteData } from '../api'
 import { Observable, IObserver, MB, normalizeUploadConfig } from '../utils'
+import { QiniuError, QiniuNetworkError, QiniuRequestError } from '../errors'
 import { Extra, UploadOptions, UploadHandlers, UploadProgress, Config } from './base'
 import { HostPool } from './hosts'
 
@@ -43,7 +43,7 @@ export default function upload(
   key: string | null | undefined,
   token: string,
   putExtra?: Partial<Extra>,
-  config?: Config
+  config?: Partial<Config>
 ): Observable<UploadProgress, QiniuError | QiniuRequestError | QiniuNetworkError, UploadCompleteData> {
 
   // 为每个任务创建单独的 Logger

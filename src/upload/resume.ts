@@ -6,9 +6,6 @@ import Base, { Progress, UploadInfo, Extra } from './base'
 
 export interface UploadedChunkStorage extends UploadChunkData {
   size: number
-
-  // 标记该 chunk 是否来自缓存
-  isLocalCache?: boolean
 }
 
 export interface ChunkLoaded {
@@ -43,6 +40,8 @@ function isPositiveInteger(n: number) {
 
 export default class Resume extends Base {
   private chunks: Blob[]
+  /** 使用的缓存分片索引 */
+  private usedCaches: number[] = []
   /** 当前上传过程中已完成的上传信息 */
   private uploadedList: UploadedChunkStorage[]
   /** 当前上传片进度信息 */
@@ -104,10 +103,11 @@ export default class Resume extends Base {
 
     const shouldCheckMD5 = this.config.checkByMD5
     const reuseSaved = () => {
+      this.usedCaches.push(index)
       this.updateChunkProgress(chunk.size, index)
     }
 
-    // FIXME: 至少比对一下 size 吧
+    // FIXME: 至少判断一下 size
     if (info && !shouldCheckMD5) {
       reuseSaved()
       return
@@ -212,12 +212,6 @@ export default class Resume extends Base {
 
       this.logger.info(infoMessage.join(', '))
       this.uploadedList = localInfo.data
-      if (Array.isArray(this.uploadedList)) {
-        this.uploadedList.forEach(chunk => {
-          chunk.isLocalCache = true
-        })
-      }
-
       this.uploadId = localInfo.id
     }
 
@@ -256,9 +250,10 @@ export default class Resume extends Base {
         utils.sum(this.loaded.chunks) + this.loaded.mkFileProgress,
         this.file.size + 1 // 防止在 complete 未调用的时候进度显示 100%
       ),
-      chunks: this.chunks.map((chunk, index) => (
-        this.getProgressInfoItem(this.loaded.chunks[index], chunk.size)
-      )),
+      chunks: this.chunks.map((chunk, index) => {
+        const isCache = this.usedCaches.includes(index)
+        return this.getProgressInfoItem(this.loaded.chunks[index], chunk.size, isCache)
+      }),
       uploadInfo: {
         id: this.uploadId,
         url: this.uploadHost!.getUrl()
