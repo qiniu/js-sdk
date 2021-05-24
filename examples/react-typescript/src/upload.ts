@@ -12,32 +12,33 @@ export enum Status {
 
 // 上传逻辑封装
 export function useUpload(file: File) {
-  const [state, setState] = React.useState<Status>()
-  const [error, setError] = React.useState<Error>()
-  const [token, setToken] = React.useState<string>()
-  const [startTime, setStartTime] = React.useState<number>()
-  const [speedPeak, setSpeedPeak] = React.useState<number>()
-  const [completeInfo, setCompleteInfo] = React.useState<any>()
-  const [progress, setProgress] = React.useState<UploadProgress>()
-  const [observable, setObservable] = React.useState<ReturnType<typeof upload>>()
-  const [subscribe, setSubscribe] = React.useState<ReturnType<ReturnType<typeof upload>['subscribe']>>()
+  const startTimeRef = React.useRef<number | null>(null)
+  const [state, setState] = React.useState<Status | null>(null)
+  const [error, setError] = React.useState<Error | null>(null)
+  const [token, setToken] = React.useState<string | null>(null)
+  const [speedPeak, setSpeedPeak] = React.useState<number | null>(null)
+  const [completeInfo, setCompleteInfo] = React.useState<any | null>(null)
+  const [progress, setProgress] = React.useState<UploadProgress | null>(null)
+  const [observable, setObservable] = React.useState<ReturnType<typeof upload> | null>(null)
+  const subscribeRef = React.useRef<ReturnType<ReturnType<typeof upload>['subscribe']> | null>(null)
 
   // 开始上传文件
   const start = () => {
-    setStartTime(Date.now())
+    startTimeRef.current = Date.now()
     setCompleteInfo(null)
     setProgress(null)
     setError(null)
 
-    setSubscribe(observable.subscribe({
+    subscribeRef.current = observable?.subscribe({
       error: _error => { setState(Status.Finished); setError(_error) },
       next: _progress => { setState(Status.Processing); setProgress(_progress) },
       complete: _info => { setState(Status.Finished); setError(null); setCompleteInfo(_info) }
-    }))
+    }) || null
   }
 
   // 停止上传文件
   const stop = () => {
+    const subscribe = subscribeRef.current
     if (state === Status.Processing && subscribe && !subscribe.closed) {
       setState(Status.Finished)
       subscribe.unsubscribe()
@@ -47,7 +48,7 @@ export function useUpload(file: File) {
   // 获取上传速度
   const speed = React.useMemo(() => {
     if (progress == null || progress.total == null || progress.total.loaded == null) return 0
-    const duration = (Date.now() - startTime) / 1000
+    const duration = (Date.now() - (startTimeRef.current || 0)) / 1000
 
     if (Array.isArray(progress.chunks)) {
       const size = progress.chunks.reduce(((acc, cur) => (
@@ -60,7 +61,7 @@ export function useUpload(file: File) {
     return progress.total.loaded > 0
       ? Math.floor(progress.total.loaded / duration)
       : 0
-  }, [progress, startTime])
+  }, [progress, startTimeRef])
 
   // 获取 token
   React.useEffect(() => {
@@ -85,7 +86,7 @@ export function useUpload(file: File) {
       setObservable(upload(
         file,
         file.name,
-        token, null,
+        token, undefined,
         {
           checkByMD5: true,
           debugLogLevel: 'INFO',

@@ -4,15 +4,15 @@ import { Input } from '../Input'
 import classnames from './style.less'
 
 export interface SettingsData {
-  assessKey: string
-  secretKey: string
-  bucketName: string
-  deadline: number
-  uphost: string
+  assessKey?: string
+  secretKey?: string
+  bucketName?: string
+  deadline?: number
+  uphost?: string
 }
 
 // 加载配置、此配置由 Setting 组件设置
-export function loadSetting(): Partial<SettingsData> {
+export function loadSetting(): SettingsData {
   const data = localStorage.getItem('setting')
   if (data != null) return JSON.parse(data)
   return {}
@@ -22,11 +22,11 @@ interface IProps { }
 
 export function Settings(props: IProps) {
   const setting = React.useMemo(() => loadSetting(), [])
-  const [uphost, seUphost] = React.useState<string>(setting.uphost)
-  const [assessKey, setAssessKey] = React.useState<string>(setting.assessKey)
-  const [secretKey, setSecretKey] = React.useState<string>(setting.secretKey)
-  const [bucketName, setBucketName] = React.useState<string>(setting.bucketName)
+  const [uphost, seUphost] = React.useState<string | undefined>(setting.uphost)
   const [deadline, setDeadline] = React.useState<number>(setting.deadline || 3600)
+  const [assessKey, setAssessKey] = React.useState<string | undefined>(setting.assessKey)
+  const [secretKey, setSecretKey] = React.useState<string | undefined>(setting.secretKey)
+  const [bucketName, setBucketName] = React.useState<string | undefined>(setting.bucketName)
 
   React.useEffect(() => {
     localStorage.setItem('setting', JSON.stringify({
@@ -55,7 +55,7 @@ export function Settings(props: IProps) {
         </span>
         <span>
           <span className={classnames.title}>deadline：</span>
-          <Input value={deadline + ''} onChange={v => setDeadline(+v)} placeholder="可选，请输入 deadline" />
+          <Input value={deadline + ''} onChange={v => setDeadline(+(v || 0))} placeholder="可选，请输入 deadline" />
         </span>
       </div>
     </div>

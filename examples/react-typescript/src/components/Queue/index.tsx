@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-import { UniqueFile } from '../../index'
+import { UniqueFile } from '../../components/App'
 import { Item } from './item'
 
 import classnames from './style.less'

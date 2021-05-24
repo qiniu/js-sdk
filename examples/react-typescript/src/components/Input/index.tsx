@@ -3,10 +3,10 @@ import * as React from 'react'
 import classnames from './style.less'
 
 interface IProps {
-  onChange(v: string): void
-  value: string
+  value: string | undefined
+  onChange(v: string | undefined): void
 
-  placeholder?: string
+  placeholder?: string | undefined
 }
 
 export function Input(props: IProps) {

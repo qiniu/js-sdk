@@ -14,12 +14,12 @@ enum State {
 }
 
 export function SelectFile(props: IProps): React.ReactElement {
-  const [state, setState] = React.useState<State>()
-  const inputRef = React.useRef<HTMLInputElement>()
+  const [state, setState] = React.useState<State | null>(null)
+  const inputRef = React.useRef<HTMLInputElement | null>(null)
 
   const onClick = () => {
     if (!inputRef.current) return
-    inputRef.current.value = null
+    inputRef.current.value = ''
     inputRef.current.click()
   }
 
@@ -35,8 +35,9 @@ export function SelectFile(props: IProps): React.ReactElement {
     Array.from(event.target.files).forEach(file => props.onFile(file))
   }
 
+  // 阻止默认的拖入文件处理
   React.useEffect(() => {
-    const handler = e => e.preventDefault()
+    const handler = (e: any) => e.preventDefault()
     document.addEventListener('dragover', handler)
     return () => {
       document.removeEventListener('dragover', handler)

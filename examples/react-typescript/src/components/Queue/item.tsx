@@ -24,7 +24,7 @@ export function Item(props: IProps) {
         <div className={classnames.top}>
           <FileName fileName={props.file.name} />
           <div className={classnames.actions}>
-            {[Status.Processing].includes(state) && (
+            {(state != null && [Status.Processing].includes(state)) && (
               <img
                 className={classnames.img}
                 onClick={() => stop()}
@@ -33,7 +33,7 @@ export function Item(props: IProps) {
                 width="14"
               />
             )}
-            {[Status.Readied, Status.Finished].includes(state) && (
+            {(state != null && [Status.Readied, Status.Finished].includes(state)) && (
               <img
                 onClick={() => start()}
                 className={classnames.img}
@@ -65,7 +65,7 @@ function FileName(prop: { fileName: string }) {
 }
 
 // 上传速度
-function Speed(props: { speed: number, peak: number }) {
+function Speed(props: { speed: number | null, peak: number | null }) {
   const render = (name: string, value: number) => (
     <span className={classnames.speedItem}>
       <span className={classnames.speedTitle}>{name}:</span>
@@ -77,14 +77,14 @@ function Speed(props: { speed: number, peak: number }) {
 
   return (
     <span className={classnames.speed}>
-      {render('最大上传速度', props.peak)}
-      {render('实时平均速度', props.speed)}
+      {render('最大上传速度', props.peak || 0)}
+      {render('实时平均速度', props.speed || 0)}
     </span>
   )
 }
 
 // 进度条
-function ProgressBar(props: { progress: UploadProgress }) {
+function ProgressBar(props: { progress: UploadProgress | null }) {
   const chunks = React.useMemo(() => {
     // 分片任务使用显示具体的 chunks 进度信息
     if (props.progress?.chunks != null) return props.progress?.chunks
