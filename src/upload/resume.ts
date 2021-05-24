@@ -41,11 +41,29 @@ function isPositiveInteger(n: number) {
 }
 
 export default class Resume extends Base {
+  /**
+   * @description 文件的分片 chunks
+   */
   private chunks: Blob[]
-  /** 当前上传过程中已完成的上传信息 */
+
+  /**
+   * @description 来自缓存的上传信息
+   */
+  private cachedUploadedList: UploadedChunkStorage[]
+
+  /**
+   * @description 当前上传过程中已完成的上传信息
+   */
   private uploadedList: UploadedChunkStorage[]
-  /** 当前上传片进度信息 */
+
+  /**
+   * @description 当前上传片进度信息
+   */
   private loaded: ChunkLoaded
+
+  /**
+ * @description 当前上传任务的 id
+ */
   private uploadId: string
 
   /**
@@ -98,12 +116,13 @@ export default class Resume extends Base {
 
   private async uploadChunk(chunkInfo: ChunkInfo) {
     const { index, chunk } = chunkInfo
-    const info = this.uploadedList[index]
+    const info = this.cachedUploadedList[index]
     this.logger.info(`upload part ${index}.`, info)
 
     const shouldCheckMD5 = this.config.checkByMD5
     const reuseSaved = () => {
       info.fromCache = true
+      this.uploadedList[index] = info
       this.updateChunkProgress(chunk.size, index)
     }
 
@@ -122,9 +141,7 @@ export default class Resume extends Base {
     }
 
     // 有缓存但是没有使用则调整标记
-    if (info) {
-      info.fromCache = false
-    }
+    if (info) { info.fromCache = false }
 
     const onProgress = (data: Progress) => {
       this.updateChunkProgress(data.loaded, index)
@@ -193,31 +210,32 @@ export default class Resume extends Base {
   }
 
   private async initBeforeUploadChunks() {
-    const localInfo = utils.getLocalFileInfo(this.getLocalKey(), this.logger)
+    this.uploadedList = []
+    const cachedInfo = utils.getLocalFileInfo(this.getLocalKey(), this.logger)
 
     // 分片必须和当时使用的 uploadId 配套，所以断点续传需要把本地存储的 uploadId 拿出来
-    // 假如没有 localInfo 本地信息并重新获取 uploadId
-    if (!localInfo) {
-      this.logger.info('resume upload parts from api.')
+    // 假如没有 cachedInfo 本地信息并重新获取 uploadId
+    if (!cachedInfo) {
+      this.logger.info('init upload parts from api.')
       const res = await initUploadParts(
         this.token,
         this.bucketName,
         this.key,
         this.uploadHost!.getUrl()
       )
-      this.logger.info(`resume upload parts of id: ${res.data.uploadId}.`)
+      this.logger.info(`init upload parts of id: ${res.data.uploadId}.`)
       this.uploadId = res.data.uploadId
-      this.uploadedList = []
+      this.cachedUploadedList = []
     } else {
       const infoMessage = [
         'resume upload parts from local cache',
-        `total ${localInfo.data.length} part`,
-        `id is ${localInfo.id}.`
+        `total ${cachedInfo.data.length} part`,
+        `id is ${cachedInfo.id}.`
       ]
 
       this.logger.info(infoMessage.join(', '))
-      this.uploadedList = localInfo.data
-      this.uploadId = localInfo.id
+      this.cachedUploadedList = cachedInfo.data
+      this.uploadId = cachedInfo.id
     }
 
     this.chunks = utils.getChunks(this.file, this.config.chunkSize)
