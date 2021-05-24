@@ -17,23 +17,23 @@ export function SelectFile(props: IProps): React.ReactElement {
   const [state, setState] = React.useState<State>()
   const inputRef = React.useRef<HTMLInputElement>()
 
-  const onClick = React.useCallback(() => {
+  const onClick = () => {
     if (!inputRef.current) return
     inputRef.current.value = null
     inputRef.current.click()
-  }, [])
+  }
 
-  const onDrop = React.useCallback((event: React.DragEvent<HTMLDivElement>) => {
+  const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
     if (!event || !event.dataTransfer || !event.dataTransfer.files) return
     Array.from(event.dataTransfer.files).forEach(file => props.onFile(file))
     setState(State.Drop)
-  }, [props])
+  }
 
-  const onChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!inputRef || !event || !event.target || !event.target.files) return
     Array.from(event.target.files).forEach(file => props.onFile(file))
-  }, [props, inputRef])
+  }
 
   React.useEffect(() => {
     const handler = e => e.preventDefault()

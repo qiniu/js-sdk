@@ -1,6 +1,7 @@
 import * as React from 'react'
 import { upload } from 'qiniu-js'
 import { UploadProgress } from 'qiniu-js/esm/upload'
+
 import { loadSetting } from './components/Settings'
 
 export enum Status {
@@ -22,9 +23,10 @@ export function useUpload(file: File) {
   const [subscribe, setSubscribe] = React.useState<ReturnType<ReturnType<typeof upload>['subscribe']>>()
 
   // 开始上传文件
-  const start = React.useCallback(() => {
+  const start = () => {
     setStartTime(Date.now())
     setCompleteInfo(null)
+    setProgress(null)
     setError(null)
 
     setSubscribe(observable.subscribe({
@@ -32,21 +34,32 @@ export function useUpload(file: File) {
       next: _progress => { setState(Status.Processing); setProgress(_progress) },
       complete: _info => { setState(Status.Finished); setError(null); setCompleteInfo(_info) }
     }))
-  }, [observable])
+  }
 
   // 停止上传文件
-  const stop = React.useCallback(() => {
+  const stop = () => {
     if (state === Status.Processing && subscribe && !subscribe.closed) {
       setState(Status.Finished)
       subscribe.unsubscribe()
     }
-  }, [subscribe, state])
+  }
 
   // 获取上传速度
   const speed = React.useMemo(() => {
     if (progress == null || progress.total == null || progress.total.loaded == null) return 0
-    const duration = Date.now() - startTime
-    return Math.floor(progress.total.loaded / duration)
+    const duration = (Date.now() - startTime) / 1000
+
+    if (Array.isArray(progress.chunks)) {
+      const size = progress.chunks.reduce(((acc, cur) => (
+        !cur.fromCache ? cur.loaded + acc : acc
+      )), 0)
+
+      return size > 0 ? Math.floor(size / duration) : 0
+    }
+
+    return progress.total.loaded > 0
+      ? Math.floor(progress.total.loaded / duration)
+      : 0
   }, [progress, startTime])
 
   // 获取 token
@@ -72,10 +85,12 @@ export function useUpload(file: File) {
       setObservable(upload(
         file,
         file.name,
-        token, null, {
-        debugLogLevel: 'INFO',
-        uphost: uphost && uphost.split(','),
-      }
+        token, null,
+        {
+          checkByMD5: true,
+          debugLogLevel: 'INFO',
+          uphost: uphost && uphost.split(',')
+        }
       ))
     }
   }, [file, token])

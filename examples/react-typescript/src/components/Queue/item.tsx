@@ -2,10 +2,10 @@ import * as React from 'react'
 import byteSize from 'byte-size'
 import { UploadProgress } from 'qiniu-js/esm/upload'
 
+import { Status, useUpload } from '../../upload'
 import startIcon from './assets/start.svg'
 import stopIcon from './assets/stop.svg'
 import classnames from './style.less'
-import { Status, useUpload } from '../../upload'
 
 interface IProps {
   file: File
@@ -15,7 +15,7 @@ export function Item(props: IProps) {
   const {
     stop, start,
     speed, speedPeak,
-    state, error, progress, completeInfo,
+    state, error, progress, completeInfo
   } = useUpload(props.file)
 
   return (
@@ -70,15 +70,15 @@ function Speed(props: { speed: number, peak: number }) {
     <span className={classnames.speedItem}>
       <span className={classnames.speedTitle}>{name}:</span>
       <span className={classnames.speedValue}>
-        {byteSize(value || 0, { precision: 2 }).toString()}
+        {byteSize(value || 0, { precision: 2 }).toString()}/s
       </span>
     </span>
   )
 
   return (
     <span className={classnames.speed}>
-      {render('实时平均速度', props.speed)}
       {render('最大上传速度', props.peak)}
+      {render('实时平均速度', props.speed)}
     </span>
   )
 }
@@ -95,11 +95,15 @@ function ProgressBar(props: { progress: UploadProgress }) {
 
   return (
     <ul className={classnames.progressBar}>
-      {chunks.map((chunk, index) => (
-        <li key={index}>
-          <span style={{ width: chunk.percent + '%' }}>
-          </span>
-        </li>))}
+      {chunks.map((chunk, index) => {
+        const cacheName = chunk.fromCache ? classnames.cachedChunk : ''
+        return (
+          <li key={index}>
+            <span className={cacheName} style={{ width: chunk.percent + '%' }}>
+            </span>
+          </li>
+        )
+      })}
     </ul>
   )
 }

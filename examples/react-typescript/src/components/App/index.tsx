@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import { Queue } from '../Queue'
 import { Layout } from '../Layout'
 import { Settings } from '../Settings'
@@ -16,13 +17,13 @@ export const App = () => {
   const [fileList, setFileList] = React.useState<UniqueFile[]>([])
   const [settingVisible, setSettingVisible] = React.useState(false)
 
-  const selectFile = React.useCallback((file: File) => {
+  const selectFile = (file: File) => {
     setFileList(files => [{ key: Date.now() + file.name, file }, ...files])
-  }, [])
+  }
 
-  const toggleSettingVisible = React.useCallback(() => {
+  const toggleSettingVisible = () => {
     setSettingVisible(!settingVisible)
-  }, [settingVisible])
+  }
 
   const settingsClassName = React.useMemo(() => {
     const list = [classnames.setting]
