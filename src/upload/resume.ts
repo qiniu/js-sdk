@@ -65,8 +65,8 @@ export default class Resume extends Base {
   private loaded: ChunkLoaded
 
   /**
- * @description 当前上传任务的 id
- */
+   * @description 当前上传任务的 id
+   */
   private uploadId: string
 
   /**
@@ -119,20 +119,19 @@ export default class Resume extends Base {
 
   private async uploadChunk(chunkInfo: ChunkInfo) {
     const { index, chunk } = chunkInfo
-    const info = this.cachedUploadedList[index]
-    this.logger.info(`upload part ${index}.`, info)
+    const cachedInfo = this.cachedUploadedList[index]
+    this.logger.info(`upload part ${index}, cache:`, cachedInfo)
 
     const shouldCheckMD5 = this.config.checkByMD5
     const reuseSaved = () => {
-      this.uploadedList[index] = { ...info }
+      this.uploadedList[index] = cachedInfo
       this.usedCacheList[index] = true
-      this.updateLocalCache()
-
       this.updateChunkProgress(chunk.size, index)
+      this.updateLocalCache()
     }
 
     // FIXME: 至少判断一下 size
-    if (info && !shouldCheckMD5) {
+    if (cachedInfo && !shouldCheckMD5) {
       reuseSaved()
       return
     }
@@ -140,9 +139,14 @@ export default class Resume extends Base {
     const md5 = await utils.computeMd5(chunk)
     this.logger.info('computed part md5.', md5)
 
-    if (info && md5 === info.md5) {
+    if (cachedInfo && md5 === cachedInfo.md5) {
       reuseSaved()
       return
+    }
+
+    if (cachedInfo) {
+      // 有缓存但是没有使用，设置标记为 false
+      this.usedCacheList[index] = false
     }
 
     const onProgress = (data: Progress) => {
