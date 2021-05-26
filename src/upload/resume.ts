@@ -6,8 +6,6 @@ import Base, { Progress, UploadInfo, Extra } from './base'
 
 export interface UploadedChunkStorage extends UploadChunkData {
   size: number
-
-  fromCache?: boolean
 }
 
 export interface ChunkLoaded {
@@ -45,6 +43,11 @@ export default class Resume extends Base {
    * @description 文件的分片 chunks
    */
   private chunks: Blob[]
+
+  /**
+   * @description 使用缓存的 chunks
+   */
+  private usedCacheList: boolean[]
 
   /**
    * @description 来自缓存的上传信息
@@ -121,8 +124,10 @@ export default class Resume extends Base {
 
     const shouldCheckMD5 = this.config.checkByMD5
     const reuseSaved = () => {
-      info.fromCache = true
-      this.uploadedList[index] = info
+      this.uploadedList[index] = { ...info }
+      this.usedCacheList[index] = true
+      this.updateLocalCache()
+
       this.updateChunkProgress(chunk.size, index)
     }
 
@@ -139,9 +144,6 @@ export default class Resume extends Base {
       reuseSaved()
       return
     }
-
-    // 有缓存但是没有使用则调整标记
-    if (info) { info.fromCache = false }
 
     const onProgress = (data: Progress) => {
       this.updateChunkProgress(data.loaded, index)
@@ -175,10 +177,7 @@ export default class Resume extends Base {
       size: chunk.size
     }
 
-    utils.setLocalFileInfo(this.getLocalKey(), {
-      id: this.uploadId,
-      data: this.uploadedList
-    }, this.logger)
+    this.updateLocalCache()
   }
 
   private async mkFileReq() {
@@ -211,6 +210,7 @@ export default class Resume extends Base {
 
   private async initBeforeUploadChunks() {
     this.uploadedList = []
+    this.usedCacheList = []
     const cachedInfo = utils.getLocalFileInfo(this.getLocalKey(), this.logger)
 
     // 分片必须和当时使用的 uploadId 配套，所以断点续传需要把本地存储的 uploadId 拿出来
@@ -257,6 +257,13 @@ export default class Resume extends Base {
     return utils.createLocalKey(this.file.name, this.key, this.file.size)
   }
 
+  private updateLocalCache() {
+    utils.setLocalFileInfo(this.getLocalKey(), {
+      id: this.uploadId,
+      data: this.uploadedList
+    }, this.logger)
+  }
+
   private updateChunkProgress(loaded: number, index: number) {
     this.loaded.chunks[index] = loaded
     this.notifyResumeProgress()
@@ -275,8 +282,7 @@ export default class Resume extends Base {
         this.file.size + 1 // 防止在 complete 未调用的时候进度显示 100%
       ),
       chunks: this.chunks.map((chunk, index) => {
-        const info = this.uploadedList[index]
-        const fromCache = info && info.fromCache
+        const fromCache = this.usedCacheList[index]
         return this.getProgressInfoItem(this.loaded.chunks[index], chunk.size, fromCache)
       }),
       uploadInfo: {
