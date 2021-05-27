@@ -144,10 +144,8 @@ export default class Resume extends Base {
       return
     }
 
-    if (cachedInfo) {
-      // 有缓存但是没有使用，设置标记为 false
-      this.usedCacheList[index] = false
-    }
+    // 没有使用缓存设置标记为 false
+    this.usedCacheList[index] = false
 
     const onProgress = (data: Progress) => {
       this.updateChunkProgress(data.loaded, index)
@@ -188,6 +186,7 @@ export default class Resume extends Base {
     const data: UploadChunkBody = {
       parts: this.uploadedList.map((value, index) => ({
         etag: value.etag,
+        // 接口要求 index 需要从 1 开始，所以需要整体 + 1
         partNumber: index + 1
       })),
       fname: this.putExtra.fname,
@@ -227,17 +226,17 @@ export default class Resume extends Base {
         this.key,
         this.uploadHost!.getUrl()
       )
-      this.logger.info(`init upload parts of id: ${res.data.uploadId}.`)
+      this.logger.info(`initd upload parts of id: ${res.data.uploadId}.`)
       this.uploadId = res.data.uploadId
       this.cachedUploadedList = []
     } else {
       const infoMessage = [
-        'resume upload parts from local cache',
-        `total ${cachedInfo.data.length} part`,
+        'resume upload parts from local cache,',
+        `total ${cachedInfo.data.length} part,`,
         `id is ${cachedInfo.id}.`
       ]
 
-      this.logger.info(infoMessage.join(', '))
+      this.logger.info(infoMessage.join(' '))
       this.cachedUploadedList = cachedInfo.data
       this.uploadId = cachedInfo.id
     }
