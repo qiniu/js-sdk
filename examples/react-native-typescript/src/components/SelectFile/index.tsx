@@ -1,9 +1,18 @@
 import * as React from 'react'
 import ImagePicker from 'react-native-image-crop-picker'
 import { GestureResponderEvent, Pressable, Text, View } from 'react-native'
+import { ShadowBox } from '../ShadowBox'
+import { styles } from './style'
+
+
+interface File {
+  key: string
+  name: string
+  blob: Blob
+}
 
 interface IProps {
-  onFile(file: any): void
+  onFile(file: File): void
 }
 
 enum State {
@@ -12,20 +21,39 @@ enum State {
   Leave
 }
 
-export function SelectFile(props: IProps): React.ReactElement {
-  const [state, setState] = React.useState<State | null>(null)
-  const inputRef = React.useRef<HTMLInputElement | null>(null)
+const shadowOpt = {
+  x: 0,
+  y: 3,
+  border: 2,
+  radius: 3,
+  width: 100,
+  height: 100,
+  opacity: 0.2,
+  color: "#000",
+  style: { marginVertical: 5 }
+}
 
-  const onPress = (event: GestureResponderEvent) => {
+export function SelectFile(props: IProps): React.ReactElement {
+  const onPress = (_event: GestureResponderEvent) => {
     console.log(new Blob(['test']))
-    ImagePicker.openPicker({}).then(console.log)
+    ImagePicker.openPicker({ mediaType: "photo", includeBase64: true }).then(file => {
+      if (file != null && file.data != null && file.filename != null) {
+        props.onFile({
+          name: file.filename,
+          key: String(Date.now()),
+          blob: new Blob([file.data])
+        })
+      }
+    })
   }
 
   return (
     <Pressable onPress={onPress}>
-      <View >
+      <ShadowBox level={4}>
+        <View style={styles.selectButton}>
         <Text>选择文件</Text>
       </View>
+      </ShadowBox>
     </Pressable>
   )
 }
