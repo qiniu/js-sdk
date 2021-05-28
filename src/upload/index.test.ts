@@ -37,7 +37,7 @@ describe('test upload', () => {
   })
 
   test('base Direct.', async () => {
-    // 文件小于等于 4M 使用直传
+    // 文件小于 4M 使用直传
     const result1 = await observablePromisify(upload(File3M, null, testToken))
     expect(result1).toStrictEqual((await mockApi.direct()).data)
 
@@ -58,7 +58,7 @@ describe('test upload', () => {
   })
 
   test('Resume: base.', async () => {
-    // 文件大于等于 4M 使用分片
+    // 文件大于 4M 使用分片
     const result = await observablePromisify(upload(File5M, null, testToken))
     expect(result).toStrictEqual((await mockApi.uploadComplete()).data)
   })

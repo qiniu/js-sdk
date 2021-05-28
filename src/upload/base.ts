@@ -330,8 +330,8 @@ export default abstract class Base {
     return {
       size,
       loaded,
-      fromCache,
-      percent: loaded / size * 100
+      percent: loaded / size * 100,
+      ...(fromCache == null ? {} : { fromCache })
     }
   }
 }

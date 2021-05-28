@@ -6,8 +6,6 @@ import Base, { Progress, UploadInfo, Extra } from './base'
 
 export interface UploadedChunkStorage extends UploadChunkData {
   size: number
-
-  fromCache?: boolean
 }
 
 export interface ChunkLoaded {
@@ -41,11 +39,34 @@ function isPositiveInteger(n: number) {
 }
 
 export default class Resume extends Base {
+  /**
+   * @description 文件的分片 chunks
+   */
   private chunks: Blob[]
-  /** 当前上传过程中已完成的上传信息 */
+
+  /**
+   * @description 使用缓存的 chunks
+   */
+  private usedCacheList: boolean[]
+
+  /**
+   * @description 来自缓存的上传信息
+   */
+  private cachedUploadedList: UploadedChunkStorage[]
+
+  /**
+   * @description 当前上传过程中已完成的上传信息
+   */
   private uploadedList: UploadedChunkStorage[]
-  /** 当前上传片进度信息 */
+
+  /**
+   * @description 当前上传片进度信息
+   */
   private loaded: ChunkLoaded
+
+  /**
+   * @description 当前上传任务的 id
+   */
   private uploadId: string
 
   /**
@@ -98,17 +119,19 @@ export default class Resume extends Base {
 
   private async uploadChunk(chunkInfo: ChunkInfo) {
     const { index, chunk } = chunkInfo
-    const info = this.uploadedList[index]
-    this.logger.info(`upload part ${index}.`, info)
+    const cachedInfo = this.cachedUploadedList[index]
+    this.logger.info(`upload part ${index}, cache:`, cachedInfo)
 
     const shouldCheckMD5 = this.config.checkByMD5
     const reuseSaved = () => {
-      info.fromCache = true
+      this.usedCacheList[index] = true
       this.updateChunkProgress(chunk.size, index)
+      this.uploadedList[index] = cachedInfo
+      this.updateLocalCache()
     }
 
     // FIXME: 至少判断一下 size
-    if (info && !shouldCheckMD5) {
+    if (cachedInfo && !shouldCheckMD5) {
       reuseSaved()
       return
     }
@@ -116,15 +139,13 @@ export default class Resume extends Base {
     const md5 = await utils.computeMd5(chunk)
     this.logger.info('computed part md5.', md5)
 
-    if (info && md5 === info.md5) {
+    if (cachedInfo && md5 === cachedInfo.md5) {
       reuseSaved()
       return
     }
 
-    // 有缓存但是没有使用则调整标记
-    if (info) {
-      info.fromCache = false
-    }
+    // 没有使用缓存设置标记为 false
+    this.usedCacheList[index] = false
 
     const onProgress = (data: Progress) => {
       this.updateChunkProgress(data.loaded, index)
@@ -158,16 +179,14 @@ export default class Resume extends Base {
       size: chunk.size
     }
 
-    utils.setLocalFileInfo(this.getLocalKey(), {
-      id: this.uploadId,
-      data: this.uploadedList
-    }, this.logger)
+    this.updateLocalCache()
   }
 
   private async mkFileReq() {
     const data: UploadChunkBody = {
       parts: this.uploadedList.map((value, index) => ({
         etag: value.etag,
+        // 接口要求 index 需要从 1 开始，所以需要整体 + 1
         partNumber: index + 1
       })),
       fname: this.putExtra.fname,
@@ -193,31 +212,33 @@ export default class Resume extends Base {
   }
 
   private async initBeforeUploadChunks() {
-    const localInfo = utils.getLocalFileInfo(this.getLocalKey(), this.logger)
+    this.uploadedList = []
+    this.usedCacheList = []
+    const cachedInfo = utils.getLocalFileInfo(this.getLocalKey(), this.logger)
 
     // 分片必须和当时使用的 uploadId 配套，所以断点续传需要把本地存储的 uploadId 拿出来
-    // 假如没有 localInfo 本地信息并重新获取 uploadId
-    if (!localInfo) {
-      this.logger.info('resume upload parts from api.')
+    // 假如没有 cachedInfo 本地信息并重新获取 uploadId
+    if (!cachedInfo) {
+      this.logger.info('init upload parts from api.')
       const res = await initUploadParts(
         this.token,
         this.bucketName,
         this.key,
         this.uploadHost!.getUrl()
       )
-      this.logger.info(`resume upload parts of id: ${res.data.uploadId}.`)
+      this.logger.info(`initd upload parts of id: ${res.data.uploadId}.`)
       this.uploadId = res.data.uploadId
-      this.uploadedList = []
+      this.cachedUploadedList = []
     } else {
       const infoMessage = [
-        'resume upload parts from local cache',
-        `total ${localInfo.data.length} part`,
-        `id is ${localInfo.id}.`
+        'resume upload parts from local cache,',
+        `total ${cachedInfo.data.length} part,`,
+        `id is ${cachedInfo.id}.`
       ]
 
-      this.logger.info(infoMessage.join(', '))
-      this.uploadedList = localInfo.data
-      this.uploadId = localInfo.id
+      this.logger.info(infoMessage.join(' '))
+      this.cachedUploadedList = cachedInfo.data
+      this.uploadId = cachedInfo.id
     }
 
     this.chunks = utils.getChunks(this.file, this.config.chunkSize)
@@ -239,6 +260,13 @@ export default class Resume extends Base {
     return utils.createLocalKey(this.file.name, this.key, this.file.size)
   }
 
+  private updateLocalCache() {
+    utils.setLocalFileInfo(this.getLocalKey(), {
+      id: this.uploadId,
+      data: this.uploadedList
+    }, this.logger)
+  }
+
   private updateChunkProgress(loaded: number, index: number) {
     this.loaded.chunks[index] = loaded
     this.notifyResumeProgress()
@@ -257,8 +285,7 @@ export default class Resume extends Base {
         this.file.size + 1 // 防止在 complete 未调用的时候进度显示 100%
       ),
       chunks: this.chunks.map((chunk, index) => {
-        const info = this.uploadedList[index]
-        const fromCache = info && info.fromCache
+        const fromCache = this.usedCacheList[index]
         return this.getProgressInfoItem(this.loaded.chunks[index], chunk.size, fromCache)
       }),
       uploadInfo: {
