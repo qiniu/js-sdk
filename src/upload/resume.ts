@@ -124,9 +124,9 @@ export default class Resume extends Base {
 
     const shouldCheckMD5 = this.config.checkByMD5
     const reuseSaved = () => {
-      this.uploadedList[index] = cachedInfo
       this.usedCacheList[index] = true
       this.updateChunkProgress(chunk.size, index)
+      this.uploadedList[index] = cachedInfo
       this.updateLocalCache()
     }
 
