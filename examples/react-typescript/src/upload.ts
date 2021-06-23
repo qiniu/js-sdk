@@ -1,13 +1,12 @@
 import * as React from 'react'
 import { upload } from 'qiniu-js'
 import { UploadProgress } from 'qiniu-js/esm/upload'
-
 import { loadSetting } from './components/Settings'
 
 export enum Status {
   Readied, // 准备好了
   Processing, // 上传中
-  Finished // 已完成
+  Finished // 任务已结束（完成、失败、中断）
 }
 
 // 上传逻辑封装
@@ -71,7 +70,7 @@ export function useUpload(file: File) {
       return
     }
 
-    fetch(`/api/token?setting=${decodeURIComponent(JSON.stringify(setting))}`)
+    fetch(`/api/token?setting=${encodeURIComponent(JSON.stringify(setting))}`)
       .then(_response => _response.text())
       .then(_token => setToken(_token))
       .catch(_error => setError(new Error(`获取 Token 失败: ${_error.message || _error.name}`)))

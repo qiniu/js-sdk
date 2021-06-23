@@ -45,8 +45,8 @@ export function Item(props: IProps) {
           </div>
         </div>
         <div className={classnames.down}>
-          <ProgressBar progress={progress} />
           <Speed speed={speed} peak={speedPeak} />
+          <ProgressBar progress={progress} />
         </div>
       </div>
       <ErrorView error={error} />

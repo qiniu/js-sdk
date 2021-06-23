@@ -9,8 +9,7 @@
     "typeRoots": [
       "node_modules/@types",
       "types"
-    ],
-    "suppressImplicitAnyIndexErrors": true
+    ]
   },
   "include": [
     "src",

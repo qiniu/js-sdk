@@ -8,17 +8,12 @@ import { SelectFile } from '../SelectFile'
 import settingIcon from '../Settings/assets/setting.svg'
 import classnames from './style.less'
 
-export interface UniqueFile {
-  key: string
-  file: File
-}
-
 export const App = () => {
   const [fileList, setFileList] = React.useState<UniqueFile[]>([])
   const [settingVisible, setSettingVisible] = React.useState(false)
 
-  const selectFile = (file: File) => {
-    setFileList(files => [{ key: Date.now() + file.name, file }, ...files])
+  const selectFile = (file: UniqueFile) => {
+    setFileList(files => [file, ...files])
   }
 
   const toggleSettingVisible = () => {
@@ -30,7 +25,7 @@ export const App = () => {
     if (settingVisible) {
       list.push(classnames.show)
     } else {
-      list.push(classnames.hided)
+      list.push(classnames.hidden)
     }
     return list.join(' ')
   }, [settingVisible])

@@ -20,7 +20,7 @@ export function loadSetting(): SettingsData {
 
 interface IProps { }
 
-export function Settings(_props: IProps) {
+export function Settings(props: IProps) {
   const setting = React.useMemo(() => loadSetting(), [])
   const [uphost, seUphost] = React.useState<string | undefined>(setting.uphost)
   const [deadline, setDeadline] = React.useState<number>(setting.deadline || 3600)
@@ -39,23 +39,23 @@ export function Settings(_props: IProps) {
       <div className={classnames.content}>
         <span>
           <span className={classnames.title}>assessKey：</span>
-          <Input value={assessKey} onChange={setAssessKey} placeholder="请输入 assessKey" />
+          <Input value={assessKey} onChange={v => setAssessKey(v)} placeholder="请输入 assessKey" />
         </span>
         <span>
           <span className={classnames.title}>secretKey：</span>
-          <Input value={secretKey} onChange={setSecretKey} placeholder="请输入 secretKey" />
+          <Input value={secretKey} onChange={v => setSecretKey(v)} placeholder="请输入 secretKey" />
         </span>
         <span>
           <span className={classnames.title}>bucketName：</span>
-          <Input value={bucketName} onChange={setBucketName} placeholder="请输入 bucketName" />
+          <Input value={bucketName} onChange={v => setBucketName(v)} placeholder="请输入 bucketName" />
         </span>
         <span>
           <span className={classnames.title}>uphost：</span>
-          <Input value={uphost} onChange={seUphost} placeholder="可选，多个用 , 隔开" />
+          <Input value={uphost} onChange={v => seUphost(v)} placeholder="可选，多个用 , 隔开" />
         </span>
         <span>
           <span className={classnames.title}>deadline：</span>
-          <Input value={deadline + ''} onChange={v => setDeadline(Number(v) || 0)} placeholder="可选，请输入 deadline" />
+          <Input value={deadline + ''} onChange={v => setDeadline(+(v || 0))} placeholder="可选，请输入 deadline" />
         </span>
       </div>
     </div>

@@ -4,7 +4,7 @@ import folderIcon from './assets/folder.svg'
 import classnames from './style.less'
 
 interface IProps {
-  onFile(file: File): void
+  onFile(file: UniqueFile): void
 }
 
 enum State {
@@ -26,13 +26,19 @@ export function SelectFile(props: IProps): React.ReactElement {
   const onDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault()
     if (!event || !event.dataTransfer || !event.dataTransfer.files) return
-    Array.from(event.dataTransfer.files).forEach(file => props.onFile(file))
+    Array.from(event.dataTransfer.files).forEach(file => props.onFile({
+      key: Date.now() + file.name,
+      file
+    }))
     setState(State.Drop)
   }
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!inputRef || !event || !event.target || !event.target.files) return
-    Array.from(event.target.files).forEach(file => props.onFile(file))
+    Array.from(event.target.files).forEach(file => props.onFile({
+      key: Date.now() + file.name,
+      file
+    }))
   }
 
   // 阻止默认的拖入文件处理

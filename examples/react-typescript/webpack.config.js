@@ -26,7 +26,8 @@ module.exports = {
     contentBase: './dist',
     before: function (app) {
       app.get('/api/token', function (req, res) {
-        const { assessKey, secretKey, bucketName, deadline } = JSON.parse(req.query.setting)
+        const dataString = decodeURIComponent(req.query.setting)
+        const { assessKey, secretKey, bucketName, deadline } = JSON.parse(dataString)
         const putPolicy = new qiniu.rs.PutPolicy({ scope: bucketName, deadline })
         var mac = new qiniu.auth.digest.Mac(assessKey, secretKey)
         res.send(putPolicy.uploadToken(mac))
