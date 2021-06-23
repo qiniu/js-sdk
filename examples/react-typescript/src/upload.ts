@@ -1,7 +1,8 @@
 import * as React from 'react'
 import { upload } from 'qiniu-js'
 import { UploadProgress } from 'qiniu-js/esm/upload'
-import { loadSetting } from './components/Settings'
+
+import { loadSetting } from './utils'
 
 export enum Status {
   Readied, // 准备好了
@@ -85,7 +86,8 @@ export function useUpload(file: File) {
       setObservable(upload(
         file,
         file.name,
-        token, undefined,
+        token,
+        undefined,
         {
           checkByMD5: true,
           debugLogLevel: 'INFO',

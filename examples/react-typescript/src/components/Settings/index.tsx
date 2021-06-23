@@ -1,27 +1,13 @@
 import * as React from 'react'
+import * as utils from '../../utils'
 
 import { Input } from '../Input'
 import classnames from './style.less'
 
-export interface SettingsData {
-  assessKey?: string
-  secretKey?: string
-  bucketName?: string
-  deadline?: number
-  uphost?: string
-}
-
-// 加载配置、此配置由 Setting 组件设置
-export function loadSetting(): SettingsData {
-  const data = localStorage.getItem('setting')
-  if (data != null) return JSON.parse(data)
-  return {}
-}
-
 interface IProps { }
 
 export function Settings(props: IProps) {
-  const setting = React.useMemo(() => loadSetting(), [])
+  const setting = React.useMemo(() => utils.loadSetting(), [])
   const [uphost, seUphost] = React.useState<string | undefined>(setting.uphost)
   const [deadline, setDeadline] = React.useState<number>(setting.deadline || 3600)
   const [assessKey, setAssessKey] = React.useState<string | undefined>(setting.assessKey)
@@ -29,9 +15,13 @@ export function Settings(props: IProps) {
   const [bucketName, setBucketName] = React.useState<string | undefined>(setting.bucketName)
 
   React.useEffect(() => {
-    localStorage.setItem('setting', JSON.stringify({
-      assessKey, secretKey, bucketName, deadline, uphost
-    }))
+    utils.saveSetting({
+      assessKey,
+      secretKey,
+      bucketName,
+      deadline,
+      uphost
+    })
   }, [assessKey, secretKey, bucketName, deadline, uphost])
 
   return (
