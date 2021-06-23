@@ -3,6 +3,7 @@ const qiniu = require('qiniu')
 const { HotModuleReplacementPlugin } = require('webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ESLintPlugin = require('eslint-webpack-plugin')
+const WebpackBar = require('webpackbar')
 
 module.exports = {
   context: path.join(__dirname, 'src'),
@@ -11,7 +12,7 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.ts', '.tsx'],
   },
-  entry: ['@babel/polyfill', './index.tsx'],
+  entry: ['./index.tsx'],
 
   output: {
     filename: 'bundle.js',
@@ -40,13 +41,11 @@ module.exports = {
       {
         test: /\.tsx?$/,
         exclude: /node_modules/,
-        loader: 'babel-loader',
+        loader: 'esbuild-loader',
         options: {
-          presets: [
-            '@babel/preset-env',
-            '@babel/preset-react',
-            '@babel/preset-typescript'
-          ]
+          loader: 'tsx',
+          target: 'es2015',
+          tsconfigRaw: require('./tsconfig.json')
         }
       },
       {
@@ -81,6 +80,7 @@ module.exports = {
       inject: 'head'
     }),
     new HotModuleReplacementPlugin(),
-    new ESLintPlugin()
+    new ESLintPlugin(),
+    new WebpackBar()
   ]
 }
