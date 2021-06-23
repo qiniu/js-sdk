@@ -30,9 +30,9 @@ export function useUpload(file: File) {
     setError(null)
 
     subscribeRef.current = observable?.subscribe({
-      error: _error => { setState(Status.Finished); setError(_error) },
-      next: _progress => { setState(Status.Processing); setProgress(_progress) },
-      complete: _info => { setState(Status.Finished); setError(null); setCompleteInfo(_info) }
+      error: newError => { setState(Status.Finished); setError(newError) },
+      next: newProgress => { setState(Status.Processing); setProgress(newProgress) },
+      complete: newInfo => { setState(Status.Finished); setError(null); setCompleteInfo(newInfo) }
     }) || null
   }
 
@@ -72,9 +72,9 @@ export function useUpload(file: File) {
     }
 
     fetch(`/api/token?setting=${encodeURIComponent(JSON.stringify(setting))}`)
-      .then(_response => _response.text())
-      .then(_token => setToken(_token))
-      .catch(_error => setError(new Error(`获取 Token 失败: ${_error.message || _error.name}`)))
+      .then(newResponse => newResponse.text())
+      .then(newToken => setToken(newToken))
+      .catch(newError => setError(new Error(`获取 Token 失败: ${newError.message || newError.name}`)))
   }, [file])
 
   // 创建上传任务
