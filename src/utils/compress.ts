@@ -154,7 +154,7 @@ class Compress {
 
     const { width: originWidth, height: originHeight } = source
 
-    const mirror1 = document.createElement('canvas')
+    const mirror1 = source
     const mirror2 = document.createElement('canvas')
     const context1 = mirror1.getContext('2d')!
     const context2 = mirror2.getContext('2d')!
@@ -168,14 +168,8 @@ class Compress {
 
     let width = originWidth
     let height = originHeight
-    mirror1.width = width
-    mirror1.height = height
     mirror2.width = width
     mirror2.height = height
-
-    // 将源图像画在 mirror1 上
-    this.clear(context1, width, height)
-    context1.drawImage(source, 0, 0, width, height)
 
     let src: CanvasImageSource = mirror1
     let context: CanvasRenderingContext2D = context2
