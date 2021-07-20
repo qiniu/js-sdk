@@ -149,55 +149,53 @@ class Compress {
       return source
     }
     // 不要一次性画图，通过设定的 step 次数，渐进式的画图，这样可以增加图片的清晰度，防止一次性画图导致的像素丢失严重
+    const sctx = source.getContext('2d')
     const steps = Math.min(maxSteps, Math.ceil((1 / scale) / scaleFactor))
+
     const factor = scale ** (1 / steps)
 
-    const { width: originWidth, height: originHeight } = source
+    const mirror = document.createElement('canvas')
+    const mctx = mirror.getContext('2d')
 
-    const mirror1 = source
-    const mirror2 = document.createElement('canvas')
-    const context1 = mirror1.getContext('2d')!
-    const context2 = mirror2.getContext('2d')!
-
-    if (!context1 || !context2) {
+    let { width, height } = source
+    const originWidth = width
+    const originHeight = height
+    mirror.width = width
+    mirror.height = height
+    if (!mctx || !sctx) {
       throw new QiniuError(
         QiniuErrorName.GetCanvasContextFailed,
-        "mirror's context can't be null"
+        "mctx or sctx can't be null"
       )
     }
 
-    let width = originWidth
-    let height = originHeight
-    mirror2.width = width
-    mirror2.height = height
+    let src!: CanvasImageSource
+    let context!: CanvasRenderingContext2D
+    for (let i = 0; i < steps; i++) {
 
-    let src: CanvasImageSource = mirror1
-    let context: CanvasRenderingContext2D = context2
-
-    for (let i = 0; i < steps; ++i) {
-      let dw = (width * factor) | 0 // eslint-disable-line no-bitwise
-      let dh = (height * factor) | 0 // eslint-disable-line no-bitwise
-      // 到最后一步的时候 dw, dh 用目标缩放尺寸
+      let dw = width * factor | 0 // eslint-disable-line no-bitwise
+      let dh = height * factor | 0 // eslint-disable-line no-bitwise
+      // 到最后一步的时候 dw, dh 用目标缩放尺寸，否则会出现最后尺寸偏小的情况
       if (i === steps - 1) {
         dw = originWidth * scale
         dh = originHeight * scale
       }
 
       if (i % 2 === 0) {
-        src = mirror1
-        context = context2
+        src = source
+        context = mctx
       } else {
-        src = mirror2
-        context = context1
+        src = mirror
+        context = sctx
       }
-
+      // 每次画前都清空，避免图像重叠
       this.clear(context, width, height)
       context.drawImage(src, 0, 0, width, height, 0, 0, dw, dh)
       width = dw
       height = dh
     }
 
-    const canvas = src === mirror1 ? mirror2 : mirror1
+    const canvas = src === source ? mirror : source
     // save data
     const data = context.getImageData(0, 0, width, height)
 
