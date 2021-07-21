@@ -1,0 +1,26 @@
+@footer-height: 30px;
+
+.layout {
+  width: 100vw;
+  min-height: calc(100vh - @footer-height);
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.footer {
+  width: 100vw;
+  height: @footer-height;
+
+  color: #777;
+  font-size: 12px;
+  text-align: center;
+
+  a {
+    color: #777;
+    outline: none;
+    text-decoration: none;
+  }
+}

@@ -1,0 +1,47 @@
+.selectFile {
+  position: relative;
+  z-index: 1;
+
+  padding: 2rem;
+  border-radius: 1.5rem;
+  background-color: white;
+  box-shadow: 0px 20px 40px -10px rgba(0, 0, 0, 0.2);
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+
+  width: 320px;
+  height: 200px;
+  border-radius: 0.8rem;
+  border: 1px dashed rgb(163, 163, 163);
+  background-color: rgb(248, 251, 255);
+
+  cursor: pointer;
+  transition: .3s;
+
+  &:hover {
+    background-color: rgb(232, 237, 243);
+  }
+
+  &:active {
+    background-color: rgb(203, 212, 223);
+  } 
+
+  .title {
+    text-align: center;
+    margin-top: 1rem;
+    margin-bottom: 0;
+    font-weight: bold;
+  }
+
+  input {
+    position: absolute;
+    overflow: hidden;
+    height: 0;
+    width: 0;
+  }
+}

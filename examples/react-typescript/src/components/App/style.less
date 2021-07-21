@@ -1,0 +1,50 @@
+
+.content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  .setting {
+    z-index: 0;
+    position: relative;
+    margin-left: -300px;
+
+    @width: 400px;
+
+    &.show {
+      animation: show 1s;
+      animation-fill-mode: forwards;
+    }
+
+    &.hidden {
+      animation: hidden 1s;
+      animation-fill-mode: forwards;
+    }
+
+    @keyframes show {
+      from { margin-left: -@width;opacity: 0; }
+      to { margin-left: -10px ;opacity: 1; }
+    }
+
+    @keyframes hidden {
+      from { margin-left:  -10px; opacity: 1; }
+      to { margin-left: -@width; opacity: 0; }
+    }
+  }
+}
+
+
+.settingIcon {
+  width: 20px;
+  height: 20px;
+  margin-left: 2rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  background-color: rgba(0, 0, 0, .02);
+  cursor: pointer;
+  transition: .3s;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, .1);
+  }
+}

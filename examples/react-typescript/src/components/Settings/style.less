@@ -1,0 +1,32 @@
+.settings {
+  position: relative;
+  z-index: 1;
+
+  padding: 2rem;
+  border-radius: 1rem;
+  background-color: white;
+  box-shadow: 0px 10px 20px -10px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  transition: .3s;
+
+  .content {
+    display: flex;
+    flex-direction: column;
+
+    > span {
+      overflow:hidden;
+    }
+
+    .title {
+      width: 100px;
+      color: #333;
+      font-size: 14px;
+      font-weight: 500;
+      display: inline-block;
+    }
+
+    .title + * {
+      width: 200px;
+    }
+  }
+}
