@@ -3,6 +3,7 @@ import byteSize from 'byte-size'
 import { UploadProgress } from 'qiniu-js/esm/upload'
 
 import { Status, useUpload } from '../../upload'
+import { useCompress } from '../../compress'
 import startIcon from './assets/start.svg'
 import stopIcon from './assets/stop.svg'
 import classnames from './style.less'
@@ -17,6 +18,19 @@ export function Item(props: IProps) {
     speed, speedPeak,
     state, error, progress, completeInfo
   } = useUpload(props.file)
+
+  const [image, setImage] = React.useState<Blob>()
+
+  React.useEffect(() => {
+    if (props.file.type.includes('image')) {
+      useCompress(props.file).then(data => {
+        if (data != null) {
+          setImage(data)
+          console.log(data)
+        }
+      })
+    }
+  }, [props.file])
 
   return (
     <div className={classnames.item}>
@@ -51,6 +65,8 @@ export function Item(props: IProps) {
       </div>
       <ErrorView error={error} />
       <CompleteView completeInfo={completeInfo} />
+      {<img width={200} src={URL.createObjectURL(props.file)} />}
+      {image && <img width={200} src={URL.createObjectURL(image)} />}
     </div>
   )
 }
@@ -86,6 +102,8 @@ function Speed(props: { speed: number | null, peak: number | null }) {
 // 进度条
 function ProgressBar(props: { progress: UploadProgress | null }) {
   const chunks = React.useMemo(() => {
+    console.log('props.progress?.total', props.progress?.total)
+
     // 分片任务使用显示具体的 chunks 进度信息
     if (props.progress?.chunks != null) return props.progress?.chunks
     // 直传任务直接显示总的进度信息
