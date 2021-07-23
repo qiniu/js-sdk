@@ -117,7 +117,6 @@ class Compress {
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas')
       const context = canvas.getContext('2d')
-      const { width, height } = img
 
       if (!context) {
         reject(new QiniuError(
@@ -127,8 +126,9 @@ class Compress {
         return
       }
 
-      canvas.width = width
+      const { width, height } = img
       canvas.height = height
+      canvas.width = width
 
       this.clear(context, width, height)
       context.drawImage(img, 0, 0)
