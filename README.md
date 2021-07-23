@@ -269,6 +269,9 @@ qiniu.compressImage(file, options).then(data => {
 
 ### qiniu.compressImage(file: File, options: object): Promise<CompressResult> (上传前图片压缩)
 
+  **在 v3.3.3 版本之前，该压缩行为会根据图片的 `Orientation(设备角度)` 信息对图片进行旋转处理，详细的信息可以参考**
+  [issue：关于 canvas 绘制图像的方向兼容处理](https://github.com/qiniu/js-sdk/issues/522 )
+
   ```JavaScript
   const imgLink = qiniu.compressImage(file, options).then(res => {
     // res : {
