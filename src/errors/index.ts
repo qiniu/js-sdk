@@ -14,7 +14,6 @@ export enum QiniuErrorName {
   RemoveCacheFailed = 'RemoveCacheFailed',
 
   // 图片压缩模块相关
-  InvalidTransformOrientation = 'InvalidTransformOrientation',
   GetCanvasContextFailed = 'GetCanvasContextFailed',
   UnsupportedFileType = 'UnsupportedFileType',
 

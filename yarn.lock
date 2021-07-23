@@ -3631,11 +3631,6 @@
     "signal-exit" "^3.0.2"
     "strip-final-newline" "^2.0.0"
 
-"exif-js@^2.3.0":
-  "integrity" "sha1-nRCBm/Vx+HOBPnZAJBJVq5zhqBQ="
-  "resolved" "https://registry.npmjs.org/exif-js/-/exif-js-2.3.0.tgz"
-  "version" "2.3.0"
-
 "exit@^0.1.2":
   "integrity" "sha1-BjJjj42HfMghB9MKD/8aF8uhzQw="
   "resolved" "https://registry.npmjs.org/exit/-/exit-0.1.2.tgz"
