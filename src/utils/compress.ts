@@ -1,8 +1,6 @@
-import { EXIF } from 'exif-js'
-
 import { QiniuErrorName, QiniuError } from '../errors'
 
-import { createObjectURL, getTransform } from './helper'
+import { createObjectURL } from './helper'
 
 export interface CompressOptions {
   quality?: number
@@ -117,30 +115,24 @@ class Compress {
 
   getCanvas(img: HTMLImageElement): Promise<HTMLCanvasElement> {
     return new Promise((resolve, reject) => {
-      // 通过得到图片的信息来调整显示方向以正确显示图片，主要解决 ios 系统上的图片会有旋转的问题
-      EXIF.getData(img, () => {
-        const orientation = EXIF.getTag(img, 'Orientation') || 1
-        const { width, height, matrix } = getTransform(img, orientation)
-        const canvas = document.createElement('canvas')
-        const context = canvas.getContext('2d')
-        if (!context) {
-          reject(new QiniuError(
-            QiniuErrorName.GetCanvasContextFailed,
-            'context is null'
-          ))
-          return
-        }
+      const canvas = document.createElement('canvas')
+      const context = canvas.getContext('2d')
 
-        canvas.width = width
-        canvas.height = height
+      if (!context) {
+        reject(new QiniuError(
+          QiniuErrorName.GetCanvasContextFailed,
+          'context is null'
+        ))
+        return
+      }
 
-        this.clear(context, width, height)
-        context.save()
-        context.transform(...matrix)
-        context.drawImage(img, 0, 0)
-        context.restore()
-        resolve(canvas)
-      })
+      const { width, height } = img
+      canvas.height = height
+      canvas.width = width
+
+      this.clear(context, width, height)
+      context.drawImage(img, 0, 0)
+      resolve(canvas)
     })
   }
 
