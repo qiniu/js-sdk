@@ -15,10 +15,10 @@ interface UpHosts {
   }
 }
 
-export async function getUpHosts(accessKey: string, bucketName: string, protocol: InternalConfig['upprotocol']): Promise<UpHosts> {
+export async function getUpHosts(accessKey: string, bucketName: string, protocol: InternalConfig['upprotocol'], timeout?: number): Promise<UpHosts> {
   const params = stringify({ ak: accessKey, bucket: bucketName })
   const url = `${protocol}://api.qiniu.com/v2/query?${params}`
-  return utils.request(url, { method: 'GET' })
+  return utils.request(url, { method: 'GET', timeout })
 }
 
 /**
@@ -48,13 +48,15 @@ export function initUploadParts(
   token: string,
   bucket: string,
   key: string | null | undefined,
-  uploadUrl: string
+  uploadUrl: string,
+  timeout?: number
 ): utils.Response<InitPartsData> {
   const url = `${uploadUrl}/buckets/${bucket}/objects/${key != null ? utils.urlSafeBase64Encode(key) : '~'}/uploads`
   return utils.request<InitPartsData>(
     url,
     {
       method: 'POST',
+      timeout,
       headers: utils.getAuthHeaders(token)
     }
   )
@@ -160,7 +162,7 @@ export type UploadUrlConfig = Partial<Pick<Config, 'upprotocol' | 'uphost' | 're
  * @returns Promise
  * @description 获取上传 url
  */
-export async function getUploadUrl(_config: UploadUrlConfig, token: string): Promise<string> {
+export async function getUploadUrl(_config: UploadUrlConfig, token: string, timeout?: number): Promise<string> {
   const config = normalizeUploadConfig(_config)
   const protocol = config.upprotocol
 
@@ -168,7 +170,7 @@ export async function getUploadUrl(_config: UploadUrlConfig, token: string): Pro
     return `${protocol}://${config.uphost[0]}`
   }
   const putPolicy = utils.getPutPolicy(token)
-  const res = await getUpHosts(putPolicy.assessKey, putPolicy.bucketName, protocol)
+  const res = await getUpHosts(putPolicy.assessKey, putPolicy.bucketName, protocol, timeout)
   const hosts = res.data.up.acc.main
   return `${protocol}://${hosts[0]}`
 }

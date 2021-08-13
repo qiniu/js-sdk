@@ -24,6 +24,7 @@ export default class Direct extends Base {
 
     this.logger.info('formData inited.')
     const result = await direct(this.uploadHost!.getUrl(), formData, {
+      timeout: this.config.timeout,
       onProgress: data => {
         this.updateDirectProgress(data.loaded, data.total)
       },

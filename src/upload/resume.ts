@@ -153,6 +153,7 @@ export default class Resume extends Base {
 
     const requestOptions = {
       body: chunk,
+      timeout: this.config.timeout,
       onProgress,
       onCreate: (xhr: XMLHttpRequest) => this.addXhr(xhr)
     }
@@ -202,7 +203,8 @@ export default class Resume extends Base {
       this.getUploadInfo(),
       {
         onCreate: xhr => this.addXhr(xhr),
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
+        timeout: this.config.timeout
       }
     )
 
@@ -224,7 +226,8 @@ export default class Resume extends Base {
         this.token,
         this.bucketName,
         this.key,
-        this.uploadHost!.getUrl()
+        this.uploadHost!.getUrl(),
+        this.config.timeout
       )
       this.logger.info(`initd upload parts of id: ${res.data.uploadId}.`)
       this.uploadId = res.data.uploadId
