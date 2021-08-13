@@ -182,6 +182,7 @@ export type XHRHandler = (xhr: XMLHttpRequest) => void
 
 export interface RequestOptions {
   method: string
+  timeout?: number
   onProgress?: (data: Progress) => void
   onCreate?: XHRHandler
   body?: BodyInit | null
@@ -215,16 +216,30 @@ export function request<T>(url: string, options: RequestOptions): Response<T> {
       }
     })
 
+    const reqId = xhr.getResponseHeader('x-reqId') || ''
+
+    if (options.timeout) {
+      xhr.onloadstart = () => {
+        setTimeout(
+          () => {
+            if (xhr.readyState !== 4) {
+              reject(new QiniuNetworkError('timeout error', reqId, 'timeout'))
+              xhr.abort() // 会同步触发 onreadystatechange，因此放 reject 后面
+            }
+          },
+          options.timeout
+        )
+      }
+    }
+
     xhr.onreadystatechange = () => {
       const responseText = xhr.responseText
       if (xhr.readyState !== 4) {
         return
       }
 
-      const reqId = xhr.getResponseHeader('x-reqId') || ''
-
       if (xhr.status === 0) {
-        // 发生 0 基本都是网络错误，常见的比如跨域、断网、host 解析失败、系统拦截等等
+        // 发生 0 基本都是网络错误，常见的比如跨域、断网、host 解析失败、系统拦截、超时等等
         reject(new QiniuNetworkError('network error.', reqId))
         return
       }

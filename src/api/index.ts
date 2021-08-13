@@ -118,7 +118,8 @@ export function uploadComplete(
 export function deleteUploadedChunks(
   token: string,
   key: string | null | undefined,
-  uploadinfo: UploadInfo
+  uploadinfo: UploadInfo,
+  timeout?: number
 ): utils.Response<void> {
   const bucket = utils.getPutPolicy(token).bucketName
   const url = getBaseUrl(bucket, key, uploadinfo)
@@ -126,6 +127,7 @@ export function deleteUploadedChunks(
     url,
     {
       method: 'DELETE',
+      timeout,
       headers: utils.getAuthHeaders(token)
     }
   )

@@ -1,4 +1,7 @@
-import { computeMd5, createLocalKey, getPortFromUrl } from './helper'
+import mock from 'xhr-mock'
+
+import { QiniuNetworkError } from '../errors'
+import { computeMd5, createLocalKey, getPortFromUrl, request } from './helper'
 
 describe('api function test', () => {
   test('createLocalKey', () => {
@@ -39,5 +42,58 @@ describe('api function test', () => {
       const actual = getPortFromUrl(input)
       expect(actual).toStrictEqual(expected)
     }
+  })
+
+  describe('xhr test', () => {
+    beforeEach(() => mock.setup())
+    afterEach(() => mock.teardown())
+
+    it('reqeust timeout', async () => {
+      expect.assertions(4)
+
+      mock.post('/', () => new Promise(() => null))
+
+      await request('/', { method: 'POST', timeout: 1000, body: 'mock data' })
+        .catch((error: QiniuNetworkError) => {
+          expect(error).toBeInstanceOf(QiniuNetworkError)
+          expect(error.type).toBe('timeout')
+        })
+
+      mock.get('/', () => new Promise(() => null))
+
+      await request('/', { method: 'GET', timeout: 1000 })
+        .catch((error: QiniuNetworkError) => {
+          expect(error).toBeInstanceOf(QiniuNetworkError)
+          expect(error.type).toBe('timeout')
+        })
+    })
+
+    it('reqeust don\'t timeout', async () => {
+      const mockedFn = jest.fn()
+
+      mock.post('/', {
+        body: '{}'
+      })
+
+      await request('/', { method: 'POST', timeout: 2000, body: 'mock data' })
+        .then(mockedFn)
+        .catch((error: QiniuNetworkError) => {
+          expect(error).toBeInstanceOf(QiniuNetworkError)
+          expect(error.type).toBe('timeout')
+        })
+
+      mock.get('/', {
+        body: '{}'
+      })
+
+      await request('/', { method: 'GET', timeout: 2000 })
+        .then(mockedFn)
+        .catch((error: QiniuNetworkError) => {
+          expect(error).toBeInstanceOf(QiniuNetworkError)
+          expect(error.type).toBe('timeout')
+        })
+
+      expect(mockedFn).toBeCalledTimes(2)
+    })
   })
 })

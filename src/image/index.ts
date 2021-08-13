@@ -140,15 +140,15 @@ export function watermark(op: ImageWatermark, key?: string, domain?: string) {
 }
 
 // invoke the imageInfo api of Qiniu
-export function imageInfo(key: string, domain: string) {
+export function imageInfo(key: string, domain: string, timeout?: number) {
   const url = getImageUrl(key, domain) + '?imageInfo'
-  return request(url, { method: 'GET' })
+  return request(url, { method: 'GET', timeout })
 }
 
 // invoke the exif api of Qiniu
-export function exif(key: string, domain: string) {
+export function exif(key: string, domain: string, timeout?: number) {
   const url = getImageUrl(key, domain) + '?exif'
-  return request(url, { method: 'GET' })
+  return request(url, { method: 'GET', timeout })
 }
 
 export function pipeline(arr: Pipeline[], key?: string, domain?: string) {

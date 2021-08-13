@@ -26,6 +26,8 @@ export enum QiniuErrorName {
   RequestError = 'RequestError'
 }
 
+export type NetworkErrorType = 'timeout' | null
+
 export class QiniuError implements Error {
   public stack: string | undefined
   constructor(public name: QiniuErrorName, public message: string) {
@@ -56,7 +58,7 @@ export class QiniuRequestError extends QiniuError {
  * @description 由于跨域、证书错误、断网、host 解析失败、系统拦截等原因导致的错误
  */
 export class QiniuNetworkError extends QiniuRequestError {
-  constructor(message: string, reqId = '') {
+  constructor(message: string, reqId = '', public readonly type: NetworkErrorType = null) {
     super(0, reqId, message)
   }
 }

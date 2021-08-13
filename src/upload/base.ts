@@ -32,6 +32,8 @@ export interface InternalConfig {
   forceDirect: boolean
   /** 上传失败后重试次数 */
   retryCount: number
+  /** 超时时间 */
+  timeout: number
   /** 自定义上传域名 */
   uphost: string[]
   /** 自定义分片上传并发请求量 */
