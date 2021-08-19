@@ -15,6 +15,7 @@ script:
   - npm run test
   - npx codecov
   - npm run build
+  - echo "test"
 
 before_deploy:
   - npm run build
