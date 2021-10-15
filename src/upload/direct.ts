@@ -1,3 +1,5 @@
+import { CRC32 } from '../utils/crc32'
+
 import { direct } from '../api'
 
 import Base from './base'
@@ -14,6 +16,14 @@ export default class Direct extends Base {
       formData.append('key', this.key)
     }
     formData.append('fname', this.putExtra.fname)
+
+    // 如果开启了 CRC32 校验
+    // 则计算该文件的 CRC32 签名
+    if (this.config.checkByServer) {
+      const crc = new CRC32()
+      const crcSign = await crc.file(this.file)
+      formData.append('crc32', crcSign.toString())
+    }
 
     if (this.putExtra.customVars) {
       this.logger.info('init customVars.')

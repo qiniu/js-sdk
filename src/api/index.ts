@@ -76,14 +76,18 @@ export function uploadChunk(
   key: string | null | undefined,
   index: number,
   uploadInfo: UploadInfo,
-  options: Partial<utils.RequestOptions>
+  options: Partial<utils.RequestOptions>,
+  md5?: string
 ): utils.Response<UploadChunkData> {
   const bucket = utils.getPutPolicy(token).bucketName
   const url = getBaseUrl(bucket, key, uploadInfo) + `/${index}`
+  const headers = utils.getHeadersForChunkUpload(token)
+  if (md5) headers['Content-MD5'] = md5
+
   return utils.request<UploadChunkData>(url, {
     ...options,
     method: 'PUT',
-    headers: utils.getHeadersForChunkUpload(token)
+    headers
   })
 }
 

@@ -12,6 +12,7 @@ export function normalizeUploadConfig(config?: Partial<Config>, logger?: Logger)
     checkByMD5: false,
     forceDirect: false,
     useCdnDomain: true,
+    checkByServer: false,
     concurrentRequestLimit: 3,
     chunkSize: DEFAULT_CHUNK_SIZE,
 

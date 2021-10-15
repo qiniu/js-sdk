@@ -26,6 +26,8 @@ export interface Extra {
 export interface InternalConfig {
   /** 是否开启 cdn 加速 */
   useCdnDomain: boolean
+  /** 是否开启服务端校验 */
+  checkByServer: boolean
   /** 是否对分片进行 md5校验 */
   checkByMD5: boolean
   /** 强制直传 */

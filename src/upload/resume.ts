@@ -163,7 +163,8 @@ export default class Resume extends Base {
       this.key,
       chunkInfo.index + 1,
       this.getUploadInfo(),
-      requestOptions
+      requestOptions,
+      shouldCheckMD5 ? md5 : undefined
     )
     this.logger.info(`part ${index} upload completed.`)
 

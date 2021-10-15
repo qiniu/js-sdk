@@ -2,6 +2,9 @@
     var token = res.uptoken;
     var domain = res.domain;
     var config = {
+      checkCrc: true,
+      checkByMD5: true,
+      forceDirect: true,
       useCdnDomain: true,
       disableStatisticsReport: false,
       retryCount: 6,
