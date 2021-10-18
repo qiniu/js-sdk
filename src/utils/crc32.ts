@@ -5,6 +5,7 @@ import { MB } from './helper'
 /**
  * 以下 class 实现参考
  * https://github.com/Stuk/jszip/blob/d4702a70834bd953d4c2d0bc155fad795076631a/lib/crc32.js
+ * 该实现主要针对大文件优化、对计算的值进行了 `>>> 0` 运算（为与服务端保持一致）
  */
 export class CRC32 {
   private crc = -1
