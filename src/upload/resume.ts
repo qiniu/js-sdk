@@ -153,6 +153,7 @@ export default class Resume extends Base {
 
     const requestOptions = {
       body: chunk,
+      md5: this.config.checkByServer ? md5 : undefined,
       onProgress,
       onCreate: (xhr: XMLHttpRequest) => this.addXhr(xhr)
     }
@@ -164,7 +165,6 @@ export default class Resume extends Base {
       chunkInfo.index + 1,
       this.getUploadInfo(),
       requestOptions,
-      shouldCheckMD5 ? md5 : undefined
     )
     this.logger.info(`part ${index} upload completed.`)
 

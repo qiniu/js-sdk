@@ -12,6 +12,7 @@ export class CRC32 {
       let t = i
       for (let j = 0; j < 8; j++) {
         if (t & 1) {
+          // IEEE 标准
           t = (t >>> 1) ^ 0xEDB88320
         } else {
           t >>>= 1
@@ -33,6 +34,8 @@ export class CRC32 {
 
   async file(file: File): Promise<number> {
     if (file.size <= MB) {
+      // arrayBuffer 方法 jest(jsdom) 暂时不支持、所以不对该方法添加单测
+      // https://github.com/jsdom/jsdom/issues/3206 => https://github.com/jsdom/jsdom/issues/2555
       const block = await file.arrayBuffer()
       this.append(new Uint8Array(block))
       return (this.crc ^ -1) >>> 0
@@ -48,5 +51,10 @@ export class CRC32 {
     }
 
     return (this.crc ^ -1) >>> 0
+  }
+
+  static file(file: File): Promise<number> {
+    const crc = new CRC32()
+    return crc.file(file)
   }
 }

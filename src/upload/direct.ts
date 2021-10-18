@@ -17,11 +17,8 @@ export default class Direct extends Base {
     }
     formData.append('fname', this.putExtra.fname)
 
-    // 如果开启了 CRC32 校验
-    // 则计算该文件的 CRC32 签名
     if (this.config.checkByServer) {
-      const crc = new CRC32()
-      const crcSign = await crc.file(this.file)
+      const crcSign = await CRC32.file(this.file)
       formData.append('crc32', crcSign.toString())
     }
 
