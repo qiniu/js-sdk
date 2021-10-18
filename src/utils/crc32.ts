@@ -2,6 +2,10 @@
 
 import { MB } from './helper'
 
+/**
+ * 以下 class 实现参考
+ * https://github.com/Stuk/jszip/blob/d4702a70834bd953d4c2d0bc155fad795076631a/lib/crc32.js
+ */
 export class CRC32 {
   private crc = -1
   private table = this.makeTable()
@@ -32,12 +36,33 @@ export class CRC32 {
     this.crc = crc
   }
 
+  private async readAsUint8Array(file: File | Blob): Promise<Uint8Array> {
+    if (typeof file.arrayBuffer === 'function') {
+      return new Uint8Array(await file.arrayBuffer())
+    }
+
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => {
+        if (reader.result == null) {
+          reject()
+          return
+        }
+
+        if (typeof reader.result === 'string') {
+          reject()
+          return
+        }
+
+        resolve(new Uint8Array(reader.result))
+      }
+      reader.readAsArrayBuffer(file)
+    })
+  }
+
   async file(file: File): Promise<number> {
     if (file.size <= MB) {
-      // arrayBuffer 方法 jest(jsdom) 暂时不支持、所以不对该方法添加单测
-      // https://github.com/jsdom/jsdom/issues/3206 => https://github.com/jsdom/jsdom/issues/2555
-      const block = await file.arrayBuffer()
-      this.append(new Uint8Array(block))
+      this.append(await this.readAsUint8Array(file))
       return (this.crc ^ -1) >>> 0
     }
 
@@ -46,7 +71,7 @@ export class CRC32 {
       const start = index * MB
       const end = index === (count - 1) ? file.size : start + MB
       // eslint-disable-next-line no-await-in-loop
-      const chuck = await file.slice(start, end).arrayBuffer()
+      const chuck = await this.readAsUint8Array(file.slice(start, end))
       this.append(new Uint8Array(chuck))
     }
 
