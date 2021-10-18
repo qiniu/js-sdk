@@ -37,6 +37,10 @@ export class CRC32 {
     this.crc = crc
   }
 
+  private compute() {
+    return (this.crc ^ -1) >>> 0
+  }
+
   private async readAsUint8Array(file: File | Blob): Promise<Uint8Array> {
     if (typeof file.arrayBuffer === 'function') {
       return new Uint8Array(await file.arrayBuffer())
@@ -64,7 +68,7 @@ export class CRC32 {
   async file(file: File): Promise<number> {
     if (file.size <= MB) {
       this.append(await this.readAsUint8Array(file))
-      return (this.crc ^ -1) >>> 0
+      return this.compute()
     }
 
     const count = Math.ceil(file.size / MB)
@@ -76,7 +80,7 @@ export class CRC32 {
       this.append(new Uint8Array(chuck))
     }
 
-    return (this.crc ^ -1) >>> 0
+    return this.compute()
   }
 
   static file(file: File): Promise<number> {
