@@ -1854,11 +1854,6 @@ execa@^5.0.0:
     signal-exit "^3.0.3"
     strip-final-newline "^2.0.0"
 
-exif-js@^2.3.0:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/exif-js/-/exif-js-2.3.0.tgz#9d10819bf571f873813e7640241255ab9ce1a814"
-  integrity sha1-nRCBm/Vx+HOBPnZAJBJVq5zhqBQ=
-
 expand-brackets@^2.1.4:
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/expand-brackets/-/expand-brackets-2.1.4.tgz#b77735e315ce30f6b6eff0f83b04151a22449622"
@@ -4021,13 +4016,12 @@ punycode@^2.1.0:
   resolved "https://registry.yarnpkg.com/punycode/-/punycode-2.1.1.tgz#b58b010ac40c22c5657616c8d2c2c02c7bf479ec"
   integrity sha512-XRsRjdf+j5ml+y/6GKHPZbrF/8p2Yga0JPtdqTIY2Xe5ohJPD9saDJJLPvp9+NSBprVvevdXZybnj2cv8OEd0A==
 
-qiniu-js@^3.3.1:
-  version "3.3.1"
-  resolved "https://registry.yarnpkg.com/qiniu-js/-/qiniu-js-3.3.1.tgz#1ba589ac53d1437d63a814b8d32cc61c4ee58801"
-  integrity sha512-IwJgCQbpsRiIFAYi6/ZzhZDrTXgOF1fRMDxkWpKgT+hPPidN6xPLlMf0w1X+arOZ3tiDTWvQX9G4O8FZHUhC4Q==
+qiniu-js@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/qiniu-js/-/qiniu-js-3.4.0.tgz#36980de07be4bab229ec0193a32c3318aa24b748"
+  integrity sha512-QJ5ShXQkyPuhMXEruyLza3V++8crvDNLTFOXzuMXrnXCvwtEbP+MZyYo4D96HRXnSFb6lAJ9s2QdzW1W3LBiIQ==
   dependencies:
     "@babel/runtime-corejs2" "^7.10.2"
-    exif-js "^2.3.0"
     querystring "^0.2.1"
     spark-md5 "^3.0.0"
 

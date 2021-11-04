@@ -5,7 +5,7 @@ import { UploadProgress } from 'qiniu-js/esm/upload'
 import { loadSetting } from './utils'
 
 export enum Status {
-  Readied, // 准备好了
+  Ready, // 准备好了
   Processing, // 上传中
   Finished // 任务已结束（完成、失败、中断）
 }
@@ -82,7 +82,7 @@ export function useUpload(file: File) {
     const { uphost } = loadSetting()
 
     if (token != null) {
-      setState(Status.Readied)
+      setState(Status.Ready)
       setObservable(upload(
         file,
         file.name,

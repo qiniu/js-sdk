@@ -33,7 +33,7 @@ export function Item(props: IProps) {
                 width="14"
               />
             )}
-            {(state != null && [Status.Readied, Status.Finished].includes(state)) && (
+            {(state != null && [Status.Ready, Status.Finished].includes(state)) && (
               <img
                 onClick={() => start()}
                 className={classnames.img}

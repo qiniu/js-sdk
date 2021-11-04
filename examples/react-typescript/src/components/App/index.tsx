@@ -3,7 +3,7 @@ import * as React from 'react'
 import { Queue } from '../Queue'
 import { Layout } from '../Layout'
 import { Settings } from '../Settings'
-import { SelectFile } from '../SelectFile'
+import { SelectFile, UniqueFile } from '../SelectFile'
 
 import settingIcon from '../Settings/assets/setting.svg'
 import classnames from './style.less'

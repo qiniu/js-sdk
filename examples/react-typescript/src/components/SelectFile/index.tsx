@@ -3,6 +3,11 @@ import * as React from 'react'
 import folderIcon from './assets/folder.svg'
 import classnames from './style.less'
 
+export interface UniqueFile {
+  key: string
+  file: File
+}
+
 interface IProps {
   onFile(file: UniqueFile): void
 }
