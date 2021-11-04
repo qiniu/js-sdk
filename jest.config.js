@@ -6,6 +6,7 @@ module.exports = {
   testPathIgnorePatterns: [
     "esm",
     "lib",
+    "examples",
     "node_modules"
   ]
 };

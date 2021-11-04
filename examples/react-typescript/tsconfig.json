@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "target": "es6",
+    "module": "es6",
+    "strict": true,
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "typeRoots": [
+      "node_modules/@types",
+      "types"
+    ]
+  },
+  "include": [
+    "src",
+    "types"
+  ]
+}
