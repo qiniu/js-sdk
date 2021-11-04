@@ -152,20 +152,23 @@ export default class Resume extends Base {
     }
 
     const requestOptions = {
-      body: chunk,
-      md5: this.config.checkByServer ? md5 : undefined,
       onProgress,
-      onCreate: (xhr: XMLHttpRequest) => this.addXhr(xhr)
+      md5: this.config.checkByServer ? md5 : undefined
     }
 
     this.logger.info(`part ${index} start uploading.`)
-    const response = await uploadChunk(
-      this.token,
-      this.key,
-      chunkInfo.index + 1,
-      this.getUploadInfo(),
-      requestOptions
-    )
+
+    const request = uploadChunk({
+      chunk,
+      key: this.key,
+      token: this.token,
+      index: chunkInfo.index + 1,
+      uploadInfo: this.getUploadInfo(),
+      options: requestOptions
+    })
+
+    this.addRequest(request)
+    const response = await request
     this.logger.info(`part ${index} upload completed.`)
 
     // 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null，这里在每次分片上传完成后都手动更新下 progress
@@ -202,7 +205,7 @@ export default class Resume extends Base {
       this.key,
       this.getUploadInfo(),
       {
-        onCreate: xhr => this.addXhr(xhr),
+        onCreate: xhr => this.addRequest(xhr),
         body: JSON.stringify(data)
       }
     )

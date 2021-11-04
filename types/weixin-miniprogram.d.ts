@@ -6,8 +6,8 @@ declare namespace WeixinMiniProgram {
     timeout?: number // 毫秒
     data?: string | object | ArrayBuffer
     complete?: () => void
-    success?: () => void
-    fail?: () => void
+    success?: (response: any) => void
+    fail?: (error: any) => void
   }
 
   interface RequestTask {

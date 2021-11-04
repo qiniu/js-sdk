@@ -1,4 +1,4 @@
-import { NetworkClient, RequestOptions, Response, Body, NetworkPromise } from 'network'
+import { NetworkClient, RequestOptions, Response, Body, NetworkPromise } from 'network/interface'
 import { QiniuError, QiniuErrorName, QiniuNetworkError, QiniuRequestError } from 'errors'
 
 export class XhrNetworkClient implements NetworkClient {
@@ -10,11 +10,11 @@ export class XhrNetworkClient implements NetworkClient {
     return this.request(url, 'DELETE', undefined, options)
   }
 
-  public put<T>(url: string, body: Body, options?: RequestOptions): NetworkPromise<Response<T>> {
+  public put<T>(url: string, body?: Body, options?: RequestOptions): NetworkPromise<Response<T>> {
     return this.request(url, 'PUT', body, options)
   }
 
-  public post<T>(url: string, body: Body, options?: RequestOptions): NetworkPromise<Response<T>> {
+  public post<T>(url: string, body?: Body, options?: RequestOptions): NetworkPromise<Response<T>> {
     return this.request(url, 'POST', body, options)
   }
 
@@ -39,7 +39,10 @@ export class XhrNetworkClient implements NetworkClient {
       xhr.open(method, url);
 
       (promise as any).abort = () => {
-        if (xhr != null) xhr.abort()
+        if (xhr != null) {
+          xhr.onreadystatechange = null
+          reject()
+        }
       }
 
       if (options != null && options.headers) {

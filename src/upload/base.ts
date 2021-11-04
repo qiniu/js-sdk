@@ -4,6 +4,7 @@ import { region } from '../config'
 import * as utils from '../utils'
 
 import { Host, HostPool } from './hosts'
+import { Abort } from 'network/interface'
 
 export const DEFAULT_CHUNK_SIZE = 4 // 单位 MB
 
@@ -108,7 +109,7 @@ export default abstract class Base {
   protected retryCount = 0
 
   protected uploadHost?: Host
-  protected xhrList: XMLHttpRequest[] = []
+  protected requestList: Abort[] = []
 
   protected file: File
   protected key: string | null | undefined
@@ -159,7 +160,7 @@ export default abstract class Base {
       const putPolicy = utils.getPutPolicy(this.token)
       this.bucketName = putPolicy.bucketName
       this.assessKey = putPolicy.assessKey
-    } catch (error) {
+    } catch (error: any) {
       logger.error('get putPolicy from token failed.', error)
       this.onError(error)
     }
@@ -264,7 +265,7 @@ export default abstract class Base {
       this.checkAndUnfreezeHost()
       this.sendLog(result.reqId, 200)
       return
-    } catch (err) {
+    } catch (err: any) {
       this.logger.error(err)
       this.clear()
 
@@ -295,12 +296,11 @@ export default abstract class Base {
 
   private clear() {
     this.logger.info('start cleaning all xhr.')
-    this.xhrList.forEach(xhr => {
-      xhr.onreadystatechange = null
-      xhr.abort()
+    this.requestList.forEach(task => {
+      task.abort()
     })
     this.logger.info('cleanup completed.')
-    this.xhrList = []
+    this.requestList = []
   }
 
   public stop() {
@@ -309,8 +309,8 @@ export default abstract class Base {
     this.aborted = true
   }
 
-  public addXhr(xhr: XMLHttpRequest) {
-    this.xhrList.push(xhr)
+  public addRequest(request: Abort) {
+    this.requestList.push(request)
   }
 
   private sendLog(reqId: string, code: number) {

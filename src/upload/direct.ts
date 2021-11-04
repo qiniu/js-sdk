@@ -34,7 +34,7 @@ export default class Direct extends Base {
       onProgress: data => {
         this.updateDirectProgress(data.loaded, data.total)
       },
-      onCreate: xhr => this.addXhr(xhr)
+      onCreate: xhr => this.addRequest(xhr)
     })
 
     this.logger.info('Direct progress finish.')

@@ -3,6 +3,8 @@ import { stringify } from 'querystring'
 import { normalizeUploadConfig } from '../utils'
 import { Config, InternalConfig, UploadInfo } from '../upload'
 import * as utils from '../utils'
+import { network } from 'network'
+import { NetworkPromise, RequestOptions, Response } from 'network/interface'
 
 interface UpHosts {
   data: {
@@ -18,7 +20,7 @@ interface UpHosts {
 export async function getUpHosts(accessKey: string, bucketName: string, protocol: InternalConfig['upprotocol']): Promise<UpHosts> {
   const params = stringify({ ak: accessKey, bucket: bucketName })
   const url = `${protocol}://api.qiniu.com/v2/query?${params}`
-  return utils.request(url, { method: 'GET' })
+  return network.get(url)
 }
 
 /**
@@ -49,15 +51,9 @@ export function initUploadParts(
   bucket: string,
   key: string | null | undefined,
   uploadUrl: string
-): utils.Response<InitPartsData> {
+) {
   const url = `${uploadUrl}/buckets/${bucket}/objects/${key != null ? utils.urlSafeBase64Encode(key) : '~'}/uploads`
-  return utils.request<InitPartsData>(
-    url,
-    {
-      method: 'POST',
-      headers: utils.getAuthHeaders(token)
-    }
-  )
+  return network.post(url, undefined, { headers: utils.getAuthHeaders(token) })
 }
 
 export interface UploadChunkData {
@@ -71,23 +67,23 @@ export interface UploadChunkData {
  * @param uploadInfo 上传信息
  * @param options 请求参数
  */
-export function uploadChunk(
+export function uploadChunk(data: {
   token: string,
-  key: string | null | undefined,
   index: number,
+  key: string | null | undefined,
   uploadInfo: UploadInfo,
-  options: Partial<utils.RequestOptions & { md5: string }>
-): utils.Response<UploadChunkData> {
+  chunk: Blob,
+  options: Partial<RequestOptions & { md5: string }>
+}): NetworkPromise<Response<UploadChunkData>> {
+  const { key, token, index, chunk, options, uploadInfo } = data
+
+  const { md5, ...rest } = options
   const bucket = utils.getPutPolicy(token).bucketName
   const url = getBaseUrl(bucket, key, uploadInfo) + `/${index}`
-  const headers = utils.getHeadersForChunkUpload(token)
-  if (options.md5) headers['Content-MD5'] = options.md5
 
-  return utils.request<UploadChunkData>(url, {
-    ...options,
-    method: 'PUT',
-    headers
-  })
+  const headers = utils.getHeadersForChunkUpload(token)
+  if (md5) headers['Content-MD5'] = options.md5
+  return network.put(url, chunk, { ...rest, headers })
 }
 
 export type UploadCompleteData = any
@@ -102,15 +98,11 @@ export function uploadComplete(
   token: string,
   key: string | null | undefined,
   uploadInfo: UploadInfo,
-  options: Partial<utils.RequestOptions>
-): utils.Response<UploadCompleteData> {
+  options: Partial<RequestOptions>
+) {
   const bucket = utils.getPutPolicy(token).bucketName
   const url = getBaseUrl(bucket, key, uploadInfo)
-  return utils.request<UploadCompleteData>(url, {
-    ...options,
-    method: 'POST',
-    headers: utils.getHeadersForMkFile(token)
-  })
+  return network.post(url, undefined, { headers: utils.getHeadersForMkFile(token) })
 }
 
 /**
@@ -122,16 +114,10 @@ export function deleteUploadedChunks(
   token: string,
   key: string | null | undefined,
   uploadinfo: UploadInfo
-): utils.Response<void> {
+) {
   const bucket = utils.getPutPolicy(token).bucketName
   const url = getBaseUrl(bucket, key, uploadinfo)
-  return utils.request(
-    url,
-    {
-      method: 'DELETE',
-      headers: utils.getAuthHeaders(token)
-    }
-  )
+  return network.delete(url, { headers: utils.getAuthHeaders(token) })
 }
 
 /**
@@ -144,13 +130,9 @@ export function deleteUploadedChunks(
 export function direct(
   url: string,
   data: FormData,
-  options: Partial<utils.RequestOptions>
-): Promise<UploadCompleteData> {
-  return utils.request<UploadCompleteData>(url, {
-    method: 'POST',
-    body: data,
-    ...options
-  })
+  options: RequestOptions
+) {
+  return network.post(url, data, options)
 }
 
 export type UploadUrlConfig = Partial<Pick<Config, 'upprotocol' | 'uphost' | 'region' | 'useCdnDomain'>>
