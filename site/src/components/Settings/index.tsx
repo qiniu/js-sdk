@@ -27,7 +27,7 @@ export function Settings(props: IProps) {
   React.useEffect(()=> {
     if (deadline > 0) return
     // 基于当前时间加上 3600s
-    setDeadline(Math.floor(Date.now() / 1000)  + 3600)
+    setDeadline(Math.floor(Date.now() / 1000) + 3600)
   },[deadline])
 
   return (
