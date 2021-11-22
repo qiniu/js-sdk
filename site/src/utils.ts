@@ -1,4 +1,3 @@
-import { Buffer } from 'buffer'
 import { Base64 } from 'js-base64'
 import * as createHmac from 'create-hmac'
 
