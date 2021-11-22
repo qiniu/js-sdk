@@ -27,7 +27,7 @@ export interface SettingsData extends TokenOptions {
   uphost?: string
 }
 
-// 加载配置、此配置由 Setting 组件设置
+// 加载配置，此配置由 Setting 组件设置
 export function loadSetting(): SettingsData {
   const data = localStorage.getItem('setting')
   if (data != null) return JSON.parse(data)
