@@ -65,8 +65,7 @@ export function useUpload(file: File) {
 
   // 获取 token
   React.useEffect(() => {
-    const setting = loadSetting() || {}
-    const { assessKey, secretKey, bucketName, deadline } = setting
+    const { assessKey, secretKey, bucketName, deadline } = loadSetting()
     if (!assessKey || !secretKey || !bucketName || !deadline) {
       setError(new Error('请点开设置并输入必要的配置信息'))
       return
