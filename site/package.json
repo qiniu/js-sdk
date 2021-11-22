@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "webpack serve --mode development --inline --hot --open",
     "start": "webpack serve --mode development",
-    "build": "webpack --mode production",
+    "build": "webpack --mode development",
     "lint": "eslint --ext .tsx,.ts src/"
   },
   "license": "MIT",
