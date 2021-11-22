@@ -35,16 +35,16 @@
     "webpack": "^5.37.0",
     "webpack-cli": "^4.7.0",
     "webpack-dev-server": "^3.11.2",
-    "webpackbar": "^5.0.0-3"
+    "webpackbar": "^5.0.0-3",
+    "buffer": "^6.0.3",
+    "stream-browserify": "^3.0.0"
   },
   "dependencies": {
-    "buffer": "^6.0.3",
     "byte-size": "^7.0.1",
     "create-hmac": "^1.1.7",
     "js-base64": "^3.7.2",
     "qiniu-js": "^3.4.0",
     "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "stream-browserify": "^3.0.0"
+    "react-dom": "^17.0.2"
   }
 }
