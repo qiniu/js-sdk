@@ -4,3 +4,5 @@ bower_components
 deploy.sh
 npm-debug.log
 test/config.json
+example
+site
