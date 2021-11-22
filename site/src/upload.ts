@@ -2,7 +2,7 @@ import * as React from 'react'
 import { upload } from 'qiniu-js'
 import { UploadProgress } from 'qiniu-js/esm/upload'
 
-import { loadSetting } from './utils'
+import { generateUploadToken, loadSetting } from './utils'
 
 export enum Status {
   Ready, // 准备好了
@@ -71,16 +71,14 @@ export function useUpload(file: File) {
       return
     }
 
-    fetch(`/api/token?setting=${encodeURIComponent(JSON.stringify(setting))}`)
-      .then(newResponse => newResponse.text())
-      .then(newToken => setToken(newToken))
-      .catch(newError => setError(new Error(`获取 Token 失败: ${newError.message || newError.name}`)))
+    // FIXME: 这里为啥 ts 类型推导有问题
+    setToken(generateUploadToken(setting as any))
   }, [file])
 
   // 创建上传任务
   React.useEffect(() => {
     const { uphost } = loadSetting()
-
+    console.log(token)
     if (token != null) {
       setState(Status.Ready)
       setObservable(upload(
