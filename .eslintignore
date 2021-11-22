@@ -2,4 +2,5 @@
 /src/__tests__
 /test/*
 dist
+site
 *.js

@@ -11,6 +11,10 @@ module.exports = {
 
   resolve: {
     extensions: ['.js', '.ts', '.tsx'],
+    alias: {
+      buffer: require.resolve("buffer/"),
+      stream: require.resolve("stream-browserify")
+    },
   },
   entry: ['./index.tsx'],
 
@@ -24,16 +28,7 @@ module.exports = {
     inline: true,
     host: '0.0.0.0',
     stats: 'errors-only',
-    contentBase: './dist',
-    before: function (app) {
-      app.get('/api/token', function (req, res) {
-        const dataString = decodeURIComponent(req.query.setting)
-        const { assessKey, secretKey, bucketName, deadline } = JSON.parse(dataString)
-        const putPolicy = new qiniu.rs.PutPolicy({ scope: bucketName, deadline })
-        var mac = new qiniu.auth.digest.Mac(assessKey, secretKey)
-        res.send(putPolicy.uploadToken(mac))
-      })
-    }
+    contentBase: './dist'
   },
 
   module: {

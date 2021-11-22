@@ -9,7 +9,7 @@ interface IProps { }
 export function Settings(props: IProps) {
   const setting = React.useMemo(() => utils.loadSetting(), [])
   const [uphost, seUphost] = React.useState<string | undefined>(setting.uphost)
-  const [deadline, setDeadline] = React.useState<number>(setting.deadline || 3600)
+  const [deadline, setDeadline] = React.useState<number>(setting.deadline || 0)
   const [assessKey, setAssessKey] = React.useState<string | undefined>(setting.assessKey)
   const [secretKey, setSecretKey] = React.useState<string | undefined>(setting.secretKey)
   const [bucketName, setBucketName] = React.useState<string | undefined>(setting.bucketName)
@@ -23,6 +23,12 @@ export function Settings(props: IProps) {
       uphost
     })
   }, [assessKey, secretKey, bucketName, deadline, uphost])
+
+  React.useEffect(()=> {
+    if (deadline > 0) return
+    // 基于当前时间加上 3600s
+    setDeadline(Math.floor(Date.now() / 1000) + 3600)
+  },[deadline])
 
   return (
     <div className={classnames.settings}>
