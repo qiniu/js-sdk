@@ -1,5 +1,7 @@
 /src/__mock__
 /src/__tests__
 /test/*
+example
 dist
+site
 *.js
