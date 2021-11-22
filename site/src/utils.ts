@@ -21,7 +21,6 @@ export function generateUploadToken(options: Required<TokenOptions>) {
   const encodedPutPolicy = base64UrlSafeEncode(Base64.encode(putPolicy))
   const sign = base64UrlSafeEncode(hmacEncoder.update(encodedPutPolicy).digest('base64'))
   const token = `${assessKey}:${sign}:${encodedPutPolicy}`
-  console.log(token)
   return token
 }
 
