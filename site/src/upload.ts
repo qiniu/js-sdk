@@ -2,7 +2,7 @@ import * as React from 'react'
 import { upload } from 'qiniu-js'
 import { UploadProgress } from 'qiniu-js/esm/upload'
 
-import { loadSetting } from './utils'
+import { generateUploadToken, loadSetting } from './utils'
 
 export enum Status {
   Ready, // 准备好了
@@ -65,16 +65,15 @@ export function useUpload(file: File) {
 
   // 获取 token
   React.useEffect(() => {
-    const setting = loadSetting()
-    if (setting == null || !setting.assessKey || !setting.secretKey || !setting.bucketName) {
+    const setting = loadSetting() || {}
+    const { assessKey, secretKey, bucketName, deadline } = setting
+    if (!assessKey || !secretKey || !bucketName || !deadline) {
       setError(new Error('请点开设置并输入必要的配置信息'))
       return
     }
 
-    fetch(`/api/token?setting=${encodeURIComponent(JSON.stringify(setting))}`)
-      .then(newResponse => newResponse.text())
-      .then(newToken => setToken(newToken))
-      .catch(newError => setError(new Error(`获取 Token 失败: ${newError.message || newError.name}`)))
+    // 线上应该使用服务端生成 token
+    setToken(generateUploadToken({ assessKey, secretKey, bucketName, deadline }))
   }, [file])
 
   // 创建上传任务

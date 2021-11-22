@@ -1,8 +1,31 @@
-export interface SettingsData {
+import { Buffer } from 'buffer'
+import { Base64 } from 'js-base64'
+import * as createHmac from 'create-hmac'
+
+export interface TokenOptions {
   assessKey?: string
   secretKey?: string
   bucketName?: string
   deadline?: number
+}
+
+function base64UrlSafeEncode(target: string): string {
+  return target.replace(/\//g, '_').replace(/\+/g, '-')
+}
+
+export function generateUploadToken(options: Required<TokenOptions>) {
+  const { deadline, bucketName, assessKey, secretKey } = options
+  
+  const hmacEncoder = createHmac('sha1', secretKey)
+  const putPolicy = JSON.stringify({ scope: bucketName, deadline })
+  const encodedPutPolicy = base64UrlSafeEncode(Base64.encode(putPolicy))
+  const sign = base64UrlSafeEncode(hmacEncoder.update(encodedPutPolicy).digest('base64'))
+  const token = `${assessKey}:${sign}:${encodedPutPolicy}`
+  console.log(token)
+  return token
+}
+
+export interface SettingsData extends TokenOptions {
   uphost?: string
 }
 
