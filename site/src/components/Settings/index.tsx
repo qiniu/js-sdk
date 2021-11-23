@@ -8,11 +8,11 @@ interface IProps { }
 
 export function Settings(props: IProps) {
   const setting = React.useMemo(() => utils.loadSetting(), [])
-  const [uphost, seUphost] = React.useState<string | undefined>(setting.uphost)
+  const [uphost, seUphost] = React.useState<string>(setting.uphost || '')
   const [deadline, setDeadline] = React.useState<number>(setting.deadline || 0)
-  const [assessKey, setAssessKey] = React.useState<string | undefined>(setting.assessKey)
-  const [secretKey, setSecretKey] = React.useState<string | undefined>(setting.secretKey)
-  const [bucketName, setBucketName] = React.useState<string | undefined>(setting.bucketName)
+  const [assessKey, setAssessKey] = React.useState<string>(setting.assessKey || '')
+  const [secretKey, setSecretKey] = React.useState<string>(setting.secretKey || '')
+  const [bucketName, setBucketName] = React.useState<string>(setting.bucketName || '')
 
   React.useEffect(() => {
     utils.saveSetting({
