@@ -12,7 +12,7 @@ function OfficialSite() {
   )
 }
 
-function Doc() {
+function OfficialDoc() {
   return (
     <a
       rel="noopener"
@@ -36,7 +36,7 @@ function Issue() {
   )
 }
 
-function V2Href() {
+function V2Link() {
   return (
     <a
       rel="noopener"
@@ -59,9 +59,9 @@ export function Layout(props: React.PropsWithChildren<IProps>) {
       </div>
       <footer className={classnames.footer}>
         对象存储文件上传 DEMO <OfficialSite />
-        <Doc />
+        <OfficialDoc />
         <Issue />
-        <V2Href />
+        <V2Link />
       </footer>
     </>
   )
