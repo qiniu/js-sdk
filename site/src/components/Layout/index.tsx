@@ -3,7 +3,6 @@ import * as React from 'react'
 import qiniuLogo from './assets/logo.svg'
 import classnames from './style.less'
 
-
 function OfficialSite() {
   return (
     <>
