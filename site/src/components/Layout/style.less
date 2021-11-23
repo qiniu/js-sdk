@@ -19,8 +19,17 @@
   text-align: center;
 
   a {
-    color: #777;
+    color: inherit;
+    outline: none;
+  }
+
+  a:hover {
+    color: rgb(44, 178, 255);
     outline: none;
     text-decoration: none;
+  }
+
+  a + a {
+    margin-left: 0.5rem;
   }
 }

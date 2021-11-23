@@ -10,7 +10,7 @@ import classnames from './style.less'
 
 export const App = () => {
   const [fileList, setFileList] = React.useState<UniqueFile[]>([])
-  const [settingVisible, setSettingVisible] = React.useState(false)
+  const [settingVisible, setSettingVisible] = React.useState(true)
 
   const selectFile = (file: UniqueFile) => {
     setFileList(files => [file, ...files])

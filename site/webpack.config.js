@@ -4,6 +4,20 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 const ESLintPlugin = require('eslint-webpack-plugin')
 const WebpackBar = require('webpackbar')
 
+const htmlTemp = `
+<!DOCTYPE html>
+<html>
+  <head>
+    <title state-data-title="">七牛云 - JS SDK 示例 V3</title>
+    <meta name="viewport" content="initial-scale=1.0,width=device-width,user-scalable=no">
+    <link rel="shortcut icon" href="https://qiniu.staticfile.org/favicon.ico" type="image/vnd.microsoft.icon">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+`
+
 module.exports = {
   context: path.join(__dirname, 'src'),
   devtool: 'source-map',
@@ -70,7 +84,7 @@ module.exports = {
 
   plugins: [
     new HtmlWebpackPlugin({
-      templateContent: '<!DOCTYPE html><html><body><div id="root"></div></body></html>',
+      templateContent: htmlTemp,
       inject: 'head'
     }),
     new HotModuleReplacementPlugin(),

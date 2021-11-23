@@ -3,8 +3,8 @@ import * as React from 'react'
 import classnames from './style.less'
 
 interface IProps {
-  value: string | undefined
-  onChange(v: string | undefined): void
+  value: string
+  onChange(v: string): void
 
   placeholder?: string | undefined
 }
