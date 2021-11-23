@@ -58,8 +58,7 @@ export function Layout(props: React.PropsWithChildren<IProps>) {
         {props.children}
       </div>
       <footer className={classnames.footer}>
-        对象存储文件上传 DEMO
-        <OfficialSite />
+        对象存储文件上传 DEMO <OfficialSite />
         <Doc />
         <Issue />
         <V2Href />
