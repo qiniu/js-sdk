@@ -3,7 +3,7 @@ import * as React from 'react'
 import qiniuLogo from './assets/logo.svg'
 import classnames from './style.less'
 
-function OfficialSite() {
+function Copyright() {
   return (
     <>
       © {new Date().getFullYear()} <a href="https://www.qiniu.com/" rel="noopener" target="_blank">七牛云</a>
@@ -57,7 +57,7 @@ export function Layout(props: React.PropsWithChildren<IProps>) {
         {props.children}
       </div>
       <footer className={classnames.footer}>
-        对象存储文件上传 DEMO <OfficialSite />
+        对象存储文件上传 DEMO <Copyright />
         <OfficialDoc />
         <Issue />
         <V2Link />
