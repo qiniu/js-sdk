@@ -64,18 +64,23 @@
   position: relative;
 
   display: flex;
+  flex-wrap: wrap;
   flex-direction: row;
   align-items: center;
 
   list-style: none;
   padding-inline-start: 0;
 
-  li {
+  .expanded {
     flex: 1;
+  }
+
+  li {
+    margin: 1px;
     padding: 1px;
-    margin: 0 1px;
+    min-width: 4px;
     border-radius: 2px;
-    border:#333 solid 1px;
+    border: #333 solid 1px;
 
     span {
       height: 10px;

@@ -93,12 +93,15 @@ function ProgressBar(props: { progress: UploadProgress | null }) {
     return []
   }, [props.progress])
 
+  // 一行以内就需要撑开
+  const isExpanded = chunks.length < 18
+
   return (
     <ul className={classnames.progressBar}>
       {chunks.map((chunk, index) => {
         const cacheName = chunk.fromCache ? classnames.cachedChunk : ''
         return (
-          <li key={index}>
+          <li key={index} className={isExpanded ? classnames.expanded : ''}>
             <span className={cacheName} style={{ width: chunk.percent + '%' }}>
             </span>
           </li>
