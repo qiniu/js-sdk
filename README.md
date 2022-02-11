@@ -505,7 +505,7 @@ qiniu.compressImage(file, options).then(data => {
 
 **2. 限制上传文件的类型：**
 
-通过在 `token` 中设定 [上传策略](https://developer.qiniu.com/kodo/1206/put-policy) 的 `mimeLimit` 字段限定上传文件的类型，该功能由支持生成 token 的服务端 sdk 提供，请查看相关的 sdk 文档.
+通过在 `token` 中设定 [上传策略](https://developer.qiniu.com/kodo/1206/put-policy) 的 `mimeLimit` 字段限定上传文件的类型，该功能由支持生成 token 的服务端 sdk 提供，请查看相关的 sdk 文档。
 
 ### 贡献代码
 
