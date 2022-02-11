@@ -23,7 +23,7 @@
 ## 概述
 
 Qiniu-JavaScript-SDK （下文简称为 JS-SDK）适用于 ：IE11、Edge、Chrome、Firefox、Safari 等浏览器，基于七牛云存储官方 API 构建，其中上传功能基于 H5 File API。开发者基于 JS-SDK 可以方便的从浏览器端上传文件至七牛云存储，并对上传成功后的图片进行丰富的数据处理操作。
-JS-SDK 兼容支持 H5 File API 的浏览器，在低版本浏览器下，需要额外的插件如 plupload，JS-SDK 提供了一些接口可以结合插件来进行上传工作，注意：(在低版本浏览器需要引入 [babel-polyfill](https://babeljs.cn/docs/usage/polyfill/) 来解决 sdk 里某些语法或者属性浏览器不能识别的问题)。
+JS-SDK 兼容支持 H5 File API 的浏览器，在低版本浏览器下，需要额外的插件如 plupload，JS-SDK 提供了一些接口可以结合插件来进行上传工作，注意：(在低版本浏览器需要引入 [babel-polyfill](https://babeljs.cn/docs/usage/polyfill/) 来解决 SDK 里某些语法或者属性浏览器不能识别的问题)。
 
 Qiniu-JavaScript-SDK 为客户端 SDK，没有包含 `token` 生成实现，为了安全，`token` 建议通过网络从服务端获取，具体生成代码可以参考以下服务端 SDK 的文档。
 
@@ -114,7 +114,7 @@ Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服�
 
 ## 使用
 
-`qiniu.upload` 返回一个 `observable` 对象用来控制上传行为，`observable` 对像通过 `subscribe` 方法可以被 `observer` 所订阅，订阅同时会开始触发上传，同时返回一个 `subscription` 对象，该对象有一个 `unsubscribe` 方法取消订阅，同时终止上传行为。对于不支持 sdk 的浏览器可以参考 demo1 中用插件处理和 form 直传的方式； 一般 form 提交常常会导致网页跳转，demo1 中 form 直传通过加入 iframe，并结合后端 sdk 上传来解决网页跳转问题，实现 form 无刷新上传。分片上传时，JS-SDK支持断点续传功能，会把已上传片的后端返回值ctx信息存储到本地，有效期为一天，超过一天后，当继续上传该文件时会清除掉本地存储信息重新上传。
+`qiniu.upload` 返回一个 `observable` 对象用来控制上传行为，`observable` 对像通过 `subscribe` 方法可以被 `observer` 所订阅，订阅同时会开始触发上传，同时返回一个 `subscription` 对象，该对象有一个 `unsubscribe` 方法取消订阅，同时终止上传行为。对于不支持 SDK 的浏览器可以参考 demo1 中用插件处理和 form 直传的方式； 一般 form 提交常常会导致网页跳转，demo1 中 form 直传通过加入 iframe，并结合后端 SDK 上传来解决网页跳转问题，实现 form 无刷新上传。分片上传时，JS-SDK支持断点续传功能，会把已上传片的后端返回值ctx信息存储到本地，有效期为一天，超过一天后，当继续上传该文件时会清除掉本地存储信息重新上传。
 
 ### Example
 
@@ -198,7 +198,7 @@ qiniu.compressImage(file, options).then(data => {
         * `QiniuNetworkError` 继承自 `QiniuRequestError`
           * reqId: 由于请求可能还未真正发出，所以可能无法收集到 `reqId`，该字段可能为 `''`。
 
-      * complete: 接收上传完成后的后端返回信息，具体返回结构取决于后端sdk的配置，可参考 [上传策略](https://developer.qiniu.com/kodo/manual/1206/put-policy)。
+      * complete: 接收上传完成后的后端返回信息，具体返回结构取决于后端 SDK 的配置，可参考 [上传策略](https://developer.qiniu.com/kodo/manual/1206/put-policy)。
 
     * subscription: 为一个带有 `unsubscribe` 方法的类实例，通过调用 `subscription.unsubscribe()` 停止当前文件上传。
 
@@ -505,7 +505,7 @@ qiniu.compressImage(file, options).then(data => {
 
 **2. 限制上传文件的类型：**
 
-通过在 `token` 中设定 [上传策略](https://developer.qiniu.com/kodo/1206/put-policy) 的 `mimeLimit` 字段限定上传文件的类型，该功能由支持生成 token 的服务端 sdk 提供，请查看相关的 sdk 文档。
+通过在生成 `token` 时指定 [上传策略](https://developer.qiniu.com/kodo/1206/put-policy) 中的 `mimeLimit` 字段限定上传文件的类型，该功能由生成 `token` 的服务端 SDK 提供，请查看对应的服务端 SDK 文档。
 
 ### 贡献代码
 
