@@ -505,17 +505,7 @@ qiniu.compressImage(file, options).then(data => {
 
 **2. 限制上传文件的类型：**
 
-这里又分为两种方法：
-
-1. 通过在 `token` 中设定 `mimeLimit` 字段限定上传文件的类型，该设定是在后端 sdk 设置，请查看相应的 sdk 文档，示例
-
- ```JavaScript
-"image/\*": 表示只允许上传图片类型；
-"image/jpeg;image/png": 表示只允许上传 jpg 和 png 类型的图片；
-"!application/json;text/plain": 表示禁止上传 json 文本和纯文本。（注意最前面的感叹号）
-```
-
-2. 通过 `putExtra` 的 `mimeType` 参数直接在前端限定
+通过在 `token` 中设定 [上传策略](https://developer.qiniu.com/kodo/1206/put-policy) 的 `mimeLimit` 字段限定上传文件的类型，该功能由支持生成 token 的服务端 sdk 提供，请查看相关的 sdk 文档.
 
 ### 贡献代码
 
