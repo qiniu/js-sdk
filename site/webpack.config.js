@@ -8,9 +8,12 @@ const htmlTemp = `
 <!DOCTYPE html>
 <html>
   <head>
+    <meta charset="utf-8">
     <title state-data-title="">七牛云 - JS SDK 示例 V3</title>
-    <meta name="viewport" content="initial-scale=1.0,width=device-width,user-scalable=no">
+    <meta name="viewport" content="initial-scale=1.0,width=device-width">
     <link rel="shortcut icon" href="https://qiniu.staticfile.org/favicon.ico" type="image/vnd.microsoft.icon">
+    <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
   </head>
   <body>
     <div id="root"></div>
