@@ -280,7 +280,7 @@ export default abstract class Base {
         this.checkAndFreezeHost(err)
 
         const notReachRetryCount = ++this.retryCount <= this.config.retryCount
-        const needRetry = !this.aborted && RETRY_CODE_LIST.includes(err.code)
+        const needRetry = RETRY_CODE_LIST.includes(err.code)
 
         // 以下条件满足其中之一则会进行重新上传：
         // 1. 满足 needRetry 的条件且 retryCount 不为 0
