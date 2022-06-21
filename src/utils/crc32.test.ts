@@ -8,7 +8,7 @@ function mockFile(size = 4, name = 'mock.jpg', type = 'image/jpg'): File {
   return new File([blob], name)
 }
 
-describe('test crc32', async () => {
+describe('test crc32', () => {
   test('file', async () => {
     const crc32One = new CRC32()
     await expect(crc32One.file(mockFile(0))).resolves.toEqual(0)
