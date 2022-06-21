@@ -1,6 +1,7 @@
 import * as React from 'react'
-import { upload } from 'qiniu-js'
-import { UploadProgress } from 'qiniu-js/esm/upload'
+
+import { upload } from '../../src'
+import { UploadProgress } from '../../src/upload'
 
 import { generateUploadToken, loadSetting } from './utils'
 
