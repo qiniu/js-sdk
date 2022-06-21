@@ -92,7 +92,10 @@ export default class Resume extends Base {
     await this.initBeforeUploadChunks()
 
     const pool = new utils.Pool(
-      (chunkInfo: ChunkInfo) => this.uploadChunk(chunkInfo),
+      async (chunkInfo: ChunkInfo) => {
+        if (this.aborted) return
+        await this.uploadChunk(chunkInfo)
+      },
       this.config.concurrentRequestLimit
     )
 
