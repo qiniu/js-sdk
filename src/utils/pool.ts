@@ -7,6 +7,7 @@ export interface QueueContent<T> {
 }
 
 export class Pool<T> {
+  aborted = false
   queue: Array<QueueContent<T>> = []
   processing: Array<QueueContent<T>> = []
 
@@ -37,10 +38,16 @@ export class Pool<T> {
   }
 
   check() {
+    if (this.aborted) return
     const processingNum = this.processing.length
     const availableNum = this.limit - processingNum
     this.queue.slice(0, availableNum).forEach(item => {
       this.run(item)
     })
+  }
+
+  abort() {
+    this.queue = []
+    this.aborted = true
   }
 }
