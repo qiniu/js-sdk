@@ -265,13 +265,16 @@ export default abstract class Base {
       this.sendLog(result.reqId, 200)
       return
     } catch (err) {
-      this.logger.error(err)
-      this.clear()
+      if (this.aborted) {
+        this.logger.warn('upload is aborted.')
+        this.sendLog('', -2)
+        return
+      }
 
+      this.clear()
+      this.logger.error(err)
       if (err instanceof QiniuRequestError) {
-        const reqId = this.aborted ? '' : err.reqId
-        const code = this.aborted ? -2 : err.code
-        this.sendLog(reqId, code)
+        this.sendLog(err.reqId, err.code)
 
         // 检查并冻结当前的 host
         this.checkAndFreezeHost(err)
@@ -294,17 +297,16 @@ export default abstract class Base {
   }
 
   private clear() {
-    this.logger.info('start cleaning all xhr.')
     this.xhrList.forEach(xhr => {
       xhr.onreadystatechange = null
       xhr.abort()
     })
-    this.logger.info('cleanup completed.')
     this.xhrList = []
+    this.logger.info('cleanup uploading xhr.')
   }
 
   public stop() {
-    this.logger.info('stop.')
+    this.logger.info('aborted.')
     this.clear()
     this.aborted = true
   }

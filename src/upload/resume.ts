@@ -95,7 +95,7 @@ export default class Resume extends Base {
       async (chunkInfo: ChunkInfo) => {
         if (this.aborted) {
           pool.abort()
-          return
+          throw new Error('pool is aborted')
         }
 
         await this.uploadChunk(chunkInfo)

@@ -24,7 +24,7 @@ export class Pool<T> {
     })
   }
 
-  run(item: QueueContent<T>) {
+  private run(item: QueueContent<T>) {
     this.queue = this.queue.filter(v => v !== item)
     this.processing.push(item)
     this.runTask(item.task).then(
@@ -37,7 +37,7 @@ export class Pool<T> {
     )
   }
 
-  check() {
+  private check() {
     if (this.aborted) return
     const processingNum = this.processing.length
     const availableNum = this.limit - processingNum
