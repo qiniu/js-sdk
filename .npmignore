@@ -3,5 +3,7 @@ node_modules
 bower_components
 deploy.sh
 npm-debug.log
-test/config.json
+.github
+.vscode
+test
 site
