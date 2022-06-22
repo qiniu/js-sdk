@@ -23,7 +23,6 @@ jobs:
           node-version: 12
       - run: npm install
       - run: npm run test
-
   build:
     runs-on: ubuntu-latest
     steps:
