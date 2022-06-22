@@ -265,19 +265,22 @@ export default abstract class Base {
       this.sendLog(result.reqId, 200)
       return
     } catch (err) {
-      this.logger.error(err)
-      this.clear()
+      if (this.aborted) {
+        this.logger.warn('upload is aborted.')
+        this.sendLog('', -2)
+        return
+      }
 
+      this.clear()
+      this.logger.error(err)
       if (err instanceof QiniuRequestError) {
-        const reqId = this.aborted ? '' : err.reqId
-        const code = this.aborted ? -2 : err.code
-        this.sendLog(reqId, code)
+        this.sendLog(err.reqId, err.code)
 
         // 检查并冻结当前的 host
         this.checkAndFreezeHost(err)
 
         const notReachRetryCount = ++this.retryCount <= this.config.retryCount
-        const needRetry = !this.aborted && RETRY_CODE_LIST.includes(err.code)
+        const needRetry = RETRY_CODE_LIST.includes(err.code)
 
         // 以下条件满足其中之一则会进行重新上传：
         // 1. 满足 needRetry 的条件且 retryCount 不为 0
@@ -294,17 +297,16 @@ export default abstract class Base {
   }
 
   private clear() {
-    this.logger.info('start cleaning all xhr.')
     this.xhrList.forEach(xhr => {
       xhr.onreadystatechange = null
       xhr.abort()
     })
-    this.logger.info('cleanup completed.')
     this.xhrList = []
+    this.logger.info('cleanup uploading xhr.')
   }
 
   public stop() {
-    this.logger.info('stop.')
+    this.logger.info('aborted.')
     this.clear()
     this.aborted = true
   }
