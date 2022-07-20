@@ -1,10 +1,3 @@
-export type { QiniuErrorName, QiniuError, QiniuRequestError, QiniuNetworkError } from './errors'
-export { imageMogr2, watermark, imageInfo, exif, pipeline } from './image'
-export { deleteUploadedChunks, getUploadUrl } from './api'
-
-export {
-  upload
-} from './upload'
 export type {
   UploadKey,
   UploadError,
@@ -13,7 +6,20 @@ export type {
   UploadObservable
 } from './upload'
 
+export type {
+  QiniuError,
+  QiniuErrorName,
+  QiniuRequestError,
+  QiniuNetworkError
+} from './errors'
+
+export { upload } from './upload'
 export { region } from './config'
+
+export {
+  getUploadUrl,
+  deleteUploadedChunks
+} from './api'
 
 export {
   compressImage,
@@ -24,3 +30,5 @@ export {
 } from './utils'
 
 export type { CompressResult } from './utils'
+
+export { imageMogr2, watermark, imageInfo, exif, pipeline } from './image'

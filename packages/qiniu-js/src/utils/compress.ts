@@ -209,7 +209,11 @@ class Compress {
     return blob
   }
 }
-
+/**
+ * @param  {File} file
+ * @param  {CompressOptions} options
+ * @deprecated 不推荐使用，建议使用其他更专业包替代
+ */
 const compressImage = (file: File, options: CompressOptions) => new Compress(file, options).process()
 
 export default compressImage

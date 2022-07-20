@@ -120,7 +120,7 @@ export function uploadComplete(
  * @param token 上传鉴权凭证
  * @param key 目标文件名
  * @param uploadInfo 上传信息
- * @deprecated 请勿使用内部接口，下一个大版本将会取消导出
+ * @deprecated 请直接通过官网文档使用该接口，而不是使用当前 SDK 包装版本。
  */
 export function deleteUploadedChunks(
   token: string,
@@ -164,7 +164,7 @@ export type UploadUrlConfig = Partial<Pick<Config, 'upprotocol' | 'uphost' | 're
  * @param  {string} token
  * @returns Promise
  * @description 获取上传 url
- * @deprecated 请勿使用内部接口，下一个大版本将会取消导出
+ * @deprecated 请直接通过官网文档使用该接口，而不是使用当前 SDK 包装版本。
  */
 export async function getUploadUrl(_config: UploadUrlConfig, token: string): Promise<string> {
   const config = utils.normalizeUploadConfig(_config)

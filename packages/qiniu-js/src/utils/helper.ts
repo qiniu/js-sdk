@@ -109,6 +109,10 @@ export function getAuthHeaders(token: string) {
   return { Authorization: auth }
 }
 
+/**
+ * @param  {string} token
+ * @deprecated 内部实现接口，请勿使用，下个版本将会移除导出
+ */
 export function getHeadersForChunkUpload(token: string) {
   const header = getAuthHeaders(token)
   return {
@@ -117,6 +121,10 @@ export function getHeadersForChunkUpload(token: string) {
   }
 }
 
+/**
+ * @param  {string} token
+ * @deprecated 内部实现接口，请勿使用，下个版本将会移除导出
+ */
 export function getHeadersForMkFile(token: string) {
   const header = getAuthHeaders(token)
   return {

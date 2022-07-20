@@ -80,24 +80,12 @@ Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服�
 
 支持以下几种安装方式
 
-* 直接使用静态文件地址：
-
-  ```
-  https://cdnjs.cloudflare.com/ajax/libs/qiniu-js/<version>/qiniu.min.js
-  
-  // 当上方资源链接访问不稳定时，可选使用下方资源链接
-  https://cdn.staticfile.org/qiniu-js/<version>/qiniu.min.js
-  ```
-
-  通过 script 标签引入该文件，会在全局生成名为 `qiniu` 的对象
-
-
 * 使用 NPM 安装
 
   NPM 的全称是 Node Package Manager，是一个 [NodeJS](https://nodejs.org) 包管理和分发工具，已经成为了非官方的发布 Node 模块（包）的标准。如果需要更详细的关于 NPM 的使用说明，您可以访问 [NPM 官方网站](https://www.npmjs.com)，或对应的 [中文网站](http://www.npmjs.com.cn/)
 
   ```shell
-  npm install qiniu-js
+  $ npm install qiniu-js
   ```
 
   ```Javascript
@@ -106,9 +94,22 @@ Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服�
   import * as qiniu from 'qiniu-js'
   ```
 
-* 通过源码编译
+* 直接通过 `script` 标签引入，通过这种方式将会在全局生成名为 `qiniu` 的对象
 
-`git clone git@github.com:qiniu/js-sdk.git`，进入项目根目录执行 `npm install` ，执行 `npm run build`，即可在dist 目录生成 `qiniu.min.js`。
+  ```html
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qiniu-js/<version>/qiniu.min.js"></script>
+  // 当上方资源链接访问不稳定时，可选用下方资源链接
+  <script src="https://cdn.staticfile.org/qiniu-js/<version>/qiniu.min.js"></script>
+  ```
+
+* 通过源码编译，依次执行以下命令即可在本地构建
+
+  ``` bash
+  $ git clone git@github.com:qiniu/js-sdk.git
+  $ cd js-sdk
+  $ npm install
+  $ npm run build
+  ```
 
 <a id="usage"></a>
 

@@ -137,7 +137,7 @@ function utf8Decode(strData: string) {
   return tmpArr.join('')
 }
 
-function base64Encode(data: any) {
+function base64Encode(data: string) {
   // http://kevin.vanzonneveld.net
   // +   original by: Tyler Akins (http://rumkin.com)
   // +   improved by: Bayron Guevara
@@ -261,14 +261,22 @@ function base64Decode(data: string) {
   return utf8Decode(dec)
 }
 
-export function urlSafeBase64Encode(v: any) {
+/**
+ * @param  {string} v
+ * @deprecated 内部实现接口，请勿使用，下个版本将会移除导出
+ */
+export function urlSafeBase64Encode(v: string) {
   v = base64Encode(v)
 
   // 参考 https://tools.ietf.org/html/rfc4648#section-5
   return v.replace(/\//g, '_').replace(/\+/g, '-')
 }
 
-export function urlSafeBase64Decode(v: any) {
+/**
+ * @param  {string} v
+ * @deprecated 内部实现接口，请勿使用，下个版本将会移除导出
+ */
+export function urlSafeBase64Decode(v: string) {
   v = v.replace(/_/g, '/').replace(/-/g, '+')
   return base64Decode(v)
 }
