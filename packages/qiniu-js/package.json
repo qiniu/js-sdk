@@ -4,10 +4,9 @@
   "version": "3.4.1",
   "private": false,
   "description": "Javascript SDK for Qiniu Resource (Cloud) Storage AP",
-  "main": "umd/index.js",
+  "main": "lib/index.js",
   "module": "esm/index.js",
   "types": "esm/index.d.ts",
-  "browser": "umd/index.js",
   "iife": "dist/qiniu.min.js",
   "author": "sdk@qiniu.com",
   "scripts": {

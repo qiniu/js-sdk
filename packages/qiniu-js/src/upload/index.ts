@@ -17,7 +17,7 @@ export type UploadKey = string | null | undefined
 export type UploadError = QiniuError | QiniuRequestError | QiniuNetworkError
 export type UploadObservable<T = any> = Observable<UploadProgress, UploadError, UploadCompleteData<T>>
 
-export function createUploadManager(
+export function createUploadManager<T = any>(
   options: UploadOptions,
   handlers: UploadHandlers,
   hostPool: HostPool,
@@ -25,16 +25,16 @@ export function createUploadManager(
 ) {
   if (options.config && options.config.forceDirect) {
     logger.info('ues forceDirect mode.')
-    return new Direct(options, handlers, hostPool, logger)
+    return new Direct<T>(options, handlers, hostPool, logger)
   }
 
   if (options.file.size > 4 * MB) {
     logger.info('file size over 4M, use Resume.')
-    return new Resume(options, handlers, hostPool, logger)
+    return new Resume<T>(options, handlers, hostPool, logger)
   }
 
   logger.info('file size less or equal than 4M, use Direct.')
-  return new Direct(options, handlers, hostPool, logger)
+  return new Direct<T>(options, handlers, hostPool, logger)
 }
 
 /**
@@ -67,7 +67,7 @@ export function upload<T = any>(
   const hostPool = new HostPool(options.config.uphost)
 
   return new Observable((observer: IObserver<UploadProgress, UploadError, UploadCompleteData>) => {
-    const manager = createUploadManager(options, {
+    const manager = createUploadManager<T>(options, {
       onData: (data: UploadProgress) => observer.next(data),
       onError: (err: QiniuError) => observer.error(err),
       onComplete: (res: any) => observer.complete(res)

@@ -9,17 +9,24 @@ export enum Status {
   Finished // 任务已结束（完成、失败、中断）
 }
 
+// 该信息是由 token 的 returnBody 决定的
+// https://developer.qiniu.com/kodo/1206/put-policy
+export interface UploadResponse {
+  key: string
+  hash: string
+}
+
 // 上传逻辑封装
-export function useUpload(file: File) {
+export function useUpload<T = UploadResponse>(file: File) {
   const startTimeRef = React.useRef<number | null>(null)
   const [state, setState] = React.useState<Status | null>(null)
   const [error, setError] = React.useState<Error | null>(null)
   const [token, setToken] = React.useState<string | null>(null)
   const [speedPeak, setSpeedPeak] = React.useState<number | null>(null)
-  const [completeInfo, setCompleteInfo] = React.useState<any | null>(null)
+  const [completeInfo, setCompleteInfo] = React.useState<T | null>(null)
   const [progress, setProgress] = React.useState<UploadProgress | null>(null)
-  const [observable, setObservable] = React.useState<UploadObservable | null>(null)
-  const subscribeRef = React.useRef<ReturnType<UploadObservable['subscribe']> | null>(null)
+  const [observable, setObservable] = React.useState<UploadObservable<T> | null>(null)
+  const subscribeRef = React.useRef<ReturnType<UploadObservable<T>['subscribe']> | null>(null)
 
   // 开始上传文件
   const start = () => {
@@ -80,7 +87,7 @@ export function useUpload(file: File) {
 
     if (token != null) {
       setState(Status.Ready)
-      setObservable(upload(
+      const newObservable = upload<T>(
         file,
         file.name,
         token,
@@ -90,7 +97,9 @@ export function useUpload(file: File) {
           debugLogLevel: 'INFO',
           uphost: uphost && uphost.split(',')
         }
-      ))
+      )
+
+      setObservable(() => newObservable)
     }
   }, [file, token])
 

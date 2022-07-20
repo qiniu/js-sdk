@@ -4,7 +4,7 @@ import { direct } from '../api'
 
 import Base from './base'
 
-export default class Direct extends Base {
+export default class Direct<T = any> extends Base {
 
   protected async run() {
     this.logger.info('start run Direct.')
@@ -30,7 +30,7 @@ export default class Direct extends Base {
     }
 
     this.logger.info('formData inited.')
-    const result = await direct(this.uploadHost!.getUrl(), formData, {
+    const result = await direct<T>(this.uploadHost!.getUrl(), formData, {
       onProgress: data => {
         this.updateDirectProgress(data.loaded, data.total)
       },

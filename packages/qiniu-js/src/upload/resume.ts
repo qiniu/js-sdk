@@ -38,7 +38,7 @@ function isPositiveInteger(n: number) {
   return re.test(String(n))
 }
 
-export default class Resume extends Base {
+export default class Resume<T = any> extends Base {
   /**
    * @description 文件的分片 chunks
    */
@@ -204,7 +204,7 @@ export default class Resume extends Base {
     }
 
     this.logger.info('parts upload completed, make file.', data)
-    const result = await uploadComplete(
+    const result = await uploadComplete<T>(
       this.token,
       this.key,
       this.getUploadInfo(),

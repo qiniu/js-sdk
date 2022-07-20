@@ -101,15 +101,15 @@ export type UploadCompleteData<T = any> = T
  * @param uploadInfo 上传信息
  * @param options 请求参数
  */
-export function uploadComplete(
+export function uploadComplete<T = any>(
   token: string,
   key: string | null | undefined,
   uploadInfo: UploadInfo,
   options: Partial<utils.RequestOptions>
-): utils.Response<UploadCompleteData> {
+): utils.Response<UploadCompleteData<T>> {
   const bucket = utils.getPutPolicy(token).bucketName
   const url = getBaseUrl(bucket, key, uploadInfo)
-  return utils.request<UploadCompleteData>(url, {
+  return utils.request<UploadCompleteData<T>>(url, {
     ...options,
     method: 'POST',
     headers: utils.getHeadersForMkFile(token)
@@ -145,12 +145,12 @@ export function deleteUploadedChunks(
  * @returns Promise
  * @description 直传接口
  */
-export function direct(
+export function direct<T>(
   url: string,
   data: FormData,
   options: Partial<utils.RequestOptions>
-): Promise<UploadCompleteData> {
-  return utils.request<UploadCompleteData>(url, {
+): utils.Response<UploadCompleteData<T>> {
+  return utils.request<UploadCompleteData<T>>(url, {
     method: 'POST',
     body: data,
     ...options
