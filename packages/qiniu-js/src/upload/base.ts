@@ -264,7 +264,7 @@ export default abstract class Base {
       this.checkAndUnfreezeHost()
       this.sendLog(result.reqId, 200)
       return
-    } catch (err) {
+    } catch (error) {
       if (this.aborted) {
         this.logger.warn('upload is aborted.')
         this.sendLog('', -2)
@@ -272,15 +272,15 @@ export default abstract class Base {
       }
 
       this.clear()
-      this.logger.error(err)
-      if (err instanceof QiniuRequestError) {
-        this.sendLog(err.reqId, err.code)
+      this.logger.error(error)
+      if (error instanceof QiniuRequestError) {
+        this.sendLog(error.reqId, error.code)
 
         // 检查并冻结当前的 host
         this.checkAndFreezeHost(error)
 
         const notReachRetryCount = ++this.retryCount <= this.config.retryCount
-        const needRetry = RETRY_CODE_LIST.includes(err.code)
+        const needRetry = RETRY_CODE_LIST.includes(error.code)
 
         // 以下条件满足其中之一则会进行重新上传：
         // 1. 满足 needRetry 的条件且 retryCount 不为 0

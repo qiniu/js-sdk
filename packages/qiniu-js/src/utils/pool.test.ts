@@ -21,7 +21,7 @@ describe('test Pool for control concurrency', () => {
       { chunk, index: 5 }
     ]
 
-    Promise.all(data.map(async value => {
+    return Promise.all(data.map(async value => {
       await pool.enqueue(value)
       expect(pool.processing.length).toBeLessThanOrEqual(2)
     })).then(() => {

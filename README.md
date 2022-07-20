@@ -16,7 +16,7 @@
 * [准备](#ready)
 * [引入](#install)
 * [使用](#usage)
-* [运行示例](#demo)
+* [本地开发](#develop)
 * [说明](#note)
 * [常见问题](#faq)
 
@@ -461,7 +461,7 @@ qiniu.compressImage(file, options).then(data => {
 
   fopArr包含的具体管道操作解释见 [管道操作](https://developer.qiniu.com/dora/manual/processing-mechanism)
 
-<a id="demo"></a>
+<a id="develop"></a>
 
 ### 本地开发
 
@@ -474,6 +474,7 @@ $ npm run dev
 ```
 
 打开您的浏览器并访问终端中提示的地址即可访问开发调试页面。
+如果你在使用 `vscode`，推荐通过根目录下的 `js-sdk.code-workspace` 文件打开工作空间快速进行开发和调试。
 
 <a id="note"></a>
 

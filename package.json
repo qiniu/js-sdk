@@ -3,11 +3,11 @@
   "private": true,
   "scripts": {
     "boot": "lerna bootstrap",
-    "clean": "lerna clean",
     "build": "lerna run build",
     "dev": "npm run build && lerna run dev --parallel",
-    "lint": "eslint .",
-    "test": "jest"
+    "clean": "lerna clean",
+    "test": "jest --coverage",
+    "lint": "eslint ."
   },
   "devDependencies": {
     "@qiniu/eslint-config": "0.0.6",
