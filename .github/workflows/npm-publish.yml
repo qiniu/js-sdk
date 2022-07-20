@@ -13,10 +13,11 @@ jobs:
         with:
           node-version: 16
           registry-url: https://registry.npmjs.org/
-      - run: npm install
-      - run: npm run boot
-      - run: npm run build
-      - run: cd packages/qiniu-js/
-      - run: npm publish
+      - run: |
+          npm install
+          npm run boot
+          npm run build
+          cd packages/qiniu-js/
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
