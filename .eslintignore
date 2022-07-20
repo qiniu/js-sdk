@@ -1,6 +1,10 @@
 /src/__mock__
 /src/__tests__
-/test/*
+/test/
+node_modules
 dist
-site
+esm
+umd
 *.js
+*.d.ts
+*.test.ts

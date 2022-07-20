@@ -10,8 +10,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           cache: 'npm'
-          node-version: 12
+          node-version: 16
       - run: npm install
+      - run: npm run boot
       - run: npm run lint
   test:
     runs-on: ubuntu-latest
@@ -20,8 +21,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           cache: 'npm'
-          node-version: 12
+          node-version: 16
       - run: npm install
+      - run: npm run boot
       - run: npm run test
   build:
     runs-on: ubuntu-latest
@@ -30,6 +32,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           cache: 'npm'
-          node-version: 12
+          node-version: 16
       - run: npm install
+      - run: npm run boot
       - run: npm run build

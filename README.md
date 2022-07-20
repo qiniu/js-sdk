@@ -463,25 +463,17 @@ qiniu.compressImage(file, options).then(data => {
 
 <a id="demo"></a>
 
-### 运行示例
+### 本地开发
 
-1. 进入 test 目录，按照目录下的 `config.json.example` 示例，创建 `config.json` 文件，其中，`Access Key` 和 `Secret Key` 按如下方式获取
+```bash
+$ git clone git@github.com:qiniu/js-sdk.git
+$ cd js-sdk/
+$ npm install
+$ npm run boot
+$ npm run dev
+```
 
-   * [开通七牛开发者帐号](https://portal.qiniu.com/signup)
-   * [登录七牛开发者自助平台，查看 AccessKey 和 SecretKey](https://portal.qiniu.com/user/key) 。
-
-   ```javascript
-   {
-     "AccessKey": "<Your Access Key>",
-     "SecretKey": "<Your Secret Key>",
-     "Bucket": "<Your Bucket Name>",
-     "Port": 9000,
-     "UptokenUrl": "<Your Uptoken_Url>", // demo 启动后会在本地 /uptoken 上提供获取 uptoken 的接口，所以这里可以填 'token'
-     "Domain": "<Your Bucket Domain>" // Bucket 的外链默认域名，在 Bucket 的内容管理里查看，如：'http://xxx.bkt.clouddn.com/'
-   }
-   ```
-
-2. 进入项目根目录，执行 `npm install` 安装依赖库，然后打开两个终端，一个执行 `npm run serve` 跑 server， 一个执行 `npm run dev` 运行服务；demo1：`http://0.0.0.0:8080/test/demo1`；demo3：`http://0.0.0.0:8080/test/demo3`；demo1为测试上传功能的示例，demo3为测试图片压缩功能的示例；demo2 为测试 es6 语法的示例，进入 demo2 目录，执行 `npm install`，然后 `npm start` 运行 demo2；demo1、demo2 和 demo3 都共用一个 server，请注意 server 文件里的 `region` 设置跟 `config` 里的`region` 设置要保持一致。
+打开您的浏览器并访问终端中提示的地址即可访问开发调试页面。
 
 <a id="note"></a>
 

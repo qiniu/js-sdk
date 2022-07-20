@@ -1,0 +1,24 @@
+{
+  "private": true,
+  "name": "doc-site",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "dumi dev",
+    "build": "dumi build"
+  },
+  "dependencies": {
+    "create-hmac": "^1.1.7",
+    "js-base64": "^3.7.2",
+    "react": "^17.0.0",
+    "qiniu-js": "*"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.15.1",
+    "@testing-library/react": "^12.1.2",
+    "@types/create-hmac": "^1.1.0",
+    "@types/jest": "^28.1.6",
+    "@umijs/fabric": "^2.8.1",
+    "dumi": "^1.1.0",
+    "yorkie": "^2.0.0"
+  }
+}
