@@ -8,4 +8,3 @@ umd
 *.js
 *.d.ts
 *.test.ts
-*.config.js

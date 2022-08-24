@@ -5,8 +5,8 @@
     "boot": "lerna bootstrap",
     "build": "lerna run build --parallel --stream",
     "dev": "npm run build && lerna run dev --parallel --stream",
-    "clean": "lerna clean",
     "test": "jest --coverage",
+    "clean": "lerna clean",
     "lint": "eslint ."
   },
   "devDependencies": {
