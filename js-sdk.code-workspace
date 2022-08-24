@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"name": "✨ root",
+			"path": "."
+		},
+		{
+			"name": "📦 dev-test",
+			"path": "packages/dev-test"
+		},
+		{
+			"name": "📦 qiniu-js",
+			"path": "packages/qiniu-js"
+		}
+	]
+}
