@@ -56,12 +56,12 @@ export function Layout(props: React.PropsWithChildren<IProps>) {
         <img width={80} height={80} src={qiniuLogo} />
         {props.children}
       </div>
-      {/* <footer className={classnames.footer}>
+      <footer className={classnames.footer}>
         对象存储文件上传 DEMO <Copyright />
         <OfficialDoc />
         <Issue />
         <V2Link />
-      </footer> */}
+      </footer>
     </>
   )
 }

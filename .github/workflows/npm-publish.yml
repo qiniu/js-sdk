@@ -18,6 +18,6 @@ jobs:
           npm run boot
           npm run build
           cd packages/qiniu-js/
-          npm publish
+          npm publish --dry-run
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

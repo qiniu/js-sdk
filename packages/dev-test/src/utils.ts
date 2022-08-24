@@ -1,5 +1,5 @@
 import { Base64 } from 'js-base64'
-import createHmac from 'create-hmac'
+import * as createHmac from 'create-hmac'
 
 export interface TokenOptions {
   assessKey?: string

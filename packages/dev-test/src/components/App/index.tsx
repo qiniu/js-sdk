@@ -6,7 +6,6 @@ import { Settings } from '../Settings'
 import { SelectFile, UniqueFile } from '../SelectFile'
 
 import settingIcon from '../Settings/assets/setting.svg'
-
 import classnames from './style.less'
 
 export const App = () => {

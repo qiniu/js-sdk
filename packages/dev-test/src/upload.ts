@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import { upload, UploadObservable, UploadProgress } from 'qiniu-js'
 
 import { generateUploadToken, loadSetting } from './utils'
@@ -87,7 +88,7 @@ export function useUpload<T = UploadResponse>(file: File) {
 
     if (token != null) {
       setState(Status.Ready)
-      const newObservable = upload<T>(
+      setObservable(upload(
         file,
         file.name,
         token,
@@ -97,9 +98,7 @@ export function useUpload<T = UploadResponse>(file: File) {
           debugLogLevel: 'INFO',
           uphost: uphost && uphost.split(',')
         }
-      )
-
-      setObservable(() => newObservable)
+      ))
     }
   }, [file, token])
 

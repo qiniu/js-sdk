@@ -1,19 +1,18 @@
 {
   "compilerOptions": {
     "jsx": "react",
+    "target": "es6",
+    "module": "es6",
     "strict": true,
-    "target": "esnext",
-    "module": "esnext",
+    "sourceMap": true,
     "moduleResolution": "node",
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "declaration": true,
     "typeRoots": [
+      "node_modules/@types",
       "types"
     ]
   },
   "include": [
     "src",
     "types"
-  ],
+  ]
 }
