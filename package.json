@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "boot": "lerna bootstrap",
-    "build": "lerna run build --parallel --stream",
+    "build": "lerna run build --stream",
     "dev": "npm run build && lerna run dev --parallel --stream",
     "test": "jest --coverage",
     "clean": "lerna clean",
