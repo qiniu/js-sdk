@@ -8,8 +8,8 @@ import { urlSafeBase64Decode } from './base64'
 
 export const MB = 1024 ** 2
 
-// 文件分块
-export function getChunks(file: File, blockSize: number): Blob[] {
+// 文件分块信息
+export function getChunksInfo(file: File, blockSize: number): {chunkByteSize: number, chunkCount: number} {
 
   let chunkByteSize = blockSize * MB // 转换为字节
   // 如果 chunkByteSize 比文件大，则直接取文件的大小
@@ -22,16 +22,8 @@ export function getChunks(file: File, blockSize: number): Blob[] {
     }
   }
 
-  const chunks: Blob[] = []
-  const count = Math.ceil(file.size / chunkByteSize)
-  for (let i = 0; i < count; i++) {
-    const chunk = file.slice(
-      chunkByteSize * i,
-      i === count - 1 ? file.size : chunkByteSize * (i + 1)
-    )
-    chunks.push(chunk)
-  }
-  return chunks
+  const chunkCount = Math.ceil(file.size / chunkByteSize)
+  return { chunkByteSize, chunkCount }
 }
 
 export function isMetaDataValid(params: { [key: string]: string }) {

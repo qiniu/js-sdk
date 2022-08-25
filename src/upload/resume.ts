@@ -1,3 +1,5 @@
+import fs from 'fs'
+
 import { uploadChunk, uploadComplete, initUploadParts, UploadChunkData } from '../api'
 import { QiniuError, QiniuErrorName, QiniuRequestError } from '../errors'
 import * as utils from '../utils'
@@ -40,11 +42,6 @@ function isPositiveInteger(n: number) {
 
 export default class Resume extends Base {
   /**
-   * @description 文件的分片 chunks
-   */
-  private chunks: Blob[]
-
-  /**
    * @description 使用缓存的 chunks
    */
   private usedCacheList: boolean[]
@@ -70,6 +67,16 @@ export default class Resume extends Base {
   private uploadId: string
 
   /**
+   * @description 当前上传任务 文件读取流
+   */
+  private readStream: fs.ReadStream
+
+  /**
+   * @description 当前上传任务 文件分片实际大小
+   */
+  private chunkByteSize: number
+
+  /**
    * @returns  {Promise<ResponseSuccess<any>>}
    * @description 实现了 Base 的 run 接口，处理具体的分片上传事务，并抛出过程中的异常。
    */
@@ -91,6 +98,14 @@ export default class Resume extends Base {
 
     await this.initBeforeUploadChunks()
 
+    let mkFileResponse = null
+    const localKey = this.getLocalKey()
+    const uploadChunks : Array<Promise<void>> = []
+    let index = 0
+    this.readStream = fs.createReadStream(this.file.name, {
+      highWaterMark: this.chunkByteSize
+    })
+
     const pool = new utils.Pool(
       async (chunkInfo: ChunkInfo) => {
         if (this.aborted) {
@@ -99,13 +114,32 @@ export default class Resume extends Base {
         }
 
         await this.uploadChunk(chunkInfo)
+        if (pool.processing.length < this.config.concurrentRequestLimit
+          && this.readStream
+          && this.readStream.isPaused()) {
+          this.readStream.resume()
+        }
       },
       this.config.concurrentRequestLimit
     )
 
-    let mkFileResponse = null
-    const localKey = this.getLocalKey()
-    const uploadChunks = this.chunks.map((chunk, index) => pool.enqueue({ chunk, index }))
+    // 等待文件读取完成
+    await new Promise<void>((resolve, reject) => {
+      this.readStream.on('end', () => {
+        resolve()
+      })
+      this.readStream.on('error', err => {
+        reject()
+        throw err
+      })
+      this.readStream.on('data', chunk => {
+        uploadChunks.push(pool.enqueue({ chunk: new Blob([chunk]), index }))
+        index += 1
+        if (pool.processing.length >= this.config.concurrentRequestLimit && !this.readStream.isPaused()) {
+          this.readStream.pause()
+        }
+      })
+    })
 
     try {
       await Promise.all(uploadChunks)
@@ -249,11 +283,12 @@ export default class Resume extends Base {
       this.uploadId = cachedInfo.id
     }
 
-    this.chunks = utils.getChunks(this.file, this.config.chunkSize)
+    const { chunkByteSize, chunkCount } = utils.getChunksInfo(this.file, this.config.chunkSize)
     this.loaded = {
       mkFileProgress: 0,
-      chunks: this.chunks.map(_ => 0)
+      chunks: new Array(chunkCount).fill(0)
     }
+    this.chunkByteSize = chunkByteSize
     this.notifyResumeProgress()
   }
 
@@ -292,10 +327,6 @@ export default class Resume extends Base {
         // FIXME: 不准确的 fileSize
         this.file.size + 1 // 防止在 complete 未调用的时候进度显示 100%
       ),
-      chunks: this.chunks.map((chunk, index) => {
-        const fromCache = this.usedCacheList[index]
-        return this.getProgressInfoItem(this.loaded.chunks[index], chunk.size, fromCache)
-      }),
       uploadInfo: {
         id: this.uploadId,
         url: this.uploadHost!.getUrl()
