@@ -16,6 +16,12 @@ export function Settings(props: IProps) {
   const [secretKey, setSecretKey] = React.useState<string>(setting.secretKey || '')
   const [bucketName, setBucketName] = React.useState<string>(setting.bucketName || '')
 
+  const handleDeadlineChange = React.useCallback((v: number) => {
+    if (v > 0) return setDeadline(v)
+    // 基于当前时间加上 3600s
+    setDeadline(Math.floor(Date.now() / 1000) + 3600)
+  }, [])
+
   React.useEffect(() => {
     utils.saveSetting({
       assessKey,
@@ -53,7 +59,7 @@ export function Settings(props: IProps) {
         </span>
         <span>
           <span className={classnames.title}>deadline：</span>
-          <Input value={deadline + ''} onChange={v => setDeadline(+(v || 0))} placeholder="可选，请输入 deadline" />
+          <Input value={deadline + ''} onChange={v => handleDeadlineChange(+(v || 0))} placeholder="可选，请输入 deadline" />
         </span>
       </div>
     </div>

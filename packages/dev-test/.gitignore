@@ -5,21 +5,11 @@
 /npm-debug.log*
 /yarn-error.log
 
-# production
-/es
-/docs-dist
-
 # misc
 .DS_Store
 /coverage
 
-# umi
-.umi
-.umi-production
-.umi-test
-.env.local
 dist
-es
 
 # ide
 /.vscode
