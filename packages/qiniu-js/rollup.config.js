@@ -14,7 +14,7 @@ const iifeOutputOptions = {
 	...baseOutputOptions,
 	plugins: [terser()],
 	file: pkg.iife,
-	format: 'iife',
+	format: 'umd', // umd 包含 iife，这里为了向前保持兼容，同时避免用户存在手动引用此文件的情况，遂打包成 umd
 }
 
 const umdOutputOptions = {
