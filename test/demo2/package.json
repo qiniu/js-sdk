@@ -15,7 +15,7 @@
     "es3ify-webpack-plugin": "^0.1.0",
     "qiniu-js": "^2.5.4",
     "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.11",
+    "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0"
   },
   "license": "ISC"
