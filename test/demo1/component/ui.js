@@ -1,11 +1,11 @@
 (function() {
-  var init = function(obj) {
-    var li_children =
+  let init = function(obj) {
+    let li_children =
       "<div id='childBar' style='width:100%;height:20px;border:1px solid;border-radius:3px'>" +
       "<div id='childBarColor' style='width:0;border:0;background-color:rgba(250,59,127,0.8);height:18px;'>" +
       "</div>" +
       "</div>";
-    var li = document.createElement("li");
+    let li = document.createElement("li");
     $(li).addClass("fragment");
     $(li).html(li_children);
     obj.node.append(li);
@@ -16,11 +16,11 @@
 })();
 
 (function() {
-  var init = function(obj) {
-    var data = obj.data;
-    var name = data.name;
-    var size = data.size;
-    var parent =
+  let init = function(obj) {
+    let data = obj.data;
+    let name = data.name;
+    let size = data.size;
+    let parent =
       "<td>" +
       name +
       "<div class='wraper'><a class='linkWrapper'></a></div>" +
