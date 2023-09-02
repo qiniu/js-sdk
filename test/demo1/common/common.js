@@ -1,8 +1,8 @@
-var BLOCK_SIZE = 4 * 1024 * 1024;
+let BLOCK_SIZE = 4 * 1024 * 1024;
 
 function addUploadBoard(file, config, key, type) {
-  var count = Math.ceil(file.size / BLOCK_SIZE);
-  var board = widget.add("tr", {
+  let count = Math.ceil(file.size / BLOCK_SIZE);
+  let board = widget.add("tr", {
     data: { num: count, name: key, size: file.size },
     node: $("#fsUploadProgress" + type)
   });
@@ -19,7 +19,7 @@ function addUploadBoard(file, config, key, type) {
 }
 
 function createXHR() {
-  var xmlhttp = {};
+  let xmlhttp = {};
   if (window.XMLHttpRequest) {
     xmlhttp = new XMLHttpRequest();
   } else {
@@ -29,13 +29,13 @@ function createXHR() {
 }
 
 function getBoardWidth(board) {
-  var total_width = $(board)
+  let total_width = $(board)
     .find("#totalBar")
     .outerWidth();
   $(board)
     .find(".fragment-group")
     .removeClass("hide");
-  var child_width = $(board)
+  let child_width = $(board)
     .find(".fragment-group li")
     .children("#childBar")
     .outerWidth();
@@ -66,8 +66,8 @@ var getRotate = function(url) {
   if (!url) {
     return 0;
   }
-  var arr = url.split("/");
-  for (var i = 0, len = arr.length; i < len; i++) {
+  let arr = url.split("/");
+  for (let i = 0, len = arr.length; i < len; i++) {
     if (arr[i] === "rotate") {
       return parseInt(arr[i + 1], 10);
     }
@@ -79,12 +79,12 @@ function imageControl(domain) {
   $(".modal-body")
     .find(".buttonList a")
     .on("click", function() {
-      var img = document.getElementById("imgContainer").getElementsByTagName("img")[0]
-      var oldUrl = img.src;
-      var key = img.key;
-      var originHeight = img.h;
-      var fopArr = [];
-      var rotate = getRotate(oldUrl);
+      let img = document.getElementById("imgContainer").getElementsByTagName("img")[0]
+      let oldUrl = img.src;
+      let key = img.key;
+      let originHeight = img.h;
+      let fopArr = [];
+      let rotate = getRotate(oldUrl);
       if (!$(this).hasClass("no-disable-click")) {
         $(this)
           .addClass("disabled")
