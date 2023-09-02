@@ -2,16 +2,16 @@ function uploadWithSDK(token, putExtra, config, domain) {
   // 切换tab后进行一些css操作
   controlTabDisplay("sdk");
   $("#select2").unbind("change").bind("change",function(){
-    var file = this.files[0];
+    let file = this.files[0];
     // eslint-disable-next-line
-    var finishedAttr = [];
+    let finishedAttr = [];
     // eslint-disable-next-line
-    var compareChunks = [];
-    var observable;
+    let compareChunks = [];
+    let observable;
     if (file) {
-      var key = file.name;
+      let key = file.name;
       // 添加上传dom面板
-      var board = addUploadBoard(file, config, key, "");
+      let board = addUploadBoard(file, config, key, "");
       if (!board) {
         return;
       }
