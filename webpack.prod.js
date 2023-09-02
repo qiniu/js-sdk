@@ -1,8 +1,8 @@
-var webpack = require("webpack");
-var TerserPlugin = require('terser-webpack-plugin');
-var merge = require("webpack-merge");
-var common = require("./webpack.common.js");
-var path = require("path");
+let webpack = require("webpack");
+let TerserPlugin = require('terser-webpack-plugin');
+let merge = require("webpack-merge");
+let common = require("./webpack.common.js");
+let path = require("path");
 
 module.exports = merge(common, {
   mode: "production",
