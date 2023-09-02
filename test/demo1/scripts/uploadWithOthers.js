@@ -1,13 +1,13 @@
 function uploadWithOthers(token, putExtra, config, domain) {
   controlTabDisplay("others");
   qiniu.getUploadUrl(config, token).then(function(res){
-    var uploadUrl = res
-    var board = {};
-    var indexCount = 0;
-    var resume = false;
-    var chunk_size;
-    var blockSize;
-    var uploader = new plupload.Uploader({
+    let uploadUrl = res
+    let board = {};
+    let indexCount = 0;
+    let resume = false;
+    let chunk_size;
+    let blockSize;
+    let uploader = new plupload.Uploader({
       runtimes: "html5,flash,silverlight,html4",
       url: uploadUrl,
       browse_button: "select", // 触发文件选择对话框的按钮，为那个元素id
@@ -28,7 +28,7 @@ function uploadWithOthers(token, putExtra, config, domain) {
           $("#box input").attr("disabled", "disabled");
           $("#box button").css("backgroundColor", "#aaaaaa");
           chunk_size = uploader.getOption("chunk_size");
-          var id = files[0].id;
+          let id = files[0].id;
           // 添加上传dom面板
           board[id] = addUploadBoard(files[0], config, files[0].name, "2");
           board[id].start = true;
