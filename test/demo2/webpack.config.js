@@ -1,5 +1,5 @@
-var path = require("path");
-var es3ifyPlugin = require("es3ify-webpack-plugin");
+let path = require("path");
+let es3ifyPlugin = require("es3ify-webpack-plugin");
 
 module.exports = {
   entry: "./index.js",
