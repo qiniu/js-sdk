@@ -1,22 +1,22 @@
-var qiniu = require("qiniu");
-var express = require("express");
-var util = require("util");
-var path = require("path")
-var request = require("request");
-var app = express();
+let qiniu = require("qiniu");
+let express = require("express");
+let util = require("util");
+let path = require("path")
+let request = require("request");
+let app = express();
 app.use(express.static(__dirname + "/"));
-var multiparty = require("multiparty");
+let multiparty = require("multiparty");
 
-var fs=require('fs');
-var config=JSON.parse(fs.readFileSync(path.resolve(__dirname,"config.json")));
+let fs=require('fs');
+let config=JSON.parse(fs.readFileSync(path.resolve(__dirname,"config.json")));
 
-var mac = new qiniu.auth.digest.Mac(config.AccessKey, config.SecretKey);
-var config2 = new qiniu.conf.Config();
+let mac = new qiniu.auth.digest.Mac(config.AccessKey, config.SecretKey);
+let config2 = new qiniu.conf.Config();
 // 这里主要是为了用 node sdk 的 form 直传，结合 demo 中 form 方式来实现无刷新上传
 config2.zone = qiniu.zone.Zone_z2;
-var formUploader = new qiniu.form_up.FormUploader(config2);
-var putExtra = new qiniu.form_up.PutExtra();
-var options = {
+let formUploader = new qiniu.form_up.FormUploader(config2);
+let putExtra = new qiniu.form_up.PutExtra();
+let options = {
   scope: config.Bucket,
 // 上传策略设置文件过期时间，正式环境中要谨慎使用，文件在存储空间保存一天后删除
   deleteAfterDays: 1, 
@@ -24,11 +24,11 @@ var options = {
     '{"key":"$(key)","hash":"$(etag)","fsize":$(fsize),"bucket":"$(bucket)","name":"$(x:name)"}'
 };
 
-var putPolicy = new qiniu.rs.PutPolicy(options);
-var bucketManager = new qiniu.rs.BucketManager(mac, null);
+let putPolicy = new qiniu.rs.PutPolicy(options);
+let bucketManager = new qiniu.rs.BucketManager(mac, null);
 
 app.get("/api/uptoken", function(req, res, next) {
-  var token = putPolicy.uploadToken(mac);
+  let token = putPolicy.uploadToken(mac);
   res.header("Cache-Control", "max-age=0, private, must-revalidate");
   res.header("Pragma", "no-cache");
   res.header("Expires", 0);
