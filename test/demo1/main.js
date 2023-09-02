@@ -1,7 +1,7 @@
   $.ajax({url: "/api/uptoken", success: function(res){
-    var token = res.uptoken;
-    var domain = res.domain;
-    var config = {
+    let token = res.uptoken;
+    let domain = res.domain;
+    let config = {
       checkByServer: true,
       checkByMD5: true,
       forceDirect: false,
@@ -11,7 +11,7 @@
       region: qiniu.region.z2,
       debugLogLevel: 'INFO'
     };
-    var putExtra = {
+    let putExtra = {
       customVars: {}
     };
     $(".nav-box")
