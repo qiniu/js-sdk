@@ -3,16 +3,16 @@ function uploadWithForm(token, putExtra, config) {
   controlTabDisplay("form");
   // 获得上传地址
   qiniu.getUploadUrl(config, token).then(function(res){
-    var uploadUrl = res;
+    let uploadUrl = res;
     document.getElementsByName("token")[0].value = token;
     document.getElementsByName("url")[0].value = uploadUrl;
     // 当选择文件后执行的操作
     $("#select3").unbind("change").bind("change",function(){
-      var iframe = createIframe();
+      let iframe = createIframe();
       disableButtonOfSelect();
-      var key = this.files[0].name;
+      let key = this.files[0].name;
       // 添加上传dom面板
-      var board = addUploadBoard(this.files[0], config, key, "3");
+      let board = addUploadBoard(this.files[0], config, key, "3");
       window.showRes = function(res){
         $(board)
         .find(".control-container")
@@ -46,7 +46,7 @@ function uploadWithForm(token, putExtra, config) {
 }
 
 function createIframe() {
-  var iframe = document.createElement("iframe");
+  let iframe = document.createElement("iframe");
   iframe.name = "iframe" + Math.random();
   $("#directForm").append(iframe);
   iframe.style.display = "none";
