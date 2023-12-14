@@ -2,9 +2,7 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "boot": "lerna bootstrap",
-    "build": "lerna run build --stream",
-    "dev": "npm run build && lerna run dev --parallel --stream",
+    "install": "npm install",
     "test": "jest --coverage",
     "clean": "lerna clean",
     "lint": "eslint ."
@@ -22,9 +20,11 @@
     "eslint-plugin-react-hooks": "^4.2.0",
     "jest": "^28.1.3",
     "jest-environment-jsdom": "^28.1.3",
-    "lerna": "^5.1.4",
-    "nx": "^14.4.3",
     "ts-jest": "^28.0.7",
     "typescript": ">=3.3.1 <4.5.0"
-  }
+  },
+  "workspaces": [
+    "examples/*",
+    "packages/*"
+  ]
 }
