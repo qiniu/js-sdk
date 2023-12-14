@@ -16,7 +16,7 @@
 * [准备](#ready)
 * [引入](#install)
 * [使用](#usage)
-* [运行示例](#demo)
+* [本地开发](#develop)
 * [说明](#note)
 * [常见问题](#faq)
 
@@ -80,24 +80,12 @@ Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服�
 
 支持以下几种安装方式
 
-* 直接使用静态文件地址：
-
-  ```
-  https://cdnjs.cloudflare.com/ajax/libs/qiniu-js/<version>/qiniu.min.js
-  
-  // 当上方资源链接访问不稳定时，可选使用下方资源链接
-  https://cdn.staticfile.org/qiniu-js/<version>/qiniu.min.js
-  ```
-
-  通过 script 标签引入该文件，会在全局生成名为 `qiniu` 的对象
-
-
 * 使用 NPM 安装
 
   NPM 的全称是 Node Package Manager，是一个 [NodeJS](https://nodejs.org) 包管理和分发工具，已经成为了非官方的发布 Node 模块（包）的标准。如果需要更详细的关于 NPM 的使用说明，您可以访问 [NPM 官方网站](https://www.npmjs.com)，或对应的 [中文网站](http://www.npmjs.com.cn/)
 
   ```shell
-  npm install qiniu-js
+  $ npm install qiniu-js
   ```
 
   ```Javascript
@@ -106,9 +94,22 @@ Qiniu-JavaScript-SDK 的示例 [Demo](http://jssdk-v2.demo.qiniu.io) 中的服�
   import * as qiniu from 'qiniu-js'
   ```
 
-* 通过源码编译
+* 直接通过 `script` 标签引入，通过这种方式将会在全局生成名为 `qiniu` 的对象
 
-`git clone git@github.com:qiniu/js-sdk.git`，进入项目根目录执行 `npm install` ，执行 `npm run build`，即可在dist 目录生成 `qiniu.min.js`。
+  ```html
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qiniu-js/<version>/qiniu.min.js"></script>
+  // 当上方资源链接访问不稳定时，可选用下方资源链接
+  <script src="https://cdn.staticfile.org/qiniu-js/<version>/qiniu.min.js"></script>
+  ```
+
+* 通过源码编译，依次执行以下命令即可在本地构建
+
+  ``` bash
+  $ git clone git@github.com:qiniu/js-sdk.git
+  $ cd js-sdk
+  $ npm install
+  $ npm run build
+  ```
 
 <a id="usage"></a>
 
@@ -461,27 +462,20 @@ qiniu.compressImage(file, options).then(data => {
 
   fopArr包含的具体管道操作解释见 [管道操作](https://developer.qiniu.com/dora/manual/processing-mechanism)
 
-<a id="demo"></a>
+<a id="develop"></a>
 
-### 运行示例
+### 本地开发
 
-1. 进入 test 目录，按照目录下的 `config.json.example` 示例，创建 `config.json` 文件，其中，`Access Key` 和 `Secret Key` 按如下方式获取
+```bash
+$ git clone git@github.com:qiniu/js-sdk.git
+$ cd js-sdk/
+$ npm install
+$ npm run boot
+$ npm run dev
+```
 
-   * [开通七牛开发者帐号](https://portal.qiniu.com/signup)
-   * [登录七牛开发者自助平台，查看 AccessKey 和 SecretKey](https://portal.qiniu.com/user/key) 。
-
-   ```javascript
-   {
-     "AccessKey": "<Your Access Key>",
-     "SecretKey": "<Your Secret Key>",
-     "Bucket": "<Your Bucket Name>",
-     "Port": 9000,
-     "UptokenUrl": "<Your Uptoken_Url>", // demo 启动后会在本地 /uptoken 上提供获取 uptoken 的接口，所以这里可以填 'token'
-     "Domain": "<Your Bucket Domain>" // Bucket 的外链默认域名，在 Bucket 的内容管理里查看，如：'http://xxx.bkt.clouddn.com/'
-   }
-   ```
-
-2. 进入项目根目录，执行 `npm install` 安装依赖库，然后打开两个终端，一个执行 `npm run serve` 跑 server， 一个执行 `npm run dev` 运行服务；demo1：`http://0.0.0.0:8080/test/demo1`；demo3：`http://0.0.0.0:8080/test/demo3`；demo1为测试上传功能的示例，demo3为测试图片压缩功能的示例；demo2 为测试 es6 语法的示例，进入 demo2 目录，执行 `npm install`，然后 `npm start` 运行 demo2；demo1、demo2 和 demo3 都共用一个 server，请注意 server 文件里的 `region` 设置跟 `config` 里的`region` 设置要保持一致。
+打开您的浏览器并访问终端中提示的地址即可访问开发调试页面。
+如果你在使用 `vscode`，推荐通过根目录下的 `js-sdk.code-workspace` 文件打开工作空间快速进行开发和调试。
 
 <a id="note"></a>
 

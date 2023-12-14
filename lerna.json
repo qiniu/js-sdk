@@ -1,0 +1,8 @@
+{
+  "packages": [
+    "packages/*"
+  ],
+  "useNx": false,
+  "npmClient": "npm",
+  "version": "independent"
+}

@@ -1,0 +1,8 @@
+demo/config.js
+test/config.json
+npm-debug.log
+dist
+lib
+esm
+cjs
+umd
