@@ -11,7 +11,7 @@ function getProjectConfig(name) {
 
 module.exports = {
   projects: [
-    getProjectConfig('qiniu-js'),
-    getProjectConfig('doc-site')
+    getProjectConfig('common'),
+    getProjectConfig('browser')
   ]
 }

@@ -1,0 +1,12 @@
+{
+  "name": "@internal/common",
+  "version": "1.0.0",
+  "description": "",
+  "main": "output/index.js",
+  "types": "output/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "author": "",
+  "license": "ISC"
+}

@@ -2,7 +2,7 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "install": "npm install",
+    "boot": "npm install",
     "test": "jest --coverage",
     "clean": "lerna clean",
     "lint": "eslint ."
