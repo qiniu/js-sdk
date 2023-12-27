@@ -36,7 +36,6 @@ class UploadBlob implements IBlob {
 
 type FileData =
   | { type: 'path', data: string }
-  | { type: 'base64', data: string }
   | { type: 'string', data: string }
   | { type: 'array-buffer', data: ArrayBuffer }
 
@@ -63,12 +62,6 @@ export class UploadFile implements IFile {
     return file
   }
 
-  static fromBase64(data: string, meta?: FileMeta) {
-    const file = new UploadFile(meta)
-    file.initData = { type: 'base64', data }
-    return file
-  }
-
   static fromArrayBuffer(data: ArrayBuffer, meta?: FileMeta) {
     const file = new UploadFile(meta)
     file.initData = { type: 'array-buffer', data }
@@ -91,10 +84,6 @@ export class UploadFile implements IFile {
 
     if (this.initData.type === 'string') {
       paddingFileData = this.initData.data
-    }
-
-    if (this.initData.type === 'base64') {
-      paddingFileData = urlSafeBase64Decode(this.initData.data)
     }
 
     if (paddingFileData != null) {
