@@ -7,7 +7,7 @@ interface FileMeta {
   mimeType?: string
 }
 
-export class UploadBlob implements IBlob {
+class UploadBlob implements IBlob {
   constructor(
     private filePath: string,
     private offset: number,
@@ -34,7 +34,7 @@ export class UploadBlob implements IBlob {
   }
 }
 
-type WxFileData =
+type FileData =
   | { type: 'path', data: string }
   | { type: 'base64', data: string }
   | { type: 'string', data: string }
@@ -45,7 +45,7 @@ export class UploadFile implements IFile {
   private inited = false
   private shouldDeleteFile = false
   private filePath: string | null = null
-  private initData: WxFileData | null = null
+  private initData: FileData | null = null
 
   constructor(private meta?: FileMeta) {}
 
