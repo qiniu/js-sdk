@@ -1,6 +1,6 @@
 /* eslint-disable no-bitwise */
 
-const MB = 1024 ** 2
+export const MB = 1024 ** 2
 
 /**
  * 以下 class 实现参考
