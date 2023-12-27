@@ -1,4 +1,3 @@
-import path from 'path-browserify'
 import { IBlob, IFile, UploadError, Result, isSuccessResult, sliceChunk, urlSafeBase64Decode } from '@internal/common'
 
 interface FileMeta {

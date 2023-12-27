@@ -27,7 +27,7 @@ export interface QueueContext<ProgressKey extends string = string> {
   /** 上传使用的 token; 由公共的 TokenProvideTask 维护和更新 */
   token?: Token
   /** 上传成功的信息  */
-  uploaded?: string
+  result?: string
   /** 队列的错误 */
   error?: UploadError
   /** 整体的任务进度信息 */
@@ -179,6 +179,7 @@ export class TaskQueue {
       // 发生错误，重试或停止任务队列
       if (isErrorResult(result)) {
         state.status = 'error'
+        this.error = result.error
         // 网络错误或者请求错误，直接重试等待一定时间后重试
         if (result.error.name === 'NetworkError' || result.error.name === 'HttpRequestError') {
           if (state.retryCount <= 3) {
@@ -291,7 +292,7 @@ export class TaskQueue {
 export class UploadQueueContext<ProgressKey extends string = string> implements QueueContext {
   host?: Host
   token?: Token
-  uploaded?: string
+  result?: string
   error?: UploadError
   progress: Progress<ProgressKey>
 

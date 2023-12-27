@@ -10,7 +10,9 @@ import { TokenProvideTask } from '../common/token'
 import { initUploadConfig } from '../common/config'
 import { Task, TaskQueue, UploadQueueContext } from '../common/queue'
 
-export class DirectUploadQueueContext extends UploadQueueContext {}
+type DirectUploadProgressKey = 'directUpload'
+
+export class DirectUploadQueueContext extends UploadQueueContext<DirectUploadProgressKey> {}
 
 class DirectUploadTask implements Task {
   private abort = new HttpAbortController()
@@ -22,9 +24,6 @@ class DirectUploadTask implements Task {
   }
 
   async process(notify: () => void): Promise<Result> {
-    const fileSizeResult = await this.file.size()
-    if (!isSuccessResult(fileSizeResult)) return fileSizeResult
-
     const fileNameResult = await this.file.name()
     if (!isSuccessResult(fileNameResult)) return fileNameResult
 
@@ -38,7 +37,7 @@ class DirectUploadTask implements Task {
     })
 
     if (isErrorResult(result)) this.context.error = result.error
-    if (isSuccessResult(result)) this.context!.uploaded = result.result
+    if (isSuccessResult(result)) this.context!.result = result.result
 
     return result
   }

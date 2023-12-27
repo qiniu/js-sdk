@@ -151,7 +151,7 @@ class CompletePartUploadTask implements Task {
     })
 
     if (isSuccessResult(completeResult)) {
-      this.context!.uploaded = completeResult.result
+      this.context!.result = completeResult.result
     }
 
     if (isErrorResult(completeResult)) {
