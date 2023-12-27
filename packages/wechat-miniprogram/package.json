@@ -1,0 +1,25 @@
+{
+  "name": "@qiniu-js/wechat-miniprogram",
+  "version": "1.0.0",
+  "description": "",
+  "miniprogram": "output",
+  "main": "output/index.js",
+  "types": "output/index.d.ts",
+  "scripts": {
+    "dev": "rollup -c -w",
+    "build": "rollup -c"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "rollup": "^2.77.0",
+    "@internal/common": "*",
+    "path-browserify": "^1.0.1",
+    "@rollup/plugin-babel": "^5.3.1",
+    "@types/path-browserify": "^1.0.2",
+    "@rollup/plugin-commonjs": "^22.0.1",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@types/wechat-miniprogram": "^3.4.7",
+    "rollup-plugin-typescript2": "^0.32.1"
+  }
+}
