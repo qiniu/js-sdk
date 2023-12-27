@@ -1,0 +1,16 @@
+{
+  "name": "qiniu",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+  },
+  "keywords": [],
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "@qiniu-js/wechat-miniprogram": "file:../../packages/wechat-miniprogram"
+  },
+  "devDependencies": {
+    "miniprogram-api-typings": "^3.12.2"
+  }
+}
