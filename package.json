@@ -24,7 +24,6 @@
     "typescript": ">=3.3.1 <4.5.0"
   },
   "workspaces": [
-    "examples/*",
     "packages/*"
   ]
 }

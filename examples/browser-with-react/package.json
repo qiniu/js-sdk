@@ -1,5 +1,5 @@
 {
-  "name": "dev-test",
+  "name": "@examples/browser-with-react",
   "description": "dev-test",
   "version": "0.0.1",
   "main": "index.js",
@@ -34,6 +34,6 @@
     "js-base64": "^3.7.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "qiniu-js": "*"
+    "qiniu-js": "file:../../packages/browser"
   }
 }
