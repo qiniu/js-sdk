@@ -1,5 +1,5 @@
 {
-  "name": "@qiniu-js/wechat-miniprogram",
+  "name": "@qiniu/wechat-miniprogram-upload",
   "version": "1.0.0",
   "description": "",
   "miniprogram": "output",

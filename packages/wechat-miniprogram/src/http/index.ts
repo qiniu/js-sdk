@@ -1,4 +1,4 @@
-import common, { HttpRequestError, MockProgress, UploadError, isSuccessResult } from '@internal/common'
+import common, { HttpResponse, MockProgress, UploadError, isSuccessResult } from '@internal/common'
 
 import { UploadFile, isUploadBlob, isUploadFile } from '../file'
 
@@ -17,7 +17,7 @@ function shouldUseUploadFile(option?: RequestOptions): boolean {
 }
 
 export class WxHttpClient implements common.HttpClient {
-  async request(url: string, options?: RequestOptions): Promise<common.Result<string>> {
+  async request(url: string, options?: RequestOptions): Promise<common.Result<HttpResponse>> {
     if (shouldUseUploadFile(options)) {
       let fileKey: string | null = null
       let fileData: UploadFile | null = null
@@ -50,13 +50,13 @@ export class WxHttpClient implements common.HttpClient {
           formData,
           name: fileKey!,
           filePath: filePathResult.result,
-          success: response => {
-            if (response.statusCode === 200) {
-              resolve({ result: response.data })
-              return
+          success: response => resolve({
+            result: {
+              code: response.statusCode,
+              data: response.data as string,
+              reqId: 'WeChat UploadFile api cannot get this value'
             }
-            resolve({ error: new HttpRequestError(response.statusCode, response.errMsg) })
-          },
+          }),
           fail: error => resolve({ error: new UploadError('HttpRequestError', error.errMsg) })
         })
         if (options?.abort) {
@@ -97,21 +97,26 @@ export class WxHttpClient implements common.HttpClient {
       mockProgress.start()
       const request = wx.request({
         url,
-        dataType: '其他',
+        dataType: '其他', // 强制返回 string 类型
         data: normalizedBody,
         method: options?.method,
         header: options?.headers,
         success: response => {
-          if (response.statusCode === 200) {
-            if (typeof response.data === 'string') {
-              resolve({ result: response.data })
+          mockProgress.end()
+          return resolve({
+            result: {
+              code: response.statusCode,
+              data: response.data as string,
+              reqId: response.header['X-Reqid']
             }
-            return resolve({ error: new UploadError('HttpRequestError', 'Unexpected response format') })
-          }
-          resolve({ error: new HttpRequestError(response.statusCode, response.errMsg) })
+          })
         },
-        fail: error => resolve({ error: new UploadError('HttpRequestError', error.errMsg) }),
-        complete: () => mockProgress.end()
+        fail: error => {
+          mockProgress.stop()
+          return resolve({
+            error: new UploadError('HttpRequestError', error.errMsg)
+          })
+        }
       })
       if (options?.abort) {
         options.abort.onAbort(() => request.abort())
@@ -119,16 +124,16 @@ export class WxHttpClient implements common.HttpClient {
     })
   }
 
-  get(url: string, options?: common.HttpClientOptions | undefined): Promise<common.Result<string>> {
+  get(url: string, options?: common.HttpClientOptions | undefined): Promise<common.Result<HttpResponse>> {
     return this.request(url, { method: 'GET', ...options })
   }
-  put(url: string, options?: common.HttpClientOptions | undefined): Promise<common.Result<string>> {
+  put(url: string, options?: common.HttpClientOptions | undefined): Promise<common.Result<HttpResponse>> {
     return this.request(url, { method: 'PUT', ...options })
   }
-  post(url: string, options?: common.HttpClientOptions | undefined): Promise<common.Result<string>> {
+  post(url: string, options?: common.HttpClientOptions | undefined): Promise<common.Result<HttpResponse>> {
     return this.request(url, { method: 'POST', ...options })
   }
-  delete(url: string, options?: common.HttpClientOptions | undefined): Promise<common.Result<string>> {
+  delete(url: string, options?: common.HttpClientOptions | undefined): Promise<common.Result<HttpResponse>> {
     return this.request(url, { method: 'DELETE', ...options })
   }
 }

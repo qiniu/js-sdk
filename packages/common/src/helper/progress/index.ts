@@ -43,6 +43,10 @@ export class MockProgress {
     this.setProgress(1)
   }
 
+  stop() {
+    this.clearInterval()
+  }
+
   onProgress(listener: ProgressListener) {
     this.listeners.push(listener)
   }

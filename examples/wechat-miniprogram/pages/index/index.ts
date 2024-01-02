@@ -1,5 +1,4 @@
-import * as qiniu from '@qiniu-js/wechat-miniprogram'
-
+import * as qiniu from '@qiniu/wechat-miniprogram-upload'
 
 const token = 'dgHUyu6FJLTIqHZS2Be798icC_DXdHAqaNa9WnO0:1oKniXpgdYlbDWftB6aO8LY52dU=:eyJzY29wZSI6InNkay10ZXN0LTExIiwiZGVhZGxpbmUiOjE3MTM2NTExNjJ9'
 
@@ -39,7 +38,6 @@ Component({
         tokenProvider: { getUploadToken: () => Promise.resolve(token) }
       })
       this.printTask(task)
-
     },
     async uploadFile() {
       const file = qiniu.UploadFile.fromPath(this.data.file)

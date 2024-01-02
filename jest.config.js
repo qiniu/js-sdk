@@ -12,6 +12,7 @@ function getProjectConfig(name) {
 module.exports = {
   projects: [
     getProjectConfig('common'),
-    getProjectConfig('browser')
+    getProjectConfig('browser'),
+    getProjectConfig('wechat-miniprogram'),
   ]
 }

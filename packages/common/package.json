@@ -7,7 +7,9 @@
   "types": "output/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "tsc -w"
+    "dev": "tsc -w",
+    "build-harmony": "tsc --outDir ../harmony/library/src/main/ets/components/@internal/common",
+    "dev-harmony": "tsc -w --outDir ../harmony/library/src/main/ets/components/@internal/common"
   },
   "author": "",
   "license": "ISC"

@@ -22,11 +22,17 @@ export interface HttpClientOptions {
   body?: HttpRequestBody
 }
 
+export interface HttpResponse {
+  code: number
+  data: string
+  reqId?: string
+}
+
 export interface HttpClient {
-  get(url: string, options?: HttpClientOptions): Promise<Result<string>>
-  put(url: string, options?: HttpClientOptions): Promise<Result<string>>
-  post(url: string, options?: HttpClientOptions): Promise<Result<string>>
-  delete(url: string, options?: HttpClientOptions): Promise<Result<string>>
+  get(url: string, options?: HttpClientOptions): Promise<Result<HttpResponse>>
+  put(url: string, options?: HttpClientOptions): Promise<Result<HttpResponse>>
+  post(url: string, options?: HttpClientOptions): Promise<Result<HttpResponse>>
+  delete(url: string, options?: HttpClientOptions): Promise<Result<HttpResponse>>
 }
 
 export class HttpAbortController implements HttpAbort {
@@ -45,4 +51,34 @@ export class HttpAbortController implements HttpAbort {
       this.listeners.push(callback)
     }
   }
+}
+
+interface FormDataItem {
+  value: any
+  option?: any
+}
+export class HttpFormData {
+  private value = new Map<string, FormDataItem>()
+
+  set(key: string, value: any, option?: any) {
+    this.value.set(key, { value, option })
+  }
+
+  get(key: string): FormDataItem | undefined {
+    return this.value.get(key)
+  }
+
+  forEach(callback: (value: any, key?: string, option?: any) => void) {
+    this.value.forEach((value, key) => callback(key, value.value, value.option))
+  }
+
+  entries(): Array<[string, any, any | undefined]> {
+    const result: Array<[string, any, any | undefined]> = []
+    this.forEach((key, value, option) => result.push([key, value, option]))
+    return result
+  }
+}
+
+export function isHttpFormData(data: any): data is HttpFormData {
+  return data && data instanceof HttpFormData
 }

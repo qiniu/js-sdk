@@ -40,73 +40,55 @@ type FileData =
   | { type: 'array-buffer', data: ArrayBuffer }
 
 export class UploadFile implements IFile {
-  private freed = false
-  private inited = false
-  private shouldDeleteFile = false
   private filePath: string | null = null
-  private initData: FileData | null = null
-
-  constructor(private meta?: FileMeta) {}
+  private initPromise: Promise<Result<boolean>> | null = null
+  constructor(private initData: FileData, private meta?: FileMeta) {}
 
   static fromPath(filePath: string, meta?: FileMeta) {
-    const file = new UploadFile(meta)
-    file.initData = { type: 'path', data: filePath }
-    file.filePath = filePath
-    file.inited = true
-    return file
+    return new UploadFile({ type: 'path', data: filePath }, meta)
   }
 
   static fromString(data: string, meta?: FileMeta) {
-    const file = new UploadFile(meta)
-    file.initData = { type: 'string', data }
-    return file
+    return new UploadFile({ type: 'string', data }, meta)
   }
 
   static fromArrayBuffer(data: ArrayBuffer, meta?: FileMeta) {
-    const file = new UploadFile(meta)
-    file.initData = { type: 'array-buffer', data }
-    return file
+    return new UploadFile({ type: 'array-buffer', data }, meta)
   }
 
   /** 初始化数据并写入磁盘&检查文件 */
   private autoInit(): Promise<Result<boolean>> {
-    if (this.inited) return Promise.resolve({ result: true })
-    if (this.initData == null) return Promise.resolve({ error: new UploadError('FileSystemError', 'Invalid file') })
-    if (this.initData.type === 'path') return Promise.resolve({ result: true })
-    if (this.filePath != null) return Promise.resolve({ result: true })
+    if (this.initPromise) return this.initPromise
 
-    let paddingFileData: ArrayBuffer | string | null = null
-    const tempFilePath = `${wx.env.USER_DATA_PATH}/qiniu-js@${Date.now()}`
+    const handleInit = (): Promise<Result<boolean>> => {
+      if (this.initData.type === 'path') {
+        this.filePath = this.initData.data
+        return Promise.resolve({ result: true })
+      }
 
-    if (this.initData.type === 'array-buffer') {
-      paddingFileData = this.initData.data
-    }
-
-    if (this.initData.type === 'string') {
-      paddingFileData = this.initData.data
-    }
-
-    if (paddingFileData != null) {
-      const ensureData = paddingFileData
-      return new Promise(resolve => {
-        const fs = wx.getFileSystemManager()
-        fs.writeFile({
-          data: ensureData,
-          filePath: tempFilePath,
-          success: () => {
-            this.inited = true
-            this.initData = null // 写入文件后立即释放内存
-            resolve({ result: true })
-            this.filePath = tempFilePath
-            // 对于创建的文件需要标记为应该删除
-            this.shouldDeleteFile = true
-          },
-          fail: error => resolve({ error: new UploadError('FileSystemError', error.errMsg) })
+      if (this.initData.type === 'array-buffer' || this.initData.type === 'string') {
+        // TODO: 文件清理
+        const tempFilePath = `${wx.env.USER_DATA_PATH}/qiniu-js@${Date.now()}`
+        return new Promise(resolve => {
+          const fs = wx.getFileSystemManager()
+          fs.writeFile({
+            data: this.initData!.data,
+            filePath: tempFilePath,
+            success: () => {
+              resolve({ result: true })
+              this.filePath = tempFilePath
+            },
+            fail: error => resolve({ error: new UploadError('FileSystemError', error.errMsg) })
+          })
         })
-      })
+      }
+
+      return Promise.resolve({ result: true })
     }
 
-    return Promise.resolve({ error: new UploadError('FileSystemError', 'Unknown file type') })
+    const initPromise = handleInit()
+    this.initPromise = initPromise
+    return this.initPromise
   }
 
   private async statFile(): Promise<Result<WechatMiniprogram.Stats>> {
@@ -132,18 +114,8 @@ export class UploadFile implements IFile {
     })
   }
 
-  async free(): Promise<Result<true>> {
-    if (this.freed) return { result: true }
-    if (!this.shouldDeleteFile) return { result: true }
-
-    const fs = wx.getFileSystemManager()
-    return new Promise(resolve => {
-      fs.unlink({
-        filePath: this.filePath!,
-        success: () => resolve({ result: true }),
-        fail: error => resolve({ error: new UploadError('FileSystemError', error.errMsg) })
-      })
-    })
+  free(): Promise<Result<true>> {
+    throw new Error('Method not implemented.')
   }
 
   async path(): Promise<Result<string>> {

@@ -3,7 +3,8 @@ import { IBlob, IFile } from '../types/file'
 import { urlSafeBase64Encode } from '../helper/base64'
 import { removeUndefinedKeys } from '../helper/object'
 import { Result, isSuccessResult } from '../types/types'
-import { HttpAbort, HttpClient, HttpHeader, OnHttpProgress } from '../types/http'
+import { HttpAbort, HttpClient, HttpFormData, HttpHeader, HttpResponse, OnHttpProgress } from '../types/http'
+import { HttpRequestError } from '../types/error'
 
 interface BasicParams {
   abort?: HttpAbort
@@ -94,6 +95,42 @@ interface DirectUploadParams extends BasicWithAuthParams {
   customVar?: Record<string, string>
 }
 
+async function parseResponseJson<T>(response: HttpResponse): Promise<Result<T>> {
+  let parsedData: T | undefined
+  try {
+    parsedData = JSON.parse(response.data || '')
+  } catch (error) {
+    const message = `Bad response data, cannot be parsed: ${response.data}`
+    return { error: new HttpRequestError(response.code, message) }
+  }
+
+  return { result: parsedData as T }
+}
+
+async function handleResponseError<T>(response: HttpResponse): Promise<Result<T>> {
+  // 错误接口格式
+  interface ApiError {
+    code: number
+    error: string
+  }
+
+  let responseData: ApiError | T | undefined
+  try {
+    responseData = JSON.parse(response.data || '')
+  } catch (error) {
+    const message = `Bad response data, cannot be parsed: ${response.data}`
+    return { error: new HttpRequestError(response.code, message) }
+  }
+
+  if (responseData !== null && typeof responseData === 'object' && 'error' in responseData) {
+    const message = `${responseData.code}:${responseData.error}`
+    return { error: new HttpRequestError(response.code, message) }
+  }
+
+  const message = `Unknown response error: ${response.data}`
+  return { error: new HttpRequestError(response.code, message) }
+}
+
 export class UploadApis {
   constructor(
     /** http 请求客户端；通过实现不同的 HttpClient 来实现多环境支持 */
@@ -122,8 +159,15 @@ export class UploadApis {
       onProgress: params.onProgress
     })
 
-    if (!isSuccessResult(response)) return response
-    return { result: JSON.parse(response.result) }
+    if (!isSuccessResult(response)) {
+      return response
+    }
+
+    if (response.result.code !== 200) {
+      return handleResponseError(response.result)
+    }
+
+    return parseResponseJson<InitPartsUploadData>(response.result)
   }
 
   async uploadPart(params: UploadPartParams): Promise<Result<UploadChunkData>> {
@@ -141,8 +185,16 @@ export class UploadApis {
       body: params.part,
       headers
     })
-    if (!isSuccessResult(response)) return response
-    return { result: JSON.parse(response.result) }
+
+    if (!isSuccessResult(response)) {
+      return response
+    }
+
+    if (response.result.code !== 200) {
+      return handleResponseError(response.result)
+    }
+
+    return parseResponseJson<UploadChunkData>(response.result)
   }
 
   async listUploadParts(params: ListMultipartUploadPartsParams): Promise<Result<ListUploadPartsData>> {
@@ -157,8 +209,16 @@ export class UploadApis {
       abort: params.abort,
       onProgress: params.onProgress
     })
-    if (!isSuccessResult(response)) return response
-    return { result: JSON.parse(response.result) }
+
+    if (!isSuccessResult(response)) {
+      return response
+    }
+
+    if (response.result.code !== 200) {
+      return handleResponseError(response.result)
+    }
+
+    return parseResponseJson<ListUploadPartsData>(response.result)
   }
 
   async completeMultipartUpload(params: CompleteMultipartUploadParams): Promise<Result<string>> {
@@ -189,12 +249,22 @@ export class UploadApis {
       }
     }
 
-    return this.httpClient.post(url, {
+    const response = await this.httpClient.post(url, {
       headers,
       abort: params.abort,
       onProgress: params.onProgress,
       body: removeUndefinedKeys(body)
     })
+
+    if (!isSuccessResult(response)) {
+      return response
+    }
+
+    if (response.result.code !== 200) {
+      return handleResponseError(response.result)
+    }
+
+    return { result: response.result.data }
   }
 
   async abortMultipartUpload(params: AbortMultipartUploadParams): Promise<Result<string>> {
@@ -204,43 +274,60 @@ export class UploadApis {
     const url = `${requestPathResult.result}/${params.uploadId}`
     const headers = this.generateAuthHeaders(params.token.signature)
     headers['content-type'] = 'application/json'
-    return this.httpClient.delete(url, {
+
+    const response = await this.httpClient.delete(url, {
       headers,
       abort: params.abort,
       onProgress: params.onProgress
     })
+
+    if (!isSuccessResult(response)) {
+      return response
+    }
+
+    if (response.result.code !== 200) {
+      return handleResponseError(response.result)
+    }
+
+    return { result: response.result.data }
   }
 
   async directUpload<T>(params: DirectUploadParams): Promise<Result<string>> {
-    const headers = this.generateAuthHeaders(params.token.signature)
-    headers['content-type'] = 'multipart/form-data'
-
-    const body: Record<string, unknown> = {
-      token: params.token.signature,
-
-      key: params.key,
-      file: params.file,
-      crc32: params.crc32
-    }
+    const formData = new HttpFormData()
+    formData.set('token', params.token.signature)
+    if (params.key !== undefined) formData.set('key', params.key)
+    if (params.crc32 !== undefined) formData.set('crc32', params.crc32)
+    if (params.file !== undefined) formData.set('file', params.file, params.fileName)
 
     if (params.customVar) {
       for (const [key, value] of Object.entries(params.customVar)) {
-        body[`x:${key}`] = value
+        formData.set(`x:${key}`, value)
       }
     }
 
     if (params.meta) {
       for (const [key, value] of Object.entries(params.meta)) {
-        body[`x-qn-meta-${key}`] = value
+        formData.set(`x-qn-meta-${key}`, value)
       }
     }
 
-    return this.httpClient.post(params.uploadHostUrl, {
+    const headers = { 'content-type': 'multipart/form-data' }
+    const response = await this.httpClient.post(params.uploadHostUrl, {
       headers,
+      body: formData,
       abort: params.abort,
-      onProgress: params.onProgress,
-      body: removeUndefinedKeys(body)
+      onProgress: params.onProgress
     })
+
+    if (!isSuccessResult(response)) {
+      return response
+    }
+
+    if (response.result.code !== 200) {
+      return handleResponseError(response.result)
+    }
+
+    return { result: response.result.data }
   }
 }
 
@@ -286,7 +373,15 @@ export class ConfigApis {
     // TODO: 支持设置，私有云自动获取上传地址
     const url = `${this.serverUrl}/v4/query?${query}`
     const response = await this.httpClient.get(url)
-    if (!isSuccessResult(response)) return response
-    return { result: JSON.parse(response.result) }
+
+    if (!isSuccessResult(response)) {
+      return response
+    }
+
+    if (response.result.code !== 200) {
+      return handleResponseError(response.result)
+    }
+
+    return parseResponseJson<HostConfig>(response.result)
   }
 }
