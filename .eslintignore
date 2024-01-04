@@ -8,3 +8,5 @@ umd
 *.js
 *.d.ts
 *.test.ts
+examples
+packages/harmony

@@ -56,7 +56,7 @@ interface LoggerOptions {
 }
 
 interface TaskQueueOptions {
-  logger: LoggerOptions
+  logger?: LoggerOptions
   concurrentLimit?: number
   tasksCreator?: TaskCreator
 }
@@ -87,8 +87,8 @@ export class TaskQueue {
   private completeListeners = new Map<string, OnComplete>()
 
   constructor(private options?: TaskQueueOptions) {
-    this.logger = new Logger(options?.logger.level, options?.logger.prefix)
     this.dynamicTasksCreator = options?.tasksCreator
+    this.logger = new Logger(options?.logger?.level, options?.logger?.prefix)
   }
 
   private handleProgress() {
@@ -264,7 +264,7 @@ export class TaskQueue {
   }
 
   /** 添加任务 */
-  enqueue(tasks: Array<Task | TaskQueue>) {
+  enqueue(...tasks: Array<Task | TaskQueue>) {
     if (this.processing) throw new Error('task is processing')
     // 清空现有任务并设置新的任务
     this.tasks.splice(0, Infinity)

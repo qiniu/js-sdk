@@ -42,7 +42,6 @@ export class HttpAbortController implements HttpAbort {
 
   abort(): void {
     if (this.aborted) {
-      console.log('333')
       return
     }
     this.aborted = true
