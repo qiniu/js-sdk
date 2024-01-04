@@ -1,4 +1,4 @@
-import common, { HttpResponse, MockProgress, UploadError, isSuccessResult } from '@internal/common'
+import common, { HttpResponse, MockProgress, UploadError, isHttpFormData, isSuccessResult } from '@internal/common'
 
 import { UploadFile, isUploadBlob, isUploadFile } from '../file'
 
@@ -8,12 +8,10 @@ interface RequestOptions extends common.HttpClientOptions {
 
 function shouldUseUploadFile(option?: RequestOptions): boolean {
   if (option?.method !== 'POST') return false
-  if (option?.body == null || typeof option.body !== 'object') return false
-  if (option?.headers?.['content-type'] !== 'multipart/form-data') return false
+  if (!isHttpFormData(option.body)) return false
 
-  const files = Object.values(option.body!).filter(value => isUploadFile(value))
-  if (files.length !== 1) return false // 不能有两个文件
-  return true
+  const files = option.body.entries().filter(([_, value]) => isUploadFile(value))
+  return files.length > 0
 }
 
 export class WxHttpClient implements common.HttpClient {
@@ -22,7 +20,9 @@ export class WxHttpClient implements common.HttpClient {
       let fileKey: string | null = null
       let fileData: UploadFile | null = null
       const formData: Record<string, any> = {}
-      for (const [key, value] of Object.entries(options!.body! as {})) {
+      const bodyEntries = (options!.body as common.HttpFormData).entries()
+
+      for (const [key, value] of bodyEntries) {
         if (isUploadFile(value)) {
           fileKey = key
           fileData = value
@@ -57,9 +57,17 @@ export class WxHttpClient implements common.HttpClient {
               reqId: 'WeChat UploadFile api cannot get this value'
             }
           }),
-          fail: error => resolve({ error: new UploadError('HttpRequestError', error.errMsg) })
+          fail: error => {
+            if (options?.abort?.aborted || error.errMsg.includes('abort')) {
+              return resolve({ canceled: true })
+            }
+
+            resolve({ error: new UploadError('NetworkError', error.errMsg) })
+          }
         })
+
         if (options?.abort) {
+          if (options.abort.aborted) uploadTask.abort()
           options.abort.onAbort(() => uploadTask.abort())
         }
 
@@ -113,9 +121,10 @@ export class WxHttpClient implements common.HttpClient {
         },
         fail: error => {
           mockProgress.stop()
-          return resolve({
-            error: new UploadError('HttpRequestError', error.errMsg)
-          })
+          if (options?.abort?.aborted && error.errMsg.includes('abort')) {
+            return resolve({ canceled: true })
+          }
+          resolve({ error: new UploadError('NetworkError', error.errMsg) })
         }
       })
       if (options?.abort) {

@@ -1,10 +1,14 @@
 <!--index.wxml-->
 <scroll-view class="scrollarea" scroll-y type="list">
   <view class="container">
+    <textarea class="textarea" model:value="{{token}}"></textarea>
     <textarea class="textarea" model:value="{{text}}"></textarea>
-    <button class="button" bind:tap="uploadText">上传文本测试</button>
+    <button class="button" bind:tap="uploadText">文本上传测试</button>
+    <button class="button" bind:tap="uploadArrayBuffer">ArrayBuffer 上传测试</button>
     <textarea class="textarea" model:value="{{file}}"></textarea>
     <button class="button" bind:tap="selectMedia">选择文件</button>
-    <button class="button" bind:tap="uploadFile">上传文件测试</button>
+    <button class="button" bind:tap="uploadFile">文件上传测试</button>
+    <button class="button" bind:tap="stopTask">停止上传</button>
+    <button class="button" bind:tap="startTask">继续上传</button>
   </view>
 </scroll-view>

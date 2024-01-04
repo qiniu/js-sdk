@@ -1,7 +1,5 @@
 import * as qiniu from '@qiniu/wechat-miniprogram-upload'
 
-const token = 'dgHUyu6FJLTIqHZS2Be798icC_DXdHAqaNa9WnO0:1oKniXpgdYlbDWftB6aO8LY52dU=:eyJzY29wZSI6InNkay10ZXN0LTExIiwiZGVhZGxpbmUiOjE3MTM2NTExNjJ9'
-
 Component({
   data: {
     tabs: [
@@ -17,8 +15,10 @@ Component({
       }
     ],
     file: '',
+    token: 'dgHUyu6FJLTIqHZS2Be798icC_DXdHAqaNa9WnO0:1Oy95033vmfpo4-DuwMgwG07JkM=:eyJzY29wZSI6InNkay10ZXN0LTExIiwiZGVhZGxpbmUiOjk5OTk5OTk5OTk5OTk5OX0=',
     text: '测试上传文本内容',
     progress: '',
+    task: null
   },
   methods: {
     onTabChange() {
@@ -35,24 +35,50 @@ Component({
     async uploadText() {
       const file = qiniu.UploadFile.fromString(this.data.text)
       const task = qiniu.createDirectUploadTask(file, {
-        tokenProvider: { getUploadToken: () => Promise.resolve(token) }
+        tokenProvider: () => Promise.resolve(this.data.token)
       })
-      this.printTask(task)
+      await this.printTask(task)
+      await file.free()
     },
+
+    async uploadArrayBuffer() {
+      const buffer = new ArrayBuffer(100)
+      const file = qiniu.UploadFile.fromArrayBuffer(buffer)
+      const task = qiniu.createDirectUploadTask(file, {
+        tokenProvider: () => Promise.resolve(this.data.token)
+      })
+      await this.printTask(task)
+      await file.free()
+    },
+
     async uploadFile() {
       const file = qiniu.UploadFile.fromPath(this.data.file)
       const task = qiniu.createMultipartUploadTask(file, {
-        tokenProvider: { getUploadToken: () => Promise.resolve(token) }
+        tokenProvider: () => Promise.resolve(this.data.token)
       })
-      this.printTask(task)
+      await this.printTask(task)
+      await file.free()
     },
+
     async printTask(task: qiniu.UploadTask) {
-      task.onProgress(ctx => this.setData({ ...this.data, progress: JSON.stringify(ctx.progress.details) }))
-      task.onProgress(ctx => console.log('Progress: ', JSON.stringify(ctx.progress.details)))
+      task.onProgress(ctx => this.setData({ ...this.data, progress: JSON.stringify(ctx.progress) }))
+      task.onProgress(ctx => console.log('Progress: ', JSON.stringify(ctx.progress)))
       task.onComplete(ctx => console.log('Complete: ', ctx))
       task.onError(ctx => console.log('Error: ', ctx))
-      console.log(await task.start());
-      (globalThis as any).task = task
+      this.data.task = task as any
+      console.log('await task.start', await task.start())
+    },
+
+    async stopTask() {
+      if (this.data.task) {
+        (this.data.task as unknown as qiniu.UploadTask).cancel()
+      }
+    },
+
+    async startTask() {
+      if (this.data.task) {
+        (this.data.task as unknown as qiniu.UploadTask).start()
+      }
     }
   },
 })

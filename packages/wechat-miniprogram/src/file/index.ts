@@ -1,4 +1,4 @@
-import { IBlob, IFile, UploadError, Result, isSuccessResult, sliceChunk, urlSafeBase64Decode } from '@internal/common'
+import { IBlob, IFile, UploadError, Result, isSuccessResult, sliceChunk } from '@internal/common'
 
 interface FileMeta {
   /** 文件名 */
@@ -11,14 +11,18 @@ class UploadBlob implements IBlob {
   constructor(
     private filePath: string,
     private offset: number,
-    private size: number
+    private length: number
   ) {}
+
+  size(): number {
+    return this.length
+  }
 
   readAsArrayBuffer(): Promise<Result<ArrayBuffer>> {
     const fs = wx.getFileSystemManager()
     return new Promise(resolve => {
       fs.readFile({
-        length: this.size,
+        length: this.length,
         position: this.offset,
         filePath: this.filePath,
         success: result => {
@@ -40,6 +44,7 @@ type FileData =
   | { type: 'array-buffer', data: ArrayBuffer }
 
 export class UploadFile implements IFile {
+  private shouldUnlink = false
   private filePath: string | null = null
   private initPromise: Promise<Result<boolean>> | null = null
   constructor(private initData: FileData, private meta?: FileMeta) {}
@@ -60,7 +65,8 @@ export class UploadFile implements IFile {
   private autoInit(): Promise<Result<boolean>> {
     if (this.initPromise) return this.initPromise
 
-    const handleInit = (): Promise<Result<boolean>> => {
+    // 将内容写入文件用于后面上传
+    const autoCreateFile = (): Promise<Result<boolean>> => {
       if (this.initData.type === 'path') {
         this.filePath = this.initData.data
         return Promise.resolve({ result: true })
@@ -76,6 +82,7 @@ export class UploadFile implements IFile {
             filePath: tempFilePath,
             success: () => {
               resolve({ result: true })
+              this.shouldUnlink = true
               this.filePath = tempFilePath
             },
             fail: error => resolve({ error: new UploadError('FileSystemError', error.errMsg) })
@@ -86,7 +93,7 @@ export class UploadFile implements IFile {
       return Promise.resolve({ result: true })
     }
 
-    const initPromise = handleInit()
+    const initPromise = autoCreateFile()
     this.initPromise = initPromise
     return this.initPromise
   }
@@ -115,7 +122,18 @@ export class UploadFile implements IFile {
   }
 
   free(): Promise<Result<true>> {
-    throw new Error('Method not implemented.')
+    return new Promise(resolve => {
+      if (this.shouldUnlink && this.filePath) {
+        const fs = wx.getFileSystemManager()
+        fs.unlink({
+          filePath: this.filePath!,
+          success: () => resolve({ result: true }),
+          fail: error => resolve({ error: new UploadError('FileSystemError', error.errMsg) })
+        })
+      } else {
+        resolve({ result: true })
+      }
+    })
   }
 
   async path(): Promise<Result<string>> {

@@ -2,7 +2,7 @@ import { IFile } from '../../types/file'
 import { UploadTaskCreator } from '../types'
 import { ConfigApis, UploadApis } from '../../api'
 import { HttpAbortController } from '../../types/http'
-import { generateRandomString } from '../../helper/uuid'
+import { generateRandomString } from '../../helper/string'
 import { Result, isErrorResult, isSuccessResult } from '../../types/types'
 
 import { HostProvideTask } from '../common/host'
@@ -15,11 +15,11 @@ type DirectUploadProgressKey = 'directUpload'
 export class DirectUploadQueueContext extends UploadQueueContext<DirectUploadProgressKey> {}
 
 class DirectUploadTask implements Task {
-  private abort = new HttpAbortController()
+  private abort: HttpAbortController | null = null
   constructor(private context: DirectUploadQueueContext, private file: IFile, private uploadApis: UploadApis) {}
 
   async cancel(): Promise<Result> {
-    this.abort.abort()
+    await this.abort?.abort()
     return { result: true }
   }
 
@@ -27,13 +27,14 @@ class DirectUploadTask implements Task {
     const fileNameResult = await this.file.name()
     if (!isSuccessResult(fileNameResult)) return fileNameResult
 
+    this.abort = new HttpAbortController()
     const result = await this.uploadApis.directUpload({
       file: this.file,
       abort: this.abort,
       token: this.context!.token!,
       uploadHostUrl: this.context!.host!.getUrl(),
       fileName: fileNameResult.result || generateRandomString(), // 接口要求必传且建议没有有效文件名时传随机字符串
-      onProgress: progress => { this.context!.progress.details.directUpload = progress.percent; notify() }
+      onProgress: progress => { this.context!.progress.directUpload = progress.percent; notify() }
     })
 
     if (isErrorResult(result)) this.context.error = result.error
@@ -53,7 +54,11 @@ export const createDirectUploadTask: UploadTaskCreator = (file, config) => {
   const tokenProvideTask = new TokenProvideTask(context, normalizedConfig.tokenProvider)
   const hostProvideTask = new HostProvideTask(context, configApis, normalizedConfig.protocol)
 
-  const taskQueue = new TaskQueue()
+  const taskQueue = new TaskQueue({
+    logger: { level: normalizedConfig.logLevel, prefix: 'directUploadQueue' },
+    concurrentLimit: 1
+  })
+
   taskQueue.enqueue([
     tokenProvideTask,
     hostProvideTask,
@@ -61,10 +66,14 @@ export const createDirectUploadTask: UploadTaskCreator = (file, config) => {
   ])
 
   return {
-    start: () => taskQueue.start(),
     cancel: () => taskQueue.cancel(),
     onError: fn => taskQueue.onError(() => fn(context)),
     onProgress: fn => taskQueue.onProgress(() => fn(context)),
-    onComplete: fn => taskQueue.onComplete(() => fn(context))
+    onComplete: fn => taskQueue.onComplete(() => fn(context)),
+    start: () => {
+      context.setup()
+      return taskQueue.start()
+        .then(() => ({ result: context.result }))
+    }
   }
 }

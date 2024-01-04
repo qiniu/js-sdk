@@ -1,10 +1,10 @@
 import { Token } from '../types/token'
 import { IBlob, IFile } from '../types/file'
+import { HttpRequestError } from '../types/error'
 import { urlSafeBase64Encode } from '../helper/base64'
 import { removeUndefinedKeys } from '../helper/object'
 import { Result, isSuccessResult } from '../types/types'
 import { HttpAbort, HttpClient, HttpFormData, HttpHeader, HttpResponse, OnHttpProgress } from '../types/http'
-import { HttpRequestError } from '../types/error'
 
 interface BasicParams {
   abort?: HttpAbort
@@ -39,16 +39,16 @@ interface ListMultipartUploadPartsParams extends BasicWithAuthParams {
   key?: string
 }
 
+export interface UploadedPart extends PartMeta {
+  size: number
+  putTime: number
+}
+
 interface ListUploadPartsData {
   uploadId: string
   expireAt: number
   partNumberMarker: number
-  parts: Array<{
-    Etag: string
-    Size: number
-    PutTime: number
-    PartNumber: number
-  }>
+  parts: UploadedPart[] | null
 }
 
 export interface PartMeta {
@@ -110,7 +110,6 @@ async function parseResponseJson<T>(response: HttpResponse): Promise<Result<T>> 
 async function handleResponseError<T>(response: HttpResponse): Promise<Result<T>> {
   // 错误接口格式
   interface ApiError {
-    code: number
     error: string
   }
 
@@ -119,16 +118,15 @@ async function handleResponseError<T>(response: HttpResponse): Promise<Result<T>
     responseData = JSON.parse(response.data || '')
   } catch (error) {
     const message = `Bad response data, cannot be parsed: ${response.data}`
-    return { error: new HttpRequestError(response.code, message) }
+    return { error: new HttpRequestError(response.code, message, response.reqId) }
   }
 
   if (responseData !== null && typeof responseData === 'object' && 'error' in responseData) {
-    const message = `${responseData.code}:${responseData.error}`
-    return { error: new HttpRequestError(response.code, message) }
+    return { error: new HttpRequestError(response.code, responseData.error, response.reqId) }
   }
 
   const message = `Unknown response error: ${response.data}`
-  return { error: new HttpRequestError(response.code, message) }
+  return { error: new HttpRequestError(response.code, message, response.reqId) }
 }
 
 export class UploadApis {

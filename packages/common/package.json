@@ -8,8 +8,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc -w",
-    "build-harmony": "tsc --outDir ../harmony/library/src/main/ets/components/@internal/common",
-    "dev-harmony": "tsc -w --outDir ../harmony/library/src/main/ets/components/@internal/common"
+    "build-harmony": "tsc --outDir ../harmony/library/src/main/ets/components/@internal",
+    "dev-harmony": "tsc -w --outDir ../harmony/library/src/main/ets/components/@internal"
   },
   "author": "",
   "license": "ISC"

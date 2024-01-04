@@ -151,12 +151,12 @@ export class HostProvideTask implements Task {
   }
 
   async process(notice: () => void): Promise<Result> {
-    this.context.progress.details.prepareUploadHost = 0
+    this.context.progress.prepareUploadHost = 0
     const needFreezeError: ErrorName[] = ['HttpRequestError', 'NetworkError']
     if (this.context.error && needFreezeError.includes(this.context.error.name)) {
       // 只要是网络错误就冻结当前的 host
       this.context.host?.freeze()
-      this.context.progress.details.prepareUploadHost = 0.1; notice()
+      this.context.progress.prepareUploadHost = 0.1; notice()
     }
 
     // 更新 host
@@ -171,7 +171,7 @@ export class HostProvideTask implements Task {
     }
 
     this.context.host = hostResult.result
-    this.context.progress.details.prepareUploadHost = 1; notice()
+    this.context.progress.prepareUploadHost = 1; notice()
     return { result: true }
   }
 }

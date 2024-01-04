@@ -1,8 +1,6 @@
 import { Result } from './types'
 
-export interface TokenProvider {
-  getUploadToken(): Promise<string>
-}
+export type TokenProvider = () => Promise<string>
 
 export interface Token {
   bucket: string

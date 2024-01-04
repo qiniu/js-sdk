@@ -1,16 +1,17 @@
 {
   "name": "@qiniu/wechat-miniprogram-upload",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.0-rc.1",
+  "description": "Qiniu wechat-miniprogram upload sdk",
   "miniprogram": "output",
   "main": "output/index.js",
   "types": "output/index.d.ts",
+  "repository": "https://github.com/qiniu/js-sdk.git",
   "scripts": {
     "dev": "rollup -c -w",
     "build": "rollup -c"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "qiniu",
+  "license": "MIT",
   "devDependencies": {
     "rollup": "^2.77.0",
     "@internal/common": "*",

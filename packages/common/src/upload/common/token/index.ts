@@ -22,7 +22,7 @@ export class TokenProvideTask implements Task {
       return { result: this.cachedToken }
     }
 
-    const tokenResult = await this.userTokenProvider.getUploadToken()
+    const tokenResult = await this.userTokenProvider()
       .then<SuccessResult<string>>(token => ({ result: token }))
       .catch<ErrorResult>(() => ({ error: new UploadError('InvalidToken', 'Failed to get token') }))
 
@@ -42,19 +42,19 @@ export class TokenProvideTask implements Task {
   }
 
   async process(notice: () => void): Promise<Result> {
-    this.context.progress.details.prepareUploadToken = 0; notice()
+    this.context.progress.prepareUploadToken = 0; notice()
     const uploadToken = await this.getUploadToken()
-    this.context.progress.details.prepareUploadToken = 0.7; notice()
+    this.context.progress.prepareUploadToken = 0.7; notice()
     if (!isSuccessResult(uploadToken)) {
       if (isErrorResult(uploadToken)) {
         this.context.error = uploadToken.error; notice()
       }
-      this.context.progress.details.prepareUploadToken = 1; notice()
+      this.context.progress.prepareUploadToken = 1; notice()
       return uploadToken
     }
 
     this.context!.token = uploadToken.result
-    this.context.progress.details.prepareUploadToken = 1; notice()
+    this.context.progress.prepareUploadToken = 1; notice()
     return { result: true }
   }
 }

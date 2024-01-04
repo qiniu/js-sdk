@@ -6,6 +6,7 @@ export type HttpProgress = {
 
 export interface HttpAbort {
   abort(): void
+  aborted: boolean
   onAbort(callback: () => void): void
 }
 
@@ -36,16 +37,20 @@ export interface HttpClient {
 }
 
 export class HttpAbortController implements HttpAbort {
-  private isAborted = false
+  public aborted = false
   private listeners = new Array<() => void>()
 
   abort(): void {
-    if (this.isAborted) return
+    if (this.aborted) {
+      console.log('333')
+      return
+    }
+    this.aborted = true
     for (const listener of this.listeners) {
       listener()
     }
-    this.isAborted = true
   }
+
   onAbort(callback: () => void): void {
     if (!this.listeners.includes(callback)) {
       this.listeners.push(callback)

@@ -1,6 +1,7 @@
 import { Result } from './types'
 
 export interface IBlob {
+  size(): number
 }
 
 export interface IFile {
