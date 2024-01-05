@@ -2,7 +2,7 @@ import { Result } from '../../types'
 import { UploadError } from '../../../types/error'
 import { isCanceledResult, isErrorResult, isSuccessResult } from '../../../types/types'
 
-import { Task, TaskQueue } from './index'
+import { Task, TaskQueue, UploadQueueContext } from './index'
 
 const delay = (n: number) => new Promise(r => setTimeout(r, n))
 
@@ -45,16 +45,20 @@ class MockTask implements Task {
 
 describe('test TaskQueue', () => {
   test('test Cancel', async () => {
-    const task = new MockTask()
-    const queue = new TaskQueue()
-    queue.enqueue(task)
+    const task1 = new MockTask()
+    const task2 = new MockTask()
+    const queue = new TaskQueue({
+      concurrentLimit: 1
+    })
+    queue.enqueue(task1, task2)
     const startPromise = queue.start()
     const cancelPromise = queue.cancel()
 
     const startResult = await startPromise
     const cancelResult = await cancelPromise
 
-    expect(task.canceled).toBe(true)
+    expect(task1.canceled).toBe(true)
+    expect(task2.canceled).toBe(false)
     expect(isCanceledResult(startResult)).toBe(true)
     expect(isSuccessResult(cancelResult)).toBe(true)
   })
@@ -187,5 +191,23 @@ describe('test TaskQueue', () => {
 
     expect(task1.processed).toBe(true)
     expect(isSuccessResult(startResult)).toBe(true)
+  })
+
+  test('test repeat start', async () => {
+    const task1 = new MockTask()
+    const queue1 = new TaskQueue()
+    queue1.enqueue(task1)
+    const start1Promise = queue1.start()
+    const start2Promise = queue1.start()
+
+    await delay(500)
+    task1.resolve({ result: true })
+
+    const start1Result = await start1Promise
+    const start2Result = await start2Promise
+
+    expect(task1.processed).toBe(true)
+    expect(isSuccessResult(start1Result)).toBe(true)
+    expect(isErrorResult(start2Result)).toBe(true)
   })
 })

@@ -74,7 +74,7 @@ export class TaskQueue {
   /** 用户传入的任务 */
   private tasks: InnerTask[] = []
   /** 动态创建任务方法 */
-  private dynamicTasksCreator?: TaskCreator
+  private tasksCreator?: TaskCreator
   /** 通过 tasksCreator 动态创建的任务 */
   private dynamicTasks: InnerTask[] = []
   /** 任务的状态表 */
@@ -87,7 +87,7 @@ export class TaskQueue {
   private completeListeners = new Map<string, OnComplete>()
 
   constructor(private options?: TaskQueueOptions) {
-    this.dynamicTasksCreator = options?.tasksCreator
+    this.tasksCreator = options?.tasksCreator
     this.logger = new Logger(options?.logger?.level, options?.logger?.prefix)
   }
 
@@ -275,12 +275,13 @@ export class TaskQueue {
   async start(): Promise<Result> {
     this.logger.info('--------------------------')
     this.logger.info('Start processing the queue')
-    if (this.processing) {
-      this.logger.error('Queue exited because its processing')
-      throw new Error('Task is processing')
-    }
 
     return new Promise(resolve => {
+      if (this.processing) {
+        this.logger.error('Queue exited because its processing')
+        return { error: new UploadError('InternalError', 'Task is processing') }
+      }
+
       // 初始化全局状态
       this.canceled = false
       this.processing = true
@@ -304,13 +305,13 @@ export class TaskQueue {
       })
 
       // 如果队列有任务创建方法则执行创建
-      if (this.dynamicTasksCreator) {
+      if (this.tasksCreator) {
         // 清空当前的 dynamicTasks
-        this.logger.info('Call dynamicTasksCreator')
+        this.logger.info('Call tasksCreator')
         this.dynamicTasks.splice(0, Infinity)
-        this.dynamicTasksCreator().then(result => {
+        this.tasksCreator().then(result => {
           if (isSuccessResult(result)) {
-            this.logger.info('DynamicTasksCreator execution completed')
+            this.logger.info('TasksCreator execution successful')
             this.dynamicTasks.push(...result.result)
             // 任务创建完成，开始处理
             this.process()
@@ -318,10 +319,12 @@ export class TaskQueue {
 
           // 发生错误
           if (isErrorResult(result)) {
-            this.logger.info(`DynamicTasksCreator execution has error: ${result.error.message}`)
+            this.logger.info(`TasksCreator execution has error: ${result.error.message}`)
             this.error = result.error
             this.handleError()
           }
+
+          this.logger.info('TasksCreator execution completed')
         })
 
         return

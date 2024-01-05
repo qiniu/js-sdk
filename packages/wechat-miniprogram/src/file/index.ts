@@ -38,10 +38,10 @@ class UploadBlob implements IBlob {
   }
 }
 
-type FileData =
-  | { type: 'path', data: string }
-  | { type: 'string', data: string }
-  | { type: 'array-buffer', data: ArrayBuffer }
+export type FileData =
+  | { type: 'path', data: string, meta?: FileMeta }
+  | { type: 'string', data: string, meta?: FileMeta }
+  | { type: 'array-buffer', data: ArrayBuffer, meta?: FileMeta }
 
 export class UploadFile implements IFile {
   private shouldUnlink = false
@@ -121,13 +121,19 @@ export class UploadFile implements IFile {
     })
   }
 
-  free(): Promise<Result<true>> {
+  async free(): Promise<Result<true>> {
+    await this.initPromise
     return new Promise(resolve => {
       if (this.shouldUnlink && this.filePath) {
         const fs = wx.getFileSystemManager()
         fs.unlink({
           filePath: this.filePath!,
-          success: () => resolve({ result: true }),
+          success: () => {
+            this.filePath = null
+            this.initPromise = null
+            this.shouldUnlink = false
+            return resolve({ result: true })
+          },
           fail: error => resolve({ error: new UploadError('FileSystemError', error.errMsg) })
         })
       } else {

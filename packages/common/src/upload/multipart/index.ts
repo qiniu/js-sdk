@@ -64,6 +64,7 @@ class InitPartUploadTask implements Task {
         }
 
         if (isErrorResult(uploadedPartResult)) {
+          // 发生错误仅仅更新到 context，不 return
           this.context.error = uploadedPartResult.error
         }
 
@@ -87,6 +88,7 @@ class InitPartUploadTask implements Task {
 
     if (isSuccessResult(initResult)) {
       this.context!.uploadPartId = initResult.result
+      this.context.uploadedParts.splice(0, Infinity)
     }
 
     if (isErrorResult(initResult)) {
@@ -191,6 +193,7 @@ class CompletePartUploadTask implements Task {
     if (!isSuccessResult(filenameResult)) return filenameResult
 
     const sortedParts = this.context!.uploadedParts!
+      .map(item => ({ partNumber: item.partNumber, etag: item.etag }))
       .sort((a, b) => a.partNumber - b.partNumber)
 
     this.abort = new HttpAbortController()
@@ -253,13 +256,13 @@ export const createMultipartUploadTask: UploadTaskCreator = (file, config) => {
     }
   })
 
-  mainQueue.enqueue([
+  mainQueue.enqueue(
     tokenProvideTask,
     hostProvideTask,
     initPartUploadTask,
     partQueue,
     completePartUploadTask
-  ])
+  )
 
   return {
     cancel: () => mainQueue.cancel(),

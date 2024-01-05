@@ -17,19 +17,19 @@ import { createDirectUploadTask, createMultipartUploadTask， UploadFile } from 
 3. 创建上传任务
 
 ```javascript
-// 创建上传文件对象
-// 特别注意：你需要在用完之后调用 free 手动释放该对象
-// 一般建议在 onComplete 的回调中释放
-const file = UploadFile.formString('content')
+// 创建上传数据
+const fileData: FileData = { type: 'path', data: 'file-path' }
+const fileData: FileData = { type: 'string', data: 'content' }
+const fileData: FileData = { type: 'array-buffer', data: new ArrayBuffer(1e3) }
 
 // 创建直传任务
-const directUploadTask = createDirectUploadTask(file, config);
+const directUploadTask = createDirectUploadTask(fileData, config);
 
 // 创建分片上传任务
-const multipartUploadTask = createMultipartUploadTask(file, config);
+const multipartUploadTask = createMultipartUploadTask(fileData, config);
 ```
 
-4. 设置任务回调函数
+1. 设置任务回调函数
 
 ```javascript
 // 设置进度回调函数
@@ -61,33 +61,6 @@ directUploadTask.start()
 ```
 
 ## 接口说明
-
-### UploadFile 类
-
-`UploadFile` 类是一个用于上传文件的实用工具类。
-
-#### 静态方法
-
-##### UploadFile.fromPath(filePath: string, meta?: FileMeta)
-
-从文件路径创建一个 `UploadFile` 实例。
-
-- `filePath` (string): 文件路径。
-- `meta` (可选, FileMeta): 文件元数据。
-
-##### UploadFile.fromString(data: string, meta?: FileMeta)
-
-从字符串创建一个 `UploadFile` 实例。
-
-- `data` (string): 文件数据字符串。
-- `meta` (可选, FileMeta): 文件元数据。
-
-##### UploadFile.fromArrayBuffer(data: ArrayBuffer, meta?: FileMeta)
-
-从 ArrayBuffer 创建一个 `UploadFile` 实例。
-
-- `data` (ArrayBuffer): 文件数据 ArrayBuffer。
-- `meta` (可选, FileMeta): 文件元数据。
 
 ### TokenProvider
 

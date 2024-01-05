@@ -4,7 +4,7 @@ import ohCommon from '@ohos.app.ability.common'
 
 import * as common from '../@internal'
 
-interface FileMeta {
+export interface FileMeta {
   /** 文件名 */
   filename?: string
   /** 文件的媒体类型 */
@@ -33,10 +33,10 @@ class UploadBlob implements common.IBlob {
   }
 }
 
-type FileData =
-  | { type: 'uri', data: string }
-  | { type: 'string', data: string }
-  | { type: 'array-buffer', data: ArrayBuffer }
+export type FileData =
+  | { type: 'uri', data: string, meta?: FileMeta }
+  | { type: 'string', data: string, meta?: FileMeta }
+  | { type: 'array-buffer', data: ArrayBuffer, meta?: FileMeta }
 
 export class UploadFile implements common.IFile {
   private file: fs.File | null = null
@@ -139,18 +139,21 @@ export class UploadFile implements common.IFile {
   }
 
   async free(): Promise<common.Result<true>> {
+    await this.initPromise
+    this.initPromise = null
+
     let closeResult: common.Result<boolean>
     let unlinkResult: common.Result<boolean>
 
     if (this.file) {
        closeResult = await fs.close(this.file.fd)
-        .then<common.Result<boolean>>(() => { this.unlinkPath = null; return { result: true } })
+        .then<common.Result<boolean>>(() => { this.file = null; return { result: true } })
         .catch<common.Result<boolean>>(error => ({ error: new common.UploadError('FileSystemError', error.message) }))
     }
 
     if (this.unlinkPath) {
        unlinkResult = await fs.unlink(this.unlinkPath)
-        .then<common.Result<boolean>>(() => { this.file = null; return { result: true } })
+        .then<common.Result<boolean>>(() => { this.unlinkPath = null; return { result: true } })
         .catch<common.Result<boolean>>(error => ({ error: new common.UploadError('FileSystemError', error.message) }))
     }
 

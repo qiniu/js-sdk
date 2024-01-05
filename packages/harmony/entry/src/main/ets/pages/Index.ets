@@ -1,4 +1,4 @@
-import { createMultipartUploadTask, createDirectUploadTask, UploadFile, UploadTask, Progress as UploadProgress } from '@qiniu/upload'
+import { createMultipartUploadTask, createDirectUploadTask, UploadTask, Progress as UploadProgress, FileData } from '@qiniu/upload'
 
 const token = 'dgHUyu6FJLTIqHZS2Be798icC_DXdHAqaNa9WnO0:1oKniXpgdYlbDWftB6aO8LY52dU=:eyJzY29wZSI6InNkay10ZXN0LTExIiwiZGVhZGxpbmUiOjE3MTM2NTExNjJ9'
 
@@ -22,8 +22,8 @@ struct Index {
 
   async uploadFileByMultipart() {
     const context = getContext(this)
-    const file = UploadFile.fromString(context, '1'.repeat(1024*1024 * 10))
-    const task =  createMultipartUploadTask(context, file, {
+    const fileData: FileData = { type: 'string', data: '1'.repeat(1024*1024 * 10)}
+    const task =  createMultipartUploadTask(context, fileData, {
       logLevel: 'INFO',
       tokenProvider:  () => Promise.resolve(token)
     })
@@ -34,8 +34,8 @@ struct Index {
 
   async uploadFileByDirect() {
     const context = getContext(this)
-    const file = UploadFile.fromString(context, '1'.repeat(1024*1024 * 10))
-    const task =  createDirectUploadTask(context, file, {
+    const fileData: FileData = { type: 'string', data: '1'.repeat(1024*1024 * 10)}
+    const task =  createDirectUploadTask(context, fileData, {
       logLevel: 'INFO',
       tokenProvider:  () => Promise.resolve(token)
     })

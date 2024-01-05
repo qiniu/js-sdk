@@ -33,31 +33,29 @@ Component({
       })
     },
     async uploadText() {
-      const file = qiniu.UploadFile.fromString(this.data.text)
+      const file: qiniu.FileData = { type: 'string', data: this.data.text }
       const task = qiniu.createDirectUploadTask(file, {
         tokenProvider: () => Promise.resolve(this.data.token)
       })
       await this.printTask(task)
-      await file.free()
+
     },
 
     async uploadArrayBuffer() {
       const buffer = new ArrayBuffer(100)
-      const file = qiniu.UploadFile.fromArrayBuffer(buffer)
+      const file: qiniu.FileData = { type: 'array-buffer', data: buffer }
       const task = qiniu.createDirectUploadTask(file, {
         tokenProvider: () => Promise.resolve(this.data.token)
       })
       await this.printTask(task)
-      await file.free()
     },
 
     async uploadFile() {
-      const file = qiniu.UploadFile.fromPath(this.data.file)
+      const file: qiniu.FileData = { type: 'path', data: this.data.file }
       const task = qiniu.createMultipartUploadTask(file, {
         tokenProvider: () => Promise.resolve(this.data.token)
       })
       await this.printTask(task)
-      await file.free()
     },
 
     async printTask(task: qiniu.UploadTask) {

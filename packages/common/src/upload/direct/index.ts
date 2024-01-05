@@ -59,11 +59,11 @@ export const createDirectUploadTask: UploadTaskCreator = (file, config) => {
     concurrentLimit: 1
   })
 
-  taskQueue.enqueue([
+  taskQueue.enqueue(
     tokenProvideTask,
     hostProvideTask,
     directUploadTask
-  ])
+  )
 
   return {
     cancel: () => taskQueue.cancel(),

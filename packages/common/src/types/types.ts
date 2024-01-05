@@ -14,5 +14,5 @@ export function isCanceledResult(result: Result<any>): result is CanceledResult 
 }
 
 export function isSuccessResult<R>(result: Result<R>): result is SuccessResult<R> {
-  return !!(!isErrorResult(result) && !isCanceledResult(result) && 'result' in result)
+  return !!(!isErrorResult(result) && !isCanceledResult(result) && result && 'result' in result)
 }
