@@ -5,6 +5,7 @@
   "miniprogram": "output",
   "main": "output/index.js",
   "types": "output/index.d.ts",
+  "private": false,
   "repository": "https://github.com/qiniu/js-sdk.git",
   "scripts": {
     "dev": "rollup -c -w",
