@@ -279,7 +279,7 @@ export class TaskQueue {
     return new Promise(resolve => {
       if (this.processing) {
         this.logger.error('Queue exited because its processing')
-        return { error: new UploadError('InternalError', 'Task is processing') }
+        return resolve({ error: new UploadError('InternalError', 'Task is processing') })
       }
 
       // 初始化全局状态

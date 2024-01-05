@@ -2,7 +2,7 @@ import { Result } from '../../types'
 import { UploadError } from '../../../types/error'
 import { isCanceledResult, isErrorResult, isSuccessResult } from '../../../types/types'
 
-import { Task, TaskQueue, UploadQueueContext } from './index'
+import { Task, TaskQueue } from './index'
 
 const delay = (n: number) => new Promise(r => setTimeout(r, n))
 
@@ -207,7 +207,7 @@ describe('test TaskQueue', () => {
     const start2Result = await start2Promise
 
     expect(task1.processed).toBe(true)
-    expect(isSuccessResult(start1Result)).toBe(true)
     expect(isErrorResult(start2Result)).toBe(true)
+    expect(isSuccessResult(start1Result)).toBe(true)
   })
 })
