@@ -32,6 +32,7 @@ class DirectUploadTask implements Task {
       file: this.file,
       abort: this.abort,
       token: this.context!.token!,
+      key: fileNameResult.result || undefined,
       uploadHostUrl: this.context!.host!.getUrl(),
       fileName: fileNameResult.result || generateRandomString(), // 接口要求必传且建议没有有效文件名时传随机字符串
       onProgress: progress => { this.context!.progress.directUpload = progress.percent; notify() }

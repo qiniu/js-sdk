@@ -1,9 +1,9 @@
 import { IBlob, IFile, UploadError, Result, isSuccessResult, sliceChunk } from '@internal/common'
 
 interface FileMeta {
-  /** 文件名 */
+  /** 文件名；设定上传之后存储的文件名 */
   filename?: string
-  /** 文件的媒体类型 */
+  /** 文件的媒体类型; 目前仅在分片上传中指定有效 */
   mimeType?: string
 }
 

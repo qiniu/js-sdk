@@ -43,7 +43,14 @@ Component({
 
     async uploadArrayBuffer() {
       const buffer = new ArrayBuffer(100)
-      const file: qiniu.FileData = { type: 'array-buffer', data: buffer }
+      const file: qiniu.FileData = {
+        type: 'array-buffer',
+        data: buffer,
+        meta: {
+          filename: 'test.test',
+          mimeType: 'test/test'
+        }
+      }
       const task = qiniu.createDirectUploadTask(file, {
         tokenProvider: () => Promise.resolve(this.data.token)
       })
@@ -51,7 +58,14 @@ Component({
     },
 
     async uploadFile() {
-      const file: qiniu.FileData = { type: 'path', data: this.data.file }
+      const file: qiniu.FileData = {
+        type: 'path',
+        data: this.data.file,
+        meta: {
+          filename: 'test.test22',
+          mimeType: 'test/test'
+        }
+      }
       const task = qiniu.createMultipartUploadTask(file, {
         tokenProvider: () => Promise.resolve(this.data.token)
       })

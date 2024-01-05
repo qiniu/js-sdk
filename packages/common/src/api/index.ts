@@ -57,6 +57,7 @@ export interface PartMeta {
 }
 
 interface CompleteMultipartUploadParams extends BasicWithAuthParams {
+  key?: string
   fileName: string
   uploadId: string
   parts: PartMeta[]

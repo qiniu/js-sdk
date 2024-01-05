@@ -27,7 +27,8 @@ class InitPartUploadTask implements Task {
   private abort: HttpAbortController | null = null
   constructor(
     private context: MultipartUploadQueueContext,
-    private uploadApis: UploadApis
+    private uploadApis: UploadApis,
+    private file: IFile
   ) {}
 
   async cancel(): Promise<Result> {
@@ -44,16 +45,22 @@ class InitPartUploadTask implements Task {
     this.abort = new HttpAbortController()
 
     this.updateProgress(0, notify)
+
+    const filenameResult = await this.file.name()
+    if (!isSuccessResult(filenameResult)) return filenameResult
+
     // 首先检查 context 上的 upload id 有没有过期
     if (this.context.uploadPartId) {
       const nowTime = Date.now() / 1e3
       // 上次的 uploadPartId 还没过期 (至少剩余 60s)，继续使用
       if ((this.context.uploadPartId.expireAt - 60) > nowTime) {
+
         // 从服务端获取已上传的分片信息
         const uploadedPartResult = await this.uploadApis.listUploadParts({
           abort: this.abort,
           token: this.context!.token!,
           bucket: this.context.token!.bucket,
+          key: filenameResult.result || undefined,
           uploadHostUrl: this.context!.host!.getUrl(),
           uploadId: this.context.uploadPartId.uploadId,
           onProgress: progress => { this.updateProgress(progress.percent, notify) }
@@ -82,6 +89,7 @@ class InitPartUploadTask implements Task {
       abort: this.abort,
       token: this.context!.token!,
       bucket: this.context!.token!.bucket,
+      key: filenameResult.result || undefined,
       uploadHostUrl: this.context!.host!.getUrl(),
       onProgress: progress => { this.updateProgress(progress.percent, notify) }
     })
@@ -105,6 +113,7 @@ class UploadPartTask implements Task {
     private context: MultipartUploadQueueContext,
     private uploadApis: UploadApis,
     private index: number,
+    private file: IFile,
     private blob: IBlob
   ) {}
 
@@ -135,6 +144,10 @@ class UploadPartTask implements Task {
     }
 
     this.updateProgress(0, notify)
+
+    const filenameResult = await this.file.name()
+    if (!isSuccessResult(filenameResult)) return filenameResult
+
     this.abort = new HttpAbortController()
     const uploadPartResult = await this.uploadApis.uploadPart({
       part: this.blob,
@@ -142,6 +155,7 @@ class UploadPartTask implements Task {
       partIndex: this.index,
       token: this.context!.token!,
       bucket: this.context!.token!.bucket,
+      key: filenameResult.result || undefined,
       uploadHostUrl: this.context!.host!.getUrl(),
       uploadId: this.context!.uploadPartId!.uploadId!,
       onProgress: progress => { this.updateProgress(progress.percent, notify) }
@@ -192,6 +206,9 @@ class CompletePartUploadTask implements Task {
     const filenameResult = await this.file.name()
     if (!isSuccessResult(filenameResult)) return filenameResult
 
+    const mimeTypeResult = await this.file.mimeType()
+    if (!isSuccessResult(mimeTypeResult)) return mimeTypeResult
+
     const sortedParts = this.context!.uploadedParts!
       .map(item => ({ partNumber: item.partNumber, etag: item.etag }))
       .sort((a, b) => a.partNumber - b.partNumber)
@@ -201,7 +218,9 @@ class CompletePartUploadTask implements Task {
       abort: this.abort,
       parts: sortedParts,
       token: this.context!.token!,
+      key: filenameResult.result || undefined,
       uploadHostUrl: this.context!.host!.getUrl(),
+      mimeType: mimeTypeResult.result || undefined,
       uploadId: this.context!.uploadPartId!.uploadId!,
       fileName: filenameResult.result || generateRandomString(), // 和直传行为保持一致
       onProgress: progress => { this.updateProgress(progress.percent, notify) }
@@ -226,7 +245,7 @@ export const createMultipartUploadTask: UploadTaskCreator = (file, config) => {
   const configApis = new ConfigApis(normalizedConfig.serverUrl, normalizedConfig.httpClient)
 
   const context = new MultipartUploadQueueContext()
-  const initPartUploadTask = new InitPartUploadTask(context, uploadApis)
+  const initPartUploadTask = new InitPartUploadTask(context, uploadApis, file)
   const completePartUploadTask = new CompletePartUploadTask(context, uploadApis, file)
   const tokenProvideTask = new TokenProvideTask(context, normalizedConfig.tokenProvider)
   const hostProvideTask = new HostProvideTask(context, configApis, normalizedConfig.protocol)
@@ -250,7 +269,7 @@ export const createMultipartUploadTask: UploadTaskCreator = (file, config) => {
       const sliceResult = await file.slice(4 * 1024 * 1024)
       if (!isSuccessResult(sliceResult)) return sliceResult
       const tasks = sliceResult.result.map((blob, index) => (
-        new UploadPartTask(context, uploadApis, index + 1, blob)
+        new UploadPartTask(context, uploadApis, index + 1, file, blob)
       ))
       return { result: tasks }
     }
