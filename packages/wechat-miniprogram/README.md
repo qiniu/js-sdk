@@ -11,7 +11,7 @@ npm install @qiniu/wechat-miniprogram-upload
 2. 导入SDK
 
 ```javascript
-import { createDirectUploadTask, createMultipartUploadTask， UploadFile } from '@qiniu/wechat-miniprogram-upload';
+import { createDirectUploadTask, createMultipartUploadTask, FileData } from '@qiniu/wechat-miniprogram-upload';
 ```
 
 3. 创建上传任务
@@ -89,7 +89,6 @@ interface Context<ProgressKey extends string = string> {
 - `result`：上传成功的信息。
 - `error`：队列的错误。
 - `progress`：整体的任务进度信息。
-- `setup()`：初始化函数，队列开始时执行。
 
 ### UploadConfig
 
