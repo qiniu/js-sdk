@@ -23,8 +23,7 @@ function onCancel(task: common.UploadTask, listener: () => Promise<common.Result
  * @deprecated 系统原因一直无法调通，请使用分片上传
  */
 function createDirectUploadTask(context: ohCommon.Context, file: FileData, config: common.UploadConfig) {
-  const { meta, ...fileData } = file
-  const innerFile = new UploadFile(context, fileData, meta)
+  const innerFile = new UploadFile(context, file)
   config.httpClient = config.httpClient ?? new HttpClient(context)
   const task = common.createDirectUploadTask(innerFile, config)
   task.onComplete(() => innerFile.free())
@@ -34,8 +33,7 @@ function createDirectUploadTask(context: ohCommon.Context, file: FileData, confi
 }
 
 export function createMultipartUploadTask(context: ohCommon.Context, file: FileData, config: common.UploadConfig) {
-  const { meta, ...fileData } = file
-  const innerFile = new UploadFile(context, fileData, meta)
+  const innerFile = new UploadFile(context, file)
   config.httpClient = config.httpClient ?? new HttpClient(context)
   const task = common.createMultipartUploadTask(innerFile, config)
   task.onComplete(() => innerFile.free())

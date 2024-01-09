@@ -1,15 +1,7 @@
 import fs from '@ohos.file.fs'
-import fileUri from "@ohos.file.fileuri"
 import ohCommon from '@ohos.app.ability.common'
 
 import * as common from '../@internal'
-
-export interface FileMeta {
-  /** 文件名 */
-  filename?: string
-  /** 文件的媒体类型 */
-  mimeType?: string
-}
 
 class UploadBlob implements common.IBlob {
   constructor(
@@ -34,33 +26,16 @@ class UploadBlob implements common.IBlob {
 }
 
 export type FileData =
-  | { type: 'uri', data: string, meta?: FileMeta }
-  | { type: 'string', data: string, meta?: FileMeta }
-  | { type: 'array-buffer', data: ArrayBuffer, meta?: FileMeta }
+  | { type: 'uri', data: string } & common.FileData
+  | { type: 'string', data: string } & common.FileData
+  | { type: 'array-buffer', data: ArrayBuffer } & common.FileData
 
 export class UploadFile implements common.IFile {
   private file: fs.File | null = null
   private unlinkPath: string | null = null
   private internalCacheUri: string | null = null
   private initPromise: Promise<common.Result<boolean>> | null = null
-  constructor(public context: ohCommon.Context, private data: FileData, private meta?: FileMeta) {}
-
-  static fromUri(context: ohCommon.Context, uri: string, meta?: FileMeta) {
-    return new UploadFile(context, { type: 'uri', data: uri }, meta)
-  }
-
-  static fromPath(context: ohCommon.Context, filePath: string, meta?: FileMeta) {
-    const uri = fileUri.getUriFromPath(filePath)
-    return new UploadFile(context, { type: 'uri', data: uri }, meta)
-  }
-
-  static fromString(context: ohCommon.Context, data: string, meta?: FileMeta) {
-    return new UploadFile(context, { type: 'string', data }, meta)
-  }
-
-  static fromArrayBuffer(context: ohCommon.Context, data: ArrayBuffer, meta?: FileMeta) {
-    return new UploadFile(context, { type: 'array-buffer', data }, meta)
-  }
+  constructor(public context: ohCommon.Context, private data: FileData) {}
 
   /** 初始化数据并写入磁盘&打开文件 */
   private autoInit(): Promise<common.Result<boolean>> {
@@ -163,7 +138,7 @@ export class UploadFile implements common.IFile {
   }
 
   /**
-   * 返回的永远是 internal://cache/ 的临时文件目录
+   * 返回的永远是 internal://cache/ 的临时文件路径
    */
   async path(): Promise<common.Result<string>> {
     const initResult = await this.autoInit()
@@ -172,7 +147,7 @@ export class UploadFile implements common.IFile {
   }
 
   async name(): Promise<common.Result<string | null>> {
-    return { result: this.meta?.filename || null }
+    return { result: this.data?.filename || null }
   }
 
   async size(): Promise<common.Result<number>> {
@@ -182,7 +157,11 @@ export class UploadFile implements common.IFile {
   }
 
   async mimeType(): Promise<common.Result<string | null>> {
-    return { result: this.meta?.mimeType || null }
+    return { result: this.data?.mimeType || null }
+  }
+
+  async metadata(): Promise<common.Result<Record<string,string>>> {
+    return { result: this.data?.metadata || {} }
   }
 
   async slice(chunkSize?: number): Promise<common.Result<common.IBlob[]>> {

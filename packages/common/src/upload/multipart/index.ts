@@ -184,6 +184,7 @@ class CompletePartUploadTask implements Task {
   constructor(
     private context: MultipartUploadQueueContext,
     private uploadApis: UploadApis,
+    private vars: Record<string, string> | undefined,
     private file: IFile
   ) {}
 
@@ -209,6 +210,9 @@ class CompletePartUploadTask implements Task {
     const mimeTypeResult = await this.file.mimeType()
     if (!isSuccessResult(mimeTypeResult)) return mimeTypeResult
 
+    const metadataResult = await this.file.metadata()
+    if (!isSuccessResult(metadataResult)) return metadataResult
+
     const sortedParts = this.context!.uploadedParts!
       .map(item => ({ partNumber: item.partNumber, etag: item.etag }))
       .sort((a, b) => a.partNumber - b.partNumber)
@@ -217,7 +221,9 @@ class CompletePartUploadTask implements Task {
     const completeResult = await this.uploadApis.completeMultipartUpload({
       abort: this.abort,
       parts: sortedParts,
+      customVars: this.vars,
       token: this.context!.token!,
+      metadata: metadataResult.result,
       key: filenameResult.result || undefined,
       uploadHostUrl: this.context!.host!.getUrl(),
       mimeType: mimeTypeResult.result || undefined,
@@ -245,10 +251,11 @@ export const createMultipartUploadTask: UploadTaskCreator = (file, config) => {
   const configApis = new ConfigApis(normalizedConfig.serverUrl, normalizedConfig.httpClient)
 
   const context = new MultipartUploadQueueContext()
-  const initPartUploadTask = new InitPartUploadTask(context, uploadApis, file)
-  const completePartUploadTask = new CompletePartUploadTask(context, uploadApis, file)
   const tokenProvideTask = new TokenProvideTask(context, normalizedConfig.tokenProvider)
   const hostProvideTask = new HostProvideTask(context, configApis, normalizedConfig.protocol)
+
+  const initPartUploadTask = new InitPartUploadTask(context, uploadApis, file)
+  const completePartUploadTask = new CompletePartUploadTask(context, uploadApis, config.vars, file)
 
   const mainQueue = new TaskQueue({
     logger: {

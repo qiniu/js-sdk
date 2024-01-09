@@ -62,8 +62,8 @@ interface CompleteMultipartUploadParams extends BasicWithAuthParams {
   uploadId: string
   parts: PartMeta[]
   mimeType?: string
-  meta?: Record<string, string>
-  customVar?: Record<string, string>
+  metadata?: Record<string, string>
+  customVars?: Record<string, string>
 }
 
 interface AbortMultipartUploadParams extends BasicWithAuthParams {
@@ -92,8 +92,8 @@ interface DirectUploadParams extends BasicWithAuthParams {
   fileName: string
   key?: string
   crc32?: string
-  meta?: Record<string, string>
-  customVar?: Record<string, string>
+  metadata?: Record<string, string>
+  customVars?: Record<string, string>
 }
 
 async function parseResponseJson<T>(response: HttpResponse): Promise<Result<T>> {
@@ -234,16 +234,16 @@ export class UploadApis {
       mimeType: params.mimeType
     }
 
-    if (params.customVar) {
+    if (params.customVars) {
       body.customVars = {} as Record<string, unknown>
-      for (const [key, value] of Object.entries(params.customVar)) {
+      for (const [key, value] of Object.entries(params.customVars)) {
         body.customVars[`x:${key}`] = value
       }
     }
 
-    if (params.meta) {
+    if (params.metadata) {
       body.metadata = {} as Record<string, unknown>
-      for (const [key, value] of Object.entries(params.meta)) {
+      for (const [key, value] of Object.entries(params.metadata)) {
         body.metadata[`x-qn-meta-${key}`] = value
       }
     }
@@ -298,14 +298,14 @@ export class UploadApis {
     if (params.crc32 !== undefined) formData.set('crc32', params.crc32)
     if (params.file !== undefined) formData.set('file', params.file, params.fileName)
 
-    if (params.customVar) {
-      for (const [key, value] of Object.entries(params.customVar)) {
+    if (params.customVars) {
+      for (const [key, value] of Object.entries(params.customVars)) {
         formData.set(`x:${key}`, value)
       }
     }
 
-    if (params.meta) {
-      for (const [key, value] of Object.entries(params.meta)) {
+    if (params.metadata) {
+      for (const [key, value] of Object.entries(params.metadata)) {
         formData.set(`x-qn-meta-${key}`, value)
       }
     }

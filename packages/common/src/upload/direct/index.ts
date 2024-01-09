@@ -12,11 +12,16 @@ import { Task, TaskQueue, UploadQueueContext } from '../common/queue'
 
 type DirectUploadProgressKey = 'directUpload'
 
-export class DirectUploadQueueContext extends UploadQueueContext<DirectUploadProgressKey> {}
+export class DirectUploadQueueContext extends UploadQueueContext<DirectUploadProgressKey> { }
 
 class DirectUploadTask implements Task {
   private abort: HttpAbortController | null = null
-  constructor(private context: DirectUploadQueueContext, private file: IFile, private uploadApis: UploadApis) {}
+  constructor(
+    private context: DirectUploadQueueContext,
+    private uploadApis: UploadApis,
+    private vars: Record<string, string> | undefined,
+    private file: IFile
+  ) {}
 
   async cancel(): Promise<Result> {
     await this.abort?.abort()
@@ -27,11 +32,16 @@ class DirectUploadTask implements Task {
     const fileNameResult = await this.file.name()
     if (!isSuccessResult(fileNameResult)) return fileNameResult
 
+    const fileMetaResult = await this.file.metadata()
+    if (!isSuccessResult(fileMetaResult)) return fileMetaResult
+
     this.abort = new HttpAbortController()
     const result = await this.uploadApis.directUpload({
       file: this.file,
       abort: this.abort,
+      customVars: this.vars,
       token: this.context!.token!,
+      metadata: fileMetaResult.result,
       key: fileNameResult.result || undefined,
       uploadHostUrl: this.context!.host!.getUrl(),
       fileName: fileNameResult.result || generateRandomString(), // 接口要求必传且建议没有有效文件名时传随机字符串
@@ -51,7 +61,7 @@ export const createDirectUploadTask: UploadTaskCreator = (file, config) => {
   const configApis = new ConfigApis(normalizedConfig.serverUrl, normalizedConfig.httpClient)
 
   const context = new DirectUploadQueueContext()
-  const directUploadTask = new DirectUploadTask(context, file, uploadApis)
+  const directUploadTask = new DirectUploadTask(context, uploadApis, config.vars, file)
   const tokenProvideTask = new TokenProvideTask(context, normalizedConfig.tokenProvider)
   const hostProvideTask = new HostProvideTask(context, configApis, normalizedConfig.protocol)
 

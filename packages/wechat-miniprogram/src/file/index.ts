@@ -1,11 +1,9 @@
-import { IBlob, IFile, UploadError, Result, isSuccessResult, sliceChunk } from '@internal/common'
-
-interface FileMeta {
-  /** 文件名；设定上传之后存储的文件名 */
-  filename?: string
-  /** 文件的媒体类型; 目前仅在分片上传中指定有效 */
-  mimeType?: string
-}
+import {
+  IBlob, IFile,
+  UploadError,
+  Result, isSuccessResult,
+  sliceChunk, FileData as CommonFileData
+} from '@internal/common'
 
 class UploadBlob implements IBlob {
   constructor(
@@ -39,27 +37,15 @@ class UploadBlob implements IBlob {
 }
 
 export type FileData =
-  | { type: 'path', data: string, meta?: FileMeta }
-  | { type: 'string', data: string, meta?: FileMeta }
-  | { type: 'array-buffer', data: ArrayBuffer, meta?: FileMeta }
+  | { type: 'path', data: string } & CommonFileData
+  | { type: 'string', data: string } & CommonFileData
+  | { type: 'array-buffer', data: ArrayBuffer } & CommonFileData
 
 export class UploadFile implements IFile {
   private shouldUnlink = false
   private filePath: string | null = null
   private initPromise: Promise<Result<boolean>> | null = null
-  constructor(private initData: FileData, private meta?: FileMeta) {}
-
-  static fromPath(filePath: string, meta?: FileMeta) {
-    return new UploadFile({ type: 'path', data: filePath }, meta)
-  }
-
-  static fromString(data: string, meta?: FileMeta) {
-    return new UploadFile({ type: 'string', data }, meta)
-  }
-
-  static fromArrayBuffer(data: ArrayBuffer, meta?: FileMeta) {
-    return new UploadFile({ type: 'array-buffer', data }, meta)
-  }
+  constructor(private fileData: FileData) {}
 
   /** 初始化数据并写入磁盘&检查文件 */
   private autoInit(): Promise<Result<boolean>> {
@@ -67,18 +53,18 @@ export class UploadFile implements IFile {
 
     // 将内容写入文件用于后面上传
     const autoCreateFile = (): Promise<Result<boolean>> => {
-      if (this.initData.type === 'path') {
-        this.filePath = this.initData.data
+      if (this.fileData.type === 'path') {
+        this.filePath = this.fileData.data
         return Promise.resolve({ result: true })
       }
 
-      if (this.initData.type === 'array-buffer' || this.initData.type === 'string') {
+      if (this.fileData.type === 'array-buffer' || this.fileData.type === 'string') {
         // TODO: 文件清理
         const tempFilePath = `${wx.env.USER_DATA_PATH}/qiniu-js@${Date.now()}`
         return new Promise(resolve => {
           const fs = wx.getFileSystemManager()
           fs.writeFile({
-            data: this.initData!.data,
+            data: this.fileData!.data,
             filePath: tempFilePath,
             success: () => {
               resolve({ result: true })
@@ -149,7 +135,7 @@ export class UploadFile implements IFile {
   }
 
   async name(): Promise<Result<string | null>> {
-    return { result: this.meta?.filename || null }
+    return { result: this.fileData?.filename || null }
   }
 
   async size(): Promise<Result<number>> {
@@ -159,7 +145,11 @@ export class UploadFile implements IFile {
   }
 
   async mimeType(): Promise<Result<string | null>> {
-    return { result: this.meta?.mimeType || null }
+    return { result: this.fileData?.mimeType || null }
+  }
+
+  async metadata(): Promise<Result<Record<string, string>>> {
+    return { result: this.fileData?.metadata || {} }
   }
 
   async slice(chunkSize?: number): Promise<Result<IBlob[]>> {

@@ -1,6 +1,5 @@
-import { Result } from '../../types'
 import { UploadError } from '../../../types/error'
-import { isCanceledResult, isErrorResult, isSuccessResult } from '../../../types/types'
+import { Result, isCanceledResult, isErrorResult, isSuccessResult } from '../../../types/types'
 
 import { Task, TaskQueue } from './index'
 

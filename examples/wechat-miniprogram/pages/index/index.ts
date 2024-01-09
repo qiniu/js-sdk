@@ -15,7 +15,7 @@ Component({
       }
     ],
     file: '',
-    token: 'dgHUyu6FJLTIqHZS2Be798icC_DXdHAqaNa9WnO0:1Oy95033vmfpo4-DuwMgwG07JkM=:eyJzY29wZSI6InNkay10ZXN0LTExIiwiZGVhZGxpbmUiOjk5OTk5OTk5OTk5OTk5OX0=',
+    token: 'dgHUyu6FJLTIqHZS2Be798icC_DXdHAqaNa9WnO0:Zzn3vpv6bkDTBLSeY_n7qi2oDwg=:eyJzY29wZSI6InNkay10ZXN0LTExIiwiZGVhZGxpbmUiOjE3MTQ3OTU4MzAsInJldHVybkJvZHkiOiJ7XCJrZXlcIjokKGtleSksXCJoYXNoXCI6ICQoZXRhZyksIFwidGVzdFwiOiQoeDp0ZXN0KX0ifQ==',
     text: '测试上传文本内容',
     progress: '',
     task: null
@@ -35,6 +35,7 @@ Component({
     async uploadText() {
       const file: qiniu.FileData = { type: 'string', data: this.data.text }
       const task = qiniu.createDirectUploadTask(file, {
+        vars: { 'test': '2222222' },
         tokenProvider: () => Promise.resolve(this.data.token)
       })
       await this.printTask(task)
@@ -46,12 +47,15 @@ Component({
       const file: qiniu.FileData = {
         type: 'array-buffer',
         data: buffer,
-        meta: {
-          filename: 'test.test',
-          mimeType: 'test/test'
+        filename: 'test.test',
+        mimeType: 'test/test',
+        metadata: {
+          '222222': '22222',
+          '2231231': '22313'
         }
       }
       const task = qiniu.createDirectUploadTask(file, {
+        vars: { 'test': '2222222' },
         tokenProvider: () => Promise.resolve(this.data.token)
       })
       await this.printTask(task)
@@ -61,12 +65,15 @@ Component({
       const file: qiniu.FileData = {
         type: 'path',
         data: this.data.file,
-        meta: {
-          filename: 'test.test22',
-          mimeType: 'test/test'
+        filename: 'test.test2312',
+        mimeType: 'test/test',
+        metadata: {
+          '222222123': '222231222',
+          '223123231231': '2231232313'
         }
       }
       const task = qiniu.createMultipartUploadTask(file, {
+        vars: { 'test': '2222222' },
         tokenProvider: () => Promise.resolve(this.data.token)
       })
       await this.printTask(task)

@@ -7,12 +7,9 @@ import { LogLevel } from '../helper/logger'
 
 export { Progress } from './common/queue'
 
-export { Result } from '../types/types'
-export { IFile, IBlob } from '../types/file'
-export { TokenProvider } from '../types/token'
-export { HttpClient, HttpProtocol } from '../types/http'
-
 export interface UploadConfig {
+  /** 自定义变量；本次上传任务的自定义变量，关于使用请参考：https://developer.qiniu.com/kodo/1235/vars#xvar */
+  vars?: Record<string, string>
   /** 服务的接口地址；默认为七牛公有云，内部通过该地址提供的接口获取每个区域的上传地址 */
   serverUrl?: string
   /** 日志级别；默认为 NONE，即不输出任何日志 */
