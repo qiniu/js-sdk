@@ -1,9 +1,10 @@
 {
   "name": "@qiniu/upload",
   "version": "1.0.0-rc.1",
-  "description": "Qiniu Cloud Upload SDK",
+  "description": "Qiniu Cloud object storage upload sdk",
   "repository": "https://github.com/qiniu/js-sdk.git",
   "main": "index.ets",
+  "artifactType": "original",
   "author": "qiniu",
   "license": "MIT",
   "dependencies": {},

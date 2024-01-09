@@ -22,7 +22,7 @@ function onCancel(task: common.UploadTask, listener: () => Promise<common.Result
 /**
  * @deprecated 系统原因一直无法调通，请使用分片上传
  */
-export function createDirectUploadTask(context: ohCommon.Context, file: FileData, config: common.UploadConfig) {
+function createDirectUploadTask(context: ohCommon.Context, file: FileData, config: common.UploadConfig) {
   const { meta, ...fileData } = file
   const innerFile = new UploadFile(context, fileData, meta)
   config.httpClient = config.httpClient ?? new HttpClient(context)

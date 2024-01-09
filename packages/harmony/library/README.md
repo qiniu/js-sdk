@@ -11,7 +11,7 @@ ohpm install @qiniu/upload
 2. 导入SDK
 
 ```javascript
-import { createDirectUploadTask, createMultipartUploadTask, FileData } from '@qiniu/upload';
+import { createMultipartUploadTask, FileData } from '@qiniu/upload';
 ```
 
 3. 创建上传任务
