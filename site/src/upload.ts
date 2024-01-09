@@ -86,7 +86,13 @@ export function useUpload(file: File) {
         file,
         file.name,
         token,
-        undefined,
+        {
+          metadata: {
+            'x-qn-meta-test': 'tt',
+            'x-qn-meta-test1': '222',
+            'x-qn-meta-test2': '333',
+          }
+        },
         {
           checkByMD5: true,
           debugLogLevel: 'INFO',
