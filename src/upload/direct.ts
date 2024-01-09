@@ -29,6 +29,12 @@ export default class Direct extends Base {
       this.logger.info('customVars inited.')
     }
 
+    if (this.putExtra.metadata) {
+      this.logger.info('init metadata.')
+      const { metadata } = this.putExtra
+      Object.keys(metadata).forEach(key => formData.append(key, metadata[key].toString()))
+    }
+
     this.logger.info('formData inited.')
     const result = await direct(this.uploadHost!.getUrl(), formData, {
       onProgress: data => {
