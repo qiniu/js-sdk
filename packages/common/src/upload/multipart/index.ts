@@ -14,7 +14,7 @@ type MultipartUploadProgressKey =
   | 'completeMultipartUpload'
   | `multipartUpload(${number})`
 
-export class MultipartUploadQueueContext extends UploadQueueContext<MultipartUploadProgressKey> {
+export class MultipartUploadContext extends UploadQueueContext<MultipartUploadProgressKey> {
   uploadPartId?: InitPartsUploadData
   uploadedParts: Array<PartMeta | UploadedPart> = []
 
@@ -26,7 +26,7 @@ export class MultipartUploadQueueContext extends UploadQueueContext<MultipartUpl
 class InitPartUploadTask implements Task {
   private abort: HttpAbortController | null = null
   constructor(
-    private context: MultipartUploadQueueContext,
+    private context: MultipartUploadContext,
     private uploadApis: UploadApis,
     private file: IFile
   ) {}
@@ -110,14 +110,14 @@ class InitPartUploadTask implements Task {
 class UploadPartTask implements Task {
   private abort: HttpAbortController | null = null
   constructor(
-    private context: MultipartUploadQueueContext,
+    private context: MultipartUploadContext,
     private uploadApis: UploadApis,
     private index: number,
     private file: IFile,
     private blob: IBlob
   ) {}
 
-  setup(ctx: MultipartUploadQueueContext): void {
+  setup(ctx: MultipartUploadContext): void {
     this.context = ctx
   }
 
@@ -182,13 +182,13 @@ class UploadPartTask implements Task {
 class CompletePartUploadTask implements Task {
   private abort: HttpAbortController | null = null
   constructor(
-    private context: MultipartUploadQueueContext,
+    private context: MultipartUploadContext,
     private uploadApis: UploadApis,
     private vars: Record<string, string> | undefined,
     private file: IFile
   ) {}
 
-  setup(ctx: MultipartUploadQueueContext): void {
+  setup(ctx: MultipartUploadContext): void {
     this.context = ctx
   }
 
@@ -250,7 +250,7 @@ export const createMultipartUploadTask: UploadTaskCreator = (file, config) => {
   const uploadApis = new UploadApis(normalizedConfig.httpClient)
   const configApis = new ConfigApis(normalizedConfig.serverUrl, normalizedConfig.httpClient)
 
-  const context = new MultipartUploadQueueContext()
+  const context = new MultipartUploadContext()
   const tokenProvideTask = new TokenProvideTask(context, normalizedConfig.tokenProvider)
   const hostProvideTask = new HostProvideTask(context, configApis, normalizedConfig.protocol)
 

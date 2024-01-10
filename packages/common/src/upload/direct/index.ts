@@ -12,12 +12,12 @@ import { Task, TaskQueue, UploadQueueContext } from '../common/queue'
 
 type DirectUploadProgressKey = 'directUpload'
 
-export class DirectUploadQueueContext extends UploadQueueContext<DirectUploadProgressKey> { }
+export class DirectUploadContext extends UploadQueueContext<DirectUploadProgressKey> { }
 
 class DirectUploadTask implements Task {
   private abort: HttpAbortController | null = null
   constructor(
-    private context: DirectUploadQueueContext,
+    private context: DirectUploadContext,
     private uploadApis: UploadApis,
     private vars: Record<string, string> | undefined,
     private file: IFile
@@ -60,7 +60,7 @@ export const createDirectUploadTask: UploadTaskCreator = (file, config) => {
   const uploadApis = new UploadApis(normalizedConfig.httpClient)
   const configApis = new ConfigApis(normalizedConfig.serverUrl, normalizedConfig.httpClient)
 
-  const context = new DirectUploadQueueContext()
+  const context = new DirectUploadContext()
   const directUploadTask = new DirectUploadTask(context, uploadApis, config.vars, file)
   const tokenProvideTask = new TokenProvideTask(context, normalizedConfig.tokenProvider)
   const hostProvideTask = new HostProvideTask(context, configApis, normalizedConfig.protocol)

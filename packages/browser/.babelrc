@@ -1,0 +1,14 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "browsers": ["last 2 versions", "ie >= 8"]
+        },
+        "modules": "commonjs"
+      }
+    ]
+  ],
+  "ignore": ["**/*.d.ts", "**/*.js.map"]
+}

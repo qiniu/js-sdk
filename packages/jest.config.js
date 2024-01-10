@@ -5,7 +5,7 @@ function getProjectConfig(name) {
     transform: {
       ".ts": 'ts-jest'
     },
-    testMatch: [`<rootDir>/packages/${name}/src/**/*.test.ts`],
+    testMatch: [`<rootDir>/${name}/src/**/*.test.ts`],
   }
 }
 

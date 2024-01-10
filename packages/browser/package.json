@@ -1,0 +1,25 @@
+{
+  "name": "@qiniu/browser-upload",
+  "version": "1.0.0-rc.1",
+  "description": "Qiniu browser upload sdk",
+  "miniprogram": "output",
+  "main": "output/index.js",
+  "types": "output/index.d.ts",
+  "private": false,
+  "repository": "https://github.com/qiniu/js-sdk.git",
+  "scripts": {
+    "dev": "rollup -c -w",
+    "build": "rollup -c"
+  },
+  "author": "qiniu",
+  "license": "MIT",
+  "devDependencies": {
+    "rollup": "^2.77.0",
+    "@internal/common": "*",
+    "@rollup/plugin-babel": "^5.3.1",
+    "@rollup/plugin-commonjs": "^22.0.1",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@types/wechat-miniprogram": "^3.4.7",
+    "rollup-plugin-typescript2": "^0.32.1"
+  }
+}

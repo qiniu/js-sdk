@@ -4,5 +4,4 @@ node_modules
 coverage
 output
 test-server.js
-examples/harmony
 miniprogram_npm

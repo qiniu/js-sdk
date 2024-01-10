@@ -2,8 +2,11 @@ import { IFile } from '../types/file'
 import { Result } from '../types/types'
 import { TokenProvider } from '../types/token'
 import { HttpClient, HttpProtocol } from '../types/http'
-import { QueueContext } from './common/queue'
+
 import { LogLevel } from '../helper/logger'
+
+import { DirectUploadContext } from './direct'
+import { MultipartUploadContext } from './multipart'
 
 export { Progress } from './common/queue'
 
@@ -22,7 +25,7 @@ export interface UploadConfig {
   tokenProvider: TokenProvider
 }
 
-export type Context = QueueContext
+export type Context = DirectUploadContext | MultipartUploadContext
 export type OnError = (context: Context) => void
 export type OnProgress = (context: Context) => void
 export type OnComplete = (context: Context) => void
@@ -35,4 +38,4 @@ export interface UploadTask {
   start(): Promise<Result>
 }
 
-export type UploadTaskCreator<F = IFile> = (file: F, config: UploadConfig) => UploadTask
+export type UploadTaskCreator = (file: IFile, config: UploadConfig) => UploadTask
