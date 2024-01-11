@@ -24,6 +24,12 @@ function shouldUseUploadFile(option: RequestOptions): boolean {
   return files.length > 0
 }
 
+function normalizeFormHeader(header: common.HttpHeader = {}): common.HttpHeader {
+  const boundary = `----WebKitFormBoundary${common.generateRandomString(12)}`
+  header['content-type'] = `multipart/form-data; boundary=${boundary}`
+  return header
+}
+
 export class HttpClient implements HttpClient {
   constructor(private context: ohCommon.BaseContext) {}
 
@@ -47,8 +53,8 @@ export class HttpClient implements HttpClient {
           files.push({
             name: key, // 表单的 key
             uri: pathResult.result,
-            filename: nameResult.result || '',
             type: mimeTypeResult.result || '',
+            filename: nameResult.result || '',
           })
         } else {
           formData.push({ name: key, value: String(value) })
@@ -60,8 +66,8 @@ export class HttpClient implements HttpClient {
           url,
           files,
           data: formData,
-          method: transformRequestMethod(options.method),
-          header: { ...options.headers, 'Content-Type': 'multipart/form-data' },
+          header: normalizeFormHeader(options.headers),
+          method: transformRequestMethod(options.method)
         }
 
         try {

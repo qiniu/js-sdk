@@ -17,7 +17,7 @@ function beforeCancel(task: common.UploadTask, hook: () => Promise<common.Result
   }
 }
 
-export const createDirectUploadTask: common.UploadTaskCreator<FileData> = (file, config) => {
+export const createDirectUploadTask = (file: FileData, config: common.UploadConfig) => {
   const innerFile = new UploadFile(file)
   config.httpClient = config.httpClient ?? new WxHttpClient()
   const task = common.createDirectUploadTask(innerFile, config)
@@ -27,7 +27,7 @@ export const createDirectUploadTask: common.UploadTaskCreator<FileData> = (file,
   return task
 }
 
-export const createMultipartUploadTask: common.UploadTaskCreator<FileData> = (file, config) => {
+export const createMultipartUploadTask = (file: FileData, config: common.UploadConfig) => {
   const innerFile = new UploadFile(file)
   config.httpClient = config.httpClient ?? new WxHttpClient()
   const task = common.createMultipartUploadTask(innerFile, config)

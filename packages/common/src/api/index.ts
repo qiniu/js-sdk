@@ -310,7 +310,7 @@ export class UploadApis {
       }
     }
 
-    const headers = { 'content-type': 'multipart/form-data' }
+    const headers = { 'content-type': `multipart/form-data` }
     const response = await this.httpClient.post(params.uploadHostUrl, {
       headers,
       body: formData,

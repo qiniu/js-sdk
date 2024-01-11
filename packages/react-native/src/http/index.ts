@@ -1,27 +1,19 @@
-import common, { HttpRequestError, HttpResponse, MockProgress, UploadError, isHttpFormData, isSuccessResult } from '@internal/common'
+import common, { HttpResponse, MockProgress, UploadError, isHttpFormData, generateRandomString } from '@internal/common'
 
-import { UploadFile, isUploadBlob, isUploadFile } from '../file'
+import { isUploadBlob, isUploadFile } from '../file'
 
 interface RequestOptions extends common.HttpClientOptions {
   method: common.HttpMethod
 }
 
-export class WxHttpClient implements common.HttpClient {
+class XhrHttpClient implements common.HttpClient {
   async request(url: string, options: RequestOptions): Promise<common.Result<HttpResponse>> {
     return new Promise(resolve => {
-      // 默认是用 Xhr
       const xhr = new XMLHttpRequest()
       xhr.open(options.method, url)
 
       if (options.abort) {
         options.abort.onAbort(() => xhr.abort())
-      }
-
-      if (options.headers) {
-        const headers = options.headers
-        Object.keys(headers).forEach(k => {
-          xhr.setRequestHeader(k, headers[k])
-        })
       }
 
       let mockProgress: MockProgress | undefined
@@ -70,8 +62,8 @@ export class WxHttpClient implements common.HttpClient {
         const formData = new FormData()
         const bodyEntries = options.body.entries()
 
-        for (const [key, value, option] of bodyEntries) {
-          formData.set(key, value, option)
+        for (const [key, value] of bodyEntries) {
+          formData.append(key, value)
         }
 
         normalizedBody = formData
@@ -85,8 +77,94 @@ export class WxHttpClient implements common.HttpClient {
         normalizedBody = JSON.stringify(options.body)
       }
 
+      if (options.headers) {
+        const headers = options.headers
+        Object.keys(headers).forEach(k => {
+          xhr.setRequestHeader(k, headers[k])
+        })
+      }
+
+      console.log(11111111, options.headers)
       xhr.send(normalizedBody || options.body as any)
       if (mockProgress) mockProgress.start()
+    })
+  }
+
+  get(url: string, options?: common.HttpClientOptions | undefined): Promise<common.Result<HttpResponse>> {
+    return this.request(url, { method: 'GET', ...options })
+  }
+  put(url: string, options?: common.HttpClientOptions | undefined): Promise<common.Result<HttpResponse>> {
+    return this.request(url, { method: 'PUT', ...options })
+  }
+  post(url: string, options?: common.HttpClientOptions | undefined): Promise<common.Result<HttpResponse>> {
+    return this.request(url, { method: 'POST', ...options })
+  }
+  delete(url: string, options?: common.HttpClientOptions | undefined): Promise<common.Result<HttpResponse>> {
+    return this.request(url, { method: 'DELETE', ...options })
+  }
+}
+
+export class FetchHttpClient implements common.HttpClient {
+  async request(url: string, options: RequestOptions): Promise<common.Result<HttpResponse>> {
+    return new Promise(resolve => {
+      const request: RequestInit = {
+        body: options.body as any,
+        method: options.method
+      }
+
+      if (options.abort) {
+        const ctrl = new AbortController()
+        request.signal = ctrl.signal
+        options.abort.onAbort(() => ctrl.abort())
+      }
+
+      if (options.headers) {
+        request.headers = options.headers
+      }
+
+      const mockProgress = new MockProgress()
+
+      if (options.onProgress) {
+        const onProgress = options.onProgress
+        mockProgress.onProgress(v => onProgress({ percent: v }))
+      }
+
+      if (isHttpFormData(options.body)) {
+        const formData = new FormData()
+        const bodyEntries = options.body.entries()
+
+        for (const [key, value] of bodyEntries) {
+          formData.append(key, value)
+        }
+
+        request.body = formData
+      }
+
+      if (isUploadFile(options.body)) {
+        request.body = options.body.readAsBrowserFile()
+      }
+
+      if (isUploadBlob(options.body)) {
+        request.body = options.body.readAsBrowserBlob()
+      }
+
+      mockProgress.start()
+      console.log('222222', request)
+      fetch(url, request)
+        .then(async response => {
+          mockProgress.end()
+          resolve({
+            result: {
+              code: response.status,
+              data: await response.text(),
+              reqId: response.headers.get('x-reqid') || undefined,
+            }
+          })
+        })
+        .catch(error => {
+          mockProgress.stop()
+          resolve({ error: new UploadError('NetworkError', error?.message) })
+        })
     })
   }
 

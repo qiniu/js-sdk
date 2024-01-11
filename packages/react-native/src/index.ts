@@ -1,6 +1,6 @@
 import * as common from '@internal/common'
 
-import { WxHttpClient } from './http'
+import { FetchHttpClient } from './http'
 import { FileData, UploadFile } from './file'
 
 export { FileData } from './file'
@@ -17,9 +17,9 @@ function beforeCancel(task: common.UploadTask, hook: () => Promise<common.Result
   }
 }
 
-export const createDirectUploadTask: common.UploadTaskCreator<FileData> = (file, config) => {
+export const createDirectUploadTask = (file: FileData, config: common.UploadConfig) => {
   const innerFile = new UploadFile(file)
-  config.httpClient = config.httpClient ?? new WxHttpClient()
+  config.httpClient = config.httpClient ?? new FetchHttpClient()
   const task = common.createDirectUploadTask(innerFile, config)
   task.onError(() => innerFile.free())
   task.onComplete(() => innerFile.free())
@@ -27,9 +27,9 @@ export const createDirectUploadTask: common.UploadTaskCreator<FileData> = (file,
   return task
 }
 
-export const createMultipartUploadTask: common.UploadTaskCreator<FileData> = (file, config) => {
+export const createMultipartUploadTask = (file: FileData, config: common.UploadConfig) => {
   const innerFile = new UploadFile(file)
-  config.httpClient = config.httpClient ?? new WxHttpClient()
+  config.httpClient = config.httpClient ?? new FetchHttpClient()
   const task = common.createMultipartUploadTask(innerFile, config)
   task.onError(() => innerFile.free())
   task.onComplete(() => innerFile.free())

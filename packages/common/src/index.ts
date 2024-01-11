@@ -3,6 +3,7 @@ export * from './upload'
 export * from './helper/chunk'
 export * from './helper/base64'
 export * from './helper/object'
+export * from './helper/string'
 export * from './helper/progress'
 export * from './helper/logger'
 
