@@ -1,5 +1,5 @@
 import http from '@ohos.net.http'
-import uploadFile from '@ohos.request'
+import requestApi from '@ohos.request'
 import ohCommon from '@ohos.app.ability.common'
 
 import * as common from '../@internal'
@@ -8,6 +8,28 @@ import { isUploadFile, isUploadBlob } from '../file'
 interface RequestOptions extends common.HttpClientOptions {
   method: common.HttpMethod
 }
+
+function parseHeader(header: string): {
+  statusCode: number
+  header: common.HttpHeader
+} {
+
+  const newHeader: common.HttpHeader = {}
+  const delimiter = '\r\n'
+  const [first, ...lines] = header.split(delimiter).filter(v => v !== '')
+  for (let index = 0; index < lines.length; index++) {
+    const line = lines[index]
+    const [key, value] = line.split(':')
+    newHeader[key] = value.trim()
+  }
+
+  return {
+    // HTTP/1.1 200 OK
+    statusCode: parseInt(first.split(' ')[1], 10),
+    header: newHeader
+  }
+}
+
 
 function transformRequestMethod(method: common.HttpMethod): http.RequestMethod {
   if (method === 'PUT') return http.RequestMethod.PUT
@@ -24,20 +46,14 @@ function shouldUseUploadFile(option: RequestOptions): boolean {
   return files.length > 0
 }
 
-function normalizeFormHeader(header: common.HttpHeader = {}): common.HttpHeader {
-  const boundary = `----WebKitFormBoundary${common.generateRandomString(12)}`
-  header['content-type'] = `multipart/form-data; boundary=${boundary}`
-  return header
-}
-
 export class HttpClient implements HttpClient {
   constructor(private context: ohCommon.BaseContext) {}
 
   private async request(url: string, options: RequestOptions): Promise<common.Result<common.HttpResponse>> {
-    // 使用 uploadFile 接口发送请求
+    // 使用 requestApi 接口发送请求
     if (shouldUseUploadFile(options)) {
-      const files: uploadFile.File[] = []
-      const formData: uploadFile.RequestData[] = []
+      const files: requestApi.File[] = []
+      const formData: requestApi.RequestData[] = []
       const bodyEntries = (options.body as common.HttpFormData).entries()
 
       for (const [key, value] of bodyEntries) {
@@ -62,17 +78,16 @@ export class HttpClient implements HttpClient {
       }
 
       return new Promise(resolve => {
-        const uploadFileOptions: uploadFile.UploadConfig = {
-          url,
+        const uploadFileOptions: requestApi.UploadConfig = {
           files,
           data: formData,
-          header: normalizeFormHeader(options.headers),
-          method: transformRequestMethod(options.method)
+          url: url.toLowerCase(),
+          method: options.method,
+          header: options.headers
         }
 
         try {
-          // FIXME: 这个 api 现在有问题，用不了一点
-          uploadFile.uploadFile(this.context, common.removeUndefinedKeys(uploadFileOptions))
+          requestApi.uploadFile(this.context, common.removeUndefinedKeys(uploadFileOptions))
             .then(task => {
               if (options.abort) {
                 options.abort.onAbort(() => task.delete())
@@ -85,21 +100,28 @@ export class HttpClient implements HttpClient {
                 ))
               }
 
-              task.on('complete', states => {
-                const firstState = states[0]
-                mockProgress.end()
+              let responseCode: number = 0
+              let responseHeader: common.HttpHeader = {}
+              task.on('headerReceive', header => {
+                if (typeof header === 'string') {
+                  const data = parseHeader(header)
+                  responseCode = data.statusCode
+                  header = data.header
+                }
+              })
+
+              task.on('complete', () => {
                 return resolve({
                   result: {
-                    data: firstState.message,
-                    code: firstState.responseCode,
-                    reqId: 'UploadFile api cannot get this value'
+                    data: '', // TODO: 暂时不支持读取 body，next 版本将会支持
+                    code: responseCode,
+                    reqId: responseHeader['X-Reqid']
                   }
                 })
               })
 
               task.on('fail', states => {
                 const firstState = states[0]
-                mockProgress.end()
                 return resolve({
                   result: {
                     data: firstState.message,
