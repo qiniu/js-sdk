@@ -52,6 +52,10 @@ export class HttpClient implements HttpClient {
   private async request(url: string, options: RequestOptions): Promise<common.Result<common.HttpResponse>> {
     // 使用 requestApi 接口发送请求
     if (shouldUseUploadFile(options)) {
+      if (!canIUse('SystemCapability.MiscServices.Upload')) {
+        return { error: new common.UploadError('NetworkError', 'The current system api version does not support') }
+      }
+
       const files: requestApi.File[] = []
       const formData: requestApi.RequestData[] = []
       const bodyEntries = (options.body as common.HttpFormData).entries()
@@ -120,13 +124,12 @@ export class HttpClient implements HttpClient {
                 })
               })
 
-              task.on('fail', states => {
-                const firstState = states[0]
+              task.on('fail', () => {
                 return resolve({
                   result: {
-                    data: firstState.message,
-                    code: firstState.responseCode,
-                    reqId: 'UploadFile api cannot get this value'
+                    data: '',
+                    code: responseCode,
+                    reqId: responseHeader['X-Reqid']
                   }
                 })
               })
@@ -142,6 +145,10 @@ export class HttpClient implements HttpClient {
           })
         }
       })
+    }
+
+    if (!canIUse('SystemCapability.Communication.NetStack')) {
+      return { error: new common.UploadError('NetworkError', 'The current system api version does not support') }
     }
 
     let estimatedTime = 5 // 预估耗时默认为 5s

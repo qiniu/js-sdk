@@ -92,7 +92,6 @@ interface Context {
 - `result`：上传成功的信息。
 - `error`：队列的错误。
 - `progress`：整体的任务进度信息。
-- `setup()`：初始化函数，队列开始时执行。
 
 ### UploadConfig
 
@@ -102,14 +101,16 @@ interface UploadConfig {
   serverUrl?: string;
   logLevel?: LogLevel;
   protocol?: HttpProtocol;
+  vars?: Record<string, string>;
 }
 ```
 
 - 上传配置接口，用于配置上传任务的相关参数。
 - `serverUrl`：服务器 URL，默认为 api.qiniu.com，专有云根据情况填写。
-- `logLevel`：日志级别。
+- `logLevel`：日志级别，默认为 NONE，不输出任何日志。
 - `protocol`：HTTP 协议，默认 HTTPS。
 - `tokenProvider`：用于获取上传所需 token 的函数。
+- `vars`: 上传过程中是用的自定义变量。
 
 ### OnError
 

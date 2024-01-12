@@ -50,6 +50,10 @@ export class UploadFile implements common.IFile {
     }
 
     const initData = async (): Promise<common.Result<boolean>> => {
+      if (!canIUse('SystemCapability.FileManagement.File.FileIO')) {
+        return { error: new common.UploadError('FileSystemError', 'The current system api version does not support') }
+      }
+      
       if (this.data.type === 'uri') {
         // 如果已经是 internal://cache/ 的文件 url 直接赋值更新
         if (this.data.data.startsWith('internal://cache/')) {
