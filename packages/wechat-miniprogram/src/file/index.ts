@@ -1,11 +1,12 @@
 import {
-  IBlob, IFile,
   UploadError,
   Result, isSuccessResult,
+  UploadBlob as BaseUploadBlob,
+  UploadFile as BaseUploadFile,
   sliceChunk, FileData as CommonFileData
 } from '@internal/common'
 
-class UploadBlob implements IBlob {
+class UploadBlob implements BaseUploadBlob {
   constructor(
     private filePath: string,
     private offset: number,
@@ -41,7 +42,7 @@ export type FileData =
   | { type: 'string', data: string } & CommonFileData
   | { type: 'array-buffer', data: ArrayBuffer } & CommonFileData
 
-export class UploadFile implements IFile {
+export class UploadFile implements BaseUploadFile {
   private shouldUnlink = false
   private filePath: string | null = null
   private initPromise: Promise<Result<boolean>> | null = null
@@ -152,7 +153,7 @@ export class UploadFile implements IFile {
     return { result: this.fileData?.metadata || {} }
   }
 
-  async slice(chunkSize?: number): Promise<Result<IBlob[]>> {
+  async slice(chunkSize?: number): Promise<Result<UploadBlob[]>> {
     const sizeResult = await this.size()
     if (!isSuccessResult(sizeResult)) return sizeResult
     const normalizedChunkSize = chunkSize || sizeResult.result

@@ -81,8 +81,8 @@ Component({
     },
 
     async printTask(task: qiniu.UploadTask) {
-      task.onProgress(ctx => this.setData({ ...this.data, progress: JSON.stringify(ctx.progress) }))
-      task.onProgress(ctx => console.log('Progress: ', JSON.stringify(ctx.progress)))
+      task.onProgress((progress) => this.setData({ ...this.data, progress: JSON.stringify(progress) }))
+      task.onProgress((progress) => console.log('Progress: ', JSON.stringify(progress)))
       task.onComplete(ctx => console.log('Complete: ', ctx))
       task.onError(ctx => console.log('Error: ', ctx))
       this.data.task = task as any

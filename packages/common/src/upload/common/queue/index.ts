@@ -189,10 +189,11 @@ export class TaskQueue {
       if (isErrorResult(result)) {
         state.status = 'error'
         this.error = result.error
-        // 网络错误或者请求错误，等待一定时间后重试
-        if (result.error.name === 'NetworkError' || result.error.name === 'HttpRequestError') {
-          if (state.retryCount <= 3) {
-            state.retryCount += 1
+        // 网络错误，等待一定时间后重试
+        if (result.error.name === 'NetworkError') {
+          // 原本 1 次 + 重试 2 次 = 总计 3 次
+          if (state.retryCount < 2) {
+            state.retryCount++
             await delay(2000)
             // 继续处理这个任务
             this.process(paddingTask)

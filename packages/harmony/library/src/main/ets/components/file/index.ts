@@ -3,7 +3,7 @@ import ohCommon from '@ohos.app.ability.common'
 
 import * as common from '../@internal'
 
-class UploadBlob implements common.IBlob {
+class UploadBlob implements common.UploadBlob {
   constructor(
     private file: fs.File,
     private offset: number,
@@ -30,7 +30,7 @@ export type FileData =
   | { type: 'string', data: string } & common.FileData
   | { type: 'array-buffer', data: ArrayBuffer } & common.FileData
 
-export class UploadFile implements common.IFile {
+export class UploadFile implements common.UploadFile {
   private file: fs.File | null = null
   private unlinkPath: string | null = null
   private internalCacheUri: string | null = null
@@ -168,7 +168,7 @@ export class UploadFile implements common.IFile {
     return { result: this.data?.metadata || {} }
   }
 
-  async slice(chunkSize?: number): Promise<common.Result<common.IBlob[]>> {
+  async slice(chunkSize?: number): Promise<common.Result<common.UploadBlob[]>> {
     const sizeResult = await this.size()
     if (!common.isSuccessResult(sizeResult)) return sizeResult
     const normalizedChunkSize = chunkSize || sizeResult.result

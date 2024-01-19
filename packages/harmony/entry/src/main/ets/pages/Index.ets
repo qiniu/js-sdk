@@ -7,8 +7,8 @@ const token = 'dgHUyu6FJLTIqHZS2Be798icC_DXdHAqaNa9WnO0:Zzn3vpv6bkDTBLSeY_n7qi2o
 struct Index {
   @State error: string = ''
   @State result: string = ''
-  @State progress: UploadProgress = {}
   @State task: UploadTask | null = null
+  @State progress: Partial<UploadProgress> | null = null
 
   stopTask() {
     if (this.task) this.task.cancel()
@@ -54,9 +54,9 @@ struct Index {
 
   uploadFileState(task: UploadTask) {
     this.task = task
-    task.onComplete(ctx =>  this.result = ctx.result)
-    task.onProgress(ctx => this.progress = ctx.progress)
-    task.onError(ctx => this.error = ctx.error.message)
+    task.onProgress(progress => this.progress = progress as any)
+    task.onComplete(result =>  this.result = result)
+    task.onError(error => this.error = error.message)
   }
 
   build() {
@@ -70,8 +70,8 @@ struct Index {
           .fontSize(14)
           .fontWeight(FontWeight.Bold)
         Column() {
-          ForEach(Object.keys(this.progress), key => {
-            Text(`${key}: ${this.progress[key]}`)
+          ForEach(Object.keys(this.progress?.details || {}), key => {
+            Text(`${key}: ${this.progress?.details[key]?.percent}`)
               .fontSize(14)
               .fontWeight(FontWeight.Bold)
           })
