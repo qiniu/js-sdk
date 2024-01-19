@@ -1,5 +1,7 @@
 import * as qiniu from '@qiniu/wechat-miniprogram-upload'
 
+console.log(qiniu)
+
 Component({
   data: {
     tabs: [
@@ -39,7 +41,6 @@ Component({
         tokenProvider: () => Promise.resolve(this.data.token)
       })
       await this.printTask(task)
-
     },
 
     async uploadArrayBuffer() {

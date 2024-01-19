@@ -98,6 +98,7 @@ interface UploadConfig {
   serverUrl?: string;
   logLevel?: LogLevel;
   protocol?: HttpProtocol;
+  vars?: Record<string, string>;
 }
 ```
 
@@ -106,6 +107,7 @@ interface UploadConfig {
 - `logLevel`：日志级别。
 - `protocol`：HTTP 协议，默认 HTTPS。
 - `tokenProvider`：用于获取上传所需 token 的函数。
+- `vars`: 上传过程中的自定义变量。
 
 ### OnError
 

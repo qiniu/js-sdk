@@ -122,9 +122,9 @@ describe('test TaskQueue', () => {
   test('test tasksCreator', async () => {
     const task = new MockTask()
     const queue = new TaskQueue({
-      tasksCreator: async (): Promise<Result<Task[]>> => {
-        return { result: [task] }
-      }
+      tasksCreator: async (): Promise<Result<Task[]>> => (
+        { result: [task] }
+      )
     })
 
     const startPromise = queue.start()

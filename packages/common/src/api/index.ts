@@ -1,5 +1,5 @@
 import { Token } from '../types/token'
-import { IBlob, IFile } from '../types/file'
+import { UploadBlob, UploadFile } from '../types/file'
 import { HttpRequestError } from '../types/error'
 import { urlSafeBase64Encode } from '../helper/base64'
 import { removeUndefinedKeys } from '../helper/object'
@@ -27,7 +27,7 @@ interface InitMultipartUploadParams extends BasicWithAuthParams {
 interface UploadPartParams extends BasicWithAuthParams {
   bucket: string
   uploadId: string
-  part: IBlob
+  part: UploadBlob
   partIndex: number
   md5?: string
   key?: string
@@ -88,7 +88,7 @@ interface GetChunkRequestPathParams extends BasicWithAuthParams {
 }
 
 interface DirectUploadParams extends BasicWithAuthParams {
-  file: IFile
+  file: UploadFile
   fileName: string
   key?: string
   crc32?: string
@@ -310,7 +310,7 @@ export class UploadApis {
       }
     }
 
-    const headers = { 'content-type': `multipart/form-data` }
+    const headers = { 'content-type': 'multipart/form-data' }
     const response = await this.httpClient.post(params.uploadHostUrl, {
       headers,
       body: formData,

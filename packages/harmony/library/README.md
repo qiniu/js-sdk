@@ -110,7 +110,7 @@ interface UploadConfig {
 - `logLevel`：日志级别，默认为 NONE，不输出任何日志。
 - `protocol`：HTTP 协议，默认 HTTPS。
 - `tokenProvider`：用于获取上传所需 token 的函数。
-- `vars`: 上传过程中是用的自定义变量。
+- `vars`: 上传过程中的自定义变量。
 
 ### OnError
 

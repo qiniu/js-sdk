@@ -1,20 +1,25 @@
-import { IBlob, IFile } from '../../types/file'
+import { UploadBlob, UploadFile } from '../../types/file'
 import { HttpAbortController } from '../../types/http'
 import { generateRandomString } from '../../helper/string'
 import { Result, isCanceledResult, isErrorResult, isSuccessResult } from '../../types/types'
 import { UploadApis, ConfigApis, PartMeta, InitPartsUploadData, UploadedPart } from '../../api'
-import { HostProvideTask } from '../common/host'
-import { TokenProvideTask } from '../common/token'
-import { initUploadConfig } from '../common/config'
-import { Task, UploadQueueContext, TaskQueue } from '../common/queue'
-import { UploadTaskCreator } from '../types'
 
-type MultipartUploadProgressKey =
+import { UploadTask, UploadTaskCreator } from '../types'
+
+import { UploadContext, updateTotalIntoProgress } from '../common/context'
+import { Task, TaskQueue } from '../common/queue'
+import { initUploadConfig } from '../common/config'
+import { HostProgressKey, HostProvideTask } from '../common/host'
+import { TokenProgressKey, TokenProvideTask } from '../common/token'
+
+export type MultipartUploadProgressKey =
+  | HostProgressKey
+  | TokenProgressKey
   | 'initMultipartUpload'
   | 'completeMultipartUpload'
-  | `multipartUpload(${number})`
+  | `multipartUpload:${number}`
 
-export class MultipartUploadContext extends UploadQueueContext<MultipartUploadProgressKey> {
+export class MultipartUploadContext extends UploadContext<MultipartUploadProgressKey> {
   uploadPartId?: InitPartsUploadData
   uploadedParts: Array<PartMeta | UploadedPart> = []
 
@@ -28,17 +33,27 @@ class InitPartUploadTask implements Task {
   constructor(
     private context: MultipartUploadContext,
     private uploadApis: UploadApis,
-    private file: IFile
-  ) {}
+    private file: UploadFile
+  ) { this.updateProgress(0) }
 
   async cancel(): Promise<Result> {
     await this.abort?.abort()
     return { result: true }
   }
 
-  private updateProgress(number: number, notify: () => void) {
-    this.context!.progress.initMultipartUpload = number
-    notify()
+  private updateProgress(percent: number, notify?: () => void) {
+    if (this.context.progress.details.initMultipartUpload == null) {
+      this.context.progress.details.initMultipartUpload = {
+        size: 0,
+        percent: 0,
+        fromCache: false
+      }
+    }
+
+    this.context.progress.details.initMultipartUpload.size = 0
+    this.context.progress.details.initMultipartUpload.percent = percent
+    this.context.progress.details.initMultipartUpload.fromCache = false
+    notify?.()
   }
 
   async process(notify: () => void): Promise<Result> {
@@ -79,6 +94,7 @@ class InitPartUploadTask implements Task {
         if (isSuccessResult(uploadedPartResult) && uploadedPartResult.result.parts) {
           this.context.uploadedParts.splice(0, Infinity)
           this.context.uploadedParts.push(...uploadedPartResult.result.parts)
+          this.context.progress.details.initMultipartUpload.fromCache = true
           return uploadedPartResult
         }
         // 错误情况直接走下面的 initMultipartUpload 流程重新初始化
@@ -113,23 +129,29 @@ class UploadPartTask implements Task {
     private context: MultipartUploadContext,
     private uploadApis: UploadApis,
     private index: number,
-    private file: IFile,
-    private blob: IBlob
-  ) {}
-
-  setup(ctx: MultipartUploadContext): void {
-    this.context = ctx
-  }
+    private file: UploadFile,
+    private blob: UploadBlob
+  ) { this.updateProgress(false, blob.size(), 0) }
 
   async cancel(): Promise<Result> {
     await this.abort?.abort()
     return { result: true }
   }
 
-  private updateProgress(number: number, notify: () => void) {
-    const key = `multipartUpload(${this.index})` as const
-    this.context!.progress[key] = number
-    notify()
+  private updateProgress(fromCache: boolean, size: number, percent: number, notify?: () => void) {
+    const key = `multipartUpload:${this.index}` as const
+    if (this.context.progress.details[key] == null) {
+      this.context.progress.details[key] = {
+        size: 0,
+        percent: 0,
+        fromCache: false
+      }
+    }
+
+    this.context.progress.details[key].fromCache = fromCache
+    this.context.progress.details[key].percent = percent
+    this.context.progress.details[key].size = size
+    notify?.()
   }
 
   async process(notify: () => void): Promise<Result> {
@@ -138,15 +160,16 @@ class UploadPartTask implements Task {
       const uploadedPart = uploadedParts.find(i => i.partNumber === this.index)
       // 如果 number 和 size 匹配则直接跳过上传，复用分片
       if (uploadedPart && 'size' in uploadedPart && uploadedPart.size === this.blob.size()) {
-        this.updateProgress(1, notify)
+        this.updateProgress(true, uploadedPart.size, 1, notify)
         return { result: true }
       }
     }
 
-    this.updateProgress(0, notify)
-
     const filenameResult = await this.file.name()
     if (!isSuccessResult(filenameResult)) return filenameResult
+
+    const fileSizeResult = await this.file.size()
+    if (!isSuccessResult(fileSizeResult)) return fileSizeResult
 
     this.abort = new HttpAbortController()
     const uploadPartResult = await this.uploadApis.uploadPart({
@@ -158,7 +181,7 @@ class UploadPartTask implements Task {
       key: filenameResult.result || undefined,
       uploadHostUrl: this.context!.host!.getUrl(),
       uploadId: this.context!.uploadPartId!.uploadId!,
-      onProgress: progress => { this.updateProgress(progress.percent, notify) }
+      onProgress: progress => { this.updateProgress(false, fileSizeResult.result, progress.percent, notify) }
     })
 
     if (isSuccessResult(uploadPartResult)) {
@@ -185,21 +208,27 @@ class CompletePartUploadTask implements Task {
     private context: MultipartUploadContext,
     private uploadApis: UploadApis,
     private vars: Record<string, string> | undefined,
-    private file: IFile
-  ) {}
-
-  setup(ctx: MultipartUploadContext): void {
-    this.context = ctx
-  }
+    private file: UploadFile
+  ) { this.updateProgress(0) }
 
   async cancel(): Promise<Result> {
     await this.abort?.abort()
     return { result: true }
   }
 
-  private updateProgress(number: number, notify: () => void) {
-    this.context!.progress.completeMultipartUpload = number
-    notify()
+  private updateProgress(percent: number, notify?: () => void) {
+    if (this.context.progress.details.completeMultipartUpload == null) {
+      this.context.progress.details.completeMultipartUpload = {
+        size: 0,
+        percent: 0,
+        fromCache: false
+      }
+    }
+
+    this.context!.progress.details.completeMultipartUpload.size = 0
+    this.context!.progress.details.completeMultipartUpload.percent = percent
+    this.context!.progress.details.completeMultipartUpload.fromCache = false
+    notify?.()
   }
 
   async process(notify: () => void): Promise<Result> {
@@ -244,7 +273,7 @@ class CompletePartUploadTask implements Task {
   }
 }
 
-export const createMultipartUploadTask: UploadTaskCreator = (file, config) => {
+export const createMultipartUploadTask: UploadTaskCreator = (file, config): UploadTask<MultipartUploadContext> => {
   const normalizedConfig = initUploadConfig(config)
 
   const uploadApis = new UploadApis(normalizedConfig.httpClient)
@@ -291,14 +320,23 @@ export const createMultipartUploadTask: UploadTaskCreator = (file, config) => {
   )
 
   return {
-    cancel: () => mainQueue.cancel(),
-    onError: fn => mainQueue.onError(() => fn(context)),
-    onProgress: fn => mainQueue.onProgress(() => fn(context)),
-    onComplete: fn => mainQueue.onComplete(() => fn(context)),
+    onError: fn => mainQueue.onError(() => {
+      updateTotalIntoProgress(context.progress)
+      fn(context.error!, context)
+    }),
+    onComplete: fn => mainQueue.onComplete(() => {
+      updateTotalIntoProgress(context.progress)
+      fn(context.result!, context)
+    }),
+    onProgress: fn => mainQueue.onProgress(() => {
+      updateTotalIntoProgress(context.progress)
+      fn(context.progress, context)
+    }),
     start: () => {
       context.setup()
-      return mainQueue.start()
-        .then(() => ({ result: context.result }))
-    }
+      updateTotalIntoProgress(context.progress)
+      return mainQueue.start().then(() => ({ result: context.result }))
+    },
+    cancel: () => mainQueue.cancel()
   }
 }

@@ -7,9 +7,9 @@ export type ErrorName =
   | 'NetworkError'
   | 'InternalError'
 
-export class UploadError {
+export class UploadError implements Error {
   public stack: string | undefined
-  constructor(public name: ErrorName, public message: string) {
+  constructor(public name: ErrorName, public message: string, public reqId?: string) {
     this.stack = new Error().stack
   }
 }

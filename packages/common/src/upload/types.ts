@@ -1,14 +1,14 @@
-import { IFile } from '../types/file'
+import { UploadFile } from '../types/file'
 import { Result } from '../types/types'
 import { TokenProvider } from '../types/token'
 import { HttpClient, HttpProtocol } from '../types/http'
 
 import { LogLevel } from '../helper/logger'
 
-import { DirectUploadContext } from './direct'
-import { MultipartUploadContext } from './multipart'
+import { UploadContext, Progress as BaseProgress } from './common/context'
 
-export { Progress } from './common/queue'
+import { DirectUploadContext, DirectUploadProgressKey } from './direct'
+import { MultipartUploadContext, MultipartUploadProgressKey } from './multipart'
 
 export interface UploadConfig {
   /** 自定义变量；本次上传任务的自定义变量，关于使用请参考：https://developer.qiniu.com/kodo/1235/vars#xvar */
@@ -26,16 +26,18 @@ export interface UploadConfig {
 }
 
 export type Context = DirectUploadContext | MultipartUploadContext
-export type OnError = (context: Context) => void
-export type OnProgress = (context: Context) => void
-export type OnComplete = (context: Context) => void
+export type Progress = BaseProgress<DirectUploadProgressKey | MultipartUploadProgressKey>
 
-export interface UploadTask {
-  onProgress(fn: OnProgress): void
-  onComplete(fn: OnComplete): void
-  onError(fn: OnError): void
+export type OnError<C extends UploadContext> = (error: C['error'], context: C) => void
+export type OnComplete<C extends UploadContext> = (result: C['result'], context: C) => void
+export type OnProgress<C extends UploadContext> = (progress: C['progress'], context: C) => void
+
+export interface UploadTask<C extends UploadContext = Context> {
+  onProgress(fn: OnProgress<C>): void
+  onComplete(fn: OnComplete<C>): void
+  onError(fn: OnError<C>): void
   cancel(): Promise<Result>
   start(): Promise<Result>
 }
 
-export type UploadTaskCreator = (file: IFile, config: UploadConfig) => UploadTask
+export type UploadTaskCreator = (file: UploadFile, config: UploadConfig) => UploadTask

@@ -1,35 +1,13 @@
-import { Token } from '../../../types/token'
 import { UploadError } from '../../../types/error'
+import { LogLevel, Logger } from '../../../helper/logger'
 import { generateRandomString } from '../../../helper/string'
 import { Result, isCanceledResult, isErrorResult, isSuccessResult } from '../../../types/types'
-import { Host } from '../host'
-import { LogLevel, Logger } from '../../../helper/logger'
 
 const delay = (ms = 1000) => new Promise(resolve => setTimeout(resolve, ms))
-
-/** 进度详情; 包含每个任务的详细进度信息 */
-export type Progress<Key extends string = string> = Record<Key, number>
 
 export interface TaskState {
   retryCount: number
   status: TaskStatus
-}
-
-/** 队列的上下文；用于在所有任务间共享状态 */
-export interface QueueContext<ProgressKey extends string = string> {
-  /** 上传使用的 host; 由公共的 HostProvideTask 维护和更新 */
-  host?: Host
-  /** 上传使用的 token; 由公共的 TokenProvideTask 维护和更新 */
-  token?: Token
-  /** 上传成功的信息  */
-  result?: string
-  /** 队列的错误 */
-  error?: UploadError
-  /** 整体的任务进度信息 */
-  progress: Progress<ProgressKey>
-
-  /** 初始化函数；队列开始时执行 */
-  setup(): void
 }
 
 type ProgressNotice = () => void
@@ -360,20 +338,5 @@ export class TaskQueue {
     this.logger.info('Cancel completed')
     this.canceled = true
     return { result: true }
-  }
-}
-
-/** 上传任务的队列上下文 */
-export class UploadQueueContext<ProgressKey extends string = string> implements QueueContext {
-  host?: Host
-  token?: Token
-  result?: string
-  error?: UploadError
-  progress: Progress<ProgressKey>
-  constructor() { this.progress = {} as Progress<ProgressKey> }
-
-  setup(): void {
-    this.error = undefined
-    this.progress = {} as Progress<ProgressKey>
   }
 }

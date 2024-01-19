@@ -1,18 +1,22 @@
-import { IFile } from '../../types/file'
-import { UploadTaskCreator } from '../types'
+import { UploadFile } from '../../types/file'
+import { UploadTask, UploadTaskCreator } from '../types'
 import { ConfigApis, UploadApis } from '../../api'
 import { HttpAbortController } from '../../types/http'
 import { generateRandomString } from '../../helper/string'
 import { Result, isErrorResult, isSuccessResult } from '../../types/types'
 
-import { HostProvideTask } from '../common/host'
-import { TokenProvideTask } from '../common/token'
+import { Task, TaskQueue } from '../common/queue'
+import { UploadContext, updateTotalIntoProgress } from '../common/context'
 import { initUploadConfig } from '../common/config'
-import { Task, TaskQueue, UploadQueueContext } from '../common/queue'
+import { HostProgressKey, HostProvideTask } from '../common/host'
+import { TokenProgressKey, TokenProvideTask } from '../common/token'
 
-type DirectUploadProgressKey = 'directUpload'
+export type DirectUploadProgressKey =
+  | HostProgressKey
+  | TokenProgressKey
+  | 'directUpload'
 
-export class DirectUploadContext extends UploadQueueContext<DirectUploadProgressKey> { }
+export class DirectUploadContext extends UploadContext<DirectUploadProgressKey> {}
 
 class DirectUploadTask implements Task {
   private abort: HttpAbortController | null = null
@@ -20,8 +24,14 @@ class DirectUploadTask implements Task {
     private context: DirectUploadContext,
     private uploadApis: UploadApis,
     private vars: Record<string, string> | undefined,
-    private file: IFile
-  ) {}
+    private file: UploadFile
+  ) {
+    this.context!.progress.details.directUpload = {
+      fromCache: false,
+      percent: 0,
+      size: 0
+    }
+  }
 
   async cancel(): Promise<Result> {
     await this.abort?.abort()
@@ -35,6 +45,9 @@ class DirectUploadTask implements Task {
     const fileMetaResult = await this.file.metadata()
     if (!isSuccessResult(fileMetaResult)) return fileMetaResult
 
+    const fileSizeResult = await this.file.size()
+    if (!isSuccessResult(fileSizeResult)) return fileSizeResult
+
     this.abort = new HttpAbortController()
     const result = await this.uploadApis.directUpload({
       file: this.file,
@@ -45,7 +58,11 @@ class DirectUploadTask implements Task {
       key: fileNameResult.result || undefined,
       uploadHostUrl: this.context!.host!.getUrl(),
       fileName: fileNameResult.result || generateRandomString(), // 接口要求必传且建议没有有效文件名时传随机字符串
-      onProgress: progress => { this.context!.progress.directUpload = progress.percent; notify() }
+      onProgress: progress => {
+        this.context!.progress.details.directUpload.percent = progress.percent
+        this.context!.progress.details.directUpload.size = fileSizeResult.result
+        notify()
+      }
     })
 
     if (isErrorResult(result)) this.context.error = result.error
@@ -55,7 +72,7 @@ class DirectUploadTask implements Task {
   }
 }
 
-export const createDirectUploadTask: UploadTaskCreator = (file, config) => {
+export const createDirectUploadTask: UploadTaskCreator = (file, config): UploadTask<DirectUploadContext> => {
   const normalizedConfig = initUploadConfig(config)
   const uploadApis = new UploadApis(normalizedConfig.httpClient)
   const configApis = new ConfigApis(normalizedConfig.serverUrl, normalizedConfig.httpClient)
@@ -77,14 +94,23 @@ export const createDirectUploadTask: UploadTaskCreator = (file, config) => {
   )
 
   return {
-    cancel: () => taskQueue.cancel(),
-    onError: fn => taskQueue.onError(() => fn(context)),
-    onProgress: fn => taskQueue.onProgress(() => fn(context)),
-    onComplete: fn => taskQueue.onComplete(() => fn(context)),
+    onError: fn => taskQueue.onError(() => {
+      updateTotalIntoProgress(context.progress)
+      fn(context.error!, context)
+    }),
+    onComplete: fn => taskQueue.onComplete(() => {
+      updateTotalIntoProgress(context.progress)
+      fn(context.result!, context)
+    }),
+    onProgress: fn => taskQueue.onProgress(() => {
+      updateTotalIntoProgress(context.progress)
+      fn(context.progress, context)
+    }),
     start: () => {
       context.setup()
-      return taskQueue.start()
-        .then(() => ({ result: context.result }))
-    }
+      updateTotalIntoProgress(context.progress)
+      return taskQueue.start().then(() => ({ result: context.result }))
+    },
+    cancel: () => taskQueue.cancel()
   }
 }

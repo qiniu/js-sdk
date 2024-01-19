@@ -9,11 +9,11 @@ export type FileData = {
   metadata?: Record<string, string>
 }
 
-export interface IBlob {
+export interface UploadBlob {
   size(): number
 }
 
-export interface IFile {
+export interface UploadFile {
   /** 释放文件；当文件已经使用完之后会调用该方法 */
   free(): Promise<Result<true>>
   /** 文件尺寸；返回文件大小信息 */
@@ -28,5 +28,5 @@ export interface IFile {
   metadata(): Promise<Result<Record<string, string>>>
 
   /** 文件分片；返回文件分片 */
-  slice(size: number): Promise<Result<IBlob[]>>
+  slice(size: number): Promise<Result<UploadBlob[]>>
 }

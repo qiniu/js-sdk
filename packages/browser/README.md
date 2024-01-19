@@ -18,7 +18,7 @@ import { createDirectUploadTask, createMultipartUploadTask, FileData } from '@qi
 
 ```javascript
 // 创建上传数据
-const fileData: FileData = { type: 'path', data: 'file-path' }
+const fileData: FileData = { type: 'file', data: File }
 const fileData: FileData = { type: 'string', data: 'content' }
 const fileData: FileData = { type: 'array-buffer', data: new ArrayBuffer(1e3) }
 
@@ -83,7 +83,7 @@ interface Context<ProgressKey extends string = string> {
 }
 ```
 
-- 上传队列的上下文接口，用于存储任务相关的信息。
+- 上传的上下文接口，用于存储任务相关的信息。
 - `host`：上传使用的 host。
 - `token`：上传使用的 token。
 - `result`：上传成功的信息。
@@ -98,6 +98,7 @@ interface UploadConfig {
   serverUrl?: string;
   logLevel?: LogLevel;
   protocol?: HttpProtocol;
+  vars?: Record<string, string>;
 }
 ```
 
@@ -106,6 +107,7 @@ interface UploadConfig {
 - `logLevel`：日志级别。
 - `protocol`：HTTP 协议，默认 HTTPS。
 - `tokenProvider`：用于获取上传所需 token 的函数。
+- `vars`: 上传过程中的自定义变量。
 
 ### OnError
 

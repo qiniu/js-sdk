@@ -50,7 +50,7 @@ export function parsePutPolicy(token: string): Result<Token> {
       bucket,
       assessKey,
       signature: token,
-      expiredAt: Date.now() + (putPolicy.deadline * 1000)
+      deadline: putPolicy.deadline
     }
   }
 }

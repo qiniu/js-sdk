@@ -6,7 +6,50 @@ interface RequestOptions extends common.HttpClientOptions {
   method: common.HttpMethod
 }
 
-export class WxHttpClient implements common.HttpClient {
+function removeSpecifiedKeyForHeader(header: common.HttpHeader, keys: string[]) {
+  const headerKeys = Object.keys(header)
+
+  for (let index = 0; index < headerKeys.length; index++) {
+    for (let keyIndex = 0; keyIndex < keys.length; keyIndex++) {
+      const key = keys[keyIndex].toLowerCase()
+      const headerKey = headerKeys[index].toLowerCase()
+      if (key === headerKey) delete header[headerKeys[index]]
+    }
+  }
+}
+
+function normalizeBody(body: unknown): XMLHttpRequestBodyInit {
+  if (isHttpFormData(body)) {
+    const formData = new FormData()
+    const bodyEntries = body.entries()
+
+    for (const [key, value, option] of bodyEntries) {
+      if (isUploadFile(value)) {
+        formData.set(key, value.readAsBrowserFile(), option)
+      } else if (isUploadBlob(value)) {
+        formData.set(key, value.readAsBrowserBlob(), option)
+      } else if (typeof option === 'string') {
+        // 如果无脑传第三个参数无法通过浏览器检查
+        formData.set(key, value, option)
+      } else {
+        formData.set(key, value)
+      }
+    }
+
+    return formData
+  }
+
+  if (isUploadFile(body)) {
+    return body.readAsBrowserFile()
+  }
+  if (isUploadBlob(body)) {
+    return body.readAsBrowserBlob()
+  }
+
+  return JSON.stringify(body)
+}
+
+export class HttpClient implements common.HttpClient {
   async request(url: string, options: RequestOptions): Promise<common.Result<HttpResponse>> {
     return new Promise(resolve => {
       // 默认是用 Xhr
@@ -17,22 +60,19 @@ export class WxHttpClient implements common.HttpClient {
         options.abort.onAbort(() => xhr.abort())
       }
 
-      if (options.headers) {
-        const headers = options.headers
-        Object.keys(headers).forEach(k => {
-          xhr.setRequestHeader(k, headers[k])
-        })
-      }
-
       let mockProgress: MockProgress | undefined
 
       if (options.onProgress) {
         const onProgress = options.onProgress
-        if (xhr.upload && xhr.upload.addEventListener) {
+
+        // 实际上没有 body 可能导致即使添加了 upload.Listener 也不会触发
+        if (xhr.upload && xhr.upload.addEventListener && options.body) {
+          xhr.upload.addEventListener('load', () => {
+            onProgress({ percent: 1 })
+          })
+
           xhr.upload.addEventListener('progress', (evt: ProgressEvent) => {
-            if (evt.lengthComputable && options.onProgress) {
-              onProgress({ percent: evt.total / evt.loaded })
-            }
+            if (evt.lengthComputable) onProgress({ percent: evt.loaded / evt.total })
           })
         } else {
           // 对于不支持 xhr.upload 的一种兼容办法
@@ -64,29 +104,26 @@ export class WxHttpClient implements common.HttpClient {
         })
       }
 
-      let normalizedBody: XMLHttpRequestBodyInit | undefined
+      const normalizedBody = normalizeBody(options.body)
 
       if (isHttpFormData(options.body)) {
-        const formData = new FormData()
-        const bodyEntries = options.body.entries()
-
-        for (const [key, value, option] of bodyEntries) {
-          formData.set(key, value, option)
+        if (options.headers) {
+          // formData 需要删除该字段让浏览器自动填充
+          removeSpecifiedKeyForHeader(options.headers, ['content-type'])
         }
-
-        normalizedBody = formData
       }
 
-      if (isUploadFile(options.body)) {
-        normalizedBody = options.body.readAsBrowserFile()
-      } else if (isUploadBlob(options.body)) {
-        normalizedBody = options.body.readAsBrowserBlob()
-      } else if (typeof options.body === 'object') {
-        normalizedBody = JSON.stringify(options.body)
+      if (options.headers) {
+        const headers = options.headers
+        Object.keys(headers).forEach(k => {
+          xhr.setRequestHeader(k, headers[k])
+        })
       }
 
-      xhr.send(normalizedBody || options.body as any)
-      if (mockProgress) mockProgress.start()
+      xhr.send(normalizedBody)
+      if (mockProgress) {
+        mockProgress.start()
+      }
     })
   }
 

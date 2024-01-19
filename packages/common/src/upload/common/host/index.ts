@@ -2,7 +2,10 @@ import { ConfigApis } from '../../../api'
 import { HttpProtocol } from '../../../types/http'
 import { ErrorName, UploadError } from '../../../types/error'
 import { Result, isErrorResult, isSuccessResult } from '../../../types/types'
-import { QueueContext, Task } from '../queue'
+import { MockProgress } from '../../../helper/progress'
+
+import { Task } from '../queue'
+import { QueueContext } from '../context'
 
 /**
   * @description 解冻时间，key 是 host，value 为解冻时间
@@ -140,10 +143,17 @@ class HostProvider {
   }
 }
 
+export type HostProgressKey = 'prepareUploadHost'
+
 export class HostProvideTask implements Task {
   private hostProvider: HostProvider
-  constructor(private context: QueueContext, configApis: ConfigApis, protocol: HttpProtocol) {
+  constructor(private context: QueueContext<HostProgressKey>, configApis: ConfigApis, protocol: HttpProtocol) {
     this.hostProvider = new HostProvider(configApis, protocol)
+    this.context.progress.details.prepareUploadHost = {
+      fromCache: false,
+      percent: 0,
+      size: 0
+    }
   }
 
   async cancel(): Promise<Result> {
@@ -151,15 +161,26 @@ export class HostProvideTask implements Task {
   }
 
   async process(notice: () => void): Promise<Result> {
-    this.context.progress.prepareUploadHost = 0
+    const progress = new MockProgress(1)
+    progress.onProgress(value => {
+      this.context.progress.details.prepareUploadHost.percent = value
+      notice()
+    })
+
     const needFreezeError: ErrorName[] = ['HttpRequestError', 'NetworkError']
     if (this.context.error && needFreezeError.includes(this.context.error.name)) {
       // 只要是网络错误就冻结当前的 host
       this.context.host?.freeze()
-      this.context.progress.prepareUploadHost = 0.1; notice()
     }
 
-    // 更新 host
+    // 当前的 host 没有被冻结，继续复用
+    if (this.context.host?.isFrozen() === false) {
+      this.context.progress.details.prepareUploadHost.fromCache = true
+      progress.end()
+      return { result: true }
+    }
+
+    // 重新更新 host
     const token = this.context.token!
     const hostResult = await this.hostProvider.getUploadHost(token)
     if (!isSuccessResult(hostResult)) {
@@ -167,11 +188,12 @@ export class HostProvideTask implements Task {
         this.context.error = hostResult.error
       }
 
+      progress.stop()
       return hostResult
     }
 
     this.context.host = hostResult.result
-    this.context.progress.prepareUploadHost = 1; notice()
+    progress.end()
     return { result: true }
   }
 }
