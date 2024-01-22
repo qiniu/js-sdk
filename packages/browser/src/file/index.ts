@@ -50,7 +50,8 @@ export class UploadFile implements BaseUploadFile {
   }
 
   async name(): Promise<Result<string | null>> {
-    return { result: this.fileData?.filename || null }
+    const realFilename = this.fileData.type === 'file' && this.fileData.data.name
+    return { result: this.fileData?.filename || realFilename || null }
   }
 
   async size(): Promise<Result<number>> {
