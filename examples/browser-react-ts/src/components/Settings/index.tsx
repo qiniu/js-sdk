@@ -9,11 +9,11 @@ interface IProps {}
 export function Settings(props: IProps) {
   const setting = React.useMemo(() => utils.loadSetting(), [])
 
-  const [useDirect, setDirect] = React.useState<boolean>(false)
-  const [useWebWorker, setUseWebWorker] = React.useState<boolean>(false)
   const [assessKey, setAssessKey] = React.useState<string>(setting.assessKey || '')
   const [secretKey, setSecretKey] = React.useState<string>(setting.secretKey || '')
   const [bucketName, setBucketName] = React.useState<string>(setting.bucketName || '')
+  const [useDirect, setDirect] = React.useState<boolean>(setting.forceDirect || false)
+  const [useWebWorker, setUseWebWorker] = React.useState<boolean>(setting.useWebWorker || false)
   const [apiServer, seApiServer] = React.useState<string>(setting.server || 'https://api.qiniu.com')
 
   utils.saveSetting({
@@ -44,12 +44,12 @@ export function Settings(props: IProps) {
           <span className={classnames.title}>bucketName：</span>
           <Input value={bucketName} onChange={v => setBucketName(v)} placeholder="请输入 bucketName" />
         </span>
-        {/* <span>
+        <span>
           <span className={classnames.title}>webWorker：</span>
           <span>
             <Checkbox value={useWebWorker} onChange={v => setUseWebWorker(v)} />
           </span>
-        </span> */}
+        </span>
         <span>
           <span className={classnames.title}>强制直传：</span>
           <span>

@@ -4,8 +4,6 @@ import * as qiniu from 'qiniu-js'
 
 import { generateUploadToken, loadSetting } from './utils'
 
-// const worker = new Worker(new URL('./upload.worker.ts', import.meta.url))
-
 export enum Status {
   Ready, // 准备好了
   Processing, // 上传中
@@ -14,9 +12,8 @@ export enum Status {
 
 // 上传逻辑封装
 export function useUpload(file: File) {
-  const startTimeRef = React.useRef<number | null>(null)
-
   const [state, setState] = React.useState<Status>(Status.Ready)
+  const [uploadTaskWorker, setUploadWorker] = React.useState<Worker | null>(null)
   const [uploadTask, setUploadTask] = React.useState<qiniu.UploadTask | null>(null)
 
   const [error, setError] = React.useState<Error | null>(null)
@@ -27,7 +24,7 @@ export function useUpload(file: File) {
   const start = () => {
     const uploadSetting = loadSetting()
     if (uploadSetting.useWebWorker) {
-      startWithWorker
+      startWithWorker()
       return
     }
 
@@ -79,18 +76,60 @@ export function useUpload(file: File) {
     })
 
     setUploadTask(newUploadTask)
-    startTimeRef.current = Date.now()
     newUploadTask.start()
   }
 
   const startWithWorker = () => {
-    const worker = new Worker(new URL('./upload.worker.ts', import.meta.url))
-    worker.postMessage("test222222222")
+    setCompleteInfo(null)
+    setProgress(null)
+    setError(null)
+
+    if (uploadTaskWorker) {
+      return uploadTaskWorker.postMessage({ method: 'start' })
+    }
+
+    const fileData: qiniu.FileData = {
+      type: 'file',
+      data: file
+    }
+
+    const method = 'initTask'
+    const uploadSetting = loadSetting()
+    const worker = new Worker('/worker.bundle.js')
+    // worker.bundle.js 通过 webpack 构建，请参阅 webpack 的配置文件
+    worker.postMessage({ method, params: [fileData, uploadSetting] })
+
+    worker.addEventListener('message', message => {
+      const { method, params } = message.data
+
+      if (method === 'complete') {
+        setState(Status.Finished)
+        setCompleteInfo(params[0] as any)
+      }
+
+      if (method === 'progress') {
+        setState(Status.Processing)
+        setProgress(params[0] as any)
+      }
+
+      if (method === 'error') {
+        setState(Status.Finished)
+        setError(params[0] || null)
+      }
+    })
+
+    setUploadWorker(worker)
+    worker.postMessage({ method: 'start' })
   }
 
   // 停止上传文件
   const stop = () => {
-    uploadTask?.cancel()
+    if (uploadTaskWorker) {
+      uploadTaskWorker.postMessage({ method: 'cancel' })
+    } else {
+      uploadTask?.cancel()
+    }
+
     setState(Status.Finished)
   }
 

@@ -30,7 +30,8 @@ module.exports = {
     },
   },
   entry: {
-    main: './index.tsx'
+    main: './index.tsx',
+    worker: './upload.worker.ts',
   },
   output: {
     filename: '[name].bundle.js',
@@ -46,13 +47,8 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        exclude: /node_modules/,
-        loader: 'esbuild-loader',
-        options: {
-          loader: 'tsx',
-          target: 'es2015',
-          tsconfigRaw: require('./tsconfig.json')
-        }
+        loader: 'ts-loader',
+        exclude: /node_modules/
       },
       {
         test: /\.less$/,
