@@ -27,6 +27,7 @@ class UploadBlob implements common.UploadBlob {
 
 export type FileData =
   | { type: 'uri', data: string } & common.FileData
+  | { type: 'path', data: string } & common.FileData
   | { type: 'string', data: string } & common.FileData
   | { type: 'array-buffer', data: ArrayBuffer } & common.FileData
 
@@ -61,6 +62,10 @@ export class UploadFile implements common.UploadFile {
           return { result: true }
         }
 
+        return { error: new common.UploadError('FileSystemError', 'Only rui in internal:// format is supported') }
+      }
+
+      if (this.data.type === 'path') {
         // 普通的文件复制到 cache 位置
         const storageKey = `qiniu-upload@${Date.now()}`
         const cacheFilePath = `${this.context.cacheDir}/${storageKey}`

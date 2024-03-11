@@ -1,6 +1,6 @@
 import { Token } from '../types/token'
-import { UploadBlob, UploadFile } from '../types/file'
 import { HttpRequestError } from '../types/error'
+import { UploadBlob, UploadFile } from '../types/file'
 import { urlSafeBase64Encode } from '../helper/base64'
 import { removeUndefinedKeys } from '../helper/object'
 import { Result, isSuccessResult } from '../types/types'

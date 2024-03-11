@@ -111,16 +111,19 @@ export class TaskQueue {
     this.progressListeners.set(uuid, listener)
     return () => this.progressListeners.delete(uuid)
   }
+
   onComplete(listener: OnComplete) {
     const uuid = generateRandomString()
     this.completeListeners.set(uuid, listener)
     return () => this.completeListeners.delete(uuid)
   }
+
   onError(listener: OnError) {
     const uuid = generateRandomString()
     this.errorListeners.set(uuid, listener)
     return () => this.errorListeners.delete(uuid)
   }
+
   onCancel(listener: OnCancel) {
     const uuid = generateRandomString()
     this.cancelListeners.set(uuid, listener)
