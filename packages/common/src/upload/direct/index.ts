@@ -101,7 +101,12 @@ export const createDirectUploadTask: UploadTaskCreator = (file, config): UploadT
   const context = new DirectUploadContext()
   const directUploadTask = new DirectUploadTask(context, uploadApis, config.vars, file)
   const tokenProvideTask = new TokenProvideTask(context, normalizedConfig.tokenProvider)
-  const hostProvideTask = new HostProvideTask(context, configApis, normalizedConfig.protocol)
+  const hostProvideTask = new HostProvideTask(
+    context,
+    configApis,
+    normalizedConfig.protocol,
+    normalizedConfig.uploadHosts
+  )
 
   const taskQueue = new TaskQueue({
     logger: { level: normalizedConfig.logLevel, prefix: 'directUploadQueue' },

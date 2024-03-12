@@ -15,6 +15,8 @@ export interface UploadConfig {
   vars?: Record<string, string>
   /** 服务的接口地址；默认为七牛公有云，内部通过该地址提供的接口获取每个区域的上传地址 */
   serverUrl?: string
+  /** 上传服务地址，如果希望手动指定上传服务地址，则指定，示例：up.qiniu.com */
+  uploadHosts?: string[]
   /** 日志级别；默认为 NONE，即不输出任何日志 */
   logLevel?: LogLevel
   /** 接口调用使用的协议；默认为 HTTPS */

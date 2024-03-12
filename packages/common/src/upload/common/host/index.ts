@@ -70,8 +70,9 @@ class HostProvider {
   private cachedHostsMap = new Map<string, Host[]>()
 
   constructor(
+    private protocol: HttpProtocol,
     private configApis: ConfigApis,
-    private protocol: HttpProtocol
+    private initHosts?: string[]
   ) {}
 
   /**
@@ -90,6 +91,11 @@ class HostProvider {
   private async refresh(assessKey: string, bucketName: string): Promise<Result<boolean>> {
     const cachedHostList = this.cachedHostsMap.get(`${assessKey}@${bucketName}`) || []
     if (cachedHostList.length > 0) return { result: false }
+
+    if (this.initHosts && this.initHosts.length > 0) {
+      this.register(assessKey, bucketName, this.initHosts)
+      return { result: true }
+    }
 
     const configResult = await this.configApis.getHostConfig({
       assessKey,
@@ -147,8 +153,13 @@ export type HostProgressKey = 'prepareUploadHost'
 
 export class HostProvideTask implements Task {
   private hostProvider: HostProvider
-  constructor(private context: QueueContext<HostProgressKey>, configApis: ConfigApis, protocol: HttpProtocol) {
-    this.hostProvider = new HostProvider(configApis, protocol)
+  constructor(
+    private context: QueueContext<HostProgressKey>,
+    configApis: ConfigApis,
+    protocol: HttpProtocol,
+    initHosts?: string[]
+  ) {
+    this.hostProvider = new HostProvider(protocol, configApis, initHosts)
     this.context.progress.details.prepareUploadHost = {
       fromCache: false,
       percent: 0,
