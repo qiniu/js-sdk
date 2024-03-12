@@ -303,7 +303,14 @@ export const createMultipartUploadTask: UploadTaskCreator = (file, config): Uplo
     concurrentLimit: 3,
     tasksCreator: async () => {
       const sliceResult = await file.slice(4 * 1024 * 1024)
-      if (!isSuccessResult(sliceResult)) return sliceResult
+      if (isErrorResult(sliceResult)) {
+        context.error = sliceResult.error
+      }
+
+      if (!isSuccessResult(sliceResult)) {
+        return sliceResult
+      }
+
       const tasks = sliceResult.result.map((blob, index) => (
         new UploadPartTask(context, uploadApis, index + 1, file, blob)
       ))

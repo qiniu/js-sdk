@@ -1,4 +1,5 @@
 import fs from '@ohos.file.fs'
+import fileUri from '@ohos.file.fileuri'
 import ohCommon from '@ohos.app.ability.common'
 
 import * as common from '../@internal'
@@ -31,12 +32,15 @@ export type FileData =
   | { type: 'string', data: string } & common.FileData
   | { type: 'array-buffer', data: ArrayBuffer } & common.FileData
 
+// 通过这个来减少非必要复制操作
+export type UseOf = 'direct' | 'multipart'
+
 export class UploadFile implements common.UploadFile {
   private file: fs.File | null = null
+  private fileUri: string | null = null
   private unlinkPath: string | null = null
-  private internalCacheUri: string | null = null
   private initPromise: Promise<common.Result<boolean>> | null = null
-  constructor(public context: ohCommon.Context, private data: FileData) {}
+  constructor(public context: ohCommon.Context, private data: FileData, private useOf: UseOf) {}
 
   /** 初始化数据并写入磁盘&打开文件 */
   private autoInit(): Promise<common.Result<boolean>> {
@@ -50,38 +54,86 @@ export class UploadFile implements common.UploadFile {
       })
     }
 
+    // fileUri 主要为直传提供
+    // path 的格式为 file://path
+    const initFileUri = async (path: string): Promise<common.Result<boolean>> => {
+      // 如果不是直传，不初始化 uri，减少复制操作
+      if (this.useOf !== 'direct') return ({ result: true })
+
+      const storageKey = `qiniu-upload@${Date.now()}`
+      const cacheFilePath = `${this.context.cacheDir}/${storageKey}`
+      const targetResult = await fs.open(cacheFilePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE)
+        .then<common.Result<fs.File>>(file => ({ result: file }))
+        .catch<common.Result<fs.File>>(error => ({ error: new common.UploadError('FileSystemError', error.message) }))
+
+      if (!common.isSuccessResult(targetResult)) {
+        return targetResult
+      }
+
+      const sourceResult = await fs.open(path, fs.OpenMode.READ_ONLY)
+        .then<common.Result<fs.File>>(file => ({ result: file }))
+        .catch<common.Result<fs.File>>(error => ({ error: new common.UploadError('FileSystemError', error.message) }))
+
+      if (!common.isSuccessResult(sourceResult)) {
+        await fs.close(targetResult.result)
+        return sourceResult
+      }
+
+      const copyResult = await fs.copyFile(sourceResult.result.fd, targetResult.result.fd)
+        .then<common.Result<boolean>>(() => ({ result: true }))
+        .catch<common.Result<boolean>>(error => ({ error: new common.UploadError('FileSystemError', error.message) }))
+
+      if (!common.isSuccessResult(copyResult)) {
+        await fs.close(targetResult.result)
+        await fs.close(sourceResult.result)
+        return copyResult
+      }
+
+      await fs.close(sourceResult.result)
+      await fs.close(targetResult.result)
+
+      this.fileUri = `internal://cache/${storageKey}`
+      this.unlinkPath = cacheFilePath
+      return { result: true }
+    }
+
+    // file 主要为分片上传提供
+    // path 的格式为 file://path
+    const initFile = async (path: string): Promise<common.Result<boolean>> => {
+      const openResult = await fs.open(path, fs.OpenMode.READ_ONLY)
+        .then<common.Result<fs.File>>(file => ({ result: file }))
+        .catch<common.Result<fs.File>>(error => ({ error: new common.UploadError('FileSystemError', error.message) }))
+
+      if (!common.isSuccessResult(openResult)) {
+        return openResult
+      }
+
+      this.file = openResult.result
+      return initFileUri(path)
+    }
+
     const initData = async (): Promise<common.Result<boolean>> => {
       if (!canIUse('SystemCapability.FileManagement.File.FileIO')) {
         return { error: new common.UploadError('FileSystemError', 'The current system api version does not support') }
       }
-      
+
       if (this.data.type === 'uri') {
-        // 如果已经是 internal://cache/ 的文件 url 直接赋值更新
-        if (this.data.data.startsWith('internal://cache/')) {
-          this.internalCacheUri = this.data.data
-          return { result: true }
+        // 来自其他应用的文件
+        if (this.data.data.startsWith('datashare://')) {
+          return initFile(this.data.data)
         }
 
-        return { error: new common.UploadError('FileSystemError', 'Only rui in internal:// format is supported') }
+        return { error: new common.UploadError('FileSystemError', 'Unsupported uri schema type') }
       }
 
       if (this.data.type === 'path') {
-        // 普通的文件复制到 cache 位置
-        const storageKey = `qiniu-upload@${Date.now()}`
-        const cacheFilePath = `${this.context.cacheDir}/${storageKey}`
-        const copyResult = await fs.copyFile(this.data.data, cacheFilePath)
-          .then<common.Result<boolean>>(() => ({ result: true }))
-          .catch<common.Result<boolean>>(error => ({ error: new common.UploadError('FileSystemError', error.message) }))
-
-        if (!common.isSuccessResult(copyResult)) return copyResult
-        this.internalCacheUri = `internal://cache/${storageKey}`
-        this.unlinkPath = cacheFilePath
-        return { result: true }
+        return initFile(fileUri.getUriFromPath(this.data.data))
       }
 
       // 如果是数据，需要先写入临时位置，然后打开
       if (this.data.type === 'array-buffer' || this.data.type === 'string') {
         const storageKey = `qiniu-upload@${Date.now()}`
+        // 这里有一处冗余文件写入
         const cacheFilePath = `${this.context.cacheDir}/${storageKey}`
         const openResult = await fs.open(cacheFilePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE)
           .then<common.Result<fs.File>>(file => ({ result: file }))
@@ -94,11 +146,9 @@ export class UploadFile implements common.UploadFile {
           .catch<common.Result<number>>(error => ({ error: new common.UploadError('FileSystemError', error.message) }))
 
         if (!common.isSuccessResult(writeResult)) return writeResult
-
-        this.internalCacheUri = `internal://cache/${storageKey}`
         this.unlinkPath = cacheFilePath
-        this.file = openResult.result
-        return { result: true }
+
+        return initFile(fileUri.getUriFromPath(cacheFilePath))
       }
 
       return { result: true }
@@ -130,13 +180,13 @@ export class UploadFile implements common.UploadFile {
     let unlinkResult: common.Result<boolean>
 
     if (this.file) {
-       closeResult = await fs.close(this.file.fd)
+      closeResult = await fs.close(this.file.fd)
         .then<common.Result<boolean>>(() => { this.file = null; return { result: true } })
         .catch<common.Result<boolean>>(error => ({ error: new common.UploadError('FileSystemError', error.message) }))
     }
 
     if (this.unlinkPath) {
-       unlinkResult = await fs.unlink(this.unlinkPath)
+      unlinkResult = await fs.unlink(this.unlinkPath)
         .then<common.Result<boolean>>(() => { this.unlinkPath = null; return { result: true } })
         .catch<common.Result<boolean>>(error => ({ error: new common.UploadError('FileSystemError', error.message) }))
     }
@@ -147,12 +197,12 @@ export class UploadFile implements common.UploadFile {
   }
 
   /**
-   * 返回的永远是 internal://cache/ 的临时文件路径
+   * 返回的永远是 file://path 的 uri
    */
   async path(): Promise<common.Result<string>> {
     const initResult = await this.autoInit()
     if (!common.isSuccessResult(initResult)) return initResult
-    return { result: this.internalCacheUri! }
+    return { result: this.fileUri! }
   }
 
   async name(): Promise<common.Result<string | null>> {
@@ -169,7 +219,7 @@ export class UploadFile implements common.UploadFile {
     return { result: this.data?.mimeType || null }
   }
 
-  async metadata(): Promise<common.Result<Record<string,string>>> {
+  async metadata(): Promise<common.Result<Record<string, string>>> {
     return { result: this.data?.metadata || {} }
   }
 

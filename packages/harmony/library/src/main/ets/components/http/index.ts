@@ -30,7 +30,6 @@ function parseHeader(header: string): {
   }
 }
 
-
 function transformRequestMethod(method: common.HttpMethod): http.RequestMethod {
   if (method === 'PUT') return http.RequestMethod.PUT
   if (method === 'GET') return http.RequestMethod.GET
@@ -65,11 +64,12 @@ export class HttpClient implements HttpClient {
           const nameResult = await value.name()
           if (!common.isSuccessResult(nameResult)) return nameResult
 
+          const mimeTypeResult = await value.mimeType()
+          if (!common.isSuccessResult(mimeTypeResult)) return mimeTypeResult
+
           const pathResult = await value.path()
           if (!common.isSuccessResult(pathResult)) return pathResult
 
-          const mimeTypeResult = await value.mimeType()
-          if (!common.isSuccessResult(mimeTypeResult)) return mimeTypeResult
           files.push({
             name: key, // 表单的 key
             uri: pathResult.result,
@@ -124,13 +124,9 @@ export class HttpClient implements HttpClient {
                 })
               })
 
-              task.on('fail', () => {
+              task.on('fail', stats => {
                 return resolve({
-                  result: {
-                    data: '',
-                    code: responseCode,
-                    reqId: responseHeader['X-Reqid']
-                  }
+                  error: new common.UploadError('HttpRequestError', stats[0]?.message)
                 })
               })
             })

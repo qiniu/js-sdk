@@ -40,13 +40,29 @@ class DirectUploadTask implements Task {
 
   async process(notify: () => void): Promise<Result> {
     const fileNameResult = await this.file.name()
-    if (!isSuccessResult(fileNameResult)) return fileNameResult
+    if (!isSuccessResult(fileNameResult)) {
+      if (isErrorResult(fileNameResult)) {
+        this.context.error = fileNameResult.error
+      }
+
+      return fileNameResult
+    }
 
     const fileMetaResult = await this.file.metadata()
-    if (!isSuccessResult(fileMetaResult)) return fileMetaResult
+    if (!isSuccessResult(fileMetaResult)) {
+      if (isErrorResult(fileMetaResult)) {
+        this.context.error = fileMetaResult.error
+      }
+      return fileMetaResult
+    }
 
     const fileSizeResult = await this.file.size()
-    if (!isSuccessResult(fileSizeResult)) return fileSizeResult
+    if (!isSuccessResult(fileSizeResult)) {
+      if (isErrorResult(fileSizeResult)) {
+        this.context.error = fileSizeResult.error
+      }
+      return fileSizeResult
+    }
 
     this.abort = new HttpAbortController()
     const result = await this.uploadApis.directUpload({
@@ -65,8 +81,13 @@ class DirectUploadTask implements Task {
       }
     })
 
-    if (isErrorResult(result)) this.context.error = result.error
-    if (isSuccessResult(result)) this.context!.result = result.result
+    if (isErrorResult(result)) {
+      this.context.error = result.error
+    }
+
+    if (isSuccessResult(result)) {
+      this.context!.result = result.result
+    }
 
     return result
   }
