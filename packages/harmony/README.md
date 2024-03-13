@@ -5,24 +5,26 @@
 1. 安装SDK
 
 ```bash
-npm install xxx
+ohpm i @qiniu/upload
 ```
 
 2. 导入SDK
 
 ```typescript
-import { createDirectUploadTask, createMultipartUploadTask, FileData } from 'xxx';
+import { createDirectUploadTask, createMultipartUploadTask, FileData } from '@qiniu/upload';
 ```
 
 3. 创建上传任务
 
 ```typescript
 // 创建上传数据
-const fileData: FileData = { type: 'file', data: File }
+const fileData: FileData = { type: 'uri', data: 'datashare://xxxx' }
+const fileData: FileData = { type: 'path', data: '/data/storage/xxx' }
 const fileData: FileData = { type: 'string', data: 'content' }
 const fileData: FileData = { type: 'array-buffer', data: new ArrayBuffer(1e3) }
 
 // 创建直传任务
+// 由于系统 api9 接口问题暂时不推荐使用，无法获取上传的服务端返回信息
 const uploadTask = createDirectUploadTask(fileData, config);
 
 // 创建分片上传任务

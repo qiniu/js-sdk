@@ -20,7 +20,7 @@ function onCancel(task: common.UploadTask, listener: () => Promise<common.Result
 }
 
 /**
- * @deprecated 受限于当前版本的系统接口暂时无法获取上传之后的结果，优先考虑是用分片。
+ * @deprecated 受限于当前版本的系统接口暂时无法获取上传之后的结果，优先考虑使用分片。
  */
 export function createDirectUploadTask(context: ohCommon.Context, file: FileData, config: common.UploadConfig) {
   const innerFile = new UploadFile(context, file, 'direct')

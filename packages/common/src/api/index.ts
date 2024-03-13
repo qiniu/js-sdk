@@ -109,6 +109,11 @@ async function parseResponseJson<T>(response: HttpResponse): Promise<Result<T>> 
 }
 
 async function handleResponseError<T>(response: HttpResponse): Promise<Result<T>> {
+  if (response.code === 404) {
+    const message = 'Invalid apiServerUrl: the URL is wrong or the storage cluster version is not supported.'
+    return { error: new HttpRequestError(response.code, message, '') }
+  }
+
   // 错误接口格式
   interface ApiError {
     error: string

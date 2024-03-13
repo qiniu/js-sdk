@@ -96,7 +96,7 @@ class DirectUploadTask implements Task {
 export const createDirectUploadTask: UploadTaskCreator = (file, config): UploadTask<DirectUploadContext> => {
   const normalizedConfig = initUploadConfig(config)
   const uploadApis = new UploadApis(normalizedConfig.httpClient)
-  const configApis = new ConfigApis(normalizedConfig.serverUrl, normalizedConfig.httpClient)
+  const configApis = new ConfigApis(normalizedConfig.apiServerUrl, normalizedConfig.httpClient)
 
   const context = new DirectUploadContext()
   const directUploadTask = new DirectUploadTask(context, uploadApis, config.vars, file)

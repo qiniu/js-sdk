@@ -277,7 +277,7 @@ export const createMultipartUploadTask: UploadTaskCreator = (file, config): Uplo
   const normalizedConfig = initUploadConfig(config)
 
   const uploadApis = new UploadApis(normalizedConfig.httpClient)
-  const configApis = new ConfigApis(normalizedConfig.serverUrl, normalizedConfig.httpClient)
+  const configApis = new ConfigApis(normalizedConfig.apiServerUrl, normalizedConfig.httpClient)
 
   const context = new MultipartUploadContext()
   const tokenProvideTask = new TokenProvideTask(context, normalizedConfig.tokenProvider)
