@@ -1,5 +1,14 @@
 # Change logs
 
+## v1.0.0-rc.4 (2024-03-13)
+
+### 改动
+
+- 支持 datashare schema 的 uri
+- 添加支持指定 uploadHosts 功能
+- 重命名 serverUrl 为 apiServerUrl
+- 其他细节错误优化
+
 ## v1.0.0-rc.3 (2024-01-12)
 
 ### 改动

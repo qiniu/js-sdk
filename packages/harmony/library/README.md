@@ -4,58 +4,66 @@
 
 1. 安装SDK
 
-```
-ohpm install @qiniu/upload
+```bash
+ohpm i @qiniu/upload
 ```
 
 2. 导入SDK
 
-```javascript
-import { createMultipartUploadTask, FileData } from '@qiniu/upload';
+```typescript
+import { createDirectUploadTask, createMultipartUploadTask, FileData } from '@qiniu/upload';
 ```
 
 3. 创建上传任务
 
-```javascript
-// 获取当前应用的 context
-// 关于如何获取具体参考：https://developer.harmonyos.com/cn/docs/documentation/doc-references-V3/js-apis-inner-application-context-0000001427744988-V3
-const context = getContext(this)
-
+```typescript
 // 创建上传数据
-const fileData: FileData = { type: 'uri', data: 'file-uri' }
+const fileData: FileData = { type: 'uri', data: 'datashare://xxxx' }
+const fileData: FileData = { type: 'path', data: '/data/storage/xxx' }
 const fileData: FileData = { type: 'string', data: 'content' }
 const fileData: FileData = { type: 'array-buffer', data: new ArrayBuffer(1e3) }
 
-// 注意：当前版本暂不支持直传
+// 创建直传任务
+// 由于系统 api9 接口问题暂时不推荐使用，无法获取上传的服务端返回信息
+const uploadTask = createDirectUploadTask(fileData, config);
 
 // 创建分片上传任务
-const multipartUploadTask = createMultipartUploadTask(context, fileData, config);
+// 当前版本 SDK 暂不支持部分版本较老的私有集群分片上传功能
+const uploadTask = createMultipartUploadTask(fileData, config);
 ```
 
-4. 设置任务回调函数
+1. 设置任务回调函数
 
-```javascript
+```typescript
 // 设置进度回调函数
-directUploadTask.onProgress((context) => {
+uploadTask.onProgress((progress, context) => {
   // 处理进度回调
 });
 
 // 设置完成回调函数
-directUploadTask.onComplete((context) => {
+uploadTask.onComplete((result, context) => {
   // 处理完成回调
 });
 
 // 设置错误回调函数
-directUploadTask.onError((context) => {
+uploadTask.onError((error, context) => {
   // 处理错误回调
 });
 ```
 
 5. 启动任务
 
-```javascript
-directUploadTask.start()
-  .then((result) => {
+```typescript
+uploadTask.start()
+```
+
+6. 简单模式
+
+如果你不需要关心进度信息，可以通过 start 快速获取任务的状态信息
+
+```
+createMultipartUploadTask(fileData, config).start()
+ .then((result) => {
     // 处理任务完成结果
   })
   .catch((error) => {
@@ -77,16 +85,16 @@ type TokenProvider = () => Promise<string>
 ### Context
 
 ```typescript
-interface Context {
+interface Context<ProgressKey extends string = string> {
   host?: Host;
   token?: Token;
   result?: string;
   error?: UploadError;
-  progress: Progress;
+  progress: Progress<ProgressKey>;
 }
 ```
 
-- 上传队列的上下文接口，用于存储任务相关的信息。
+- 上传的上下文接口，用于存储任务相关的信息。
 - `host`：上传使用的 host。
 - `token`：上传使用的 token。
 - `result`：上传成功的信息。
@@ -98,7 +106,8 @@ interface Context {
 ```typescript
 interface UploadConfig {
   tokenProvider: TokenProvider;
-  serverUrl?: string;
+  apiServerUrl?: string;
+  uploadHosts?: []string;
   logLevel?: LogLevel;
   protocol?: HttpProtocol;
   vars?: Record<string, string>;
@@ -106,8 +115,9 @@ interface UploadConfig {
 ```
 
 - 上传配置接口，用于配置上传任务的相关参数。
-- `serverUrl`：服务器 URL，默认为 api.qiniu.com，专有云根据情况填写。
-- `logLevel`：日志级别，默认为 NONE，不输出任何日志。
+- `apiServerUrl`：服务的接口地址；默认为七牛公有云，示例：<https://api.qiniu.com> 该配置仅当未设置 `uploadHosts` 时生效，SDK 将会通过指定的 api 服务提供的接口来动态获取上传地址，私有云请联系集群运维人员，并确认集群是否支持 `v4/query` 接口
+- `uploadHosts`: 上传服务地址，手动指定上传服务地址，示例：up.qiniu.com
+- `logLevel`：日志级别。
 - `protocol`：HTTP 协议，默认 HTTPS。
 - `tokenProvider`：用于获取上传所需 token 的函数。
 - `vars`: 上传过程中的自定义变量。
@@ -115,25 +125,43 @@ interface UploadConfig {
 ### OnError
 
 ```typescript
-type OnError = (context: Context) => void;
+type OnError = (error: UploadError, context: Context) => void;
 ```
 
 - 错误回调函数类型。
-- 接收一个上下文参数，并返回 `void`。
 
 ### OnProgress
 
 ```typescript
-type OnProgress = (context: Context) => void;
+type OnProgress = (progress: Progress, context: Context) => void;
 ```
 
 - 进度回调函数类型。
-- 接收一个上下文参数，并返回 `void`。
+
+#### Progress
+
+```typescript
+type Progress<Key extends string = string> = {
+  /** 上传的文件总大小；单位 byte */
+  size: number
+  /** 目前处理的百分比进度；范围 0-1 */
+  percent: number
+  /** 具体每个部分的进度信息； */
+  details: Record<Key, {
+    /** 子任务的处理数据大小；单位 byte */
+    size: number
+    /** 目前处理的百分比进度；范围 0-1 */
+    percent: number
+    /** 该处理是否复用了缓存； */
+    fromCache: boolean
+  }>
+}
+```
 
 ### OnComplete
 
 ```typescript
-type OnComplete = (context: Context) => void;
+type OnComplete = (result: string, context: Context) => void;
 ```
 
 - 完成回调函数类型。
@@ -156,4 +184,4 @@ interface UploadTask {
 - `onComplete(fn: OnComplete)`：设置完成回调函数。
 - `onError(fn: OnError)`：设置错误回调函数。
 - `cancel()`：取消上传任务，并返回一个 Promise，该 Promise 在解析时提供任务结果。
-- `start()`：启动上传任务，并返回一个 Promise， 该Promise 在解析时提供任务结果。
+- `start()`：启动上传任务，并返回一个 Promise， 该 Promise 在解析时提供任务结果。
