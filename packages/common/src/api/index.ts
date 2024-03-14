@@ -33,7 +33,7 @@ interface UploadPartParams extends BasicWithAuthParams {
   key?: string
 }
 
-interface ListMultipartUploadPartsParams extends BasicWithAuthParams {
+interface ListPartsParams extends BasicWithAuthParams {
   uploadId: string
   bucket: string
   key?: string
@@ -44,7 +44,7 @@ export interface UploadedPart extends PartMeta {
   putTime: number
 }
 
-interface ListUploadPartsData {
+interface ListPartsData {
   uploadId: string
   expireAt: number
   partNumberMarker: number
@@ -85,6 +85,29 @@ export interface InitPartsUploadData {
 
 interface GetChunkRequestPathParams extends BasicWithAuthParams {
   key?: string
+}
+
+interface MkblkParams extends BasicWithAuthParams {
+  // 第一个块的二进制内容
+  firstChunkBinary: UploadBlob
+}
+
+export interface MkblkData {
+  ctx: string
+  checksum: string
+  crc32: number
+  offset: number
+  host: string
+  expired_at: number
+}
+
+interface MkfileParams extends BasicWithAuthParams {
+  fileSize: number // 资源文件大小，单位字节。
+  key?: string // 进行URL 安全的 Base64 编码后的资源名。若未指定，则使用saveKey；若未指定 saveKey，则使用资源内容的 SHA1 值作为资源名。
+  fname?: string // 进行URL安全的Base64编码后的文件名称。若未指定，则魔法变量中无法使用fname, ext, fprefix。
+  mimeType?: string // 进行URL 安全的 Base64 编码后的文件 mimeType。若未指定，则根据文件内容自动检测 mimeType。
+  userVars?: Record<string, string> // 指定自定义变量，进行URL 安全的 Base64 编码后的 user-var。
+  lastCtxOfBlock: string[]
 }
 
 interface DirectUploadParams extends BasicWithAuthParams {
@@ -174,6 +197,8 @@ export class UploadApis {
     return parseResponseJson<InitPartsUploadData>(response.result)
   }
 
+  // v2 接口
+
   async uploadPart(params: UploadPartParams): Promise<Result<UploadChunkData>> {
     const requestPathResult = await this.getBaseRequestPath(params)
     if (!isSuccessResult(requestPathResult)) return requestPathResult
@@ -201,7 +226,7 @@ export class UploadApis {
     return parseResponseJson<UploadChunkData>(response.result)
   }
 
-  async listUploadParts(params: ListMultipartUploadPartsParams): Promise<Result<ListUploadPartsData>> {
+  async listParts(params: ListPartsParams): Promise<Result<ListPartsData>> {
     const requestPathResult = await this.getBaseRequestPath(params)
     if (!isSuccessResult(requestPathResult)) return requestPathResult
 
@@ -222,7 +247,7 @@ export class UploadApis {
       return handleResponseError(response.result)
     }
 
-    return parseResponseJson<ListUploadPartsData>(response.result)
+    return parseResponseJson<ListPartsData>(response.result)
   }
 
   async completeMultipartUpload(params: CompleteMultipartUploadParams): Promise<Result<string>> {
@@ -295,6 +320,76 @@ export class UploadApis {
 
     return { result: response.result.data }
   }
+
+  // v1 接口
+
+  async mkblk(params: MkblkParams): Promise<Result<MkblkData>> {
+    const blobSize = params.firstChunkBinary.size()
+    const url = `${params.uploadHostUrl}/mkblk/${blobSize}`
+    const headers = this.generateAuthHeaders(params.token.signature)
+    headers['content-type'] = 'application/octet-stream'
+
+    const response = await this.httpClient.post(url, {
+      headers,
+      abort: params.abort,
+      body: params.firstChunkBinary,
+      onProgress: params.onProgress
+    })
+
+    if (!isSuccessResult(response)) {
+      return response
+    }
+
+    if (response.result.code !== 200) {
+      return handleResponseError(response.result)
+    }
+
+    return parseResponseJson<MkblkData>(response.result)
+  }
+
+  async mkfile(params: MkfileParams): Promise<Result<string>> {
+    let url = `${params.uploadHostUrl}/mkfile/${params.fileSize}`
+
+    if (params.key) {
+      url += `/key/${urlSafeBase64Encode(params.key)}`
+    }
+
+    if (params.fname) {
+      url += `/fname/${urlSafeBase64Encode(params.fname)}`
+    }
+
+    if (params.mimeType) {
+      url += `/mimeType/${urlSafeBase64Encode(params.mimeType)}`
+    }
+
+    if (params.userVars && Array.isArray(params.userVars)) {
+      for (const [key, value] of Object.entries(params.userVars)) {
+        url += `/x:${key}/${value}`
+      }
+    }
+
+    const headers = this.generateAuthHeaders(params.token.signature)
+    headers['content-type'] = 'text/plain'
+
+    const response = await this.httpClient.post(url, {
+      headers,
+      abort: params.abort,
+      onProgress: params.onProgress,
+      body: params.lastCtxOfBlock.join(',')
+    })
+
+    if (!isSuccessResult(response)) {
+      return response
+    }
+
+    if (response.result.code !== 200) {
+      return handleResponseError(response.result)
+    }
+
+    return { result: response.result.data }
+  }
+
+  //  直传接口
 
   async directUpload<T>(params: DirectUploadParams): Promise<Result<string>> {
     const formData = new HttpFormData()

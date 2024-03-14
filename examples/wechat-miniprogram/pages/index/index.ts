@@ -62,7 +62,7 @@ Component({
       await this.printTask(task)
     },
 
-    async uploadFile() {
+    async uploadFileDirect() {
       const file: qiniu.FileData = {
         type: 'path',
         data: this.data.file,
@@ -73,7 +73,44 @@ Component({
           '223123231231': '2231232313'
         }
       }
-      const task = qiniu.createMultipartUploadTask(file, {
+      const task = qiniu.createDirectUploadTask(file, {
+        vars: { 'test': '2222222' },
+        tokenProvider: () => Promise.resolve(this.data.token)
+      })
+      await this.printTask(task)
+    },
+
+    async uploadFileV1() {
+      const file: qiniu.FileData = {
+        type: 'path',
+        data: this.data.file,
+        filename: 'test.test2312',
+        mimeType: 'test/test',
+        metadata: {
+          '222222123': '222231222',
+          '223123231231': '2231232313'
+        }
+      }
+      const task = qiniu.createMultipartUploadV1Task(file, {
+        // logLevel: "INFO",
+        vars: { 'test': '2222222' },
+        tokenProvider: () => Promise.resolve(this.data.token)
+      })
+      await this.printTask(task)
+    },
+
+    async uploadFileV2() {
+      const file: qiniu.FileData = {
+        type: 'path',
+        data: this.data.file,
+        filename: 'test.test2312',
+        mimeType: 'test/test',
+        metadata: {
+          '222222123': '222231222',
+          '223123231231': '2231232313'
+        }
+      }
+      const task = qiniu.createMultipartUploadV2Task(file, {
         vars: { 'test': '2222222' },
         tokenProvider: () => Promise.resolve(this.data.token)
       })

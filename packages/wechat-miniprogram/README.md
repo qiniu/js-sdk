@@ -11,7 +11,7 @@ npm install @qiniu/wechat-miniprogram-upload
 2. 导入SDK
 
 ```javascript
-import { createDirectUploadTask, createMultipartUploadTask, FileData } from '@qiniu/wechat-miniprogram-upload';
+import { createDirectUploadTask, createMultipartUploadV1Task, createMultipartUploadV2Task, FileData } from '@qiniu/wechat-miniprogram-upload';
 ```
 
 3. 创建上传任务
@@ -26,7 +26,10 @@ const fileData: FileData = { type: 'array-buffer', data: new ArrayBuffer(1e3) }
 const uploadTask = createDirectUploadTask(fileData, config);
 
 // 创建分片上传任务
-const uploadTask = createMultipartUploadTask(fileData, config);
+const uploadTask = createMultipartUploadV2Task(fileData, config);
+
+// 部分老私有云不支持 v2，推荐用 v1
+const uploadTask = createMultipartUploadV1Task(fileData, config);
 ```
 
 1. 设置任务回调函数

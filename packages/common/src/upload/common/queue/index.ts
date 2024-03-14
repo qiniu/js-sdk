@@ -66,6 +66,7 @@ export class TaskQueue {
 
   constructor(private options?: TaskQueueOptions) {
     this.tasksCreator = options?.tasksCreator
+    this.concurrentTicket = options?.concurrentLimit || 1
     this.logger = new Logger(options?.logger?.level, options?.logger?.prefix)
   }
 

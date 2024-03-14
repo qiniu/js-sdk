@@ -27,10 +27,20 @@ export const createDirectUploadTask = (file: FileData, config: common.UploadConf
   return task
 }
 
-export const createMultipartUploadTask = (file: FileData, config: common.UploadConfig) => {
+export const createMultipartUploadV1Task = (file: FileData, config: common.UploadConfig) => {
   const innerFile = new UploadFile(file)
   config.httpClient = config.httpClient ?? new WxHttpClient()
-  const task = common.createMultipartUploadTask(innerFile, config)
+  const task = common.createMultipartUploadV1Task(innerFile, config)
+  task.onError(() => innerFile.free())
+  task.onComplete(() => innerFile.free())
+  beforeCancel(task, () => innerFile.free())
+  return task
+}
+
+export const createMultipartUploadV2Task = (file: FileData, config: common.UploadConfig) => {
+  const innerFile = new UploadFile(file)
+  config.httpClient = config.httpClient ?? new WxHttpClient()
+  const task = common.createMultipartUploadV2Task(innerFile, config)
   task.onError(() => innerFile.free())
   task.onComplete(() => innerFile.free())
   beforeCancel(task, () => innerFile.free())

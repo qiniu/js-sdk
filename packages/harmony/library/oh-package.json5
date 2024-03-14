@@ -1,6 +1,6 @@
 {
   "name": "@qiniu/upload",
-  "version": "1.0.0-rc.4",
+  "version": "1.0.0-rc.5",
   "keywords": ["qiniu", "upload", "oss"],
   "description": "Qiniu Cloud object storage upload sdk",
   "repository": "https://github.com/qiniu/js-sdk.git",

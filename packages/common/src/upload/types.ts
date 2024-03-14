@@ -8,7 +8,8 @@ import { LogLevel } from '../helper/logger'
 import { UploadContext, Progress as BaseProgress } from './common/context'
 
 import { DirectUploadContext, DirectUploadProgressKey } from './direct'
-import { MultipartUploadContext, MultipartUploadProgressKey } from './multipart'
+import { MultipartUploadV1Context, MultipartUploadV1ProgressKey } from './multipartv1'
+import { MultipartUploadV2Context, MultipartUploadV2ProgressKey } from './multipartv2'
 
 export interface UploadConfig {
   /** 自定义变量；本次上传任务的自定义变量，关于使用请参考：https://developer.qiniu.com/kodo/1235/vars#xvar */
@@ -31,8 +32,9 @@ export interface UploadConfig {
   tokenProvider: TokenProvider
 }
 
-export type Context = DirectUploadContext | MultipartUploadContext
-export type Progress = BaseProgress<DirectUploadProgressKey | MultipartUploadProgressKey>
+export type Context = DirectUploadContext | MultipartUploadV1Context | MultipartUploadV2Context
+// eslint-disable-next-line max-len
+export type Progress = BaseProgress<DirectUploadProgressKey | MultipartUploadV1ProgressKey | MultipartUploadV2ProgressKey>
 
 export type OnError<C extends UploadContext> = (error: C['error'], context: C) => void
 export type OnComplete<C extends UploadContext> = (result: C['result'], context: C) => void

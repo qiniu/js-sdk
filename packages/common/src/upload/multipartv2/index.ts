@@ -12,14 +12,14 @@ import { initUploadConfig } from '../common/config'
 import { HostProgressKey, HostProvideTask } from '../common/host'
 import { TokenProgressKey, TokenProvideTask } from '../common/token'
 
-export type MultipartUploadProgressKey =
+export type MultipartUploadV2ProgressKey =
   | HostProgressKey
   | TokenProgressKey
   | 'initMultipartUpload'
   | 'completeMultipartUpload'
   | `multipartUpload:${number}`
 
-export class MultipartUploadContext extends UploadContext<MultipartUploadProgressKey> {
+export class MultipartUploadV2Context extends UploadContext<MultipartUploadV2ProgressKey> {
   uploadPartId?: InitPartsUploadData
   uploadedParts: Array<PartMeta | UploadedPart> = []
 
@@ -31,7 +31,7 @@ export class MultipartUploadContext extends UploadContext<MultipartUploadProgres
 class InitPartUploadTask implements Task {
   private abort: HttpAbortController | null = null
   constructor(
-    private context: MultipartUploadContext,
+    private context: MultipartUploadV2Context,
     private uploadApis: UploadApis,
     private file: UploadFile
   ) { this.updateProgress(0) }
@@ -71,7 +71,7 @@ class InitPartUploadTask implements Task {
       if ((this.context.uploadPartId.expireAt - 60) > nowTime) {
 
         // 从服务端获取已上传的分片信息
-        const uploadedPartResult = await this.uploadApis.listUploadParts({
+        const uploadedPartResult = await this.uploadApis.listParts({
           abort: this.abort,
           token: this.context!.token!,
           bucket: this.context.token!.bucket,
@@ -126,7 +126,7 @@ class InitPartUploadTask implements Task {
 class UploadPartTask implements Task {
   private abort: HttpAbortController | null = null
   constructor(
-    private context: MultipartUploadContext,
+    private context: MultipartUploadV2Context,
     private uploadApis: UploadApis,
     private index: number,
     private file: UploadFile,
@@ -205,7 +205,7 @@ class UploadPartTask implements Task {
 class CompletePartUploadTask implements Task {
   private abort: HttpAbortController | null = null
   constructor(
-    private context: MultipartUploadContext,
+    private context: MultipartUploadV2Context,
     private uploadApis: UploadApis,
     private vars: Record<string, string> | undefined,
     private file: UploadFile
@@ -273,13 +273,13 @@ class CompletePartUploadTask implements Task {
   }
 }
 
-export const createMultipartUploadTask: UploadTaskCreator = (file, config): UploadTask<MultipartUploadContext> => {
+export const createMultipartUploadV2Task: UploadTaskCreator = (file, config): UploadTask<MultipartUploadV2Context> => {
   const normalizedConfig = initUploadConfig(config)
 
   const uploadApis = new UploadApis(normalizedConfig.httpClient)
   const configApis = new ConfigApis(normalizedConfig.apiServerUrl, normalizedConfig.httpClient)
 
-  const context = new MultipartUploadContext()
+  const context = new MultipartUploadV2Context()
   const tokenProvideTask = new TokenProvideTask(context, normalizedConfig.tokenProvider)
   const hostProvideTask = new HostProvideTask(
     context,

@@ -1,5 +1,12 @@
 # Change logs
 
+## v1.0.0-rc.5 (2024-03-14)
+
+### 改动
+
+- 添加 createMultipartUploadV1Task
+- 重命名 createMultipartUploadTask 为 createMultipartUploadV2Task
+
 ## v1.0.0-rc.4 (2024-03-13)
 
 ### 改动

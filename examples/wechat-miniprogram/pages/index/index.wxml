@@ -7,7 +7,9 @@
     <button class="button" bind:tap="uploadArrayBuffer">ArrayBuffer 上传测试</button>
     <textarea class="textarea" model:value="{{file}}"></textarea>
     <button class="button" bind:tap="selectMedia">选择文件</button>
-    <button class="button" bind:tap="uploadFile">文件上传测试</button>
+    <button class="button" bind:tap="uploadFileDirect">直传</button>
+    <button class="button" bind:tap="uploadFileV1">分片 v1</button>
+    <button class="button" bind:tap="uploadFileV2">分片 v2</button>
     <button class="button" bind:tap="stopTask">停止上传</button>
     <button class="button" bind:tap="startTask">继续上传</button>
   </view>

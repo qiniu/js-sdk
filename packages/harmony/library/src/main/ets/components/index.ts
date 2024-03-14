@@ -32,10 +32,26 @@ export function createDirectUploadTask(context: ohCommon.Context, file: FileData
   return task
 }
 
-export function createMultipartUploadTask(context: ohCommon.Context, file: FileData, config: common.UploadConfig) {
+/**
+ * v1 版本的分片上传，串行上传，不支持 file 的 metadata 属性
+ */
+export function createMultipartUploadV1Task(context: ohCommon.Context, file: FileData, config: common.UploadConfig) {
   const innerFile = new UploadFile(context, file, 'multipart')
   config.httpClient = config.httpClient ?? new HttpClient(context)
-  const task = common.createMultipartUploadTask(innerFile, config)
+  const task = common.createMultipartUploadV1Task(innerFile, config)
+  task.onComplete(() => innerFile.free())
+  task.onError(() => innerFile.free())
+  onCancel(task, () => innerFile.free())
+  return task
+}
+
+/**
+ * v2 版本的分片上传，特点是支持并发
+ */
+export function createMultipartUploadV2Task(context: ohCommon.Context, file: FileData, config: common.UploadConfig) {
+  const innerFile = new UploadFile(context, file, 'multipart')
+  config.httpClient = config.httpClient ?? new HttpClient(context)
+  const task = common.createMultipartUploadV2Task(innerFile, config)
   task.onComplete(() => innerFile.free())
   task.onError(() => innerFile.free())
   onCancel(task, () => innerFile.free())

@@ -1,5 +1,5 @@
 import picker from '@ohos.file.picker'
-import { createMultipartUploadTask, createDirectUploadTask, UploadTask, Progress as UploadProgress, FileData } from '@qiniu/upload'
+import { createMultipartUploadV2Task, createDirectUploadTask, UploadTask, Progress as UploadProgress, FileData } from '@qiniu/upload'
 
 const token = 'dgHUyu6FJLTIqHZS2Be798icC_DXdHAqaNa9WnO0:Zzn3vpv6bkDTBLSeY_n7qi2oDwg=:eyJzY29wZSI6InNkay10ZXN0LTExIiwiZGVhZGxpbmUiOjE3MTQ3OTU4MzAsInJldHVybkJvZHkiOiJ7XCJrZXlcIjokKGtleSksXCJoYXNoXCI6ICQoZXRhZyksIFwidGVzdFwiOiQoeDp0ZXN0KX0ifQ=='
 
@@ -65,7 +65,7 @@ struct Index {
         '2321': "2323232"
       }
     }
-    const task = createMultipartUploadTask(context, fileData, {
+    const task = createMultipartUploadV2Task(context, fileData, {
       logLevel: 'INFO',
       vars: { test: '222222' },
       tokenProvider: () => Promise.resolve(token)
