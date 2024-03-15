@@ -47,5 +47,3 @@ export interface UploadTask<C extends UploadContext = Context> {
   cancel(): Promise<Result>
   start(): Promise<Result>
 }
-
-export type UploadTaskCreator = (file: UploadFile, config: UploadConfig) => UploadTask

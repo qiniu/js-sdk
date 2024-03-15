@@ -1,10 +1,11 @@
-import { UploadBlob, UploadFile } from '../../types/file'
 import { HttpAbortController } from '../../types/http'
+import { UploadBlob, UploadFile } from '../../types/file'
 import { generateRandomString } from '../../helper/string'
 import { Result, isCanceledResult, isErrorResult, isSuccessResult } from '../../types/types'
+
 import { UploadApis, ConfigApis, MkblkData } from '../../api'
 
-import { UploadTask, UploadTaskCreator } from '../types'
+import { UploadConfig, UploadTask } from '../types'
 
 import { Task, TaskQueue } from '../common/queue'
 import { initUploadConfig } from '../common/config'
@@ -167,7 +168,8 @@ class MkfileTask implements Task {
   }
 }
 
-export const createMultipartUploadV1Task: UploadTaskCreator = (file, config): UploadTask<MultipartUploadV1Context> => {
+// eslint-disable-next-line max-len
+export const createMultipartUploadV1Task = (file: UploadFile, config: UploadConfig): UploadTask<MultipartUploadV1Context> => {
   const normalizedConfig = initUploadConfig(config)
 
   const uploadApis = new UploadApis(normalizedConfig.httpClient)

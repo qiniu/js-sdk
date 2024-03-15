@@ -4,7 +4,7 @@ import { generateRandomString } from '../../helper/string'
 import { Result, isCanceledResult, isErrorResult, isSuccessResult } from '../../types/types'
 import { UploadApis, ConfigApis, PartMeta, InitPartsUploadData, UploadedPart } from '../../api'
 
-import { UploadTask, UploadTaskCreator } from '../types'
+import { UploadTask, UploadConfig } from '../types'
 
 import { UploadContext, updateTotalIntoProgress } from '../common/context'
 import { Task, TaskQueue } from '../common/queue'
@@ -273,7 +273,8 @@ class CompletePartUploadTask implements Task {
   }
 }
 
-export const createMultipartUploadV2Task: UploadTaskCreator = (file, config): UploadTask<MultipartUploadV2Context> => {
+// eslint-disable-next-line max-len
+export const createMultipartUploadV2Task = (file: UploadFile, config: UploadConfig): UploadTask<MultipartUploadV2Context> => {
   const normalizedConfig = initUploadConfig(config)
 
   const uploadApis = new UploadApis(normalizedConfig.httpClient)

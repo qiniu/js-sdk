@@ -1,5 +1,5 @@
 import { UploadFile } from '../../types/file'
-import { UploadTask, UploadTaskCreator } from '../types'
+import { UploadTask, UploadConfig } from '../types'
 import { ConfigApis, UploadApis } from '../../api'
 import { HttpAbortController } from '../../types/http'
 import { generateRandomString } from '../../helper/string'
@@ -93,7 +93,7 @@ class DirectUploadTask implements Task {
   }
 }
 
-export const createDirectUploadTask: UploadTaskCreator = (file, config): UploadTask<DirectUploadContext> => {
+export const createDirectUploadTask = (file: UploadFile, config: UploadConfig): UploadTask<DirectUploadContext> => {
   const normalizedConfig = initUploadConfig(config)
   const uploadApis = new UploadApis(normalizedConfig.httpClient)
   const configApis = new ConfigApis(normalizedConfig.apiServerUrl, normalizedConfig.httpClient)
