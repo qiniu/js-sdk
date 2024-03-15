@@ -6,7 +6,7 @@ import { FileData, UploadFile } from './file'
 import { Result, UploadConfig, UploadTask, isSuccessResult } from './@internal'
 
 export type { FileData } from './file'
-export type { UploadTask, UploadConfig, DirectUploadContext, MultipartUploadV1Context, MultipartUploadV2Context } from './@internal'
+export type { UploadTask, Progress, UploadConfig, DirectUploadContext, MultipartUploadV1Context, MultipartUploadV2Context } from './@internal'
 
 function onCancel(task: UploadTask, listener: () => Promise<Result>) {
   const rawCancel = task.cancel
