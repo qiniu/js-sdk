@@ -5,7 +5,7 @@
 1. 安装SDK
 
 ```bash
-ohpm i @qiniu/upload
+ohpm install @qiniu/upload
 ```
 
 2. 导入SDK
