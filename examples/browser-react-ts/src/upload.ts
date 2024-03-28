@@ -37,7 +37,7 @@ export function useUpload(file: File) {
     }
 
     const uploadConfig: qiniu.UploadConfig = {
-      serverUrl: uploadSetting.server,
+      apiServerUrl: uploadSetting.server,
       tokenProvider: async () => {
         const { assessKey, secretKey, bucketName } = loadSetting()
         if (!assessKey || !secretKey || !bucketName) {
@@ -68,6 +68,7 @@ export function useUpload(file: File) {
     newUploadTask.onError(error => {
       setState(Status.Finished)
       setError(error || null)
+      console.log(error)
     })
 
     newUploadTask.onComplete(result => {

@@ -17,7 +17,7 @@ ctx.addEventListener('message', event => {
     console.log(fileData, uploadSetting)
 
     const uploadConfig: UploadConfig = {
-      serverUrl: uploadSetting.server,
+      apiServerUrl: uploadSetting.server,
       tokenProvider: async () => {
         const { assessKey, secretKey, bucketName } = uploadSetting
         if (!assessKey || !secretKey || !bucketName) {

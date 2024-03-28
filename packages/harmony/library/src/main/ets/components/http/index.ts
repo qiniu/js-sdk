@@ -3,7 +3,7 @@ import requestApi from '@ohos.request'
 import ohCommon from '@ohos.app.ability.common'
 
 import * as common from '../@internal'
-import { isUploadFile, isUploadBlob } from '../file'
+import { isInternalUploadFile, isInternalUploadBlob } from '../file'
 
 interface RequestOptions extends common.HttpClientOptions {
   method: common.HttpMethod
@@ -41,7 +41,7 @@ function shouldUseUploadFile(option: RequestOptions): boolean {
   if (option?.method !== 'POST') return false
   if (!common.isHttpFormData(option.body)) return false
 
-  const files = option.body.entries().filter(([_, value]) => isUploadFile(value))
+  const files = option.body.entries().filter(([_, value]) => isInternalUploadFile(value))
   return files.length > 0
 }
 
@@ -60,7 +60,7 @@ export class HttpClient implements HttpClient {
       const bodyEntries = (options.body as common.HttpFormData).entries()
 
       for (const [key, value] of bodyEntries) {
-        if (isUploadFile(value)) {
+        if (isInternalUploadFile(value)) {
           const nameResult = await value.name()
           if (!common.isSuccessResult(nameResult)) return nameResult
 
@@ -114,6 +114,7 @@ export class HttpClient implements HttpClient {
                 }
               })
 
+
               task.on('complete', () => {
                 return resolve({
                   result: {
@@ -151,7 +152,7 @@ export class HttpClient implements HttpClient {
     let normalizedBody: string | ArrayBuffer | Object | undefined = options?.body as any
 
     // 如果 body 是文件，则直接读取 arrayBuffer 去发送请求
-    if (isUploadFile(options?.body) || isUploadBlob(options?.body)) {
+    if (isInternalUploadFile(options?.body) || isInternalUploadBlob(options?.body)) {
       const arrayBufferResult = await options!.body.readAsArrayBuffer()
       if (!common.isSuccessResult(arrayBufferResult)) return arrayBufferResult
       // 根据文件大小估计重新预估一个时间

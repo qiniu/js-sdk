@@ -1,16 +1,17 @@
 import picker from '@ohos.file.picker'
-import { createMultipartUploadV2Task, createDirectUploadTask, UploadTask, Progress as UploadProgress, FileData } from '@qiniu/upload'
+import { createMultipartUploadV2Task, createDirectUploadTask, UploadFile, UploadTask, Progress as UploadProgress } from '@qiniu/upload'
+import { UploadError } from '@qiniu/upload/src/main/ets/components/@internal'
 
 const token = 'dgHUyu6FJLTIqHZS2Be798icC_DXdHAqaNa9WnO0:Zzn3vpv6bkDTBLSeY_n7qi2oDwg=:eyJzY29wZSI6InNkay10ZXN0LTExIiwiZGVhZGxpbmUiOjE3MTQ3OTU4MzAsInJldHVybkJvZHkiOiJ7XCJrZXlcIjokKGtleSksXCJoYXNoXCI6ICQoZXRhZyksIFwidGVzdFwiOiQoeDp0ZXN0KX0ifQ=='
 
 @Entry
 @Component
 struct Index {
-  @State file: string = ''
-  @State error: string = ''
-  @State result: string = ''
+  @State file: string | undefined = ''
+  @State error: string | undefined = ''
+  @State result: string | undefined = ''
   @State task: UploadTask | null = null
-  @State progress: Partial<UploadProgress> | null = null
+  @State progress: UploadProgress | null = null
 
   selectUploadFile() {
     try {
@@ -21,7 +22,7 @@ struct Index {
       photoPicker.select(PhotoSelectOptions).then((PhotoSelectResult) => {
         console.info('PhotoViewPicker.select successfully, PhotoSelectResult uri: ' + JSON.stringify(PhotoSelectResult))
         this.file = PhotoSelectResult.photoUris[0]
-      }).catch((err) => {
+      }).catch((err: Error) => {
         console.error('PhotoViewPicker.select failed with err: ' + err)
         this.file = ''
       })
@@ -30,18 +31,12 @@ struct Index {
     }
   }
 
-  getUploadFile(): FileData {
-    if (this.file != '') {
-      return ({
-        type: 'uri',
-        data: this.file
-      })
+  getUploadFile(): UploadFile {
+    if (this.file && this.file != '') {
+      return UploadFile.fromUri(this.file)
     }
 
-    return {
-      type: 'string',
-      data: '1'.repeat(1024 * 1024 * 10),
-    }
+    return UploadFile.fromString('1'.repeat(1024 * 1024 * 10))
   }
 
   stopTask() {
@@ -49,7 +44,7 @@ struct Index {
   }
 
   startTask() {
-    if (this.task) this.task.start().catch(error => {
+    if (this.task) this.task.start().catch((error: UploadError) => {
       console.log(JSON.stringify(error))
     })
   }
@@ -57,15 +52,16 @@ struct Index {
   async uploadFileByMultipart() {
     const context = getContext(this)
 
-    const fileData: FileData = {
-      ...this.getUploadFile(),
-      filename: "test-test",
-      mimeType: "232312323/2312",
-      metadata: {
-        '2321': "2323232"
-      }
+    const file = this.getUploadFile()
+
+    file.filename = "test-test"
+    file.mimeType = "232312323/2312"
+    file.metadata = {
+      '2321': "2323232"
     }
-    const task = createMultipartUploadV2Task(context, fileData, {
+
+
+    const task = createMultipartUploadV2Task(context, file, {
       logLevel: 'INFO',
       vars: { test: '222222' },
       tokenProvider: () => Promise.resolve(token)
@@ -77,7 +73,7 @@ struct Index {
 
   async uploadFileByDirect() {
     const context = getContext(this)
-    const fileData: FileData = this.getUploadFile()
+    const fileData = this.getUploadFile()
     const task = createDirectUploadTask(context, fileData, {
       logLevel: 'INFO',
       tokenProvider: () => Promise.resolve(token)
@@ -88,9 +84,9 @@ struct Index {
 
   uploadFileState(task: UploadTask) {
     this.task = task
-    task.onProgress(progress => this.progress = progress as any)
+    // task.onProgress(progress => this.progress = progress)
     task.onComplete(result => this.result = result)
-    task.onError(error => this.error = error.message)
+    task.onError(error => this.error = error?.message)
   }
 
   build() {
@@ -106,13 +102,13 @@ struct Index {
           Text(`结果：${this.result}`)
             .fontSize(14)
             .fontWeight(FontWeight.Bold)
-          Column() {
-            ForEach(Object.keys(this.progress?.details || {}), key => {
-              Text(`${key}: ${this.progress?.details[key]?.percent}`)
-                .fontSize(14)
-                .fontWeight(FontWeight.Bold)
-            })
-          }
+          // Column() {
+          //   ForEach(Object.keys(this.progress?.details), (key: string) => {
+          //     Text(`${key}: ${this.progress?.details[key]?.percent}`)
+          //       .fontSize(14)
+          //       .fontWeight(FontWeight.Bold)
+          //   })
+          // }
           Text(`错误：${this.error}`)
             .fontSize(14)
             .fontWeight(FontWeight.Bold)

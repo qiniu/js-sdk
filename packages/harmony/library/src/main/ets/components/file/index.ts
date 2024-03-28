@@ -4,7 +4,39 @@ import ohCommon from '@ohos.app.ability.common'
 
 import * as common from '../@internal'
 
-class UploadBlob implements common.UploadBlob {
+export class UploadFile implements common.FileData {
+  type: string
+  data: string | ArrayBuffer
+
+  /** 文件名；该文件保存到空间时的名称 */
+  filename?: string;
+
+  /** 文件的媒体类型；该文件保存到空间时的媒体类型 */
+  mimeType?: string;
+
+  /** 文件的元数据；该文件保存到空间时的元数据，不需要添加 x-qn-meta 前缀 */
+  metadata?: Record<string, string>;
+
+  private constructor(type: string, data: string | ArrayBuffer) {
+    this.type = type
+    this.data = data
+  }
+
+  static  fromUri(uri: string):UploadFile{
+    return new UploadFile('uri', uri)
+  }
+  static  fromPath(path: string):UploadFile{
+    return new UploadFile('path', path)
+  }
+  static  fromString(data: string):UploadFile{
+    return new UploadFile('string', data)
+  }
+  static  fromArrayBuffer(data: ArrayBuffer):UploadFile{
+    return new UploadFile('array-buffer', data)
+  }
+}
+
+class InternalUploadBlob implements common.UploadBlob {
   constructor(
     private file: fs.File,
     private offset: number,
@@ -26,21 +58,15 @@ class UploadBlob implements common.UploadBlob {
   }
 }
 
-export type FileData =
-  | { type: 'uri', data: string } & common.FileData
-  | { type: 'path', data: string } & common.FileData
-  | { type: 'string', data: string } & common.FileData
-  | { type: 'array-buffer', data: ArrayBuffer } & common.FileData
-
 // 通过这个来减少非必要复制操作
 export type UseOf = 'direct' | 'multipart'
 
-export class UploadFile implements common.UploadFile {
+export class InternalUploadFile implements common.UploadFile {
   private file: fs.File | null = null
   private fileUri: string | null = null
   private unlinkPath: string | null = null
   private initPromise: Promise<common.Result<boolean>> | null = null
-  constructor(public context: ohCommon.Context, private data: FileData, private useOf: UseOf) {}
+  constructor(public context: ohCommon.Context, private data: UploadFile, private useOf: UseOf) {}
 
   /** 初始化数据并写入磁盘&打开文件 */
   private autoInit(): Promise<common.Result<boolean>> {
@@ -55,8 +81,8 @@ export class UploadFile implements common.UploadFile {
     }
 
     // fileUri 主要为直传提供
-    // path 的格式为 file://path
-    const initFileUri = async (path: string): Promise<common.Result<boolean>> => {
+    // pathUri 的格式为 file://pathUri
+    const initFileUri = async (pathUri: string): Promise<common.Result<boolean>> => {
       // 如果不是直传，不初始化 uri，减少复制操作
       if (this.useOf !== 'direct') return ({ result: true })
 
@@ -70,7 +96,7 @@ export class UploadFile implements common.UploadFile {
         return targetResult
       }
 
-      const sourceResult = await fs.open(path, fs.OpenMode.READ_ONLY)
+      const sourceResult = await fs.open(pathUri, fs.OpenMode.READ_ONLY)
         .then<common.Result<fs.File>>(file => ({ result: file }))
         .catch<common.Result<fs.File>>(error => ({ error: new common.UploadError('FileSystemError', error.message) }))
 
@@ -98,9 +124,9 @@ export class UploadFile implements common.UploadFile {
     }
 
     // file 主要为分片上传提供
-    // path 的格式为 file://path
-    const initFile = async (path: string): Promise<common.Result<boolean>> => {
-      const openResult = await fs.open(path, fs.OpenMode.READ_ONLY)
+    // pathUri 的格式为 file://pathUri
+    const initFile = async (pathUri: string): Promise<common.Result<boolean>> => {
+      const openResult = await fs.open(pathUri, fs.OpenMode.READ_ONLY)
         .then<common.Result<fs.File>>(file => ({ result: file }))
         .catch<common.Result<fs.File>>(error => ({ error: new common.UploadError('FileSystemError', error.message) }))
 
@@ -109,7 +135,7 @@ export class UploadFile implements common.UploadFile {
       }
 
       this.file = openResult.result
-      return initFileUri(path)
+      return initFileUri(pathUri)
     }
 
     const initData = async (): Promise<common.Result<boolean>> => {
@@ -118,7 +144,18 @@ export class UploadFile implements common.UploadFile {
       }
 
       if (this.data.type === 'uri') {
-        // 来自其他应用的文件
+          if (typeof this.data.data !== 'string') {
+            return {
+              error: new common.UploadError('FileSystemError', 'Invalid file data')
+            }
+          }
+
+        // 标准 file uri
+        if (this.data.data.startsWith('file://')) {
+          return initFile(this.data.data)
+        }
+
+        // 一般是来自其他应用的文件
         if (this.data.data.startsWith('datashare://')) {
           return initFile(this.data.data)
         }
@@ -127,6 +164,12 @@ export class UploadFile implements common.UploadFile {
       }
 
       if (this.data.type === 'path') {
+        if (typeof this.data.data !== 'string') {
+          return {
+            error: new common.UploadError('FileSystemError', 'Invalid file data')
+          }
+        }
+
         return initFile(fileUri.getUriFromPath(this.data.data))
       }
 
@@ -197,7 +240,7 @@ export class UploadFile implements common.UploadFile {
   }
 
   /**
-   * 返回的永远是 file://path 的 uri
+   * 返回的永远是 file://pathUri 的 uri
    */
   async path(): Promise<common.Result<string>> {
     const initResult = await this.autoInit()
@@ -229,7 +272,7 @@ export class UploadFile implements common.UploadFile {
     const normalizedChunkSize = chunkSize || sizeResult.result
     return {
       result: common.sliceChunk(sizeResult.result, normalizedChunkSize)
-        .map(({ offset, size }) => (new UploadBlob(this.file, offset, size)))
+        .map(({ offset, size }) => (new InternalUploadBlob(this.file, offset, size)))
     }
   }
 
@@ -250,10 +293,10 @@ export class UploadFile implements common.UploadFile {
   }
 }
 
-export function isUploadFile(data: unknown): data is UploadFile {
-  return data instanceof UploadFile
+export function isInternalUploadFile(data: unknown): data is InternalUploadFile {
+  return data instanceof InternalUploadFile
 }
 
-export function isUploadBlob(data: unknown): data is UploadBlob {
-  return data instanceof UploadBlob
+export function isInternalUploadBlob(data: unknown): data is InternalUploadBlob {
+  return data instanceof InternalUploadBlob
 }
