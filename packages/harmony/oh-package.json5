@@ -1,0 +1,12 @@
+{
+  "name": "@qiniu/upload",
+  "version": "1.0.0-rc.1",
+  "description": "Qiniu Cloud Upload SDK",
+  "repository": "https://github.com/qiniu/js-sdk.git",
+  "author": "qiniu",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "@ohos/hypium": "1.0.6"
+  }
+}

@@ -10,9 +10,10 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           cache: 'npm'
-          node-version: 12
-      - run: npm install
-      - run: npm run lint
+          node-version: 16
+      - run: |
+          npm install
+          npm run lint
   test:
     runs-on: ubuntu-latest
     steps:
@@ -20,16 +21,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           cache: 'npm'
-          node-version: 12
-      - run: npm install
-      - run: npm run test
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          cache: 'npm'
-          node-version: 12
-      - run: npm install
-      - run: npm run build
+          node-version: 16
+      - run: |
+          npm install
+          npm run test

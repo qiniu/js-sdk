@@ -1,0 +1,16 @@
+{
+  "name": "@internal/common",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "main": "output/index.js",
+  "types": "output/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc -w",
+    "build-harmony": "tsc --outDir ../harmony/library/src/main/ets/components/@internal",
+    "dev-harmony": "tsc -w --outDir ../harmony/library/src/main/ets/components/@internal"
+  },
+  "author": "",
+  "license": "ISC"
+}

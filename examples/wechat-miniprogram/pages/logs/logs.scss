@@ -1,0 +1,16 @@
+page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.scrollarea {
+  flex: 1;
+  overflow-y: hidden;
+}
+.log-item {
+  margin-top: 20rpx;
+  text-align: center;
+}
+.log-item:last-child {
+  padding-bottom: env(safe-area-inset-bottom);
+}

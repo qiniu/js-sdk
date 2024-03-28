@@ -1,0 +1,24 @@
+/**index.scss**/
+page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.textarea {
+  height: 100px;
+  margin: 10px;
+  padding: 10px;
+  font-size: 14px;
+  box-sizing: border-box;
+  border: 1px solid rgba(0,0,0, 0.1);
+  box-shadow: 0px 10px 20px -10px rgba(0,0,0, 0.1);
+}
+
+.button {
+  margin: 4px;
+  color: white;
+  font-size: 12px;
+  border-radius: 4px;
+  background-color: #07c160;
+}
