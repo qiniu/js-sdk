@@ -2,7 +2,7 @@ import picker from '@ohos.file.picker'
 import { createMultipartUploadV2Task, createDirectUploadTask, UploadFile, UploadTask, Progress as UploadProgress } from '@qiniu/upload'
 import { UploadError } from '@qiniu/upload/src/main/ets/components/@internal'
 
-const token = 'dgHUyu6FJLTIqHZS2Be798icC_DXdHAqaNa9WnO0:Zzn3vpv6bkDTBLSeY_n7qi2oDwg=:eyJzY29wZSI6InNkay10ZXN0LTExIiwiZGVhZGxpbmUiOjE3MTQ3OTU4MzAsInJldHVybkJvZHkiOiJ7XCJrZXlcIjokKGtleSksXCJoYXNoXCI6ICQoZXRhZyksIFwidGVzdFwiOiQoeDp0ZXN0KX0ifQ=='
+const token = 'dgHUyu6FJLTIqHZS2Be798icC_DXdHAqaNa9WnO0:UrM8khFar8tad-Yf3xz-9WGyISE=:eyJzY29wZSI6InNkay10ZXN0LTExIiwiZGVhZGxpbmUiOjE4MTQ4OTU4MzAsInJldHVybkJvZHkiOiJ7XCJrZXlcIjokKGtleSksXCJoYXNoXCI6ICQoZXRhZyksIFwidGVzdFwiOiQoeDp0ZXN0KX0iLCJkZXRlY3RNaW1lIjoxfQ=='
 
 @Entry
 @Component

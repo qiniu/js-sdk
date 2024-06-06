@@ -1,4 +1,5 @@
 {
+  "modelVersion": "5.0.0",
   "name": "@qiniu/upload",
   "version": "1.0.0-rc.1",
   "description": "Qiniu Cloud Upload SDK",
