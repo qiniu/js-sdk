@@ -3,7 +3,6 @@
   "private": true,
   "scripts": {
     "test": "jest --coverage",
-    "clean": "lerna clean",
     "lint": "eslint ."
   },
   "devDependencies": {
