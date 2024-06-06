@@ -3,7 +3,7 @@
  */
 
 import { generateUploadToken } from './utils'
-import { UploadConfig, UploadTask, createDirectUploadTask, createMultipartUploadTask } from 'qiniu-js'
+import { UploadConfig, UploadTask, createDirectUploadTask, createMultipartUploadV2Task } from 'qiniu-js'
 
 const ctx: Worker = self as any
 let task: UploadTask | null = null
@@ -33,7 +33,7 @@ ctx.addEventListener('message', event => {
 
     task = uploadSetting.forceDirect
       ? createDirectUploadTask(fileData, uploadConfig)
-      : createMultipartUploadTask(fileData, uploadConfig)
+      : createMultipartUploadV2Task(fileData, uploadConfig)
 
     task.onComplete((...data) => ctx.postMessage({ method: 'complete', params: data }))
     task.onProgress((...data) => ctx.postMessage({ method: 'progress', params: data }))

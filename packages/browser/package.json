@@ -1,5 +1,5 @@
 {
-  "name": "@qiniu/browser-upload",
+  "name": "qiniu-js",
   "version": "1.0.0-rc.1",
   "description": "Qiniu browser upload sdk",
   "miniprogram": "output",

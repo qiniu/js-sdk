@@ -58,7 +58,7 @@ export function useUpload(file: File) {
 
     const newUploadTask = uploadSetting.forceDirect
       ? qiniu.createDirectUploadTask(fileData, uploadConfig)
-      : qiniu.createMultipartUploadTask(fileData, uploadConfig)
+      : qiniu.createMultipartUploadV2Task(fileData, uploadConfig)
 
     newUploadTask.onProgress(progress => {
       setState(Status.Processing)
