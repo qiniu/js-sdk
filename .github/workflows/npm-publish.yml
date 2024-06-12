@@ -15,8 +15,8 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: |
           npm install
-          npm run build
           cd packages/browser/
+          npm run build
           npm publish --dry-run
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
@@ -30,24 +30,8 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: |
           npm install
-          npm run build
           cd packages/wechat-miniprogram/
+          npm run build
           npm publish --dry-run
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-  publish-harmony:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 20
-          registry-url: https://registry.npmjs.org/
-      - run: |
-          npm install
-          npm run build
-          cd packages/wechat-miniprogram/
-          npm publish --dry-run
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-        
