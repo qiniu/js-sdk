@@ -17,7 +17,7 @@ jobs:
           npm install
           cd packages/browser/
           npm run build
-          npm publish --dry-run
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
   publish-wechat-miniprogram:
@@ -32,6 +32,6 @@ jobs:
           npm install
           cd packages/wechat-miniprogram/
           npm run build
-          npm publish --dry-run
+          npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
