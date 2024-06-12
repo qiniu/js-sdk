@@ -10,7 +10,7 @@
     "dev": "tsc -w",
     "postinstall": "tsc",
     "build-harmony": "tsc --outDir ../harmony/library/src/main/ets/components/@internal",
-    "dev-harmony": "tsc -w --outDir ../harmony/library/src/main/ets/components/@internal",
+    "dev-harmony": "tsc -w --outDir ../harmony/library/src/main/ets/components/@internal"
   },
   "author": "",
   "license": "ISC"
