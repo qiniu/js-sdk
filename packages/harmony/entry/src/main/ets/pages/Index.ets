@@ -61,7 +61,6 @@ struct Index {
       '2321': "2323232"
     }
 
-
     const task = createMultipartUploadV2Task(context, file, {
       logLevel: 'INFO',
       vars: { test: '222222' },

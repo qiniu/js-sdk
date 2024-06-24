@@ -16,9 +16,10 @@ export class UploadFile implements common.FileData {
   type: string
   data: string | ArrayBuffer
 
+  /** 文件名；如果未指定，则为 filename */
   key?: string
 
-  /** 文件名；该文件保存到空间时的名称 */
+  /** 本地文件名；如果未指定，默认为随机字符串 */
   filename?: string
 
   /** 文件的媒体类型；该文件保存到空间时的媒体类型 */
@@ -50,9 +51,11 @@ export class UploadFile implements common.FileData {
 
     return new UploadFile('path', path)
   }
+
   static fromString(data: string): UploadFile {
     return new UploadFile('string', data)
   }
+
   static fromArrayBuffer(data: ArrayBuffer): UploadFile {
     return new UploadFile('array-buffer', data)
   }
@@ -119,6 +122,11 @@ export class InternalUploadFile implements common.UploadFile {
       }
 
       if (this.data.type === 'uri') {
+        if (typeof this.data.data !== 'string') {
+          return {
+            error: new common.UploadError('FileSystemError', 'Invalid file data')
+          }
+        }
         if (typeof this.data.data !== 'string') {
           return {
             error: new common.UploadError('FileSystemError', 'Invalid file data')
