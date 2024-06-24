@@ -8,30 +8,33 @@ export class UploadFile implements common.FileData {
   type: string
   data: string | ArrayBuffer
 
-  /** 文件名；该文件保存到空间时的名称 */
-  filename?: string;
+  /** 文件名；如果未指定，则为 filename */
+  key?: string
+
+  /** 本地文件名；如果未指定，默认为随机字符串 */
+  filename?: string
 
   /** 文件的媒体类型；该文件保存到空间时的媒体类型 */
-  mimeType?: string;
+  mimeType?: string
 
   /** 文件的元数据；该文件保存到空间时的元数据，不需要添加 x-qn-meta 前缀 */
-  metadata?: Record<string, string>;
+  metadata?: Record<string, string>
 
   private constructor(type: string, data: string | ArrayBuffer) {
     this.type = type
     this.data = data
   }
 
-  static  fromUri(uri: string):UploadFile{
+  static fromUri(uri: string): UploadFile {
     return new UploadFile('uri', uri)
   }
-  static  fromPath(path: string):UploadFile{
+  static fromPath(path: string): UploadFile {
     return new UploadFile('path', path)
   }
-  static  fromString(data: string):UploadFile{
+  static fromString(data: string): UploadFile {
     return new UploadFile('string', data)
   }
-  static  fromArrayBuffer(data: ArrayBuffer):UploadFile{
+  static fromArrayBuffer(data: ArrayBuffer): UploadFile {
     return new UploadFile('array-buffer', data)
   }
 }
@@ -144,11 +147,11 @@ export class InternalUploadFile implements common.UploadFile {
       }
 
       if (this.data.type === 'uri') {
-          if (typeof this.data.data !== 'string') {
-            return {
-              error: new common.UploadError('FileSystemError', 'Invalid file data')
-            }
+        if (typeof this.data.data !== 'string') {
+          return {
+            error: new common.UploadError('FileSystemError', 'Invalid file data')
           }
+        }
 
         // 标准 file uri
         if (this.data.data.startsWith('file://')) {
@@ -246,6 +249,10 @@ export class InternalUploadFile implements common.UploadFile {
     const initResult = await this.autoInit()
     if (!common.isSuccessResult(initResult)) return initResult
     return { result: this.fileUri! }
+  }
+
+  async key(): Promise<common.Result<string | null>> {
+    return { result: this.data?.key || null }
   }
 
   async name(): Promise<common.Result<string | null>> {
