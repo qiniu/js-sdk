@@ -54,6 +54,7 @@ struct Index {
 
     const file = this.getUploadFile()
 
+    file.key = "test-test"
     file.filename = "test-test"
     file.mimeType = "232312323/2312"
     file.metadata = {

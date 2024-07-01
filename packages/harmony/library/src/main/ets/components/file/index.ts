@@ -4,34 +4,56 @@ import ohCommon from '@ohos.app.ability.common'
 
 import * as common from '../@internal'
 
+function isURI(uri: string): boolean {
+  if (typeof uri !== 'string') {
+    return false
+  }
+
+  return /^\w+:\/\/.+/.test(uri)
+}
+
 export class UploadFile implements common.FileData {
   type: string
   data: string | ArrayBuffer
 
+  key?: string
+
   /** 文件名；该文件保存到空间时的名称 */
-  filename?: string;
+  filename?: string
 
   /** 文件的媒体类型；该文件保存到空间时的媒体类型 */
-  mimeType?: string;
+  mimeType?: string
 
   /** 文件的元数据；该文件保存到空间时的元数据，不需要添加 x-qn-meta 前缀 */
-  metadata?: Record<string, string>;
+  metadata?: Record<string, string>
 
   private constructor(type: string, data: string | ArrayBuffer) {
     this.type = type
     this.data = data
   }
 
-  static  fromUri(uri: string):UploadFile{
+  static fromUri(uri: string): UploadFile {
+    if (!isURI(uri)) {
+      const error = new Error(`This doesn't seem to be a correct uri: ${uri}`)
+      console.error('Creating file via fromUri failed', error)
+      throw error
+    }
+
     return new UploadFile('uri', uri)
   }
-  static  fromPath(path: string):UploadFile{
+  static fromPath(path: string): UploadFile {
+    if (isURI(path)) {
+      const error = new Error(`This looks like a uri, please use formURI: ${path}`)
+      console.error('Creating file via fromPath failed', error)
+      throw error
+    }
+
     return new UploadFile('path', path)
   }
-  static  fromString(data: string):UploadFile{
+  static fromString(data: string): UploadFile {
     return new UploadFile('string', data)
   }
-  static  fromArrayBuffer(data: ArrayBuffer):UploadFile{
+  static fromArrayBuffer(data: ArrayBuffer): UploadFile {
     return new UploadFile('array-buffer', data)
   }
 }
@@ -58,15 +80,11 @@ class InternalUploadBlob implements common.UploadBlob {
   }
 }
 
-// 通过这个来减少非必要复制操作
-export type UseOf = 'direct' | 'multipart'
-
 export class InternalUploadFile implements common.UploadFile {
   private file: fs.File | null = null
-  private fileUri: string | null = null
   private unlinkPath: string | null = null
   private initPromise: Promise<common.Result<boolean>> | null = null
-  constructor(public context: ohCommon.Context, private data: UploadFile, private useOf: UseOf) {}
+  constructor(public context: ohCommon.Context, private data: UploadFile) {}
 
   /** 初始化数据并写入磁盘&打开文件 */
   private autoInit(): Promise<common.Result<boolean>> {
@@ -78,49 +96,6 @@ export class InternalUploadFile implements common.UploadFile {
       return Promise.resolve({
         error: new common.UploadError('FileSystemError', 'Invalid file')
       })
-    }
-
-    // fileUri 主要为直传提供
-    // pathUri 的格式为 file://pathUri
-    const initFileUri = async (pathUri: string): Promise<common.Result<boolean>> => {
-      // 如果不是直传，不初始化 uri，减少复制操作
-      if (this.useOf !== 'direct') return ({ result: true })
-
-      const storageKey = `qiniu-upload@${Date.now()}`
-      const cacheFilePath = `${this.context.cacheDir}/${storageKey}`
-      const targetResult = await fs.open(cacheFilePath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE)
-        .then<common.Result<fs.File>>(file => ({ result: file }))
-        .catch<common.Result<fs.File>>(error => ({ error: new common.UploadError('FileSystemError', error.message) }))
-
-      if (!common.isSuccessResult(targetResult)) {
-        return targetResult
-      }
-
-      const sourceResult = await fs.open(pathUri, fs.OpenMode.READ_ONLY)
-        .then<common.Result<fs.File>>(file => ({ result: file }))
-        .catch<common.Result<fs.File>>(error => ({ error: new common.UploadError('FileSystemError', error.message) }))
-
-      if (!common.isSuccessResult(sourceResult)) {
-        await fs.close(targetResult.result)
-        return sourceResult
-      }
-
-      const copyResult = await fs.copyFile(sourceResult.result.fd, targetResult.result.fd)
-        .then<common.Result<boolean>>(() => ({ result: true }))
-        .catch<common.Result<boolean>>(error => ({ error: new common.UploadError('FileSystemError', error.message) }))
-
-      if (!common.isSuccessResult(copyResult)) {
-        await fs.close(targetResult.result)
-        await fs.close(sourceResult.result)
-        return copyResult
-      }
-
-      await fs.close(sourceResult.result)
-      await fs.close(targetResult.result)
-
-      this.fileUri = `internal://cache/${storageKey}`
-      this.unlinkPath = cacheFilePath
-      return { result: true }
     }
 
     // file 主要为分片上传提供
@@ -135,7 +110,7 @@ export class InternalUploadFile implements common.UploadFile {
       }
 
       this.file = openResult.result
-      return initFileUri(pathUri)
+      return { result: true }
     }
 
     const initData = async (): Promise<common.Result<boolean>> => {
@@ -144,11 +119,11 @@ export class InternalUploadFile implements common.UploadFile {
       }
 
       if (this.data.type === 'uri') {
-          if (typeof this.data.data !== 'string') {
-            return {
-              error: new common.UploadError('FileSystemError', 'Invalid file data')
-            }
+        if (typeof this.data.data !== 'string') {
+          return {
+            error: new common.UploadError('FileSystemError', 'Invalid file data')
           }
+        }
 
         // 标准 file uri
         if (this.data.data.startsWith('file://')) {
@@ -239,13 +214,12 @@ export class InternalUploadFile implements common.UploadFile {
     return { result: true }
   }
 
-  /**
-   * 返回的永远是 file://pathUri 的 uri
-   */
   async path(): Promise<common.Result<string>> {
-    const initResult = await this.autoInit()
-    if (!common.isSuccessResult(initResult)) return initResult
-    return { result: this.fileUri! }
+    throw new Error('Has not yet implemented path')
+  }
+
+  async key(): Promise<common.Result<string | null>> {
+    return { result: this.data?.key || null }
   }
 
   async name(): Promise<common.Result<string | null>> {
