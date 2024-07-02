@@ -1,7 +1,9 @@
 import { Result } from './types'
 
 export type FileData = {
-  /** 文件名；该文件保存到空间时的名称 */
+  /** 文件名；如果未指定，则为 filename */
+  key?: string
+  /** 本地文件名；如果未指定，默认为随机字符串 */
   filename?: string
   /** 文件的媒体类型；该文件保存到空间时的媒体类型 */
   mimeType?: string
@@ -20,7 +22,9 @@ export interface UploadFile {
   size(): Promise<Result<number>>
   /** 文件路径；返回文件的完整路径 */
   path(): Promise<Result<string>>
-  /** 文件名 */
+  /** 目标文件名，最终存储的文件名 */
+  key(): Promise<Result<string | null>>
+  /** 原始文件名，如果不存在则会是随机字符串 */
   name(): Promise<Result<string | null>>
   /** 媒体类型 */
   mimeType(): Promise<Result<string | null>>

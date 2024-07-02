@@ -49,6 +49,11 @@ export class UploadFile implements BaseUploadFile {
     return { result: 'browser platform files' }
   }
 
+  async key(): Promise<Result<string | null>> {
+    const realFilename = this.fileData.type === 'file' && this.fileData.key
+    return { result: this.fileData?.key || realFilename || null }
+  }
+
   async name(): Promise<Result<string | null>> {
     const realFilename = this.fileData.type === 'file' && this.fileData.data.name
     return { result: this.fileData?.filename || realFilename || null }

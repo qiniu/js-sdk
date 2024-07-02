@@ -48,6 +48,15 @@ class DirectUploadTask implements Task {
       return fileNameResult
     }
 
+    const fileKeyResult = await this.file.key()
+    if (!isSuccessResult(fileKeyResult)) {
+      if (isErrorResult(fileKeyResult)) {
+        this.context.error = fileKeyResult.error
+      }
+
+      return fileKeyResult
+    }
+
     const fileMetaResult = await this.file.metadata()
     if (!isSuccessResult(fileMetaResult)) {
       if (isErrorResult(fileMetaResult)) {
@@ -71,7 +80,7 @@ class DirectUploadTask implements Task {
       customVars: this.vars,
       token: this.context!.token!,
       metadata: fileMetaResult.result,
-      key: fileNameResult.result || undefined,
+      key: fileKeyResult.result || undefined,
       uploadHostUrl: this.context!.host!.getUrl(),
       fileName: fileNameResult.result || generateRandomString(), // 接口要求必传且建议没有有效文件名时传随机字符串
       onProgress: progress => {

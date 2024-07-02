@@ -131,6 +131,9 @@ class MkfileTask implements Task {
   async process(notify: () => void): Promise<Result> {
     this.updateProgress(0, notify)
 
+    const fileKeyResult = await this.file.key()
+    if (!isSuccessResult(fileKeyResult)) return fileKeyResult
+
     const filenameResult = await this.file.name()
     if (!isSuccessResult(filenameResult)) return filenameResult
 
@@ -149,7 +152,7 @@ class MkfileTask implements Task {
       userVars: this.vars,
       token: this.context.token!,
       fileSize: fileSizeResult.result,
-      key: filenameResult.result || undefined,
+      key: fileKeyResult.result || undefined,
       fname: filenameResult.result || generateRandomString(),
       lastCtxOfBlock: this.context.uploadBlocks.map(i => i.ctx),
       uploadHostUrl: this.context!.host!.getUrl(),
