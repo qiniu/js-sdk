@@ -5,13 +5,13 @@
 1. 安装SDK
 
 ```bash
-npm i @qiniu/browser-upload
+npm i qiniu-js@^4.0.0
 ```
 
 2. 导入SDK
 
 ```typescript
-import { createDirectUploadTask, createMultipartUploadTask, FileData } from '@qiniu/browser-upload';
+import { createDirectUploadTask, createMultipartUploadTask, FileData } from 'qiniu-js';
 ```
 
 3. 创建上传任务
