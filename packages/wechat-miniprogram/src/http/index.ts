@@ -1,6 +1,6 @@
-import common, { HttpResponse, MockProgress, UploadError, isHttpFormData, isSuccessResult } from '@internal/common'
-
+import * as common from '../@internal'
 import { UploadFile, isUploadBlob, isUploadFile } from '../file'
+import { HttpResponse, MockProgress, UploadError, isHttpFormData, isSuccessResult } from '../@internal'
 
 interface RequestOptions extends common.HttpClientOptions {
   method: common.HttpMethod
