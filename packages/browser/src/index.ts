@@ -1,10 +1,10 @@
-import * as common from '@internal/common'
+import * as common from './@internal'
 
 import { HttpClient } from './http'
 import { FileData, UploadFile } from './file'
 
 export { FileData } from './file'
-export { UploadTask, UploadConfig, Progress } from '@internal/common'
+export { UploadTask, UploadConfig, Progress } from './@internal'
 
 function afterCancel(task: common.UploadTask, hook: () => Promise<common.Result>) {
   const rawCancel = task.cancel

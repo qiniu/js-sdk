@@ -5,3 +5,4 @@ coverage
 output
 test-server.js
 miniprogram_npm
+@internal

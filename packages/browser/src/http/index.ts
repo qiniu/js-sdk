@@ -1,4 +1,5 @@
-import common, { HttpResponse, MockProgress, UploadError, isHttpFormData } from '@internal/common'
+import * as common from '../@internal'
+import { HttpResponse, MockProgress, UploadError, isHttpFormData } from '../@internal'
 
 import { isUploadBlob, isUploadFile } from '../file'
 

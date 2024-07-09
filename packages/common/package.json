@@ -6,11 +6,12 @@
   "main": "output/index.js",
   "types": "output/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc -w",
-    "postinstall": "tsc",
-    "build-harmony": "tsc --outDir ../harmony/library/src/main/ets/components/@internal",
-    "dev-harmony": "tsc -w --outDir ../harmony/library/src/main/ets/components/@internal"
+    "build": "run-p build:*",
+    "dev": "run-p \"build:* -- -w\"",
+    "postinstall": "run-p build:*",
+    "build:browser": "cpx \"src/**/*\" ../browser/src/@internal",
+    "build:wechat-miniprogram": "cpx \"src/**/*\" ../wechat-miniprogram/src/@internal",
+    "build:harmony": "cpx \"src/**/*\" ../harmony/library/src/main/ets/components/@internal"
   },
   "author": "",
   "license": "ISC"
