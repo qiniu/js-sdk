@@ -152,10 +152,10 @@ class MkfileTask implements Task {
       userVars: this.vars,
       token: this.context.token!,
       fileSize: fileSizeResult.result,
-      key: fileKeyResult.result || undefined,
+      uploadHostUrl: this.context!.host!.getUrl(),
       fname: filenameResult.result || generateRandomString(),
       lastCtxOfBlock: this.context.uploadBlocks.map(i => i.ctx),
-      uploadHostUrl: this.context!.host!.getUrl(),
+      key: fileKeyResult.result || filenameResult.result || undefined,
       onProgress: progress => { this.updateProgress(progress.percent, notify) }
     })
 
