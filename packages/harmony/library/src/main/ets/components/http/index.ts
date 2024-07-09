@@ -9,27 +9,6 @@ interface RequestOptions extends common.HttpClientOptions {
   method: common.HttpMethod
 }
 
-function parseHeader(header: string): {
-  statusCode: number
-  header: common.HttpHeader
-} {
-
-  const newHeader: common.HttpHeader = {}
-  const delimiter = '\r\n'
-  const [first, ...lines] = header.split(delimiter).filter(v => v !== '')
-  for (let index = 0; index < lines.length; index++) {
-    const line = lines[index]
-    const [key, value] = line.split(':')
-    newHeader[key] = value.trim()
-  }
-
-  return {
-    // HTTP/1.1 200 OK
-    statusCode: parseInt(first.split(' ')[1], 10),
-    header: newHeader
-  }
-}
-
 function transformRequestMethod(method: common.HttpMethod): http.RequestMethod {
   if (method === 'PUT') return http.RequestMethod.PUT
   if (method === 'GET') return http.RequestMethod.GET
@@ -37,7 +16,7 @@ function transformRequestMethod(method: common.HttpMethod): http.RequestMethod {
   if (method === 'DELETE') return http.RequestMethod.DELETE
 }
 
-function shouldUseUploadFile(option: RequestOptions): boolean {
+function shouldUseFormUploadFile(option: RequestOptions): boolean {
   if (option?.method !== 'POST') return false
   if (!common.isHttpFormData(option.body)) return false
 
@@ -49,107 +28,53 @@ export class HttpClient implements HttpClient {
   constructor(private context: ohCommon.BaseContext) {}
 
   private async request(url: string, options: RequestOptions): Promise<common.Result<common.HttpResponse>> {
-    // 使用 requestApi 接口发送请求
-    if (shouldUseUploadFile(options)) {
-      if (!canIUse('SystemCapability.MiscServices.Upload')) {
-        return { error: new common.UploadError('NetworkError', 'The current system api version does not support') }
-      }
-
-      const files: requestApi.File[] = []
-      const formData: requestApi.RequestData[] = []
-      const bodyEntries = (options.body as common.HttpFormData).entries()
-
-      for (const [key, value] of bodyEntries) {
-        if (isInternalUploadFile(value)) {
-          const nameResult = await value.name()
-          if (!common.isSuccessResult(nameResult)) return nameResult
-
-          const mimeTypeResult = await value.mimeType()
-          if (!common.isSuccessResult(mimeTypeResult)) return mimeTypeResult
-
-          const pathResult = await value.path()
-          if (!common.isSuccessResult(pathResult)) return pathResult
-
-          files.push({
-            name: key, // 表单的 key
-            uri: pathResult.result,
-            type: mimeTypeResult.result || '',
-            filename: nameResult.result || '',
-          })
-        } else {
-          formData.push({ name: key, value: String(value) })
-        }
-      }
-
-      return new Promise(resolve => {
-        const uploadFileOptions: requestApi.UploadConfig = {
-          files,
-          data: formData,
-          url: url.toLowerCase(),
-          method: options.method,
-          header: options.headers
-        }
-
-        try {
-          requestApi.uploadFile(this.context, common.removeUndefinedKeys(uploadFileOptions))
-            .then(task => {
-              if (options.abort) {
-                options.abort.onAbort(() => task.delete())
-              }
-
-              if (options.onProgress) {
-                const onProgress = options.onProgress
-                task.on('progress', (uploadedSize, totalSize) => (
-                  onProgress({ percent: uploadedSize / totalSize })
-                ))
-              }
-
-              let responseCode: number = 0
-              let responseHeader: common.HttpHeader = {}
-              task.on('headerReceive', header => {
-                if (typeof header === 'string') {
-                  const data = parseHeader(header)
-                  responseCode = data.statusCode
-                  header = data.header
-                }
-              })
-
-
-              task.on('complete', () => {
-                return resolve({
-                  result: {
-                    data: '', // TODO: 暂时不支持读取 body，next 版本将会支持
-                    code: responseCode,
-                    reqId: responseHeader['X-Reqid']
-                  }
-                })
-              })
-
-              task.on('fail', stats => {
-                return resolve({
-                  error: new common.UploadError('HttpRequestError', stats[0]?.message)
-                })
-              })
-            })
-            .catch(error => {
-              return resolve({
-                error: new common.UploadError('HttpRequestError', error.errMsg)
-              })
-            })
-        } catch (error) {
-          return resolve({
-            error: new common.UploadError('HttpRequestError', error.message)
-          })
-        }
-      })
-    }
-
     if (!canIUse('SystemCapability.Communication.NetStack')) {
       return { error: new common.UploadError('NetworkError', 'The current system api version does not support') }
     }
 
+    const httpOptions: http.HttpRequestOptions = {
+      usingCache: false,
+      header: options.headers,
+      extraData: options?.body,
+      method: transformRequestMethod(options.method),
+      expectDataType: http.HttpDataType.STRING // 强制返回字符串
+    }
+
+    // 表单
+    if (shouldUseFormUploadFile(options)) {
+      if (common.isHttpFormData(options.body)) {
+        const formDataList: http.MultiFormData[] = []
+        for await (const [key, value] of options.body.entries()) {
+          if (isInternalUploadFile(value)) {
+            const arrayBufferResult = await value.readAsArrayBuffer()
+            if (!common.isSuccessResult(arrayBufferResult)) return arrayBufferResult
+
+            const mimeTypeResult = await value.mimeType()
+            if (!common.isSuccessResult(mimeTypeResult)) return mimeTypeResult
+
+            const nameResult = await value.name()
+            if (!common.isSuccessResult(nameResult)) return nameResult
+
+
+            formDataList.push({
+              name: key,
+              data: arrayBufferResult.result,
+              remoteFileName: nameResult.result,
+              contentType: mimeTypeResult.result
+            })
+          } else {
+            formDataList.push({
+              name: key,
+              data: value,
+              contentType: ''
+            })
+          }
+        }
+        httpOptions.multiFormDataList = formDataList
+      }
+    }
+
     let estimatedTime = 5 // 预估耗时默认为 5s
-    let normalizedBody: string | ArrayBuffer | Object | undefined = options?.body as any
 
     // 如果 body 是文件，则直接读取 arrayBuffer 去发送请求
     if (isInternalUploadFile(options?.body) || isInternalUploadBlob(options?.body)) {
@@ -157,7 +82,7 @@ export class HttpClient implements HttpClient {
       if (!common.isSuccessResult(arrayBufferResult)) return arrayBufferResult
       // 根据文件大小估计重新预估一个时间
       estimatedTime = Math.max(1, (arrayBufferResult.result.byteLength / (1024 ** 2)))
-      normalizedBody = arrayBufferResult.result
+      httpOptions.extraData = arrayBufferResult.result
     }
 
     const mockProgress = new common.MockProgress(estimatedTime)
@@ -172,13 +97,6 @@ export class HttpClient implements HttpClient {
     return new Promise(resolve => {
       mockProgress.start()
       const httpRequest = http.createHttp()
-      const httpOptions: http.HttpRequestOptions = {
-        usingCache: false,
-        header: options.headers,
-        extraData: normalizedBody,
-        method: transformRequestMethod(options.method),
-        expectDataType: http.HttpDataType.STRING // 强制返回字符串
-      }
 
       if (options?.abort) {
         options.abort.onAbort(() => {

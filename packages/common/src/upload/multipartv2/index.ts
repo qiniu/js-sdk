@@ -64,6 +64,9 @@ class InitPartUploadTask implements Task {
     const filenameResult = await this.file.name()
     if (!isSuccessResult(filenameResult)) return filenameResult
 
+    const fileKeyResult = await this.file.key()
+    if (!isSuccessResult(fileKeyResult)) return fileKeyResult
+
     // 首先检查 context 上的 upload id 有没有过期
     if (this.context.uploadPartId) {
       const nowTime = Date.now() / 1e3
@@ -75,9 +78,9 @@ class InitPartUploadTask implements Task {
           abort: this.abort,
           token: this.context!.token!,
           bucket: this.context.token!.bucket,
-          key: filenameResult.result || undefined,
           uploadHostUrl: this.context!.host!.getUrl(),
           uploadId: this.context.uploadPartId.uploadId,
+          key: fileKeyResult.result || filenameResult.result || undefined,
           onProgress: progress => { this.updateProgress(progress.percent, notify) }
         })
 
@@ -105,8 +108,8 @@ class InitPartUploadTask implements Task {
       abort: this.abort,
       token: this.context!.token!,
       bucket: this.context!.token!.bucket,
-      key: filenameResult.result || undefined,
       uploadHostUrl: this.context!.host!.getUrl(),
+      key: fileKeyResult.result || filenameResult.result || undefined,
       onProgress: progress => { this.updateProgress(progress.percent, notify) }
     })
 
@@ -168,6 +171,9 @@ class UploadPartTask implements Task {
     const filenameResult = await this.file.name()
     if (!isSuccessResult(filenameResult)) return filenameResult
 
+    const fileKeyResult = await this.file.key()
+    if (!isSuccessResult(fileKeyResult)) return fileKeyResult
+
     const fileSizeResult = await this.file.size()
     if (!isSuccessResult(fileSizeResult)) return fileSizeResult
 
@@ -178,9 +184,9 @@ class UploadPartTask implements Task {
       partIndex: this.index,
       token: this.context!.token!,
       bucket: this.context!.token!.bucket,
-      key: filenameResult.result || undefined,
       uploadHostUrl: this.context!.host!.getUrl(),
       uploadId: this.context!.uploadPartId!.uploadId!,
+      key: fileKeyResult.result || filenameResult.result || undefined,
       onProgress: progress => { this.updateProgress(false, fileSizeResult.result, progress.percent, notify) }
     })
 
@@ -233,6 +239,10 @@ class CompletePartUploadTask implements Task {
 
   async process(notify: () => void): Promise<Result> {
     this.updateProgress(0, notify)
+
+    const fileKeyResult = await this.file.key()
+    if (!isSuccessResult(fileKeyResult)) return fileKeyResult
+
     const filenameResult = await this.file.name()
     if (!isSuccessResult(filenameResult)) return filenameResult
 
@@ -253,10 +263,10 @@ class CompletePartUploadTask implements Task {
       customVars: this.vars,
       token: this.context!.token!,
       metadata: metadataResult.result,
-      key: filenameResult.result || undefined,
       uploadHostUrl: this.context!.host!.getUrl(),
       mimeType: mimeTypeResult.result || undefined,
       uploadId: this.context!.uploadPartId!.uploadId!,
+      key: fileKeyResult.result || filenameResult.result || undefined,
       fileName: filenameResult.result || generateRandomString(), // 和直传行为保持一致
       onProgress: progress => { this.updateProgress(progress.percent, notify) }
     })

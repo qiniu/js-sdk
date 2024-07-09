@@ -39,13 +39,22 @@ class DirectUploadTask implements Task {
   }
 
   async process(notify: () => void): Promise<Result> {
-    const fileNameResult = await this.file.name()
-    if (!isSuccessResult(fileNameResult)) {
-      if (isErrorResult(fileNameResult)) {
-        this.context.error = fileNameResult.error
+    const filenameResult = await this.file.name()
+    if (!isSuccessResult(filenameResult)) {
+      if (isErrorResult(filenameResult)) {
+        this.context.error = filenameResult.error
       }
 
-      return fileNameResult
+      return filenameResult
+    }
+
+    const fileKeyResult = await this.file.key()
+    if (!isSuccessResult(fileKeyResult)) {
+      if (isErrorResult(fileKeyResult)) {
+        this.context.error = fileKeyResult.error
+      }
+
+      return fileKeyResult
     }
 
     const fileMetaResult = await this.file.metadata()
@@ -71,9 +80,9 @@ class DirectUploadTask implements Task {
       customVars: this.vars,
       token: this.context!.token!,
       metadata: fileMetaResult.result,
-      key: fileNameResult.result || undefined,
       uploadHostUrl: this.context!.host!.getUrl(),
-      fileName: fileNameResult.result || generateRandomString(), // 接口要求必传且建议没有有效文件名时传随机字符串
+      fileName: filenameResult.result || generateRandomString(), // 接口要求必传且建议没有有效文件名时传随机字符串
+      key: fileKeyResult.result || filenameResult.result || undefined,
       onProgress: progress => {
         this.context!.progress.details.directUpload.percent = progress.percent
         this.context!.progress.details.directUpload.size = fileSizeResult.result

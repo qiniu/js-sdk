@@ -135,6 +135,10 @@ export class UploadFile implements BaseUploadFile {
     return { result: this.filePath! }
   }
 
+  async key(): Promise<Result<string | null>> {
+    return { result: this.fileData?.key || null }
+  }
+
   async name(): Promise<Result<string | null>> {
     return { result: this.fileData?.filename || null }
   }

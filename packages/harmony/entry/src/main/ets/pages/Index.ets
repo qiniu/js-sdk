@@ -54,12 +54,12 @@ struct Index {
 
     const file = this.getUploadFile()
 
+    file.key = "test-test"
     file.filename = "test-test"
     file.mimeType = "232312323/2312"
     file.metadata = {
       '2321': "2323232"
     }
-
 
     const task = createMultipartUploadV2Task(context, file, {
       logLevel: 'INFO',
