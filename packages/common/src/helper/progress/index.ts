@@ -30,9 +30,7 @@ export class MockProgress {
   }
 
   start() {
-    if (this.intervalIds != null) {
-      this.clearInterval()
-    }
+    this.clearInterval()
 
     let time = 0
     this.progress = 0
