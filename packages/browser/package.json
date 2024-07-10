@@ -1,6 +1,6 @@
 {
   "name": "qiniu-js",
-  "version": "4.0.0-beta.2",
+  "version": "4.0.0-beta.3",
   "description": "Qiniu browser upload sdk",
   "miniprogram": "output",
   "main": "output/index.js",
@@ -11,6 +11,9 @@
     "dev": "rollup -c -w",
     "build": "rollup -c"
   },
+  "files": [
+    "output/*"
+  ],
   "author": "qiniu",
   "license": "MIT",
   "devDependencies": {
