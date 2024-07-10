@@ -1,6 +1,6 @@
 {
   "name": "@qiniu/wechat-miniprogram-upload",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Qiniu wechat-miniprogram upload sdk",
   "miniprogram": "output",
   "main": "output/index.js",
@@ -15,7 +15,6 @@
   "license": "MIT",
   "devDependencies": {
     "rollup": "^2.77.0",
-    "@internal/common": "*",
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-commonjs": "^22.0.1",
     "@rollup/plugin-node-resolve": "^13.3.0",

@@ -1,10 +1,10 @@
-import * as common from '@internal/common'
+import * as common from './@internal'
 
 import { WxHttpClient } from './http'
 import { FileData, UploadFile } from './file'
 
 export { FileData } from './file'
-export { UploadTask, UploadConfig } from '@internal/common'
+export { UploadTask, UploadConfig } from './@internal'
 
 function beforeCancel(task: common.UploadTask, hook: () => Promise<common.Result>) {
   const rawCancel = task.cancel

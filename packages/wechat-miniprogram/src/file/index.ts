@@ -4,7 +4,7 @@ import {
   UploadBlob as BaseUploadBlob,
   UploadFile as BaseUploadFile,
   sliceChunk, FileData as CommonFileData
-} from '@internal/common'
+} from '../@internal'
 
 class UploadBlob implements BaseUploadBlob {
   constructor(
