@@ -47,7 +47,7 @@ export class Host {
    * @description 获取当前 host 的完整 url
    */
   getUrl() {
-    return `${this.protocol}://${this.host}`
+    return `${this.protocol.toLowerCase()}://${this.host}`
   }
 
   /**
