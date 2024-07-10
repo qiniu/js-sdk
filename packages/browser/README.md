@@ -11,7 +11,7 @@ npm i qiniu-js@^4.0.0
 2. 导入SDK
 
 ```typescript
-import { createDirectUploadTask, createMultipartUploadTask, FileData } from 'qiniu-js';
+import { createDirectUploadTask, createMultipartUploadV2Task, FileData } from 'qiniu-js';
 ```
 
 3. 创建上传任务
@@ -27,8 +27,8 @@ const fileData: FileData = { type: 'array-buffer', data: new ArrayBuffer(1e3) }
 const uploadTask = createDirectUploadTask(fileData, config);
 
 // 创建分片上传任务
-// 当前版本 SDK 暂不支持部分私有云服务版本较老的分片上传功能
-const uploadTask = createMultipartUploadTask(fileData, config);
+// 部分私有云服务版本较老的请使用 v1 分片上传
+const uploadTask = createMultipartUploadV2Task(fileData, config);
 ```
 
 1. 设置任务回调函数
