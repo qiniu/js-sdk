@@ -1,6 +1,6 @@
 {
   "name": "qiniu-js",
-  "version": "4.0.0-beta.3",
+  "version": "4.0.0-beta.4",
   "description": "Qiniu browser upload sdk",
   "miniprogram": "output",
   "main": "output/index.js",
