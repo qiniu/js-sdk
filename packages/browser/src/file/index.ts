@@ -36,6 +36,7 @@ export class UploadFile implements BaseUploadFile {
         this.fileData.filename || '',
         { type: this.fileData.mimeType }
       )
+      return
     }
 
     throw new Error('Unknown file type')
