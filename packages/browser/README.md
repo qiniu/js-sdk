@@ -23,7 +23,6 @@ const fileData: FileData = { type: 'string', data: 'content' }
 const fileData: FileData = { type: 'array-buffer', data: new ArrayBuffer(1e3) }
 
 // 创建直传任务
-// 由于系统 api9 接口问题暂时不推荐使用，无法获取上传的服务端返回信息
 const uploadTask = createDirectUploadTask(fileData, config);
 
 // 创建分片上传任务
