@@ -34,7 +34,7 @@ export class MockProgress {
 
     let time = 0
     this.progress = 0
-    const intervalFrequency = 100
+    const intervalFrequency = 400
     const intervalIds = setInterval(() => {
       time += intervalFrequency
       this.setProgress(1 - Math.exp(-1 * time / (this.timeConstant * 1000)))
