@@ -318,7 +318,7 @@ export const createMultipartUploadV2Task = (file: UploadFile, config: UploadConf
     },
     concurrentLimit: 3,
 
-    // TODO 动态创建任务会导致任务进度倒退
+    // FIXME: 动态创建任务会导致任务进度倒退
     tasksCreator: async () => {
       const sliceResult = await file.slice(4 * 1024 * 1024)
       if (isErrorResult(sliceResult)) {
