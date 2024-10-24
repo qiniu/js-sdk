@@ -202,7 +202,7 @@ export const createMultipartUploadV1Task = (file: UploadFile, config: UploadConf
       prefix: 'MultipartUploadChildQueue'
     },
     concurrentLimit: 1, // 此接口只能串行
-    // TODO 动态创建任务会导致任务进度倒退
+    // FIXME 动态创建任务会导致任务进度倒退
     tasksCreator: async () => {
       const sliceResult = await file.slice(4 * 1024 * 1024)
       if (isErrorResult(sliceResult)) {

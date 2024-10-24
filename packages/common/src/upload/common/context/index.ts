@@ -33,10 +33,7 @@ export function updateTotalIntoProgress(progress: Progress): Progress {
   }
 
   const newPercent = totalPercent / detailValues.length
-
-  // 在失败重试等场景中，进度回退是正常业务导致的，但是客户要求进度不能回退
-  if (newPercent > progress.percent) progress.percent = newPercent // 防止进度倒流
-
+  progress.percent = newPercent
   progress.size = totalSize
   return progress
 }
