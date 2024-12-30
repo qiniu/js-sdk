@@ -96,9 +96,17 @@ export class HttpClient implements common.HttpClient {
 
         mockProgress?.end()
 
+        const reqId = xhr.getResponseHeader('x-reqId')
+        if (!reqId) {
+          resolve({
+            error: new UploadError('HijackedError', 'Response header x-reqId not found')
+          })
+          return
+        }
+
         resolve({
           result: {
-            reqId: xhr.getResponseHeader('x-reqId') || undefined,
+            reqId,
             code: xhr.status,
             data: xhr.responseText
           }

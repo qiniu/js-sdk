@@ -26,6 +26,9 @@ export interface HttpClientOptions {
 export interface HttpResponse {
   code: number
   data: string
+  // keep this optional even if added hijack error.
+  // because there will be other errors, like network error,
+  // that interrupts the request before got reqId of response.
   reqId?: string
 }
 

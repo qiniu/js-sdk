@@ -9,12 +9,12 @@ import { UploadConfig, UploadTask } from '../types'
 
 import { Task, TaskQueue } from '../common/queue'
 import { initUploadConfig } from '../common/config'
-import { HostProgressKey, HostProvideTask } from '../common/host'
+import { PrepareRegionsHostsTask, RegionsHostsProgressKey } from '../common/region'
 import { TokenProgressKey, TokenProvideTask } from '../common/token'
 import { UploadContext, updateTotalIntoProgress } from '../common/context'
 
 export type MultipartUploadV1ProgressKey =
-  | HostProgressKey
+  | RegionsHostsProgressKey
   | TokenProgressKey
   | 'completeMultipartUpload'
   | `multipartUpload:${number}`
@@ -72,16 +72,17 @@ class MkblkTask implements Task {
       }
     }
 
-    this.abort = new HttpAbortController()
+    const abort = new HttpAbortController()
+    this.abort = abort
 
     this.updateProgress(false, 0, notify)
-    const uploadedPartResult = await this.uploadApis.mkblk({
-      abort: this.abort,
+    const uploadedPartResult = await this.context.operationApiRetrier.tryDo(() => this.uploadApis.mkblk({
+      abort,
       token: this.context!.token!,
       firstChunkBinary: this.blob,
       uploadHostUrl: this.context!.host!.getUrl(),
       onProgress: progress => { this.updateProgress(false, progress.percent, notify) }
-    })
+    }), this.context.operationApiContext)
 
     if (isCanceledResult(uploadedPartResult)) {
       return uploadedPartResult
@@ -146,9 +147,11 @@ class MkfileTask implements Task {
     const metadataResult = await this.file.metadata()
     if (!isSuccessResult(metadataResult)) return metadataResult
 
-    this.abort = new HttpAbortController()
-    const completeResult = await this.uploadApis.mkfile({
-      abort: this.abort,
+    const abort = new HttpAbortController()
+    this.abort = abort
+
+    const completeResult = await this.context.operationApiRetrier.tryDo(() => this.uploadApis.mkfile({
+      abort,
       userVars: this.vars,
       token: this.context.token!,
       fileSize: fileSizeResult.result,
@@ -157,7 +160,7 @@ class MkfileTask implements Task {
       lastCtxOfBlock: this.context.uploadBlocks.map(i => i.ctx),
       key: fileKeyResult.result || filenameResult.result || undefined,
       onProgress: progress => { this.updateProgress(progress.percent, notify) }
-    })
+    }), this.context.operationApiContext)
 
     if (isSuccessResult(completeResult)) {
       this.context!.result = completeResult.result
@@ -171,21 +174,20 @@ class MkfileTask implements Task {
   }
 }
 
-// eslint-disable-next-line max-len
-export const createMultipartUploadV1Task = (file: UploadFile, config: UploadConfig): UploadTask<MultipartUploadV1Context> => {
+export const createMultipartUploadV1Task = (
+  file: UploadFile,
+  config: UploadConfig
+): UploadTask<MultipartUploadV1Context> => {
   const normalizedConfig = initUploadConfig(config)
 
-  const uploadApis = new UploadApis(normalizedConfig.httpClient)
-  const configApis = new ConfigApis(normalizedConfig.apiServerUrl, normalizedConfig.httpClient)
-
   const context = new MultipartUploadV1Context()
+  const prepareRegionsHostsTask = new PrepareRegionsHostsTask({
+    config: normalizedConfig,
+    context
+  })
+  const uploadApis = new UploadApis(normalizedConfig.httpClient)
+
   const tokenProvideTask = new TokenProvideTask(context, normalizedConfig.tokenProvider)
-  const hostProvideTask = new HostProvideTask(
-    context,
-    configApis,
-    normalizedConfig.protocol,
-    normalizedConfig.uploadHosts
-  )
 
   const mainQueue = new TaskQueue({
     logger: {
@@ -224,7 +226,7 @@ export const createMultipartUploadV1Task = (file: UploadFile, config: UploadConf
 
   mainQueue.enqueue(
     tokenProvideTask,
-    hostProvideTask,
+    prepareRegionsHostsTask,
     putQueue,
     mkfileTask
   )

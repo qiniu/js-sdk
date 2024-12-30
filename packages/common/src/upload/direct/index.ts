@@ -1,6 +1,6 @@
 import { UploadFile } from '../../types/file'
 import { UploadTask, UploadConfig } from '../types'
-import { ConfigApis, UploadApis } from '../../api'
+import { UploadApis } from '../../api'
 import { HttpAbortController } from '../../types/http'
 import { generateRandomString } from '../../helper/string'
 import { Result, isErrorResult, isSuccessResult } from '../../types/types'
@@ -8,11 +8,11 @@ import { Result, isErrorResult, isSuccessResult } from '../../types/types'
 import { Task, TaskQueue } from '../common/queue'
 import { UploadContext, updateTotalIntoProgress } from '../common/context'
 import { initUploadConfig } from '../common/config'
-import { HostProgressKey, HostProvideTask } from '../common/host'
+import { PrepareRegionsHostsTask, RegionsHostsProgressKey } from '../common/region'
 import { TokenProgressKey, TokenProvideTask } from '../common/token'
 
 export type DirectUploadProgressKey =
-  | HostProgressKey
+  | RegionsHostsProgressKey
   | TokenProgressKey
   | 'directUpload'
 
@@ -73,14 +73,15 @@ class DirectUploadTask implements Task {
       return fileSizeResult
     }
 
-    this.abort = new HttpAbortController()
-    const result = await this.uploadApis.directUpload({
+    const abort = new HttpAbortController()
+    this.abort = abort
+    const result = await this.context.operationApiRetrier.tryDo(() => this.uploadApis.directUpload({
       file: this.file,
-      abort: this.abort,
+      abort,
       customVars: this.vars,
       token: this.context!.token!,
       metadata: fileMetaResult.result,
-      uploadHostUrl: this.context!.host!.getUrl(),
+      uploadHostUrl: this.context.operationApiContext.host!.getUrl(),
       fileName: filenameResult.result || generateRandomString(), // 接口要求必传且建议没有有效文件名时传随机字符串
       key: fileKeyResult.result || filenameResult.result || undefined,
       onProgress: progress => {
@@ -88,7 +89,7 @@ class DirectUploadTask implements Task {
         this.context!.progress.details.directUpload.size = fileSizeResult.result
         notify()
       }
-    })
+    }), this.context.operationApiContext)
 
     if (isErrorResult(result)) {
       this.context.error = result.error
@@ -104,18 +105,15 @@ class DirectUploadTask implements Task {
 
 export const createDirectUploadTask = (file: UploadFile, config: UploadConfig): UploadTask<DirectUploadContext> => {
   const normalizedConfig = initUploadConfig(config)
-  const uploadApis = new UploadApis(normalizedConfig.httpClient)
-  const configApis = new ConfigApis(normalizedConfig.apiServerUrl, normalizedConfig.httpClient)
 
   const context = new DirectUploadContext()
+  const prepareRegionsHostsTask = new PrepareRegionsHostsTask({
+    config: normalizedConfig,
+    context
+  })
+  const uploadApis = new UploadApis(normalizedConfig.httpClient)
   const directUploadTask = new DirectUploadTask(context, uploadApis, config.vars, file)
   const tokenProvideTask = new TokenProvideTask(context, normalizedConfig.tokenProvider)
-  const hostProvideTask = new HostProvideTask(
-    context,
-    configApis,
-    normalizedConfig.protocol,
-    normalizedConfig.uploadHosts
-  )
 
   const taskQueue = new TaskQueue({
     logger: { level: normalizedConfig.logLevel, prefix: 'directUploadQueue' },
@@ -124,7 +122,7 @@ export const createDirectUploadTask = (file: UploadFile, config: UploadConfig): 
 
   taskQueue.enqueue(
     tokenProvideTask,
-    hostProvideTask,
+    prepareRegionsHostsTask,
     directUploadTask
   )
 

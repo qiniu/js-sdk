@@ -205,6 +205,7 @@ export class TaskQueue {
           }
         }
 
+        this.error = result.error
         this.handleError()
         this.cancel() // 停止队列
       }

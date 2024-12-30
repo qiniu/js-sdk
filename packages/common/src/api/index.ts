@@ -431,17 +431,20 @@ export class UploadApis {
 }
 
 interface GetHostConfigParams {
+  // TODO: typo
   assessKey: string
   bucket: string
+  serverUrl?: string
 }
 
-interface HostConfig {
+export interface HostConfig {
   hosts: Array<{
     region: string
     ttl: number
     up: {
       domains: string[]
       old: string[]
+      acc_domains?: string[]
     }
     io: {
       domains: string[]
@@ -469,8 +472,8 @@ export class ConfigApis {
   async getHostConfig(params: GetHostConfigParams): Promise<Result<HostConfig>> {
     /** 从配置中心获取上传服务地址 */
     const query = `ak=${encodeURIComponent(params.assessKey)}&bucket=${encodeURIComponent(params.bucket)}`
-    // TODO: 支持设置，私有云自动获取上传地址
-    const url = `${this.serverUrl}/v4/query?${query}`
+    const serverUrl = params.serverUrl || this.serverUrl
+    const url = `${serverUrl}/v4/query?${query}`
     const response = await this.httpClient.get(url)
 
     if (!isSuccessResult(response)) {

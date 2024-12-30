@@ -5,6 +5,8 @@ export * from './helper/object'
 export * from './helper/string'
 export * from './helper/progress'
 export * from './helper/logger'
+export * as cache from './helper/cache'
+export * as retry from './helper/retry'
 
 export * from './types/types'
 export * from './types/token'

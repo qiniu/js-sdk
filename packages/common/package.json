@@ -9,9 +9,10 @@
     "build": "run-p build:*",
     "dev": "run-p \"build:* -- -w\"",
     "postinstall": "run-p build:*",
-    "build:browser": "cpx \"src/**/*\" ../browser/src/@internal",
-    "build:wechat-miniprogram": "cpx \"src/**/*\" ../wechat-miniprogram/src/@internal",
-    "build:harmony": "cpx \"src/**/*\" ../harmony/library/src/main/ets/components/@internal"
+    "cleanup": "rm -fr  ../browser/src/@internal ../wechat-miniprogram/src/@internal ../harmony/library/src/main/ets/components/@internal",
+    "build:browser": "cpx \"src/**/!(*.test,*.mock).ts\" ../browser/src/@internal",
+    "build:wechat-miniprogram": "cpx \"src/**/!(*.test,*.mock).ts\" ../wechat-miniprogram/src/@internal",
+    "build:harmony": "cpx \"src/**/!(*.test,*.mock).ts\" ../harmony/library/src/main/ets/components/@internal"
   },
   "author": "",
   "license": "ISC"
