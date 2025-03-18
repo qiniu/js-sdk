@@ -6,6 +6,14 @@
 - [x] 鸿蒙 OS 上传 SDK
 - [x] 微信小程序上传 SDK
 
+## 历史版本
+
+当前分支为最新版本，历史版本请查看下列分支。
+
+- V3.x [查看分支](https://github.com/qiniu/js-sdk/tree/3.x)
+- V2.x [查看分支](https://github.com/qiniu/js-sdk/tree/2.x)
+- V1.x [查看分支](https://github.com/qiniu/js-sdk/tree/1.x)
+
 ## 目录说明
 
 ### examples
