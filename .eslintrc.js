@@ -1,13 +1,8 @@
 module.exports = {
-  extends: [
-    '@qiniu'
-  ],
-  settings: {
-    "import/resolver": {
-      node: {
-        extensions: ['.js', '.ts'],
-        moduleDirectory: ['node_modules', 'src/']
-      }
-    }
+  root: true,
+  extends: ['@qiniu'],
+  parserOptions: {
+    tsconfigRootDir: __dirname,
+    project: ['./packages/*/tsconfig.json'],
   }
 }

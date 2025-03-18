@@ -1,12 +1,8 @@
 .DS_Store
 .vscode
 node_modules
-bower_components
-demo/config.js
-deploy.sh
-npm-debug.log
-dist
-test/config.json
 coverage
-lib
-esm
+output
+test-server.js
+miniprogram_npm
+@internal

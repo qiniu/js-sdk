@@ -1,0 +1,16 @@
+{
+  "name": "@examples/wechat-miniprogram",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+  },
+  "keywords": [],
+  "author": "",
+  "license": "",
+  "dependencies": {
+    "@qiniu/wechat-miniprogram-upload": "*"
+  },
+  "devDependencies": {
+    "miniprogram-api-typings": "^3.12.2"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "name": "@internal/common",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "main": "output/index.js",
+  "types": "output/index.d.ts",
+  "scripts": {
+    "build": "run-p build:*",
+    "dev": "run-p \"build:* -- -w\"",
+    "postinstall": "run-p build:*",
+    "build:browser": "cpx \"src/**/*\" ../browser/src/@internal",
+    "build:wechat-miniprogram": "cpx \"src/**/*\" ../wechat-miniprogram/src/@internal",
+    "build:harmony": "cpx \"src/**/*\" ../harmony/library/src/main/ets/components/@internal"
+  },
+  "author": "",
+  "license": "ISC"
+}
