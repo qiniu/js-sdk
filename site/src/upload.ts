@@ -13,10 +13,11 @@ export enum Status {
 
 // 上传逻辑封装
 export function useUpload(file: File) {
+  const defaultToken = "dxVQk8gyk3WswArbNhdKIwmwibJ9nFsQhMNUmtIM:SvCtd4GFhiKQ9mMKvTz7Eu5uMss=:eyJzY29wZSI6InRlc3QteXMiLCJkZWFkbGluZSI6MzUwMDM3NDE5OH0="
   const startTimeRef = React.useRef<number | null>(null)
   const [state, setState] = React.useState<Status | null>(null)
   const [error, setError] = React.useState<Error | null>(null)
-  const [token, setToken] = React.useState<string | null>(null)
+  const [token, setToken] = React.useState<string | null>(defaultToken)
   const [speedPeak, setSpeedPeak] = React.useState<number | null>(null)
   const [completeInfo, setCompleteInfo] = React.useState<any | null>(null)
   const [progress, setProgress] = React.useState<UploadProgress | null>(null)
@@ -67,12 +68,13 @@ export function useUpload(file: File) {
   // 获取 token
   React.useEffect(() => {
     const { assessKey, secretKey, bucketName, deadline } = loadSetting()
-    if (!assessKey || !secretKey || !bucketName || !deadline) {
+    if (token == null && (!assessKey || !secretKey || !bucketName || !deadline)) {
       setError(new Error('请点开设置并输入必要的配置信息'))
       return
     }
 
     // 线上应该使用服务端生成 token
+    if (token != null) return
     setToken(generateUploadToken({ assessKey, secretKey, bucketName, deadline }))
   }, [file])
 
@@ -95,6 +97,8 @@ export function useUpload(file: File) {
         },
         {
           checkByMD5: true,
+          chunkSize: 2,
+          concurrentRequestLimit: 3,
           debugLogLevel: 'INFO',
           uphost: uphost && uphost.split(',')
         }
