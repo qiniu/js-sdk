@@ -4,16 +4,17 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "webpack serve --mode development --inline --hot --open",
-    "start": "webpack serve --mode development",
-    "build": "webpack --mode development",
+    "dev": "NODE_OPTIONS=--openssl-legacy-provider webpack serve --mode development --inline --hot --open",
+    "start": "NODE_OPTIONS=--openssl-legacy-provider webpack serve --mode development",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider webpack --mode development",
     "lint": "eslint --ext .tsx,.ts src/"
   },
   "license": "MIT",
   "devDependencies": {
     "@qiniu/eslint-config": "0.0.6-beta.7",
-    "@types/react": "17",
-    "@types/react-dom": "17",
+    "@types/create-hmac": "^1.1.3",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "~4.10.0",
     "buffer": "^6.0.3",
     "css-loader": "^5.2.4",
@@ -42,7 +43,7 @@
     "byte-size": "^7.0.1",
     "create-hmac": "^1.1.7",
     "js-base64": "^3.7.2",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   }
 }

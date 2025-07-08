@@ -4,7 +4,6 @@ import { Queue } from '../Queue'
 import { Layout } from '../Layout'
 import { Settings } from '../Settings'
 import { SelectFile, UniqueFile } from '../SelectFile'
-import { getChunks } from '../../../../src/utils/helper'
 
 import settingIcon from '../Settings/assets/setting.svg'
 import classnames from './style.less'

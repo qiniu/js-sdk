@@ -13,11 +13,10 @@ export enum Status {
 
 // 上传逻辑封装
 export function useUpload(file: File) {
-  const defaultToken = "dxVQk8gyk3WswArbNhdKIwmwibJ9nFsQhMNUmtIM:SvCtd4GFhiKQ9mMKvTz7Eu5uMss=:eyJzY29wZSI6InRlc3QteXMiLCJkZWFkbGluZSI6MzUwMDM3NDE5OH0="
   const startTimeRef = React.useRef<number | null>(null)
   const [state, setState] = React.useState<Status | null>(null)
   const [error, setError] = React.useState<Error | null>(null)
-  const [token, setToken] = React.useState<string | null>(defaultToken)
+  const [token, setToken] = React.useState<string | null>(null)
   const [speedPeak, setSpeedPeak] = React.useState<number | null>(null)
   const [completeInfo, setCompleteInfo] = React.useState<any | null>(null)
   const [progress, setProgress] = React.useState<UploadProgress | null>(null)
@@ -75,8 +74,12 @@ export function useUpload(file: File) {
 
     // 线上应该使用服务端生成 token
     if (token != null) return
-    setToken(generateUploadToken({ assessKey, secretKey, bucketName, deadline }))
-  }, [file])
+
+    // 确保所有必需的参数都存在后再调用 generateUploadToken
+    if (assessKey && secretKey && bucketName && deadline) {
+      setToken(generateUploadToken({ assessKey, secretKey, bucketName, deadline }))
+    }
+  }, [file, token])
 
   // 创建上传任务
   React.useEffect(() => {
@@ -92,11 +95,12 @@ export function useUpload(file: File) {
           metadata: {
             'x-qn-meta-test': 'tt',
             'x-qn-meta-test1': '222',
-            'x-qn-meta-test2': '333',
+            'x-qn-meta-test2': '333'
           }
         },
         {
-          checkByMD5: true,
+          // checkByMD5: true,
+          checkByServer: true,
           chunkSize: 2,
           concurrentRequestLimit: 3,
           debugLogLevel: 'INFO',

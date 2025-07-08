@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import * as utils from '../../utils'
 
 import { Input } from '../Input'
@@ -24,11 +25,11 @@ export function Settings(props: IProps) {
     })
   }, [assessKey, secretKey, bucketName, deadline, uphost])
 
-  React.useEffect(()=> {
+  React.useEffect(() => {
     if (deadline > 0) return
     // 基于当前时间加上 3600s
     setDeadline(Math.floor(Date.now() / 1000) + 3600)
-  },[deadline])
+  }, [deadline])
 
   return (
     <div className={classnames.settings}>
