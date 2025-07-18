@@ -67,14 +67,19 @@ export function useUpload(file: File) {
   // 获取 token
   React.useEffect(() => {
     const { assessKey, secretKey, bucketName, deadline } = loadSetting()
-    if (!assessKey || !secretKey || !bucketName || !deadline) {
+    if (token == null && (!assessKey || !secretKey || !bucketName || !deadline)) {
       setError(new Error('请点开设置并输入必要的配置信息'))
       return
     }
 
     // 线上应该使用服务端生成 token
-    setToken(generateUploadToken({ assessKey, secretKey, bucketName, deadline }))
-  }, [file])
+    if (token != null) return
+
+    // 确保所有必需的参数都存在后再调用 generateUploadToken
+    if (assessKey && secretKey && bucketName && deadline) {
+      setToken(generateUploadToken({ assessKey, secretKey, bucketName, deadline }))
+    }
+  }, [file, token])
 
   // 创建上传任务
   React.useEffect(() => {
@@ -90,11 +95,14 @@ export function useUpload(file: File) {
           metadata: {
             'x-qn-meta-test': 'tt',
             'x-qn-meta-test1': '222',
-            'x-qn-meta-test2': '333',
+            'x-qn-meta-test2': '333'
           }
         },
         {
-          checkByMD5: true,
+          // checkByMD5: true,
+          checkByServer: true,
+          chunkSize: 2,
+          concurrentRequestLimit: 3,
           debugLogLevel: 'INFO',
           uphost: uphost && uphost.split(',')
         }

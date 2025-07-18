@@ -9,7 +9,7 @@ export const DEFAULT_CHUNK_SIZE = 4 // 单位 MB
 
 // code 信息地址 https://developer.qiniu.com/kodo/3928/error-responses
 export const FREEZE_CODE_LIST = [0, 502, 503, 504, 599] // 将会冻结当前 host 的 code
-export const RETRY_CODE_LIST = [...FREEZE_CODE_LIST, 612] // 会进行重试的 code
+export const RETRY_CODE_LIST = [...FREEZE_CODE_LIST, 406] // 会进行重试的 code
 
 /** 上传文件的资源信息配置 */
 export interface Extra {

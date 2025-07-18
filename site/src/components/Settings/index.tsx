@@ -1,4 +1,5 @@
 import * as React from 'react'
+
 import * as utils from '../../utils'
 
 import { Input } from '../Input'
@@ -8,7 +9,6 @@ interface IProps { }
 
 export function Settings(props: IProps) {
   const setting = React.useMemo(() => utils.loadSetting(), [])
-
   const [deadline, setDeadline] = React.useState<number>(0)
   const [uphost, seUphost] = React.useState<string>(setting.uphost || '')
   const [assessKey, setAssessKey] = React.useState<string>(setting.assessKey || '')
@@ -25,11 +25,11 @@ export function Settings(props: IProps) {
     })
   }, [assessKey, secretKey, bucketName, deadline, uphost])
 
-  React.useEffect(()=> {
+  React.useEffect(() => {
     if (deadline > 0) return
     // 基于当前时间加上 3600s
     setDeadline(Math.floor(Date.now() / 1000) + 3600)
-  },[deadline])
+  }, [deadline])
 
   return (
     <div className={classnames.settings}>
