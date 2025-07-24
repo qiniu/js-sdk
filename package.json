@@ -72,7 +72,7 @@
     "typescript": "^3.9.5",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.11",
-    "webpack-dev-server": "^3.11.0",
+    "webpack-dev-server": "^5.1.0",
     "webpack-merge": "^4.2.2"
   },
   "license": "MIT",
