@@ -1,5 +1,6 @@
 const path = require('path')
-const { HotModuleReplacementPlugin } = require('webpack')
+const webpack = require('webpack')
+const { HotModuleReplacementPlugin } = webpack
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const WebpackBar = require('webpackbar')
 
@@ -25,9 +26,16 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.ts', '.tsx'],
     alias: {
-      buffer: require.resolve("buffer/"),
-      stream: require.resolve("stream-browserify")
+      buffer: require.resolve('buffer/'),
+      stream: require.resolve('stream-browserify')
     },
+    // Webpack 5 不再默认注入 Node 内置模块；create-hmac / 部分依赖会访问 process、crypto
+    fallback: {
+      crypto: require.resolve('crypto-browserify'),
+      stream: require.resolve('stream-browserify'),
+      buffer: require.resolve('buffer/'),
+      process: require.resolve('process/browser')
+    }
   },
   entry: {
     main: './index.tsx',
@@ -35,12 +43,16 @@ module.exports = {
   },
   output: {
     filename: '[name].bundle.js',
-    path: path.join(__dirname, 'dist')
+    path: path.join(__dirname, 'dist'),
+    // Webpack 5 默认 publicPath 为 'auto'，会在运行时解析脚本 URL；
+    // 与 defer 的 script 标签组合时，部分浏览器无法解析，会抛
+    // "Automatic publicPath is not supported in this browser"，整页白屏。
+    publicPath: '/'
   },
 
   devServer: {
     port: 7777,
-    host: '0.0.0.0',
+    host: '0.0.0.0'
   },
 
   module: {
@@ -77,8 +89,15 @@ module.exports = {
   },
 
   plugins: [
+    // 浏览器里没有全局 process；未注入时会在运行时报 process is not defined，页面白屏
+    new webpack.ProvidePlugin({
+      process: 'process/browser',
+      Buffer: ['buffer', 'Buffer']
+    }),
     new HtmlWebpackPlugin({
-      inject: 'head',
+      // 只注入主入口：worker 由 `new Worker('/worker.bundle.js')` 单独加载，不应作为普通脚本执行
+      chunks: ['main'],
+      inject: 'body',
       templateContent: htmlTemp
     }),
     new HotModuleReplacementPlugin(),

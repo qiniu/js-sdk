@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs:*)",
+      "Bash(pnpm:*)",
+      "Bash(npx pnpm:*)",
+      "Bash(npx jest:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)",
+      "Bash(gh pr:*)",
+      "Bash(npm run:*)"
+    ]
+  }
+}

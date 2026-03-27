@@ -14,7 +14,6 @@
     "@types/react": "^17.0.5",
     "@types/react-dom": "^17.0.5",
     "buffer": "^6.0.3",
-    "ts-loader": "^9.5.1",
     "css-loader": "^5.2.4",
     "file-loader": "^6.2.0",
     "html-webpack-plugin": "^5.3.1",
@@ -22,6 +21,7 @@
     "less-loader": "^9.0.0",
     "stream-browserify": "^3.0.0",
     "style-loader": "^2.0.0",
+    "ts-loader": "^9.5.1",
     "typescript": "5.3.3",
     "url-loader": "^4.1.1",
     "webpack": "^5.37.0",
@@ -32,8 +32,10 @@
   "dependencies": {
     "byte-size": "^7.0.1",
     "create-hmac": "^1.1.7",
+    "crypto-browserify": "^3.12.1",
     "js-base64": "^3.7.2",
-    "qiniu-js": "*",
+    "process": "^0.11.10",
+    "qiniu-js": "file:../../browser",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   }

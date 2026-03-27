@@ -2,6 +2,7 @@ import { UploadError } from '../../../types/error'
 import { Result, isCanceledResult, isErrorResult, isSuccessResult } from '../../../types/types'
 
 import { Task, TaskQueue } from './index'
+import { RetryTask } from './retry'
 
 const delay = (n: number) => new Promise(r => setTimeout(r, n))
 
@@ -159,23 +160,6 @@ describe('test TaskQueue', () => {
     expect(isCanceledResult(startResult)).toBe(true)
   })
 
-  test('test auto retry', async () => {
-    const task1 = new MockTask()
-    const queue = new TaskQueue()
-    queue.enqueue(task1)
-    const startPromise = queue.start()
-
-    await delay(500)
-    task1.resolve({ error: new UploadError('NetworkError', 'test') })
-    await delay(2000 + 100) // 内部是隔两秒后重试，所以这里延迟 2s+100
-    task1.resolve({ result: true })
-
-    const startResult = await startPromise
-
-    expect(task1.processCount).toBe(2)
-    expect(isSuccessResult(startResult)).toBe(true)
-  })
-
   test('test queue nested', async () => {
     const task1 = new MockTask()
     const queue1 = new TaskQueue()
@@ -208,5 +192,97 @@ describe('test TaskQueue', () => {
     expect(task1.processed).toBe(true)
     expect(isErrorResult(start2Result)).toBe(true)
     expect(isSuccessResult(start1Result)).toBe(true)
+  })
+})
+
+describe('test RetryTask', () => {
+  test('test retry on NetworkError', async () => {
+    const task = new MockTask()
+    const retryTask = new RetryTask(task, {
+      retryDelay: 100
+    })
+
+    const processPromise = retryTask.process(() => {})
+
+    await delay(50)
+    task.resolve({ error: new UploadError('NetworkError', 'test') })
+    await delay(150)
+    task.resolve({ result: true })
+
+    const result = await processPromise
+
+    expect(task.processCount).toBe(2)
+    expect(isSuccessResult(result)).toBe(true)
+  })
+
+  test('test no retry on non-NetworkError', async () => {
+    const task = new MockTask()
+    const retryTask = new RetryTask(task, {
+      retryDelay: 100
+    })
+
+    const processPromise = retryTask.process(() => {})
+
+    await delay(50)
+    task.resolve({ error: new UploadError('InternalError', 'test') })
+
+    const result = await processPromise
+
+    expect(task.processCount).toBe(1)
+    expect(isErrorResult(result)).toBe(true)
+  })
+
+  test('test max retries exceeded', async () => {
+    const task = new MockTask()
+    const retryTask = new RetryTask(task, {
+      retryDelay: 100
+    })
+
+    const processPromise = retryTask.process(() => {})
+
+    await delay(50)
+    task.resolve({ error: new UploadError('NetworkError', 'test 1') })
+    await delay(150)
+    task.resolve({ error: new UploadError('NetworkError', 'test 2') })
+
+    const result = await processPromise
+
+    expect(task.processCount).toBe(2)
+    expect(isErrorResult(result)).toBe(true)
+  })
+
+  test('test cancel', async () => {
+    const task = new MockTask()
+    const retryTask = new RetryTask(task)
+
+    const processPromise = retryTask.process(() => {})
+
+    await delay(50)
+    await retryTask.cancel()
+
+    const result = await processPromise
+
+    expect(task.canceled).toBe(true)
+    expect(isCanceledResult(result)).toBe(true)
+  })
+
+  test('test custom shouldRetry', async () => {
+    const task = new MockTask()
+    const retryTask = new RetryTask(task, {
+      retryDelay: 100,
+      shouldRetry: (error) => error.name === 'InternalError'
+    })
+
+    const processPromise = retryTask.process(() => {})
+
+    await delay(50)
+    task.resolve({ error: new UploadError('InternalError', 'test') })
+    await delay(150)
+    task.resolve({ result: true })
+
+    const result = await processPromise
+
+    expect(task.processCount).toBe(2)
+    expect(isSuccessResult(result)).toBe(true)
   })
 })

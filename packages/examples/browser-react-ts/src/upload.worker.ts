@@ -35,9 +35,9 @@ ctx.addEventListener('message', event => {
       ? createDirectUploadTask(fileData, uploadConfig)
       : createMultipartUploadV2Task(fileData, uploadConfig)
 
-    task.onComplete((...data) => ctx.postMessage({ method: 'complete', params: data }))
-    task.onProgress((...data) => ctx.postMessage({ method: 'progress', params: data }))
-    task.onError((...data) => ctx.postMessage({ method: 'error', params: data }))
+    task.onComplete((...data: unknown[]) => ctx.postMessage({ method: 'complete', params: data }))
+    task.onProgress((...data: unknown[]) => ctx.postMessage({ method: 'progress', params: data }))
+    task.onError((...data: unknown[]) => ctx.postMessage({ method: 'error', params: data }))
   }
 
   if (method === 'start') {

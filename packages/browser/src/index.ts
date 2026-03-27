@@ -27,6 +27,9 @@ export const createDirectUploadTask = (file: FileData, config: common.UploadConf
   return task
 }
 
+/**
+ * @deprecated use createMultipartUploadV2Task instead
+ */
 export const createMultipartUploadV1Task = (file: FileData, config: common.UploadConfig) => {
   const innerFile = new UploadFile(file)
   config.httpClient = config.httpClient ?? new HttpClient()

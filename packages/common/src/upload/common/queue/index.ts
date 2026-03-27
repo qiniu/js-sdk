@@ -3,10 +3,7 @@ import { LogLevel, Logger } from '../../../helper/logger'
 import { generateRandomString } from '../../../helper/string'
 import { Result, isCanceledResult, isErrorResult, isSuccessResult } from '../../../types/types'
 
-const delay = (ms = 1000) => new Promise(resolve => setTimeout(resolve, ms))
-
 export interface TaskState {
-  retryCount: number
   status: TaskStatus
 }
 
@@ -19,12 +16,9 @@ export type TaskStatus = 'waiting' | 'processing' | 'canceled' | 'error' | 'succ
 
 export interface Task {
   cancel(): Promise<Result>
+
   process(notice: ProgressNotice): Promise<Result>
 }
-
-type InnerTask =
-  | TaskQueue
-  | Task
 
 type TaskCreator = () => Promise<Result<Task[]>>
 
@@ -39,24 +33,24 @@ interface TaskQueueOptions {
   tasksCreator?: TaskCreator
 }
 
-export class TaskQueue {
+export class TaskQueue implements Task {
   private logger: Logger
   /** 取消标记 */
   private canceled = false
   /** 队列正在处理中 */
   private processing = false
-  /** 队列错误信息； */
+  /** 队列错误信息 */
   private error?: UploadError
-  /** 队列并发标记 */
-  private concurrentTicket = 1
+  /** 队列并发数（只读） */
+  private readonly concurrentLimit: number
   /** 用户传入的任务 */
-  private tasks: InnerTask[] = []
+  private tasks: Task[] = []
   /** 动态创建任务方法 */
-  private tasksCreator?: TaskCreator
+  private readonly tasksCreator?: TaskCreator
   /** 通过 tasksCreator 动态创建的任务 */
-  private dynamicTasks: InnerTask[] = []
+  private dynamicTasks: Task[] = []
   /** 任务的状态表 */
-  private taskStates = new Map<InnerTask, TaskState>()
+  private taskStates = new Map<Task, TaskState>()
 
   /** 状态订阅函数表 */
   private errorListeners = new Map<string, OnError>()
@@ -66,46 +60,127 @@ export class TaskQueue {
 
   constructor(private options?: TaskQueueOptions) {
     this.tasksCreator = options?.tasksCreator
-    this.concurrentTicket = options?.concurrentLimit || 1
+    this.concurrentLimit = options?.concurrentLimit || 1
     this.logger = new Logger(options?.logger?.level, options?.logger?.prefix)
   }
 
-  private handleProgress() {
-    const progressListenerList = [...this.progressListeners.values()]
-    for (let index = 0; index < progressListenerList.length; index++) {
-      const progressListener = progressListenerList[index]
-      if (progressListener) progressListener()
-    }
+  // ==================== 公共 API ====================
+
+  /** 添加任务 */
+  enqueue(...tasks: Task[]) {
+    if (this.processing) throw new Error('task is processing')
+    this.tasks.splice(0, Infinity)
+    this.tasks.push(...tasks)
   }
 
-  private handleComplete() {
-    const completeListenerList = [...this.completeListeners.values()]
-    for (let index = 0; index < completeListenerList.length; index++) {
-      const completeListener = completeListenerList[index]
-      if (completeListener) completeListener()
+  /** 开始处理 */
+  async start(): Promise<Result> {
+    this.logger.info('--------------------------')
+    this.logger.info('Start processing the queue')
+
+    if (this.processing) {
+      this.logger.error('Queue exited because its processing')
+      return { error: new UploadError('InternalError', 'Task is processing') }
     }
+
+    this.canceled = false
+    this.processing = true
+    this.error = undefined
+    this.taskStates.clear()
+    this.dynamicTasks.splice(0, Infinity)
+    this.logger.info('Initialize queue status')
+
+    if (this.tasksCreator) {
+      this.logger.info('Call tasksCreator')
+      const result = await this.tasksCreator()
+
+      if (isErrorResult(result)) {
+        this.logger.info(`TasksCreator execution has error: ${result.error.message}`)
+        this.error = result.error
+        this.processing = false
+        this.handleError()
+        return { error: result.error }
+      }
+
+      if (isCanceledResult(result)) {
+        this.logger.info('TasksCreator execution canceled')
+        this.processing = false
+        this.handleCancel()
+        return { canceled: true }
+      }
+
+      if (isSuccessResult(result)) {
+        this.logger.info('TasksCreator execution successful')
+        this.dynamicTasks.push(...result.result)
+      }
+
+      this.logger.info('TasksCreator execution completed')
+    }
+
+    this.logger.info(`Starting ${this.concurrentLimit} workers`)
+
+    const workers = Array.from(
+      { length: this.concurrentLimit },
+      (_, index) => this.runWorker(index)
+    )
+
+    await Promise.all(workers)
+
     this.processing = false
-  }
 
-  private handleError() {
-    const errorListenerList = [...this.errorListeners.values()]
-    for (let index = 0; index < errorListenerList.length; index++) {
-      const errorListener = errorListenerList[index]
-      if (errorListener) errorListener()
+    if (this.canceled) {
+      this.logger.info('Queue is canceled')
+      this.handleCancel()
+      return { canceled: true }
     }
 
-    this.processing = false
-  }
-
-  private handleCancel() {
-    const cancelListenerList = [...this.cancelListeners.values()]
-    for (let index = 0; index < cancelListenerList.length; index++) {
-      const cancelListener = cancelListenerList[index]
-      if (cancelListener) cancelListener()
+    if (this.error) {
+      const hErr: UploadError = this.error
+      this.logger.error(`Queue has error: ${hErr.message}`)
+      this.handleError()
+      return { error: this.error }
     }
 
-    this.processing = false
+    this.logger.info('Queue is complete')
+    this.handleComplete()
+    return { result: true }
   }
+
+  /** 取消任务 */
+  async cancel(): Promise<Result> {
+    this.logger.info('Cancel the queue')
+    this.canceled = true
+
+    const cancelPromises: Array<Promise<any>> = []
+    for (const task of [...this.tasks, ...this.dynamicTasks]) {
+      const state = this.getTaskState(task)
+      if (state.status === 'processing') {
+        cancelPromises.push(task.cancel())
+      }
+    }
+
+    this.logger.info(`Cancel ${cancelPromises.length} tasks in the queue`)
+    const results = await Promise.all(cancelPromises)
+
+    for (const cancelItem of results) {
+      if (!isSuccessResult(cancelItem)) {
+        return cancelItem
+      }
+    }
+
+    this.logger.info('Cancel completed')
+    return { result: true }
+  }
+
+  /** 作为 Task 接口使用；桥接 start 并转发进度通知 */
+  async process(notice: ProgressNotice): Promise<Result> {
+    const cleanListener = this.onProgress(notice)
+    const result = await this.start()
+    cleanListener()
+    return result
+  }
+
+  // ==================== 事件订阅 ====================
 
   onProgress(listener: OnProgress) {
     const uuid = generateRandomString()
@@ -131,217 +206,103 @@ export class TaskQueue {
     return () => this.cancelListeners.delete(uuid)
   }
 
-  private getTaskState(task: InnerTask): TaskState {
+  // ==================== 内部调度 ====================
+
+  /** Worker 循环：不断获取任务并执行，直到没有任务或被中断 */
+  private async runWorker(workerId: number): Promise<void> {
+    this.logger.info(`Worker ${workerId} started`)
+
+    while (!this.canceled && !this.error) {
+      const task = this.acquireNextTask()
+      if (!task) {
+        this.logger.info(`Worker ${workerId} exited: no more tasks`)
+        break
+      }
+
+      this.logger.info(`Worker ${workerId} processing task`)
+      // eslint-disable-next-line no-await-in-loop
+      const result = await task.process(() => this.handleProgress())
+      this.logger.info(`Worker ${workerId} task resolved: ${JSON.stringify(result)}`)
+
+      if (isCanceledResult(result)) {
+        const state = this.getTaskState(task)
+        state.status = 'canceled'
+        this.canceled = true
+        this.logger.info(`Worker ${workerId} exited: task canceled`)
+        break
+      }
+
+      if (isErrorResult(result)) {
+        const state = this.getTaskState(task)
+        state.status = 'error'
+        this.error = result.error
+        this.logger.info(`Worker ${workerId} exited: task error`)
+        break
+      }
+
+      if (isSuccessResult(result)) {
+        const state = this.getTaskState(task)
+        state.status = 'success'
+        this.handleProgress()
+      }
+    }
+
+    this.logger.info(`Worker ${workerId} finished`)
+  }
+
+  /** 原子性获取下一个等待中的任务，并标记为 processing */
+  private acquireNextTask(): Task | null {
+    const allTasks = [...this.tasks, ...this.dynamicTasks]
+    for (const task of allTasks) {
+      const state = this.getTaskState(task)
+      if (state.status === 'waiting') {
+        state.status = 'processing'
+        return task
+      }
+    }
+    return null
+  }
+
+  // ==================== 内部工具 ====================
+
+  private getTaskState(task: Task): TaskState {
     const state = this.taskStates.get(task)
     if (state == null) {
-      const initState: TaskState = { status: 'waiting', retryCount: 0 }
+      const initState: TaskState = { status: 'waiting' }
       this.taskStates.set(task, initState)
     }
     return this.taskStates.get(task)!
   }
 
-  /** 任务处理函数；递归取出任务并执行，除非遇到 canceled 或 error 状态 */
-  private async process(paddingTask?: InnerTask) {
-    // 任务已经取消了
-    if (this.canceled) {
-      this.logger.info('Process exited because canceled')
-      return
-    }
-
-    // 常规任务处理逻辑
-    if (paddingTask != null) {
-      this.logger.info('In process with padding task')
-      if (this.concurrentTicket === 0) {
-        this.logger.info('Process exited because concurrentTicket is 0')
-        return
-      }
-
-      // 读取任务的当前状态
-      const state = this.getTaskState(paddingTask)
-
-      this.concurrentTicket -= 1
-      state.status = 'processing'
-
-      const isQueue = paddingTask instanceof TaskQueue
-      let queueCleanListeners: (() => any) | undefined // 清理临时监听
-      const progressChange = () => this.handleProgress() // 绑定 this
-      if (isQueue) queueCleanListeners = paddingTask.onProgress(progressChange)
-
-      this.logger.info(`Padding task is a ${isQueue ? 'Queue' : 'Task'}`)
-      const result = await (isQueue ? paddingTask.start() : paddingTask.process(progressChange))
-      this.logger.info(`Task is resolved ${JSON.stringify(result)}`)
-      this.concurrentTicket += 1
-      queueCleanListeners?.()
-
-      // 该任务已经取消，更新状态啥也不干
-      if (isCanceledResult(result)) {
-        state.status = 'canceled'
-        this.handleCancel()
-        return
-      }
-
-      // 成功，继续进行下次递归
-      if (isSuccessResult(result)) {
-        // 成功则继续向后处理
-        state.status = 'success'
-        this.handleProgress()
-        this.process()
-        return
-      }
-
-      // 发生错误，重试或停止任务队列
-      if (isErrorResult(result)) {
-        state.status = 'error'
-        this.error = result.error
-        // 网络错误，等待一定时间后重试
-        if (result.error.name === 'NetworkError') {
-          // 原本 1 次 + 重试 2 次 = 总计 3 次
-          if (state.retryCount < 2) {
-            state.retryCount++
-            await delay(2000)
-            // 继续处理这个任务
-            this.process(paddingTask)
-            return
-          }
-        }
-
-        this.handleError()
-        this.cancel() // 停止队列
-      }
-
-      this.logger.error('Unknown task execution status')
-      return
-    }
-
-    // 获取处于 waiting 中的任务
-    const allTasks = [...this.tasks, ...this.dynamicTasks]
-    const waitingTasks = allTasks.filter(task => {
-      const state = this.getTaskState(task)
-      return state.status === 'waiting'
-    })
-
-    this.logger.info(`There are now ${waitingTasks.length} tasks in waiting`)
-    this.logger.info(`There are now ${this.concurrentTicket} concurrency limit`)
-
-    // 根据 concurrentLimit 取出任务并执行
-    if (waitingTasks.length > 0 && this.concurrentTicket > 0) {
-      // 如果还有任务则根据当前剩余的 concurrentTicket 取出任务并执行
-      const pendingTasks = waitingTasks.slice(0, this.concurrentTicket)
-      this.logger.info(`${pendingTasks.length} tasks were called up`)
-      for (let index = 0; index < pendingTasks.length; index++) {
-        this.process(pendingTasks[index])
-      }
-      return
-    }
-
-    // 获取所有已经完成的任务
-    const completedTasks = allTasks.filter(task => {
-      const state = this.getTaskState(task)
-      return state.status === 'success'
-    })
-
-    // 如果任务全部完成了，则触发 complete 事件
-    if (completedTasks.length === allTasks.length) {
-      this.handleComplete()
+  private handleProgress() {
+    const progressListenerList = [...this.progressListeners.values()]
+    for (let index = 0; index < progressListenerList.length; index++) {
+      const progressListener = progressListenerList[index]
+      if (progressListener) progressListener()
     }
   }
 
-  /** 添加任务 */
-  enqueue(...tasks: Array<Task | TaskQueue>) {
-    if (this.processing) throw new Error('task is processing')
-    // 清空现有任务并设置新的任务
-    this.tasks.splice(0, Infinity)
-    this.tasks.push(...tasks)
+  private handleComplete() {
+    const completeListenerList = [...this.completeListeners.values()]
+    for (let index = 0; index < completeListenerList.length; index++) {
+      const completeListener = completeListenerList[index]
+      if (completeListener) completeListener()
+    }
   }
 
-  /** 开始处理 */
-  async start(): Promise<Result> {
-    this.logger.info('--------------------------')
-    this.logger.info('Start processing the queue')
-
-    return new Promise(resolve => {
-      if (this.processing) {
-        this.logger.error('Queue exited because its processing')
-        return resolve({ error: new UploadError('InternalError', 'Task is processing') })
-      }
-
-      // 初始化全局状态
-      this.canceled = false
-      this.processing = true
-      this.error = undefined
-      this.taskStates.clear()
-      this.concurrentTicket = this.options?.concurrentLimit || 1
-      this.logger.info('Initialize queue status')
-
-      // 任务状态和 start 函数返回绑定
-      this.onComplete(() => {
-        resolve({ result: true })
-        this.logger.info('Queue is complete')
-      })
-      this.onCancel(() => {
-        resolve({ canceled: true })
-        this.logger.info('Queue is canceled')
-      })
-      this.onError(() => {
-        resolve({ error: this.error! })
-        this.logger.error(`Queue has error: ${this.error?.message}`)
-      })
-
-      // 如果队列有任务创建方法则执行创建
-      if (this.tasksCreator) {
-        // 清空当前的 dynamicTasks
-        this.logger.info('Call tasksCreator')
-        this.dynamicTasks.splice(0, Infinity)
-        this.tasksCreator().then(result => {
-          if (isSuccessResult(result)) {
-            this.logger.info('TasksCreator execution successful')
-            this.dynamicTasks.push(...result.result)
-            // 任务创建完成，开始处理
-            this.process()
-          }
-
-          // 发生错误
-          if (isErrorResult(result)) {
-            this.logger.info(`TasksCreator execution has error: ${result.error.message}`)
-            this.error = result.error
-            this.handleError()
-          }
-
-          this.logger.info('TasksCreator execution completed')
-        })
-
-        return
-      }
-
-      // 开始处理任务
-      this.process()
-    })
+  private handleError() {
+    const errorListenerList = [...this.errorListeners.values()]
+    for (let index = 0; index < errorListenerList.length; index++) {
+      const errorListener = errorListenerList[index]
+      if (errorListener) errorListener()
+    }
   }
 
-  /** 取消任务 */
-  async cancel(): Promise<Result> {
-    this.logger.info('Cancel the queue')
-    const cancelPromises: Array<Promise<any>> = []
-    for (const task of [...this.tasks, ...this.dynamicTasks]) {
-      const state = this.getTaskState(task)
-      // 处理中的任务需要进行取消操作
-      const shouldCanceled = ['processing']
-      if (shouldCanceled.includes(state.status)) {
-        cancelPromises.push(task.cancel())
-      }
+  private handleCancel() {
+    const cancelListenerList = [...this.cancelListeners.values()]
+    for (let index = 0; index < cancelListenerList.length; index++) {
+      const cancelListener = cancelListenerList[index]
+      if (cancelListener) cancelListener()
     }
-
-    this.logger.info(`Cancel ${cancelPromises.length} tasks in the queue`)
-    const result = await Promise.all(cancelPromises)
-    this.processing = false
-    for (const cancelItem of result) {
-      if (!isSuccessResult(cancelItem)) {
-        return cancelItem
-      }
-    }
-
-    this.logger.info('Cancel completed')
-    this.canceled = true
-    return { result: true }
   }
 }

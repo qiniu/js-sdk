@@ -1,15 +1,15 @@
 import { ConfigApis } from '../../../api'
 import { HttpProtocol } from '../../../types/http'
 import { ErrorName, UploadError } from '../../../types/error'
-import { Result, isErrorResult, isSuccessResult } from '../../../types/types'
+import { Result, isCanceledResult, isErrorResult, isSuccessResult } from '../../../types/types'
 import { MockProgress } from '../../../helper/progress'
 
 import { Task } from '../queue'
 import { QueueContext } from '../context'
 
 /**
-  * @description 解冻时间，key 是 host，value 为解冻时间
-  */
+ * @description 解冻时间，key 是 host，value 为解冻时间
+ */
 const unfreezeTimeMap = new Map<string, number>()
 
 export class Host {
@@ -63,7 +63,7 @@ interface GetUploadHostParams {
   bucket: string
 }
 
-class HostProvider {
+class RegionHostProvider {
   /**
    * @description 缓存的 host 表，以 bucket 和 assessKey 作为 key
    */
@@ -123,9 +123,9 @@ class HostProvider {
   }
 
   /**
-   * @description 获取一个可用的上传 Host，排除已冻结的
+   * @description 获取所有上传 Host 列表
    */
-  public async getUploadHost(params: GetUploadHostParams): Promise<Result<Host>> {
+  public async getUploadHosts(params: GetUploadHostParams): Promise<Result<Host[]>> {
     const { assessKey, bucket } = params
 
     const refreshResult = await this.refresh(assessKey, bucket)
@@ -137,29 +137,53 @@ class HostProvider {
       return { error: new UploadError('InvalidUploadHost', 'No upload host available') }
     }
 
-    const availableHostList = cachedHostList.filter(host => !host.isFrozen())
-    if (availableHostList.length > 0) return { result: availableHostList[0] }
+    return { result: cachedHostList }
+  }
+}
 
-    // 无可用的，去取离解冻最近的 host
-    const priorityQueue = cachedHostList
+export class HostProvider {
+  private isFirstCall = true
+
+  constructor(private hosts: Host[]) {}
+
+  /**
+   * @description 获取一个可用的 Host；优先返回未冻结的，首次调用且全部冻结时随机解冻一个
+   */
+  getHost(): Host {
+    const available = this.hosts.filter(h => !h.isFrozen())
+    if (available.length > 0) {
+      this.isFirstCall = false
+      return available[0]
+    }
+
+    // 所有 host 均被冻结
+    if (this.isFirstCall) {
+      this.isFirstCall = false
+      const randomIndex = Math.floor(Math.random() * this.hosts.length)
+      this.hosts[randomIndex].unfreeze()
+      return this.hosts[randomIndex]
+    }
+
+    // 非首次调用，返回离解冻最近的 host
+    const sorted = this.hosts
       .slice()
-      .sort((hostA, hostB) => (hostA.getUnfreezeTime() || 0) - (hostB.getUnfreezeTime() || 0))
-
-    return { result: priorityQueue[0] }
+      .sort((a, b) => (a.getUnfreezeTime() || 0) - (b.getUnfreezeTime() || 0))
+    return sorted[0]
   }
 }
 
 export type HostProgressKey = 'prepareUploadHost'
 
-export class HostProvideTask implements Task {
-  private hostProvider: HostProvider
+export class RegionHostProvideTask implements Task {
+  private regionHostProvider: RegionHostProvider
+
   constructor(
     private context: QueueContext<HostProgressKey>,
     configApis: ConfigApis,
     protocol: HttpProtocol,
     initHosts?: string[]
   ) {
-    this.hostProvider = new HostProvider(protocol, configApis, initHosts)
+    this.regionHostProvider = new RegionHostProvider(protocol, configApis, initHosts)
     this.context.progress.details.prepareUploadHost = {
       fromCache: false,
       percent: 0,
@@ -191,20 +215,56 @@ export class HostProvideTask implements Task {
       return { result: true }
     }
 
-    // 重新更新 host
-    const token = this.context.token!
-    const hostResult = await this.hostProvider.getUploadHost(token)
-    if (!isSuccessResult(hostResult)) {
-      if (isErrorResult(hostResult)) {
-        this.context.error = hostResult.error
-      }
+    // 首次执行时通过 RegionHostProvider 拉取 host 列表并创建 HostProvider
+    if (!this.context.hostProvider) {
+      const token = this.context.token!
+      const hostsResult = await this.regionHostProvider.getUploadHosts(token)
+      if (!isSuccessResult(hostsResult)) {
+        if (isErrorResult(hostsResult)) {
+          this.context.error = hostsResult.error
+        }
 
-      progress.stop()
-      return hostResult
+        progress.stop()
+        return hostsResult
+      }
+      this.context.hostProvider = new HostProvider(hostsResult.result)
     }
 
-    this.context.host = hostResult.result
+    this.context.host = this.context.hostProvider.getHost()
     progress.end()
     return { result: true }
+  }
+}
+
+export class HostRetryTask implements Task {
+  constructor(
+    private context: QueueContext<HostProgressKey>,
+    private innerTask: Task,
+    private maxRetries = 2
+  ) {}
+
+  async cancel(): Promise<Result> {
+    return this.innerTask.cancel()
+  }
+
+  async process(notice: () => void): Promise<Result> {
+    return this.processWithRetry(notice, 0)
+  }
+
+  private async processWithRetry(notice: () => void, retryCount: number): Promise<Result> {
+    // 记住本次请求使用的 host，避免并发时 freeze 错误的 host
+    const hostBeforeProcess = this.context.host
+    const result = await this.innerTask.process(notice)
+    if (isSuccessResult(result) || isCanceledResult(result)) return result
+    if (isErrorResult(result)) {
+      const isRetriable = result.error.name === 'NetworkError'
+        || result.error.name === 'HttpRequestError'
+      if (isRetriable && retryCount < this.maxRetries && this.context.hostProvider) {
+        hostBeforeProcess?.freeze()
+        this.context.host = this.context.hostProvider.getHost()
+        return this.processWithRetry(notice, retryCount + 1)
+      }
+    }
+    return result
   }
 }

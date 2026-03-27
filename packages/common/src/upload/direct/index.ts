@@ -6,9 +6,10 @@ import { generateRandomString } from '../../helper/string'
 import { Result, isErrorResult, isSuccessResult } from '../../types/types'
 
 import { Task, TaskQueue } from '../common/queue'
+import { RetryTask } from '../common/queue/retry'
 import { UploadContext, updateTotalIntoProgress } from '../common/context'
 import { initUploadConfig } from '../common/config'
-import { HostProgressKey, HostProvideTask } from '../common/host'
+import { HostProgressKey, RegionHostProvideTask, HostRetryTask } from '../common/host'
 import { TokenProgressKey, TokenProvideTask } from '../common/token'
 
 export type DirectUploadProgressKey =
@@ -108,14 +109,17 @@ export const createDirectUploadTask = (file: UploadFile, config: UploadConfig): 
   const configApis = new ConfigApis(normalizedConfig.apiServerUrl, normalizedConfig.httpClient)
 
   const context = new DirectUploadContext()
-  const directUploadTask = new DirectUploadTask(context, uploadApis, config.vars, file)
   const tokenProvideTask = new TokenProvideTask(context, normalizedConfig.tokenProvider)
-  const hostProvideTask = new HostProvideTask(
+  const hostProvideTask = new RegionHostProvideTask(
     context,
     configApis,
     normalizedConfig.protocol,
     normalizedConfig.uploadHosts
   )
+
+  let directUploadTask: Task = new DirectUploadTask(context, uploadApis, config.vars, file)
+  directUploadTask = new RetryTask(directUploadTask)
+  directUploadTask = new HostRetryTask(context, directUploadTask)
 
   const taskQueue = new TaskQueue({
     logger: { level: normalizedConfig.logLevel, prefix: 'directUploadQueue' },
@@ -123,8 +127,8 @@ export const createDirectUploadTask = (file: UploadFile, config: UploadConfig): 
   })
 
   taskQueue.enqueue(
-    tokenProvideTask,
-    hostProvideTask,
+    new RetryTask(tokenProvideTask),
+    new RetryTask(hostProvideTask),
     directUploadTask
   )
 

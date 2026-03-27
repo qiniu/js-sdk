@@ -34,6 +34,8 @@ export function createDirectUploadTask(context: ohCommon.Context, file: UploadFi
 
 /**
  * v1 版本的分片上传，串行上传，不支持 file 的 metadata 属性
+ *
+ * @deprecated use createMultipartUploadV2Task instead
  */
 export function createMultipartUploadV1Task(context: ohCommon.Context, file: UploadFile, config: UploadConfig) {
   const innerFile = new InternalUploadFile(context, file)

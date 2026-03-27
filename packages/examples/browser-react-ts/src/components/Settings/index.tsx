@@ -16,14 +16,16 @@ export function Settings(props: IProps) {
   const [useWebWorker, setUseWebWorker] = React.useState<boolean>(setting.useWebWorker || false)
   const [apiServer, seApiServer] = React.useState<string>(setting.server || 'https://api.qiniu.com')
 
-  utils.saveSetting({
-    assessKey,
-    secretKey,
-    bucketName,
-    server: apiServer,
-    forceDirect: useDirect,
-    useWebWorker: useWebWorker
-  })
+  React.useEffect(() => {
+    utils.saveSetting({
+      assessKey,
+      secretKey,
+      bucketName,
+      server: apiServer,
+      forceDirect: useDirect,
+      useWebWorker: useWebWorker
+    })
+  }, [assessKey, secretKey, bucketName, apiServer, useDirect, useWebWorker])
 
   return (
     <div className={classnames.settings}>

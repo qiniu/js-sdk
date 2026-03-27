@@ -8,9 +8,12 @@ import { UploadTask, UploadConfig } from '../types'
 
 import { UploadContext, updateTotalIntoProgress } from '../common/context'
 import { Task, TaskQueue } from '../common/queue'
+import { RetryTask } from '../common/queue/retry'
 import { initUploadConfig } from '../common/config'
-import { HostProgressKey, HostProvideTask } from '../common/host'
+import { HostProgressKey, RegionHostProvideTask, HostRetryTask } from '../common/host'
 import { TokenProgressKey, TokenProvideTask } from '../common/token'
+
+const COMPLETE_TASK_VIRTUAL_SIZE = 100
 
 export type MultipartUploadV2ProgressKey =
   | HostProgressKey
@@ -30,6 +33,7 @@ export class MultipartUploadV2Context extends UploadContext<MultipartUploadV2Pro
 
 class InitPartUploadTask implements Task {
   private abort: HttpAbortController | null = null
+
   constructor(
     private context: MultipartUploadV2Context,
     private uploadApis: UploadApis,
@@ -128,6 +132,7 @@ class InitPartUploadTask implements Task {
 
 class UploadPartTask implements Task {
   private abort: HttpAbortController | null = null
+
   constructor(
     private context: MultipartUploadV2Context,
     private uploadApis: UploadApis,
@@ -210,6 +215,7 @@ class UploadPartTask implements Task {
 
 class CompletePartUploadTask implements Task {
   private abort: HttpAbortController | null = null
+
   constructor(
     private context: MultipartUploadV2Context,
     private uploadApis: UploadApis,
@@ -225,13 +231,13 @@ class CompletePartUploadTask implements Task {
   private updateProgress(percent: number, notify?: () => void) {
     if (this.context.progress.details.completeMultipartUpload == null) {
       this.context.progress.details.completeMultipartUpload = {
-        size: 0,
+        size: COMPLETE_TASK_VIRTUAL_SIZE,
         percent: 0,
         fromCache: false
       }
     }
 
-    this.context!.progress.details.completeMultipartUpload.size = 0
+    this.context!.progress.details.completeMultipartUpload.size = COMPLETE_TASK_VIRTUAL_SIZE
     this.context!.progress.details.completeMultipartUpload.percent = percent
     this.context!.progress.details.completeMultipartUpload.fromCache = false
     notify?.()
@@ -292,15 +298,19 @@ export const createMultipartUploadV2Task = (file: UploadFile, config: UploadConf
 
   const context = new MultipartUploadV2Context()
   const tokenProvideTask = new TokenProvideTask(context, normalizedConfig.tokenProvider)
-  const hostProvideTask = new HostProvideTask(
+  const hostProvideTask = new RegionHostProvideTask(
     context,
     configApis,
     normalizedConfig.protocol,
     normalizedConfig.uploadHosts
   )
 
-  const initPartUploadTask = new InitPartUploadTask(context, uploadApis, file)
-  const completePartUploadTask = new CompletePartUploadTask(context, uploadApis, config.vars, file)
+  let initPartUploadTask: Task = new InitPartUploadTask(context, uploadApis, file)
+  initPartUploadTask = new RetryTask(initPartUploadTask)
+  initPartUploadTask = new HostRetryTask(context, initPartUploadTask)
+  let completePartUploadTask: Task = new CompletePartUploadTask(context, uploadApis, config.vars, file)
+  completePartUploadTask = new RetryTask(completePartUploadTask)
+  completePartUploadTask = new HostRetryTask(context, completePartUploadTask)
 
   const mainQueue = new TaskQueue({
     logger: {
@@ -317,8 +327,6 @@ export const createMultipartUploadV2Task = (file: UploadFile, config: UploadConf
       prefix: 'MultipartUploadChildQueue'
     },
     concurrentLimit: 3,
-
-    // FIXME: 动态创建任务会导致任务进度倒退
     tasksCreator: async () => {
       const sliceResult = await file.slice(4 * 1024 * 1024)
       if (isErrorResult(sliceResult)) {
@@ -329,16 +337,19 @@ export const createMultipartUploadV2Task = (file: UploadFile, config: UploadConf
         return sliceResult
       }
 
-      const tasks = sliceResult.result.map((blob, index) => (
-        new UploadPartTask(context, uploadApis, index + 1, file, blob)
-      ))
+      const tasks = sliceResult.result.map((blob, index) => {
+        let t: Task = new UploadPartTask(context, uploadApis, index + 1, file, blob)
+        t = new RetryTask(t)
+        t = new HostRetryTask(context, t)
+        return t
+      })
       return { result: tasks }
     }
   })
 
   mainQueue.enqueue(
-    tokenProvideTask,
-    hostProvideTask,
+    new RetryTask(tokenProvideTask),
+    new RetryTask(hostProvideTask),
     initPartUploadTask,
     partQueue,
     completePartUploadTask

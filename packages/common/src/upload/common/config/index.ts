@@ -7,7 +7,7 @@ export function initUploadConfig(config: UploadConfig): Required<UploadConfig> {
   const logLevel = config.logLevel || 'NONE'
   const protocol = config.protocol || 'HTTPS'
   const uploadHosts = config.uploadHosts || []
-  const apiServerUrl = config.apiServerUrl || 'https://api.qiniu.com'
+  const apiServerUrl = config.apiServerUrl || 'https://kodo-config.qiniuapi.com'
 
   return { ...config, protocol, apiServerUrl, logLevel, uploadHosts } as Required<UploadConfig>
 }

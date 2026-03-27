@@ -1,8 +1,10 @@
 .DS_Store
 .vscode
+.idea
 node_modules
 coverage
 output
 test-server.js
 miniprogram_npm
 @internal
+packages/examples/browser-react-ts/dist

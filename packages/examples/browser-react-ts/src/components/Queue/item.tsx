@@ -5,11 +5,11 @@ import { Status, useUpload } from '../../upload'
 import startIcon from './assets/start.svg'
 import stopIcon from './assets/stop.svg'
 import classnames from './style.less'
-import { Progress } from 'qiniu-js'
+import type { Progress } from 'qiniu-js'
 
-type KeysOf<T> = T extends Record<infer R, any> ? R[] : string[]
-function keysOf<T extends Record<string, any>>(data: T): KeysOf<T> {
-  return Object.keys(data) as KeysOf<T>
+/** Object.keys 在 TS 中类型为 string[]，避免与 Record 键推断成 string | number | symbol 导致字符串方法报错 */
+function keysOf(data: Record<string, unknown>): string[] {
+  return Object.keys(data)
 }
 
 function splitArray<T>(arr: T[], size: number): T[][] {
@@ -35,7 +35,7 @@ export function Item(props: IProps) {
     <div className={classnames.item}>
       <div className={classnames.content}>
         <div className={classnames.top}>
-          <FileName fileName={props.file.name} />
+          <FileName fileName={props.file.name}/>
           <div className={classnames.actions}>
             {(state != null && [Status.Processing].includes(state)) && (
               <img
@@ -58,11 +58,11 @@ export function Item(props: IProps) {
           </div>
         </div>
         <div className={classnames.down}>
-          <ProgressBar progress={progress} />
+          <ProgressBar progress={progress}/>
         </div>
       </div>
-      <ErrorView error={error} />
-      <CompleteView completeInfo={completeInfo} />
+      <ErrorView error={error}/>
+      <CompleteView completeInfo={completeInfo}/>
     </div>
   )
 }
@@ -149,16 +149,22 @@ function ProgressBar(props: { progress: Partial<Progress> | null }) {
     })
   }
 
-  const multipartUploadKeys = keysOf(uploadParts)
+  const uploadPartsByKey = uploadParts as unknown as Record<
+    string,
+    { percent: number; fromCache: boolean }
+  >
+
+  const multipartUploadKeys = keysOf(uploadPartsByKey)
     .filter(key => key.startsWith('multipartUpload'))
-    .sort((a, b) => parseInt(a.split(':')[1]) - parseInt(b.split(':')[1]))
+    .sort((a, b) => parseInt(a.split(':')[1], 10) - parseInt(b.split(':')[1], 10))
 
   for (const multipartUploadKey of multipartUploadKeys) {
     const index = multipartUploadKey.split(':')[1]
+    const part = uploadPartsByKey[multipartUploadKey]
     data.push({
       name: `上传分片 ${index}`,
-      percent: uploadParts[multipartUploadKey].percent,
-      fromCache: uploadParts[multipartUploadKey].fromCache
+      percent: part.percent,
+      fromCache: part.fromCache
     })
   }
 

@@ -1,7 +1,7 @@
 import { Token } from '../../../types/token'
 import { UploadError } from '../../../types/error'
 
-import { Host } from '../host'
+import { Host, HostProvider } from '../host'
 
 /** 进度信息；包含整体的进度以及具体每个部分的详细进度 */
 export type Progress<Key extends string = string> = {
@@ -20,27 +20,31 @@ export type Progress<Key extends string = string> = {
   }>
 }
 
-/** 根据 details 上的信息更新总的信息 */
+/** 根据 details 上的信息更新总的信息；按 size 加权计算进度，且保证单调递增 */
 export function updateTotalIntoProgress(progress: Progress): Progress {
   const detailValues = Object.values(progress.details)
 
   let totalSize = 0
-  let totalPercent = 0
+  let weightedPercent = 0
   for (let index = 0; index < detailValues.length; index++) {
     const value = detailValues[index]
     totalSize += value.size
-    totalPercent += value.percent
+    weightedPercent += value.percent * value.size
   }
 
-  const newPercent = totalPercent / detailValues.length
-  progress.percent = newPercent
+  let newPercent = totalSize > 0 ? weightedPercent / totalSize : 0
+  // 未全部完成时上限 99%，防止四舍五入导致虚报 100%
+  if (newPercent > 0.99 && weightedPercent < totalSize) {
+    newPercent = 0.99
+  }
+  progress.percent = Math.max(progress.percent, newPercent)
   progress.size = totalSize
   return progress
 }
 
 /** 队列的上下文；用于在所有任务间共享状态 */
 export interface QueueContext<ProgressKey extends string = string> {
-  /** 上传使用的 host; 由公共的 HostProvideTask 维护和更新 */
+  /** 上传使用的 host; 由公共的 RegionHostProvideTask 维护和更新 */
   host?: Host
   /** 上传使用的 token; 由公共的 TokenProvideTask 维护和更新 */
   token?: Token
@@ -50,6 +54,8 @@ export interface QueueContext<ProgressKey extends string = string> {
   error?: UploadError
   /** 整体的任务进度信息 */
   progress: Progress<ProgressKey>
+  /** host 提供者；用于 HostRetryTask 切换 host */
+  hostProvider?: HostProvider
 
   /** 初始化函数；队列开始时执行 */
   setup(): void
@@ -62,6 +68,7 @@ export class UploadContext<ProgressKey extends string = string> implements Queue
   result?: string
   error?: UploadError
   progress: Progress<ProgressKey>
+  hostProvider?: HostProvider
   constructor() {
     this.progress = {
       size: 0,

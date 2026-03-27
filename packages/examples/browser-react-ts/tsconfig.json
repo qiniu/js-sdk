@@ -5,6 +5,7 @@
     "module": "esnext",
     "strict": true,
     "sourceMap": true,
+    "noEmit": true,
     "moduleResolution": "node",
     "typeRoots": [
       "node_modules/@types",
