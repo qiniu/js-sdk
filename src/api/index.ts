@@ -1,4 +1,4 @@
-import { stringify } from 'querystring'
+import { stringify } from 'querystring-es3'
 
 import { normalizeUploadConfig } from '../utils'
 import { Config, InternalConfig, UploadInfo } from '../upload'
