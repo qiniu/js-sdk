@@ -48,6 +48,8 @@ export interface InternalConfig {
   disableStatisticsReport: boolean
   /** 设置调试日志输出模式，默认 `OFF`，不输出任何日志 */
   debugLogLevel?: LogLevel
+  /** 获取新的上传凭证 */
+  getUpToken?: () => string | Promise<string>
 }
 
 /** 上传任务的配置信息 */
@@ -116,6 +118,9 @@ export default abstract class Base {
   protected token: string
   protected assessKey: string
   protected bucketName: string
+  protected scope: string
+
+  private refreshingToken?: Promise<void>
 
   protected uploadAt: number
   protected progress: UploadProgress
@@ -159,10 +164,56 @@ export default abstract class Base {
       const putPolicy = utils.getPutPolicy(this.token)
       this.bucketName = putPolicy.bucketName
       this.assessKey = putPolicy.assessKey
+      this.scope = putPolicy.scope
     } catch (error) {
       logger.error('get putPolicy from token failed.', error)
       this.onError(error)
     }
+  }
+
+  protected async requestWithTokenRefresh<T>(request: () => Promise<T>): Promise<T> {
+    try {
+      return await request()
+    } catch (error) {
+      if (!(error instanceof QiniuRequestError) || error.code !== 401 || !this.config.getUpToken) {
+        throw error
+      }
+
+      await this.refreshToken()
+      if (this.aborted) throw error
+      return request()
+    }
+  }
+
+  private refreshToken(): Promise<void> {
+    if (this.refreshingToken) return this.refreshingToken
+
+    const refresh = Promise.resolve().then(() => this.config.getUpToken!())
+      .then(newToken => {
+        const putPolicy = utils.getPutPolicy(newToken)
+        if (
+          putPolicy.assessKey !== this.assessKey
+          || putPolicy.bucketName !== this.bucketName
+          || putPolicy.scope !== this.scope
+        ) {
+          throw new QiniuError(
+            QiniuErrorName.InvalidToken,
+            'refreshed token scope does not match the original token.'
+          )
+        }
+        this.token = newToken
+      })
+
+    this.refreshingToken = refresh.then(
+      () => {
+        this.refreshingToken = undefined
+      },
+      error => {
+        this.refreshingToken = undefined
+        throw error
+      }
+    )
+    return this.refreshingToken
   }
 
   // 检查并更新 upload host

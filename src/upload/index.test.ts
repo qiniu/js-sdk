@@ -57,6 +57,22 @@ describe('test upload', () => {
     }
   })
 
+  test('Direct: refreshes token after 401.', async () => {
+    let requestCount = 0
+    const getUpToken = jest.fn(() => Promise.resolve(testToken))
+    mockApi.setInterceptor('direct', () => {
+      requestCount += 1
+      if (requestCount === 1) return Promise.reject(errorMap.expiredToken)
+      return Promise.resolve({ data: { key: 'refreshed' }, reqId: 'req-id' })
+    })
+
+    const result = await observablePromisify(upload(File3M, null, testToken, undefined, { getUpToken }))
+
+    expect(result).toStrictEqual({ key: 'refreshed' })
+    expect(requestCount).toBe(2)
+    expect(getUpToken).toHaveBeenCalledTimes(1)
+  })
+
   test('Resume: base.', async () => {
     // 文件大于 4M 使用分片
     const result = await observablePromisify(upload(File5M, null, testToken))
@@ -79,5 +95,50 @@ describe('test upload', () => {
           .rejects.toStrictEqual(error)
       }
     }
+  })
+
+  test('Resume: refreshes token before making file.', async () => {
+    let requestCount = 0
+    const getUpToken = jest.fn(() => testToken)
+    mockApi.setInterceptor('uploadComplete', () => {
+      requestCount += 1
+      if (requestCount === 1) return Promise.reject(errorMap.expiredToken)
+      return Promise.resolve({ data: { key: 'refreshed' }, reqId: 'req-id' })
+    })
+
+    const result = await observablePromisify(upload(File5M, null, testToken, undefined, { getUpToken }))
+
+    expect(result).toStrictEqual({ key: 'refreshed' })
+    expect(requestCount).toBe(2)
+    expect(getUpToken).toHaveBeenCalledTimes(1)
+  })
+
+  test('Resume: shares token refresh between concurrent chunks.', async () => {
+    let requestCount = 0
+    const getUpToken = jest.fn(() => new Promise<string>(resolve => {
+      setTimeout(() => resolve(testToken), 10)
+    }))
+    mockApi.setInterceptor('uploadChunk', () => {
+      requestCount += 1
+      if (requestCount <= 2) return Promise.reject(errorMap.expiredToken)
+      return Promise.resolve({
+        data: { etag: `etag-${requestCount}`, md5: `md5-${requestCount}` },
+        reqId: 'req-id'
+      })
+    })
+
+    await observablePromisify(upload(File5M, null, testToken, undefined, { getUpToken }))
+
+    expect(getUpToken).toHaveBeenCalledTimes(1)
+    expect(requestCount).toBe(4)
+  })
+
+  test('does not refresh a token with a different scope.', async () => {
+    const getUpToken = jest.fn(() => 'invalid-token')
+    mockApi.setInterceptor('direct', () => Promise.reject(errorMap.expiredToken))
+
+    await expect(observablePromisify(upload(File3M, null, testToken, undefined, { getUpToken })))
+      .rejects.toMatchObject({ name: 'InvalidToken' })
+    expect(getUpToken).toHaveBeenCalledTimes(1)
   })
 })
