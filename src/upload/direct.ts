@@ -9,44 +9,51 @@ export default class Direct extends Base {
   protected async run() {
     this.logger.info('start run Direct.')
 
-    const formData = new FormData()
-    if (this.putExtra.mimeType) {
-      // 通过 Blob.slice 设置 file part 的 Content-Type 为指定的 mimeType
-      const fileBlob = this.file.slice(0, this.file.size, this.putExtra.mimeType)
-      formData.append('file', fileBlob, this.putExtra.fname || this.file.name)
-    } else {
-      formData.append('file', this.file, this.putExtra.fname || this.file.name)
-    }
-    formData.append('token', this.token)
-    if (this.key != null) {
-      formData.append('key', this.key)
-    }
-    formData.append('fname', this.putExtra.fname)
+    const createFormData = async (token: string) => {
+      const formData = new FormData()
+      if (this.putExtra.mimeType) {
+        // 通过 Blob.slice 设置 file part 的 Content-Type 为指定的 mimeType
+        const fileBlob = this.file.slice(0, this.file.size, this.putExtra.mimeType)
+        formData.append('file', fileBlob, this.putExtra.fname || this.file.name)
+      } else {
+        formData.append('file', this.file, this.putExtra.fname || this.file.name)
+      }
+      formData.append('token', token)
+      if (this.key != null) {
+        formData.append('key', this.key)
+      }
+      formData.append('fname', this.putExtra.fname)
 
-    if (this.config.checkByServer) {
-      const crcSign = await CRC32.file(this.file)
-      formData.append('crc32', crcSign.toString())
+      if (this.config.checkByServer) {
+        const crcSign = await CRC32.file(this.file)
+        formData.append('crc32', crcSign.toString())
+      }
+
+      if (this.putExtra.customVars) {
+        this.logger.info('init customVars.')
+        const { customVars } = this.putExtra
+        Object.keys(customVars).forEach(key => formData.append(key, customVars[key].toString()))
+        this.logger.info('customVars inited.')
+      }
+
+      if (this.putExtra.metadata) {
+        this.logger.info('init metadata.')
+        const { metadata } = this.putExtra
+        Object.keys(metadata).forEach(key => formData.append(key, metadata[key].toString()))
+      }
+
+      return formData
     }
 
-    if (this.putExtra.customVars) {
-      this.logger.info('init customVars.')
-      const { customVars } = this.putExtra
-      Object.keys(customVars).forEach(key => formData.append(key, customVars[key].toString()))
-      this.logger.info('customVars inited.')
-    }
-
-    if (this.putExtra.metadata) {
-      this.logger.info('init metadata.')
-      const { metadata } = this.putExtra
-      Object.keys(metadata).forEach(key => formData.append(key, metadata[key].toString()))
-    }
-
-    this.logger.info('formData inited.')
-    const result = await direct(this.uploadHost!.getUrl(), formData, {
-      onProgress: data => {
-        this.updateDirectProgress(data.loaded, data.total)
-      },
-      onCreate: xhr => this.addXhr(xhr)
+    const result = await this.requestWithTokenRefresh(async token => {
+      const formData = await createFormData(token)
+      this.logger.info('formData inited.')
+      return direct(this.uploadHost!.getUrl(), formData, {
+        onProgress: data => {
+          this.updateDirectProgress(data.loaded, data.total)
+        },
+        onCreate: xhr => this.addXhr(xhr)
+      })
     })
 
     this.logger.info('Direct progress finish.')

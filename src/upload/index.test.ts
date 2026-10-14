@@ -9,6 +9,8 @@ import { MB, Observable } from '../utils'
 import upload from '.'
 
 const testToken = 'lVgtk5xr03Oz_uvkzDtQ8LtpiEUWx5tGEDUZVg1y:rAwZ6rnPQbjyG6Pzkx4PORzn6C8=:eyJyZXR1cm5Cb2R5Ijoie1wia2V5XCI6ICQoa2V5KX0iLCJzY29wZSI6InFpbml1LWRhcnQtc2RrIiwiZGVhZGxpbmUiOjE2MTkzNjA0Mzh9'
+const refreshedToken = `${testToken.split(':')[0]}:refreshed-signature:${testToken.split(':')[2]}`
+const differentScopeToken = `${testToken.split(':')[0]}:different-signature:eyJyZXR1cm5Cb2R5Ijoie1wia2V5XCI6JChrZXkpfSIsInNjb3BlIjoicWluaXUtZGFydC1zZGs6b3RoZXIiLCJkZWFkbGluZSI6MTYxOTM2MDQzOH0`
 
 function mockFile(size = 4, name = 'mock.jpg', type = 'image/jpg'): File {
   if (size >= 1024) throw new Error('the size is set too large.')
@@ -57,6 +59,25 @@ describe('test upload', () => {
     }
   })
 
+  test('Direct: refreshes token after 401.', async () => {
+    let requestCount = 0
+    const receivedTokens: string[] = []
+    const getUpToken = jest.fn(() => Promise.resolve(refreshedToken))
+    mockApi.setInterceptor('direct', (_url, data) => {
+      receivedTokens.push(data.get('token') as string)
+      requestCount += 1
+      if (requestCount === 1) return Promise.reject(errorMap.expiredToken)
+      return Promise.resolve({ data: { key: 'refreshed' }, reqId: 'req-id' })
+    })
+
+    const result = await observablePromisify(upload(File3M, null, testToken, undefined, { getUpToken }))
+
+    expect(result).toStrictEqual({ key: 'refreshed' })
+    expect(requestCount).toBe(2)
+    expect(getUpToken).toHaveBeenCalledTimes(1)
+    expect(receivedTokens).toStrictEqual([testToken, refreshedToken])
+  })
+
   test('Resume: base.', async () => {
     // 文件大于 4M 使用分片
     const result = await observablePromisify(upload(File5M, null, testToken))
@@ -79,5 +100,85 @@ describe('test upload', () => {
           .rejects.toStrictEqual(error)
       }
     }
+  })
+
+  test('Resume: refreshes token before making file.', async () => {
+    let requestCount = 0
+    const receivedTokens: string[] = []
+    const getUpToken = jest.fn(() => refreshedToken)
+    mockApi.setInterceptor('uploadComplete', token => {
+      receivedTokens.push(token)
+      requestCount += 1
+      if (requestCount === 1) return Promise.reject(errorMap.expiredToken)
+      return Promise.resolve({ data: { key: 'refreshed' }, reqId: 'req-id' })
+    })
+
+    const result = await observablePromisify(upload(File5M, null, testToken, undefined, { getUpToken }))
+
+    expect(result).toStrictEqual({ key: 'refreshed' })
+    expect(requestCount).toBe(2)
+    expect(getUpToken).toHaveBeenCalledTimes(1)
+    expect(receivedTokens).toStrictEqual([testToken, refreshedToken])
+  })
+
+  test('Resume: shares token refresh between concurrent chunks.', async () => {
+    let requestCount = 0
+    const receivedTokens: string[] = []
+    const getUpToken = jest.fn(() => new Promise<string>(resolve => {
+      setTimeout(() => resolve(refreshedToken), 10)
+    }))
+    mockApi.setInterceptor('uploadChunk', token => {
+      receivedTokens.push(token)
+      requestCount += 1
+      if (requestCount <= 2) return Promise.reject(errorMap.expiredToken)
+      return Promise.resolve({
+        data: { etag: `etag-${requestCount}`, md5: `md5-${requestCount}` },
+        reqId: 'req-id'
+      })
+    })
+
+    await observablePromisify(upload(File5M, null, testToken, undefined, { getUpToken }))
+
+    expect(getUpToken).toHaveBeenCalledTimes(1)
+    expect(requestCount).toBe(4)
+    expect(receivedTokens).toStrictEqual([testToken, testToken, refreshedToken, refreshedToken])
+  })
+
+  test('Resume: reuses a refreshed token for late chunk failures.', async () => {
+    let requestCount = 0
+    const receivedTokens: string[] = []
+    let resolveRefresh: (token: string) => void
+    const getUpToken = jest.fn(() => new Promise<string>(resolve => {
+      resolveRefresh = resolve
+    }))
+    mockApi.setInterceptor('uploadChunk', token => {
+      receivedTokens.push(token)
+      requestCount += 1
+      if (requestCount === 1) return Promise.reject(errorMap.expiredToken)
+      if (requestCount === 2) {
+        resolveRefresh(refreshedToken)
+        return new Promise((resolve, reject) => {
+          setTimeout(() => reject(errorMap.expiredToken), 10)
+        })
+      }
+      return Promise.resolve({
+        data: { etag: `etag-${requestCount}`, md5: `md5-${requestCount}` },
+        reqId: 'req-id'
+      })
+    })
+
+    await observablePromisify(upload(File5M, null, testToken, undefined, { getUpToken }))
+
+    expect(getUpToken).toHaveBeenCalledTimes(1)
+    expect(receivedTokens).toStrictEqual([testToken, testToken, refreshedToken, refreshedToken])
+  })
+
+  test('does not refresh a token with a different scope.', async () => {
+    const getUpToken = jest.fn(() => differentScopeToken)
+    mockApi.setInterceptor('direct', () => Promise.reject(errorMap.expiredToken))
+
+    await expect(observablePromisify(upload(File3M, null, testToken, undefined, { getUpToken })))
+      .rejects.toMatchObject({ name: 'InvalidToken' })
+    expect(getUpToken).toHaveBeenCalledTimes(1)
   })
 })

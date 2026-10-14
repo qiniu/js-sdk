@@ -166,13 +166,13 @@ export default class Resume extends Base {
     }
 
     this.logger.info(`part ${index} start uploading.`)
-    const response = await uploadChunk(
-      this.token,
+    const response = await this.requestWithTokenRefresh(token => uploadChunk(
+      token,
       this.key,
       chunkInfo.index + 1,
       this.getUploadInfo(),
       requestOptions
-    )
+    ))
     this.logger.info(`part ${index} upload completed.`)
 
     // 在某些浏览器环境下，xhr 的 progress 事件无法被触发，progress 为 null，这里在每次分片上传完成后都手动更新下 progress
@@ -204,15 +204,15 @@ export default class Resume extends Base {
     }
 
     this.logger.info('parts upload completed, make file.', data)
-    const result = await uploadComplete(
-      this.token,
+    const result = await this.requestWithTokenRefresh(token => uploadComplete(
+      token,
       this.key,
       this.getUploadInfo(),
       {
         onCreate: xhr => this.addXhr(xhr),
         body: JSON.stringify(data)
       }
-    )
+    ))
 
     this.logger.info('finish Resume Progress.')
     this.updateMkFileProgress(1)
@@ -228,12 +228,12 @@ export default class Resume extends Base {
     // 假如没有 cachedInfo 本地信息并重新获取 uploadId
     if (!cachedInfo) {
       this.logger.info('init upload parts from api.')
-      const res = await initUploadParts(
-        this.token,
+      const res = await this.requestWithTokenRefresh(token => initUploadParts(
+        token,
         this.bucketName,
         this.key,
         this.uploadHost!.getUrl()
-      )
+      ))
       this.logger.info(`initd upload parts of id: ${res.data.uploadId}.`)
       this.uploadId = res.data.uploadId
       this.cachedUploadedList = []

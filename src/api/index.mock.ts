@@ -49,16 +49,18 @@ export class MockApi {
     this.interceptorMap.set(name, interceptor)
   }
 
-  private callInterceptor(name: ApiName, defaultValue: any): any {
+  private callInterceptor(name: ApiName, defaultValue: any, args: any[] = []): any {
     const interceptor = this.interceptorMap.get(name)
     if (interceptor != null) {
-      return interceptor()
+      return interceptor(...args)
     }
 
     return defaultValue
   }
 
-  public direct(): ReturnType<typeof api.direct> {
+  public direct(): ReturnType<typeof api.direct>
+  public direct(...args: Parameters<typeof api.direct>): ReturnType<typeof api.direct>
+  public direct(...args: any[]): ReturnType<typeof api.direct> {
     const defaultData: ReturnType<typeof api.direct> = Promise.resolve({
       reqId: 'req-id',
       data: {
@@ -70,10 +72,12 @@ export class MockApi {
       }
     })
 
-    return this.callInterceptor('direct', defaultData)
+    return this.callInterceptor('direct', defaultData, args)
   }
 
-  public getUpHosts(): ReturnType<typeof api.getUpHosts> {
+  public getUpHosts(): ReturnType<typeof api.getUpHosts>
+  public getUpHosts(...args: Parameters<typeof api.getUpHosts>): ReturnType<typeof api.getUpHosts>
+  public getUpHosts(...args: any[]): ReturnType<typeof api.getUpHosts> {
     const defaultData: ReturnType<typeof api.getUpHosts> = Promise.resolve({
       reqId: 'req-id',
       data: {
@@ -95,10 +99,12 @@ export class MockApi {
       }
     })
 
-    return this.callInterceptor('getUpHosts', defaultData)
+    return this.callInterceptor('getUpHosts', defaultData, args)
   }
 
-  public uploadChunk(): ReturnType<typeof api.uploadChunk> {
+  public uploadChunk(): ReturnType<typeof api.uploadChunk>
+  public uploadChunk(...args: Parameters<typeof api.uploadChunk>): ReturnType<typeof api.uploadChunk>
+  public uploadChunk(...args: any[]): ReturnType<typeof api.uploadChunk> {
     const defaultData: ReturnType<typeof api.uploadChunk> = Promise.resolve({
       reqId: 'req-id',
       data: {
@@ -107,10 +113,12 @@ export class MockApi {
       }
     })
 
-    return this.callInterceptor('uploadChunk', defaultData)
+    return this.callInterceptor('uploadChunk', defaultData, args)
   }
 
-  public uploadComplete(): ReturnType<typeof api.uploadComplete> {
+  public uploadComplete(): ReturnType<typeof api.uploadComplete>
+  public uploadComplete(...args: Parameters<typeof api.uploadComplete>): ReturnType<typeof api.uploadComplete>
+  public uploadComplete(...args: any[]): ReturnType<typeof api.uploadComplete> {
     const defaultData: ReturnType<typeof api.uploadComplete> = Promise.resolve({
       reqId: 'req-id',
       data: {
@@ -122,24 +130,30 @@ export class MockApi {
       }
     })
 
-    return this.callInterceptor('uploadComplete', defaultData)
+    return this.callInterceptor('uploadComplete', defaultData, args)
   }
 
-  public initUploadParts(): ReturnType<typeof api.initUploadParts> {
+  public initUploadParts(): ReturnType<typeof api.initUploadParts>
+  public initUploadParts(...args: Parameters<typeof api.initUploadParts>): ReturnType<typeof api.initUploadParts>
+  public initUploadParts(...args: any[]): ReturnType<typeof api.initUploadParts> {
     const defaultData: ReturnType<typeof api.initUploadParts> = Promise.resolve({
       reqId: 'req-id',
       data: { uploadId: '60878b9408bc044043f5d74f', expireAt: 1620100628 }
     })
 
-    return this.callInterceptor('initUploadParts', defaultData)
+    return this.callInterceptor('initUploadParts', defaultData, args)
   }
 
-  public deleteUploadedChunks(): ReturnType<typeof api.deleteUploadedChunks> {
+  public deleteUploadedChunks(): ReturnType<typeof api.deleteUploadedChunks>
+  public deleteUploadedChunks(
+    ...args: Parameters<typeof api.deleteUploadedChunks>
+  ): ReturnType<typeof api.deleteUploadedChunks>
+  public deleteUploadedChunks(...args: any[]): ReturnType<typeof api.deleteUploadedChunks> {
     const defaultData: ReturnType<typeof api.deleteUploadedChunks> = Promise.resolve({
       reqId: 'req-id',
       data: undefined
     })
 
-    return this.callInterceptor('deleteUploadedChunks', defaultData)
+    return this.callInterceptor('deleteUploadedChunks', defaultData, args)
   }
 }
