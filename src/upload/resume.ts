@@ -166,8 +166,8 @@ export default class Resume extends Base {
     }
 
     this.logger.info(`part ${index} start uploading.`)
-    const response = await this.requestWithTokenRefresh(() => uploadChunk(
-      this.token,
+    const response = await this.requestWithTokenRefresh(token => uploadChunk(
+      token,
       this.key,
       chunkInfo.index + 1,
       this.getUploadInfo(),
@@ -204,8 +204,8 @@ export default class Resume extends Base {
     }
 
     this.logger.info('parts upload completed, make file.', data)
-    const result = await this.requestWithTokenRefresh(() => uploadComplete(
-      this.token,
+    const result = await this.requestWithTokenRefresh(token => uploadComplete(
+      token,
       this.key,
       this.getUploadInfo(),
       {
@@ -228,8 +228,8 @@ export default class Resume extends Base {
     // 假如没有 cachedInfo 本地信息并重新获取 uploadId
     if (!cachedInfo) {
       this.logger.info('init upload parts from api.')
-      const res = await this.requestWithTokenRefresh(() => initUploadParts(
-        this.token,
+      const res = await this.requestWithTokenRefresh(token => initUploadParts(
+        token,
         this.bucketName,
         this.key,
         this.uploadHost!.getUrl()

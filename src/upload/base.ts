@@ -171,17 +171,18 @@ export default abstract class Base {
     }
   }
 
-  protected async requestWithTokenRefresh<T>(request: () => Promise<T>): Promise<T> {
+  protected async requestWithTokenRefresh<T>(request: (token: string) => Promise<T>): Promise<T> {
+    const requestToken = this.token
     try {
-      return await request()
+      return await request(requestToken)
     } catch (error) {
       if (!(error instanceof QiniuRequestError) || error.code !== 401 || !this.config.getUpToken) {
         throw error
       }
 
-      await this.refreshToken()
+      if (this.token === requestToken) await this.refreshToken()
       if (this.aborted) throw error
-      return request()
+      return request(this.token)
     }
   }
 

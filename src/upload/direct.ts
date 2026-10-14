@@ -9,7 +9,7 @@ export default class Direct extends Base {
   protected async run() {
     this.logger.info('start run Direct.')
 
-    const createFormData = async () => {
+    const createFormData = async (token: string) => {
       const formData = new FormData()
       if (this.putExtra.mimeType) {
         // 通过 Blob.slice 设置 file part 的 Content-Type 为指定的 mimeType
@@ -18,7 +18,7 @@ export default class Direct extends Base {
       } else {
         formData.append('file', this.file, this.putExtra.fname || this.file.name)
       }
-      formData.append('token', this.token)
+      formData.append('token', token)
       if (this.key != null) {
         formData.append('key', this.key)
       }
@@ -45,8 +45,8 @@ export default class Direct extends Base {
       return formData
     }
 
-    const result = await this.requestWithTokenRefresh(async () => {
-      const formData = await createFormData()
+    const result = await this.requestWithTokenRefresh(async token => {
+      const formData = await createFormData(token)
       this.logger.info('formData inited.')
       return direct(this.uploadHost!.getUrl(), formData, {
         onProgress: data => {
